@@ -740,6 +740,52 @@
       font-size: clamp(15px, 1.5vw, 18px);
     }
 
+    .example-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 30px;
+      align-items: start;
+      margin-top: 24px;
+    }
+
+    .example-copy h3 {
+      margin-top: 22px;
+      color: #f0f5f3;
+      font-size: clamp(19px, 1.9vw, 25px);
+    }
+
+    .example-copy ul {
+      margin: 10px 0 0;
+      padding-left: 22px;
+      color: #d7e0dd;
+      font-size: clamp(15px, 1.45vw, 18px);
+    }
+
+    .example-copy li + li {
+      margin-top: 7px;
+    }
+
+    .sailing-example-figure {
+      margin: 0;
+      text-align: center;
+    }
+
+    .sailing-example-figure img {
+      display: block;
+      width: 100%;
+      max-height: 54vh;
+      object-fit: contain;
+      border: 1px solid rgba(211, 223, 222, 0.22);
+      border-radius: 3px;
+      background: #ffffff;
+    }
+
+    .sailing-example-figure figcaption {
+      margin-top: 9px;
+      color: #93a7a9;
+      font-size: 13px;
+    }
+
     .counter,
     .save-state {
       color: #d5e0de;
@@ -812,7 +858,8 @@
       .design-summary,
       .system-data-grid,
       .graph-task-grid,
-      .group-board-grid {
+      .group-board-grid,
+      .example-layout {
         grid-template-columns: 1fr;
       }
 
@@ -833,7 +880,7 @@
     }
   </style>
 </head>
-<body data-lang="zh">
+<body data-lang="en">
   <div class="inside-atmosphere" aria-hidden="true">
     <div class="beam"></div>
     <div class="beam secondary"></div>
@@ -860,8 +907,8 @@
       </a>
     </nav>
     <div class="controls" aria-label="Presentation controls">
-      <button type="button" class="lang active" data-lang="zh">中文</button>
-      <button type="button" class="lang" data-lang="en">English</button>
+      <button type="button" class="lang" data-lang="zh">中文</button>
+      <button type="button" class="lang active" data-lang="en">English</button>
       <button type="button" id="prevBtn" aria-label="Previous slide">←</button>
       <span class="counter" id="counter">1 / 33</span>
       <button type="button" id="nextBtn" aria-label="Next slide">→</button>
@@ -870,32 +917,36 @@
 
   <main class="deck" id="deck">
     <section class="slide active" data-slide-type="intro">
-      <p class="eyebrow">Domain Learning to Game System</p>
+      <p class="eyebrow">Session 2 · Your Project Design</p>
       <h1>
-        <span class="zh">从领域学习到游戏系统</span>
-        <span class="en">From Domain Learning to Game System</span>
+        <span class="zh">设计你自己的游戏系统</span>
+        <span class="en">Design Your Own Game System</span>
       </h1>
-      <p class="lead zh">INSIDE 让我们看到：游戏设计不是只设计一个角色或故事，而是设计一个系统。玩家在系统中行动、失败、观察反馈，并逐渐学会一种能力或知识。</p>
-      <p class="lead en">INSIDE shows us that game design is not only about a character or story. It is about designing a system where players act, fail, read feedback, and gradually learn an ability or a way of thinking.</p>
+      <p class="lead zh">选择一个你接触过或想学习的真实领域，把“新手如何逐渐看懂它”转化成玩家可以观察、判断、行动和调整的游戏系统。</p>
+      <p class="lead en">Choose a real domain you have experienced or want to learn. Turn the way a beginner gradually understands it into a game system where players observe, judge, act, and adjust.</p>
       <div class="method-bridge">
         <div class="method-step">
-          <strong class="zh">在 INSIDE 中</strong>
-          <strong class="en">In INSIDE</strong>
-          <p class="zh">我们学习了如何在压力中观察灯光、敌人、狗、掩体和时间窗口，并读懂一个危险世界。</p>
-          <p class="en">We learned to observe light, enemies, dogs, cover, and timing windows under pressure, and to read a dangerous world.</p>
+          <strong class="zh">1. 回答设计问题</strong>
+          <strong class="en">1. Answer Design Questions</strong>
+          <p class="zh">通过 Step 1–5 找到新手误解、领域判断、玩家循环、反馈和核心数据。</p>
+          <p class="en">Use Steps 1–5 to identify novice misconceptions, domain judgment, the player loop, feedback, and core data.</p>
         </div>
         <div class="method-step">
-          <strong class="zh">现在换成你的经验</strong>
-          <strong class="en">Now Use Your Experience</strong>
-          <p class="zh">你要从一个现实体验或领域学习过程出发，抽象出玩家可以进入、试错和掌握的系统。</p>
-          <p class="en">Start from a real experience or domain learning process, then abstract it into a system players can enter, test, and master.</p>
+          <strong class="zh">2. 生成开发摘要</strong>
+          <strong class="en">2. Generate a Development Brief</strong>
+          <p class="zh">网站会把回答压缩成给 AI Agent 使用的第一版网页游戏开发规格。</p>
+          <p class="en">The site condenses your answers into a first-version web game specification for an AI Agent.</p>
         </div>
         <div class="method-step">
-          <strong class="zh">最后形成开发文档</strong>
-          <strong class="en">End with a Development Brief</strong>
-          <p class="zh">回答 Step 1-5 后，页面会生成一份可以交给 Codex / WorkBuddy 继续开发原型的文档。</p>
-          <p class="en">After Step 1-5, this page generates a brief that Codex / WorkBuddy can use to develop a prototype.</p>
+          <strong class="zh">3. 绘制系统图</strong>
+          <strong class="en">3. Draw the System Graph</strong>
+          <p class="zh">在小组Canva白板中连接数据、玩家操作、系统计算、反馈和2–3个挑战。</p>
+          <p class="en">Use your group Canva board to connect data, player actions, calculations, feedback, and 2–3 challenges.</p>
         </div>
+      </div>
+      <div class="callout">
+        <p class="zh"><strong>最终产出：</strong>一份开发摘要Markdown＋一张游戏系统与挑战空间图。两份材料将一起交给AI Agent制作第一个可玩版本。</p>
+        <p class="en"><strong>Final outputs:</strong> one development-brief Markdown file and one game-system-and-challenge-space graph. Together, they will guide an AI Agent to build your first playable version.</p>
       </div>
       <p class="form-intro">
         <span class="zh">开始前填写</span>
@@ -910,6 +961,48 @@
       <div class="callout warm">
         <p class="zh">如果不小心关闭网页，再用同一台电脑、同一个浏览器打开本页，答案会自动恢复。</p>
         <p class="en">If you close this page by accident, reopen it on the same computer and browser to recover your answers.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide-type="example">
+      <p class="eyebrow">Sailing · Domain Knowledge Example</p>
+      <h2>
+        <span class="zh">什么是“领域知识”？</span>
+        <span class="en">What Is Domain Knowledge?</span>
+      </h2>
+      <div class="example-layout">
+        <div class="example-copy">
+          <p class="lead zh">领域知识不是关于一个主题的知识点，而是在真实情境中用来观察、判断、行动和调整的实践知识。</p>
+          <p class="lead en">Domain knowledge is not a collection of facts about a topic. It is practical knowledge used to observe, judge, act, and adjust in real situations.</p>
+
+          <h3><span class="zh">Sailing 示例</span><span class="en">The Sailing Example</span></h3>
+          <ul class="zh">
+            <li>新手看到目标，会以为船应该直接驶过去。</li>
+            <li>但帆船不能直接驶入迎风的“No-go zone”。</li>
+            <li>驾驶者要读取风向、船向和帆角之间的关系。</li>
+            <li>当目标在上风方向时，需要换舷并规划之字路线。</li>
+            <li>帆抖动、船速下降、倾斜和漂移，都是帮助判断的反馈。</li>
+          </ul>
+          <ul class="en">
+            <li>A beginner sees the destination and assumes the boat should sail directly toward it.</li>
+            <li>But a sailboat cannot sail directly into the upwind “no-go zone.”</li>
+            <li>The sailor must read the relationship among wind direction, boat direction, and sail angle.</li>
+            <li>When the target is upwind, the sailor must tack and plan a zigzag route.</li>
+            <li>Sail flapping, speed loss, tilt, and drift become feedback for judgment.</li>
+          </ul>
+
+          <div class="callout warm">
+            <p class="zh">后面每道题旁边都会显示Sailing参考答案。不要复制它；请观察它如何把真实领域中的学习转变，转化成玩家循环、数据、反馈和挑战。</p>
+            <p class="en">Each later question includes a Sailing reference answer. Do not copy it. Notice how it translates a real learning shift into a player loop, data, feedback, and challenges.</p>
+          </div>
+        </div>
+        <figure class="sailing-example-figure">
+          <img src="assets/sailing-domain-knowledge-example.png" alt="Points of sail diagram showing wind direction, the no-go zone, tacking, reaches, and downwind sailing" />
+          <figcaption>
+            <span class="zh">不同风向要求不同船向、帆角与路线判断。</span>
+            <span class="en">Different wind relationships require different boat directions, sail settings, and route decisions.</span>
+          </figcaption>
+        </figure>
       </div>
     </section>
 
@@ -1387,7 +1480,8 @@
     };
     const storageKey = "domain-learning-workbook-v1";
     const referenceKey = "domain-learning-workbook-reference-v1";
-    const languageKey = "domain-learning-workbook-language";
+    const languageKey = "domain-learning-workbook-language-v2";
+    const slideKey = "domain-learning-workbook-slide-v2";
     const storage = (() => {
       try {
         localStorage.setItem("__dl_test__", "1");
@@ -1404,10 +1498,11 @@
     })();
 
     const questionList = steps.flatMap((step) => step.questions.map((question) => ({ step, question })));
-    const totalSlides = questionList.length + 3;
+    const totalSlides = questionList.length + 4;
     const introIndex = 0;
-    const briefIndex = questionList.length + 1;
-    const graphIndex = questionList.length + 2;
+    const exampleIndex = 1;
+    const briefIndex = questionList.length + 2;
+    const graphIndex = questionList.length + 3;
     const slides = Array.from(document.querySelectorAll(".slide"));
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
@@ -1416,8 +1511,8 @@
     const questionSlide = document.getElementById("questionSlide");
     const answerBox = document.getElementById("answerBox");
     const saveState = document.getElementById("saveState");
-    let current = Number.parseInt(storage.getItem("domain-learning-workbook-slide") || "0", 10);
-    let lang = storage.getItem(languageKey) || "zh";
+    let current = Number.parseInt(storage.getItem(slideKey) || "0", 10);
+    let lang = storage.getItem(languageKey) || "en";
 
     function readDraft() {
       try {
@@ -1457,13 +1552,14 @@
 
     function slideKind(index) {
       if (index === introIndex) return "intro";
+      if (index === exampleIndex) return "example";
       if (index === briefIndex) return "brief";
       if (index === graphIndex) return "graph";
       return "question";
     }
 
     function getQuestionForSlide(index) {
-      return questionList[index - 1];
+      return questionList[index - 2];
     }
 
     function renderDots() {
@@ -1489,8 +1585,8 @@
       const draft = readDraft();
       document.getElementById("stepTag").textContent = item.step.title[lang];
       document.getElementById("questionNumber").textContent = lang === "zh"
-        ? `问题 ${index} / ${questionList.length}`
-        : `Question ${index} / ${questionList.length}`;
+        ? `问题 ${index - 1} / ${questionList.length}`
+        : `Question ${index - 1} / ${questionList.length}`;
       document.getElementById("questionTitle").textContent = item.question[lang];
       document.getElementById("stepPurpose").textContent = item.step.purpose[lang];
       document.getElementById("questionReason").textContent = item.question.reason[lang];
@@ -1626,7 +1722,7 @@
       Array.from(dots.children).forEach((dot, index) => {
         dot.classList.toggle("active", index === current);
       });
-      storage.setItem("domain-learning-workbook-slide", String(current));
+      storage.setItem(slideKey, String(current));
       window.location.hash = `slide-${current + 1}`;
     }
 

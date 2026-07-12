@@ -585,7 +585,7 @@
     }
   </style>
 </head>
-<body data-lang="zh">
+<body data-lang="en">
   <div class="inside-atmosphere" aria-hidden="true">
     <div class="beam"></div>
     <div class="beam secondary"></div>
@@ -612,8 +612,8 @@
       </a>
     </nav>
     <div class="controls" aria-label="Presentation controls">
-      <button type="button" class="lang active" data-lang="zh">中文</button>
-      <button type="button" class="lang" data-lang="en">English</button>
+      <button type="button" class="lang" data-lang="zh">中文</button>
+      <button type="button" class="lang active" data-lang="en">English</button>
       <button type="button" id="prevBtn" aria-label="Previous slide">←</button>
       <span class="counter" id="counter">1 / 15</span>
       <button type="button" id="nextBtn" aria-label="Next slide">→</button>
@@ -1177,9 +1177,9 @@
     const dots = document.getElementById("dots");
     const langButtons = Array.from(document.querySelectorAll(".lang"));
     const total = slides.length;
-    const savedSlide = Number.parseInt(localStorage.getItem("inside-demo-slide") || "0", 10);
+    const savedSlide = Number.parseInt(localStorage.getItem("inside-demo-slide-v2") || "0", 10);
     let current = Number.isFinite(savedSlide) ? Math.min(Math.max(savedSlide, 0), total - 1) : 0;
-    let lang = localStorage.getItem("inside-demo-lang") || "zh";
+    let lang = localStorage.getItem("inside-demo-lang-v2") || "en";
 
     function setLanguage(nextLang) {
       lang = nextLang === "en" ? "en" : "zh";
@@ -1188,7 +1188,7 @@
       langButtons.forEach((button) => {
         button.classList.toggle("active", button.dataset.lang === lang);
       });
-      localStorage.setItem("inside-demo-lang", lang);
+      localStorage.setItem("inside-demo-lang-v2", lang);
     }
 
     function renderDots() {
@@ -1214,7 +1214,7 @@
       prevBtn.disabled = current === 0;
       nextBtn.disabled = current === total - 1;
       counter.textContent = `${current + 1} / ${total}`;
-      localStorage.setItem("inside-demo-slide", String(current));
+      localStorage.setItem("inside-demo-slide-v2", String(current));
       window.location.hash = `slide-${current + 1}`;
     }
 
