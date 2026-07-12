@@ -335,6 +335,18 @@
     </section>
 
     <section class="section">
+      <h2><span class="zh">Dependency Strategy</span><span class="en">Dependency Strategy</span></h2>
+      <p class="section-intro zh">开发工具可以复杂，展览运行必须简单。选择能实现设计目标的最低依赖等级，而不是一律禁止或一律使用npm。</p>
+      <p class="section-intro en">Development tools may be complex; exhibition runtime must be simple. Choose the lowest dependency level that can realize the design instead of always banning or always using npm.</p>
+      <div class="outcome-grid">
+        <article class="outcome"><h3>Track A · No Build</h3><p><span class="zh">HTML、CSS、原生JavaScript和Canvas 2D。适合大多数简单2D原型。</span><span class="en">HTML, CSS, plain JavaScript, and Canvas 2D for most simple 2D prototypes.</span></p></article>
+        <article class="outcome"><h3>Track B · Local Vendor</h3><p><span class="zh">只使用少量固定版本的浏览器库，并把库文件保存在项目中，不使用CDN。</span><span class="en">Use a small version-pinned browser library stored locally in the project, not a CDN.</span></p></article>
+        <article class="outcome"><h3>Track C · npm + Build</h3><p><span class="zh">Three.js、多个ES Modules或复杂加载器可以使用npm与Vite；提交前必须生成静态展览版本。</span><span class="en">Three.js, multiple ES Modules, or complex loaders may use npm and Vite; produce a static exhibition build before submission.</span></p></article>
+      </div>
+      <div class="guardrail"><p class="zh"><strong>统一运行标准：</strong>最终iMac只打开已经构建好的 <code>exhibition/</code>。不在展览电脑上执行 <code>npm install</code>。Three.js与ES Module项目通过静态HTTP服务器运行，不以双击HTML为验收标准。</p><p class="en"><strong>Shared runtime standard:</strong> The iMac opens the prebuilt <code>exhibition/</code>. Never run <code>npm install</code> on exhibition machines. Serve Three.js and ES Module projects through static HTTP; double-clicking HTML is not the acceptance standard.</p></div>
+    </section>
+
+    <section class="section">
       <h2><span class="zh">Session Outcomes</span><span class="en">Session Outcomes</span></h2>
       <p class="section-intro zh">Session结束时，项目不只是一个游戏文件，而是一套可以展示、继续开发和研究其过程的完整材料。</p>
       <p class="section-intro en">By the end of the session, your project is not only a game file. It is a complete set of materials that can be shown, continued, and studied.</p>
@@ -355,22 +367,26 @@
       <p class="section-intro en">Use the WeChat group to distribute the Tencent shared-document link and class reminders. Use the shared document to collect one official final ZIP from each group. Scattered versions in chat are not the official submission.</p>
       <div class="submission-layout">
         <div>
-          <ol class="start-steps zh"><li>让AI Agent运行最终提交检查。</li><li>确认网站和游戏在断网情况下仍能运行。</li><li>确认所有页面使用相对路径，能够放入班级Gallery子文件夹。</li><li>在1920×1080窗口进行最终展示测试。</li><li>学生确认manifest信息和隐私设置。</li><li>将最终ZIP上传到腾讯共享文档指定位置。</li></ol>
-          <ol class="start-steps en"><li>Ask the AI Agent to run the final submission audit.</li><li>Confirm that the site and game work without internet access.</li><li>Confirm all pages use relative paths and can live inside a class Gallery subfolder.</li><li>Test the exhibition view at 1920×1080.</li><li>Confirm manifest information and privacy choices.</li><li>Upload the final ZIP to the assigned Tencent shared document.</li></ol>
+          <ol class="start-steps zh"><li>让AI Agent说明所选依赖Track和理由。</li><li>如使用npm/Vite，先执行生产构建并生成 <code>exhibition/</code>。</li><li>确认展览版本在断网情况下仍能运行。</li><li>确认所有页面使用相对路径，能够放入班级Gallery子文件夹。</li><li>在1920×1080窗口进行最终展示测试。</li><li>学生确认manifest信息和隐私设置。</li><li>将最终ZIP上传到腾讯共享文档指定位置。</li></ol>
+          <ol class="start-steps en"><li>Ask the AI Agent to state the selected dependency track and reason.</li><li>If using npm/Vite, run the production build and create <code>exhibition/</code>.</li><li>Confirm the exhibition build works without internet access.</li><li>Confirm all pages use relative paths and can live inside a class Gallery subfolder.</li><li>Test the exhibition view at 1920×1080.</li><li>Confirm manifest information and privacy choices.</li><li>Upload the final ZIP to the assigned Tencent shared document.</li></ol>
         </div>
         <pre class="package-tree">2026-Camp-Group-01-ProjectName.zip
-├── index.html
-├── game.html
-├── process.html
-├── styles.css
-├── game.js
+├── exhibition/
+│   ├── index.html
+│   ├── game.html
+│   ├── process.html
+│   └── assets/
+├── source/
+│   ├── src/
+│   ├── package.json (optional)
+│   └── package-lock.json (optional)
 ├── README.md
+├── THIRD_PARTY.md
 ├── agent-development-log.md
 ├── development-brief.md
 ├── system-graph.png
 ├── submission-manifest.json
-├── preview.png
-└── assets/</pre>
+└── preview.png</pre>
       </div>
       <div class="guardrail"><p class="zh"><strong>Gallery兼容要求：</strong>不要使用以 <code>/</code> 开头的绝对资源路径，不要依赖学生电脑上的本地文件路径，不要提交密码、API Key、<code>node_modules</code>、缓存或临时文件。</p><p class="en"><strong>Gallery compatibility:</strong> Do not use root-absolute asset paths beginning with <code>/</code>, student-computer file paths, passwords, API keys, <code>node_modules</code>, caches, or temporary files.</p></div>
     </section>
@@ -380,7 +396,7 @@
       <div class="start-panel">
         <ol class="start-steps zh"><li>新建一个空项目文件夹。</li><li>放入Session 2下载的Markdown和系统图PNG。</li><li>让AI Agent打开这个文件夹。</li><li>发送右侧启动Prompt。</li><li>先确认Agent的计划，再允许它开始写代码。</li></ol>
         <ol class="start-steps en"><li>Create an empty project folder.</li><li>Add the Session 2 Markdown and system graph PNG.</li><li>Open this folder with your AI Agent.</li><li>Send the startup prompt.</li><li>Confirm the Agent's plan before allowing it to write code.</li></ol>
-        <pre class="prompt-block">Read the development brief and system graph in this folder. Follow all website, game, and automatic logging requirements in the brief. Before writing code, restate the core learning shift, core player loop, main data, feedback relationships, challenge presets, website structure, and first implementation milestone. Identify any blocking questions. Wait for my confirmation before implementation.</pre>
+        <pre class="prompt-block">Read the development brief and system graph in this folder. Follow all website, game, dependency, automatic logging, and exhibition packaging requirements in the brief. Before writing code, restate the core learning shift, core player loop, main data, feedback relationships, challenge presets, website structure, selected dependency track, and first implementation milestone. Identify any blocking questions. Wait for my confirmation before implementation.</pre>
       </div>
       <div class="guardrail"><p class="zh"><strong>重要：</strong>AI可以生成代码和建议，但不能替你决定游戏应该教什么、哪种挑战更有意义，也不能替你完成学生反思。</p><p class="en"><strong>Important:</strong> AI can generate code and suggestions, but it cannot decide what the game should teach, which challenges are meaningful, or write the student reflection for you.</p></div>
     </section>

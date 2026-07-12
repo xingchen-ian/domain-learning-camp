@@ -1848,37 +1848,47 @@
       lines.push("- Do not convert the project into a generic mini-game that only uses the domain as a theme.");
       lines.push("");
       lines.push("## 8. Web Game Technical Dependencies");
-      lines.push("This project is for high-school students with little or no development experience. Keep the technology transparent and easy to modify.");
+      lines.push("This project is for high-school students with little or no development experience. The AI Agent may manage development tools, but the final exhibition build must be simple to run.");
       lines.push("");
-      lines.push("### Required Technology");
-      lines.push("- A modern desktop web browser such as Chrome, Edge, Firefox, or Safari.");
-      lines.push("- HTML5 for page structure.");
-      lines.push("- CSS3 for layout and visual styling.");
-      lines.push("- Plain JavaScript (ES6) for game logic.");
-      lines.push("- HTML Canvas 2D for game rendering when a moving game field is needed.");
+      lines.push("### Separate Development Dependencies from Exhibition Dependencies");
+      lines.push("- **Development environment:** npm, Node.js, Vite, Three.js, or another focused library may be used when the game genuinely needs them. The AI Agent is responsible for setup, version pinning, build commands, and explanation.");
+      lines.push("- **Exhibition environment:** the iMac must receive an already-built static website. It must not require `npm install`, Node.js, a development server, or internet access.");
+      lines.push("- The final exhibition version should be served by the teacher's ordinary static HTTP server. Do not promise that ES Module or Three.js projects will work by double-clicking `index.html` through `file://`.");
       lines.push("");
-      lines.push("### Dependency Rules");
-      lines.push("- Prefer zero external libraries for the first version.");
-      lines.push("- Do not require npm, a bundler, a framework, a backend, a database, login, or paid services.");
-      lines.push("- Do not use React, Vue, Unity WebGL, or a game engine unless the student explicitly asks for it.");
-      lines.push("- If one small external library is genuinely necessary, load it from a CDN and explain why in README.md.");
-      lines.push("- The game should run from a simple local static server. The AI Agent should start the server and give the student a clickable local URL.");
+      lines.push("### Choose the Lowest Necessary Dependency Track");
+      lines.push("1. **Track A — No build step:** Prefer HTML, CSS, plain JavaScript, and Canvas 2D for simple 2D games.");
+      lines.push("2. **Track B — Local vendored library:** For one small browser library, pin its version and store it under `source/vendor/` or `exhibition/assets/vendor/`. Do not rely on a CDN for the final version.");
+      lines.push("3. **Track C — npm + build tool:** Use npm and Vite for Three.js, multiple ES Modules, loaders, or other complex dependency graphs. Run the production build before submission.");
+      lines.push("");
+      lines.push("### Three.js and Vite Rules");
+      lines.push("- Three.js is allowed when 3D is important to the designed experience; do not replace meaningful 3D interaction only to avoid npm.");
+      lines.push("- Pin dependency versions in `package.json` and preserve `package-lock.json`.");
+      lines.push("- Configure Vite with a relative base such as `base: './'` so built assets work inside `gallery/projects/group-XX/`.");
+      lines.push("- Run `npm run build`; by default Vite outputs a static `dist/` folder. Copy the verified build output into `exhibition/`.");
+      lines.push("- Keep `node_modules` out of the submission ZIP. It is a development cache, not an exhibition dependency.");
+      lines.push("- Store all required models, textures, audio, fonts, Three.js code, and addons locally in the final build. Do not load them from blocked or remote services.");
+      lines.push("- Record dependency names, exact versions, licenses, build command, and output directory in `README.md` and `THIRD_PARTY.md`.");
       lines.push("");
       lines.push("### Expected File Structure");
       lines.push("```text");
       lines.push("project/");
-      lines.push("├── index.html                 # Project website home and navigation");
-      lines.push("├── game.html                  # Playable game page");
-      lines.push("├── process.html               # Human-AI development timeline");
-      lines.push("├── styles.css                 # Shared website and game styling");
-      lines.push("├── game.js                    # State, rules, input, feedback, and challenges");
+      lines.push("├── exhibition/               # Final static website used by Gallery and iMac");
+      lines.push("│   ├── index.html             # Project website home and navigation");
+      lines.push("│   ├── game.html              # Playable game page");
+      lines.push("│   ├── process.html           # Human-AI development timeline");
+      lines.push("│   └── assets/                # Built JS/CSS, models, textures, audio, fonts");
+      lines.push("├── source/                    # Editable development source");
+      lines.push("│   ├── src/                   # Game and website source modules");
+      lines.push("│   ├── public/                # Local source assets when used");
+      lines.push("│   ├── package.json           # Optional: npm/Vite projects only");
+      lines.push("│   └── package-lock.json      # Optional: exact dependency versions");
       lines.push("├── agent-development-log.md   # Chronological human-AI development record");
       lines.push("├── development-brief.md       # This design and development specification");
       lines.push("├── system-graph.png           # Exported game system and challenge graph");
       lines.push("├── submission-manifest.json   # Group, entry page, domain, and known issues");
       lines.push("├── preview.png                # 16:9 exhibition and Gallery preview");
-      lines.push("├── README.md                  # How to run, controls, structure, and dependencies");
-      lines.push("└── assets/                    # System graph, small images, and sounds");
+      lines.push("├── README.md                  # How to develop, build, exhibit, and modify");
+      lines.push("└── THIRD_PARTY.md             # Libraries, versions, licenses, and sources");
       lines.push("```");
       lines.push("");
       lines.push("## 9. Integrated Project Website Requirements");
@@ -1998,8 +2008,9 @@
       lines.push("");
       lines.push("### Required Submission Audit");
       lines.push("Before packaging:");
-      lines.push("- Run the site through a local static server and test every navigation link, the playable game, controls, challenge selection, success, failure, and restart.");
-      lines.push("- Test the project with internet access disabled. Download any essential external library or asset into the project so the exhibition does not depend on blocked or unavailable services.");
+      lines.push("- If the project uses npm or Vite, install dependencies only in the development environment, run the production build, and copy the verified static output into `exhibition/`.");
+      lines.push("- Run `exhibition/` through an ordinary local static HTTP server and test every navigation link, the playable game, controls, challenge selection, success, failure, and restart.");
+      lines.push("- Test `exhibition/` with internet access disabled. Download any essential external library or asset into the build so the exhibition does not depend on blocked or unavailable services.");
       lines.push("- Confirm all internal links and assets use relative paths. Do not use root-absolute paths beginning with `/` or file paths from the student's computer.");
       lines.push("- Test the exhibition layout at 1920×1080 and ensure text, controls, canvas, and navigation do not overlap.");
       lines.push("- Remove `.git`, `node_modules`, caches, temporary files, unused generated assets, passwords, tokens, API keys, and personal information not approved for submission.");
@@ -2014,8 +2025,8 @@
         group: meta.studentTeam || "Group number and team name",
         projectTitle: meta.projectTitle || "Project title",
         domain: meta.domain || answers.s1q1 || "Domain",
-        entryPage: "index.html",
-        gamePage: "game.html",
+        entryPage: "exhibition/index.html",
+        gamePage: "exhibition/game.html",
         aiAgent: meta.agentTool || "AI Agent used",
         submissionDate: "YYYY-MM-DD",
         knownIssues: [],
@@ -2028,7 +2039,7 @@
       lines.push("### Package Name and Gallery Compatibility");
       lines.push("- Name the archive `2026-Camp-Group-XX-ProjectName.zip`.");
       lines.push("- The ZIP must open directly to the project files, not contain several unnecessary wrapper folders.");
-      lines.push("- The teacher will later place projects in `gallery/projects/group-01/` through `group-04/`. The project must still run correctly from that nested location.");
+      lines.push("- The teacher will later place projects in `gallery/projects/group-01/` through `group-04/` and open each `exhibition/index.html`. The project must run correctly from that nested location.");
       lines.push("- Do not submit only a hosted URL. The complete ZIP is the official durable submission.");
       lines.push("");
       lines.push("## 12. Instructions for the AI Agent");
@@ -2052,12 +2063,13 @@
       lines.push("- [ ] A second attempt can improve because the player learned from feedback.");
       lines.push("- [ ] Challenge presets differ through variables, relationships, information, or constraints.");
       lines.push("- [ ] The game runs in a browser without a complex installation process.");
-      lines.push("- [ ] README.md explains how to run the game and change its main variables.");
+      lines.push("- [ ] README.md identifies the dependency track and explains development, build, exhibition, controls, and main variables.");
       lines.push("- [ ] The website clearly presents the game idea, domain knowledge, system design, development process, and playable game.");
       lines.push("- [ ] `agent-development-log.md` contains chronological Interaction and Reflection entries.");
       lines.push("- [ ] The Development Process page matches the actual log and does not hide failures or unfinished work.");
       lines.push("- [ ] All internal links and assets use Gallery-compatible relative paths.");
       lines.push("- [ ] The project works without internet access and has been tested at 1920×1080.");
+      lines.push("- [ ] The final `exhibition/` build runs from a static HTTP server without Node.js, `npm install`, or a development server.");
       lines.push("- [ ] The ZIP includes the manifest, preview, brief, graph, README, source, assets, website, game, and development log.");
       lines.push("- [ ] The student has checked the public-display consent field before submission.");
       return lines.join("\n");
