@@ -1873,6 +1873,10 @@
       lines.push("├── styles.css                 # Shared website and game styling");
       lines.push("├── game.js                    # State, rules, input, feedback, and challenges");
       lines.push("├── agent-development-log.md   # Chronological human-AI development record");
+      lines.push("├── development-brief.md       # This design and development specification");
+      lines.push("├── system-graph.png           # Exported game system and challenge graph");
+      lines.push("├── submission-manifest.json   # Group, entry page, domain, and known issues");
+      lines.push("├── preview.png                # 16:9 exhibition and Gallery preview");
       lines.push("├── README.md                  # How to run, controls, structure, and dependencies");
       lines.push("└── assets/                    # System graph, small images, and sounds");
       lines.push("```");
@@ -1894,6 +1898,8 @@
       lines.push("- Keep the game idea and domain-learning explanation readable by classmates who have not seen the project before.");
       lines.push("- Keep styling coherent across the informational pages and playable game, but prioritize clarity and function over decorative effects.");
       lines.push("- Make the website usable on a typical student laptop. Mobile support is helpful but is not the first-version priority.");
+      lines.push("- Use relative links and asset paths so the complete project can be placed inside a class Gallery subfolder without rewriting paths.");
+      lines.push("- Support a clean 1920×1080 exhibition view for display on an iMac. Important controls and text must fit without overlap.");
       lines.push("");
       lines.push("## 10. Automatic Human-AI Development Log Protocol");
       lines.push("In addition to building the website and game, maintain one Markdown file named `agent-development-log.md`. This file documents how the project develops through human-AI collaboration.");
@@ -1987,7 +1993,45 @@
       lines.push("- Separate factual development events from student reflection. Never invent student opinions or decisions.");
       lines.push("- After milestone reflections, update the Development Process section of the website with a concise, truthful timeline summary.");
       lines.push("");
-      lines.push("## 11. Instructions for the AI Agent");
+      lines.push("## 11. Submission and Exhibition Packaging");
+      lines.push("At the end of Session 3, create one official self-contained ZIP that the student can upload to the course Tencent shared document. The WeChat group is used to distribute the submission link and reminders, not as the official version archive.");
+      lines.push("");
+      lines.push("### Required Submission Audit");
+      lines.push("Before packaging:");
+      lines.push("- Run the site through a local static server and test every navigation link, the playable game, controls, challenge selection, success, failure, and restart.");
+      lines.push("- Test the project with internet access disabled. Download any essential external library or asset into the project so the exhibition does not depend on blocked or unavailable services.");
+      lines.push("- Confirm all internal links and assets use relative paths. Do not use root-absolute paths beginning with `/` or file paths from the student's computer.");
+      lines.push("- Test the exhibition layout at 1920×1080 and ensure text, controls, canvas, and navigation do not overlap.");
+      lines.push("- Remove `.git`, `node_modules`, caches, temporary files, unused generated assets, passwords, tokens, API keys, and personal information not approved for submission.");
+      lines.push("- Preserve source files, the development brief, system graph, README, and complete chronological development log.");
+      lines.push("- Capture `preview.png` in a 16:9 format showing the actual project or playable game.");
+      lines.push("");
+      lines.push("### Submission Manifest");
+      lines.push("Create `submission-manifest.json` using this structure and verify it with the student:");
+      lines.push("");
+      lines.push("```json");
+      lines.push(JSON.stringify({
+        group: meta.studentTeam || "Group number and team name",
+        projectTitle: meta.projectTitle || "Project title",
+        domain: meta.domain || answers.s1q1 || "Domain",
+        entryPage: "index.html",
+        gamePage: "game.html",
+        aiAgent: meta.agentTool || "AI Agent used",
+        submissionDate: "YYYY-MM-DD",
+        knownIssues: [],
+        externalDependencies: [],
+        exhibitionTestedAt: "1920x1080",
+        publicDisplayConsent: "ask the student: yes / anonymous only / no"
+      }, null, 2));
+      lines.push("```");
+      lines.push("");
+      lines.push("### Package Name and Gallery Compatibility");
+      lines.push("- Name the archive `2026-Camp-Group-XX-ProjectName.zip`.");
+      lines.push("- The ZIP must open directly to the project files, not contain several unnecessary wrapper folders.");
+      lines.push("- The teacher will later place projects in `gallery/projects/group-01/` through `group-04/`. The project must still run correctly from that nested location.");
+      lines.push("- Do not submit only a hosted URL. The complete ZIP is the official durable submission.");
+      lines.push("");
+      lines.push("## 12. Instructions for the AI Agent");
       lines.push("1. Read this brief and the system graph before writing code.");
       lines.push("2. Restate the core learning shift, core loop, main variables, feedback mappings, and challenge presets in a short implementation plan.");
       lines.push("3. Identify missing or contradictory information. Ask only questions that block the first playable version.");
@@ -1998,8 +2042,9 @@
       lines.push("8. Start the local website, test navigation and gameplay, and provide the student with the local URL and simple controls.");
       lines.push("9. Automatically append a Raw Interaction Log after meaningful development work and request student reflection at milestones.");
       lines.push("10. Keep the website, playable game, README, and development log synchronized with the actual project state.");
+      lines.push("11. At the end, run the submission audit, create the manifest and preview, and package the complete Gallery-compatible ZIP.");
       lines.push("");
-      lines.push("## 12. Acceptance Checklist");
+      lines.push("## 13. Acceptance Checklist");
       lines.push("- [ ] The player can take a meaningful action within 30 seconds.");
       lines.push("- [ ] Player actions visibly change system data or state.");
       lines.push("- [ ] Important invisible data is translated into readable feedback.");
@@ -2011,6 +2056,10 @@
       lines.push("- [ ] The website clearly presents the game idea, domain knowledge, system design, development process, and playable game.");
       lines.push("- [ ] `agent-development-log.md` contains chronological Interaction and Reflection entries.");
       lines.push("- [ ] The Development Process page matches the actual log and does not hide failures or unfinished work.");
+      lines.push("- [ ] All internal links and assets use Gallery-compatible relative paths.");
+      lines.push("- [ ] The project works without internet access and has been tested at 1920×1080.");
+      lines.push("- [ ] The ZIP includes the manifest, preview, brief, graph, README, source, assets, website, game, and development log.");
+      lines.push("- [ ] The student has checked the public-display consent field before submission.");
       return lines.join("\n");
     }
 

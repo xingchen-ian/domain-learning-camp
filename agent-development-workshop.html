@@ -219,6 +219,26 @@
 
     .guardrail p { margin: 0; color: #d8dfdc; font-size: 16px; }
 
+    .submission-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: 28px;
+      align-items: start;
+      margin-top: 26px;
+    }
+
+    .package-tree {
+      margin: 0;
+      padding: 17px;
+      border: 1px solid rgba(211, 223, 222, 0.22);
+      border-left: 5px solid var(--teal);
+      border-radius: 3px;
+      background: rgba(3, 6, 8, 0.72);
+      color: #e8efed;
+      white-space: pre-wrap;
+      font: 14px/1.55 "SFMono-Regular", Consolas, monospace;
+    }
+
     footer {
       padding: 17px 22px;
       border-top: 1px solid rgba(255, 255, 255, 0.12);
@@ -237,7 +257,7 @@
     @media (max-width: 680px) {
       main { width: min(100% - 28px, 1240px); padding-top: 34px; }
       .brand-subtitle { display: none; }
-      .input-strip, .pipeline, .outcome-grid, .start-panel { grid-template-columns: 1fr; }
+      .input-strip, .pipeline, .outcome-grid, .start-panel, .submission-layout { grid-template-columns: 1fr; }
       .mode-tab { white-space: nowrap; }
     }
   </style>
@@ -302,9 +322,14 @@
           <div class="role"><b><span class="zh">学生</span><span class="en">Student</span></b><p><span class="zh">比较挑战，决定保留、修改或删除什么。</span><span class="en">Compare challenges and decide what to keep, change, or remove.</span></p></div>
         </article>
         <article class="pipeline-stage">
-          <h3><span class="zh">反思、更新与打包</span><span class="en">Reflect, Update, and Package</span></h3>
+          <h3><span class="zh">反思并更新项目</span><span class="en">Reflect and Update</span></h3>
           <div class="role"><b>AI Agent</b><p><span class="zh">更新网站、开发时间线、README和最终测试状态。</span><span class="en">Update the site, timeline, README, and final test status.</span></p></div>
           <div class="role"><b><span class="zh">学生</span><span class="en">Student</span></b><p><span class="zh">亲自完成阶段反思，说明AI影响和自己的决定。</span><span class="en">Write the stage reflection, including AI influence and personal decisions.</span></p></div>
+        </article>
+        <article class="pipeline-stage">
+          <h3><span class="zh">检查、打包并提交</span><span class="en">Audit, Package, and Submit</span></h3>
+          <div class="role"><b>AI Agent</b><p><span class="zh">检查离线运行、相对路径、隐私和文件完整性，生成manifest与ZIP。</span><span class="en">Check offline use, relative paths, privacy, and completeness; generate the manifest and ZIP.</span></p></div>
+          <div class="role"><b><span class="zh">学生</span><span class="en">Student</span></b><p><span class="zh">最终试玩并把ZIP上传到腾讯共享文档的指定位置。</span><span class="en">Complete a final playtest and upload the ZIP to the assigned Tencent shared document.</span></p></div>
         </article>
       </div>
     </section>
@@ -320,7 +345,34 @@
         <article class="outcome"><h3><span class="zh">源文件与素材</span><span class="en">Source and Assets</span></h3><p><span class="zh">HTML、CSS、JavaScript、系统图、图片和声音。</span><span class="en">HTML, CSS, JavaScript, graph, images, and sounds.</span></p></article>
         <article class="outcome"><h3>README</h3><p><span class="zh">运行方法、操作方式、文件结构、依赖和已知问题。</span><span class="en">Run instructions, controls, structure, dependencies, and known issues.</span></p></article>
         <article class="outcome"><h3><span class="zh">学生反思</span><span class="en">Student Reflection</span></h3><p><span class="zh">哪些决定属于学生，AI如何影响方向，游戏是否仍表达原目标。</span><span class="en">Student decisions, AI influence, and fidelity to the original goal.</span></p></article>
+        <article class="outcome"><h3><span class="zh">标准提交包</span><span class="en">Submission Package</span></h3><p><span class="zh">可离线运行的ZIP、manifest、预览图和全部项目文件。</span><span class="en">Offline-ready ZIP, manifest, preview image, and complete project files.</span></p></article>
       </div>
+    </section>
+
+    <section class="section">
+      <h2><span class="zh">Submission &amp; Exhibition</span><span class="en">Submission &amp; Exhibition</span></h2>
+      <p class="section-intro zh">微信群用于发送腾讯共享文档入口和课堂提醒；腾讯共享文档用于正式收取每组唯一的最终ZIP。不要把聊天记录中的零散版本当成正式提交。</p>
+      <p class="section-intro en">Use the WeChat group to distribute the Tencent shared-document link and class reminders. Use the shared document to collect one official final ZIP from each group. Scattered versions in chat are not the official submission.</p>
+      <div class="submission-layout">
+        <div>
+          <ol class="start-steps zh"><li>让AI Agent运行最终提交检查。</li><li>确认网站和游戏在断网情况下仍能运行。</li><li>确认所有页面使用相对路径，能够放入班级Gallery子文件夹。</li><li>在1920×1080窗口进行最终展示测试。</li><li>学生确认manifest信息和隐私设置。</li><li>将最终ZIP上传到腾讯共享文档指定位置。</li></ol>
+          <ol class="start-steps en"><li>Ask the AI Agent to run the final submission audit.</li><li>Confirm that the site and game work without internet access.</li><li>Confirm all pages use relative paths and can live inside a class Gallery subfolder.</li><li>Test the exhibition view at 1920×1080.</li><li>Confirm manifest information and privacy choices.</li><li>Upload the final ZIP to the assigned Tencent shared document.</li></ol>
+        </div>
+        <pre class="package-tree">2026-Camp-Group-01-ProjectName.zip
+├── index.html
+├── game.html
+├── process.html
+├── styles.css
+├── game.js
+├── README.md
+├── agent-development-log.md
+├── development-brief.md
+├── system-graph.png
+├── submission-manifest.json
+├── preview.png
+└── assets/</pre>
+      </div>
+      <div class="guardrail"><p class="zh"><strong>Gallery兼容要求：</strong>不要使用以 <code>/</code> 开头的绝对资源路径，不要依赖学生电脑上的本地文件路径，不要提交密码、API Key、<code>node_modules</code>、缓存或临时文件。</p><p class="en"><strong>Gallery compatibility:</strong> Do not use root-absolute asset paths beginning with <code>/</code>, student-computer file paths, passwords, API keys, <code>node_modules</code>, caches, or temporary files.</p></div>
     </section>
 
     <section class="section">
