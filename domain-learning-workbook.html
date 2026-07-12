@@ -945,8 +945,8 @@
         </div>
       </div>
       <div class="callout">
-        <p class="zh"><strong>最终产出：</strong>一份开发摘要Markdown＋一张游戏系统与挑战空间图。两份材料将一起交给AI Agent制作第一个可玩版本。</p>
-        <p class="en"><strong>Final outputs:</strong> one development-brief Markdown file and one game-system-and-challenge-space graph. Together, they will guide an AI Agent to build your first playable version.</p>
+        <p class="zh"><strong>最终产出：</strong>一份开发摘要Markdown＋一张游戏系统与挑战空间图。AI Agent将根据它们制作一个包含游戏创意、领域知识、开发过程和可玩游戏的项目网站。</p>
+        <p class="en"><strong>Final outputs:</strong> one development-brief Markdown file and one game-system-and-challenge-space graph. An AI Agent will use them to build a project website containing the game idea, domain knowledge, development process, and playable game.</p>
       </div>
       <p class="form-intro">
         <span class="zh">开始前填写</span>
@@ -1159,8 +1159,8 @@
       </div>
 
       <div class="graph-handoff">
-        <p class="zh"><strong>完成标准：</strong>把系统图导出为 PNG，或保留可访问的 Canva 链接。下一步将这张图与上一页下载的开发摘要一起交给 AI Agent，制作第一个可玩版本。</p>
-        <p class="en"><strong>Completion:</strong> Export the graph as a PNG or keep an accessible Canva link. Give it to the AI Agent together with the development brief from the previous page to build the first playable version.</p>
+        <p class="zh"><strong>完成标准：</strong>把系统图导出为PNG，或保留可访问的Canva链接。将它与开发摘要一起交给AI Agent，制作项目网站、可玩游戏和自动开发记录。</p>
+        <p class="en"><strong>Completion:</strong> Export the graph as a PNG or keep an accessible Canva link. Give it to the AI Agent with the development brief to build the project website, playable game, and automatic development record.</p>
       </div>
     </section>
   </main>
@@ -1863,24 +1863,139 @@
       lines.push("### Expected File Structure");
       lines.push("```text");
       lines.push("project/");
-      lines.push("├── index.html       # Game page");
-      lines.push("├── styles.css       # Visual styling");
-      lines.push("├── game.js          # State, rules, input, feedback, and challenge presets");
-      lines.push("├── README.md        # How to run, controls, and what to edit");
-      lines.push("└── assets/          # Optional small images or sounds");
+      lines.push("├── index.html                 # Project website home and navigation");
+      lines.push("├── game.html                  # Playable game page");
+      lines.push("├── process.html               # Human-AI development timeline");
+      lines.push("├── styles.css                 # Shared website and game styling");
+      lines.push("├── game.js                    # State, rules, input, feedback, and challenges");
+      lines.push("├── agent-development-log.md   # Chronological human-AI development record");
+      lines.push("├── README.md                  # How to run, controls, structure, and dependencies");
+      lines.push("└── assets/                    # System graph, small images, and sounds");
       lines.push("```");
       lines.push("");
-      lines.push("## 9. Instructions for the AI Agent");
+      lines.push("## 9. Integrated Project Website Requirements");
+      lines.push("The website is part of the project, not a separate marketing page. Build it together with the game and keep it current as development progresses.");
+      lines.push("");
+      lines.push("### Required Website Content");
+      lines.push("- **Game Idea:** project title, short concept, player goal, and core learning shift.");
+      lines.push("- **Domain Knowledge:** explain the real-world domain, novice misconception, expert judgment, and why this knowledge becomes playable.");
+      lines.push("- **System Design:** show the system graph and summarize environment data, player-controlled data, calculated results, feedback, success, failure, and challenge presets.");
+      lines.push("- **Development Process:** present a concise chronological timeline based on `agent-development-log.md`, including important changes, failures, tests, student decisions, and AI influence.");
+      lines.push("- **Play the Game:** the current playable version must be accessible from clear navigation and run directly in the website.");
+      lines.push("");
+      lines.push("### Website Update Rules");
+      lines.push("- Create clear navigation among Home, Domain Knowledge / System Design, Development Process, and Play Game.");
+      lines.push("- Use only information supported by this brief, the system graph, the actual game, and the development log. Do not invent a smoother or more complete process.");
+      lines.push("- After every meaningful milestone, update the relevant website content and the development timeline.");
+      lines.push("- Keep the game idea and domain-learning explanation readable by classmates who have not seen the project before.");
+      lines.push("- Keep styling coherent across the informational pages and playable game, but prioritize clarity and function over decorative effects.");
+      lines.push("- Make the website usable on a typical student laptop. Mobile support is helpful but is not the first-version priority.");
+      lines.push("");
+      lines.push("## 10. Automatic Human-AI Development Log Protocol");
+      lines.push("In addition to building the website and game, maintain one Markdown file named `agent-development-log.md`. This file documents how the project develops through human-AI collaboration.");
+      lines.push("");
+      lines.push("### Initialize the Log");
+      lines.push("At the beginning of development, create the file with:");
+      lines.push("");
+      lines.push("```markdown");
+      lines.push("# Agent Development Log");
+      lines.push("");
+      lines.push(`- Project Title: ${meta.projectTitle || "Not specified yet."}`);
+      lines.push(`- Student / Team: ${meta.studentTeam || "Not specified yet."}`);
+      lines.push(`- Domain: ${meta.domain || answers.s1q1 || "Not specified yet."}`);
+      lines.push(`- Core Learning Shift: ${answers.s2q6 || "Not specified yet."}`);
+      lines.push(`- Current Game Idea: ${answers.s1q2 || "Not specified yet."}`);
+      lines.push(`- AI Agent Used: ${meta.agentTool || "Not specified yet."}`);
+      lines.push("- System Graph: add the image file or Canva link when available");
+      lines.push("- Development Period: add start and end dates");
+      lines.push("```");
+      lines.push("");
+      lines.push("### Two Entry Types in One Timeline");
+      lines.push("Keep Raw Interaction Logs and Stage Reflections in chronological order in the same file. Do not separate them into two large sections.");
+      lines.push("");
+      lines.push("#### A. Raw Interaction Log — Create Automatically");
+      lines.push("After every meaningful development interaction, append a short factual entry. A meaningful interaction includes implementation, debugging, code explanation that changes the project, mechanic or level changes, visual or audio changes, website updates, playtesting, or an AI suggestion that affects direction. Do not log casual clarification that produces no development change.");
+      lines.push("");
+      lines.push("Use this format:");
+      lines.push("");
+      lines.push("```markdown");
+      lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      lines.push("## Interaction 01 — Raw Interaction Log");
+      lines.push("");
+      lines.push("**Time:**");
+      lines.push("**Development Stage:**");
+      lines.push("**Current Goal:**");
+      lines.push("");
+      lines.push("### Student Request");
+      lines.push("What the student asked the AI Agent to do.");
+      lines.push("");
+      lines.push("### Agent Response Summary");
+      lines.push("What the Agent suggested, generated, explained, or changed.");
+      lines.push("");
+      lines.push("### Development Action");
+      lines.push("What was actually implemented, modified, tested, or removed.");
+      lines.push("");
+      lines.push("### Website Update");
+      lines.push("Which website section changed, or why no website update was needed.");
+      lines.push("");
+      lines.push("### Files / Systems Changed");
+      lines.push("List files, mechanics, assets, data, UI, or challenge settings changed.");
+      lines.push("");
+      lines.push("### Test and Immediate Result");
+      lines.push("What was tested and whether it worked, failed, partially worked, or remains uncertain.");
+      lines.push("");
+      lines.push("### Student Decision / Follow-up");
+      lines.push("What the student accepted, rejected, modified, did not understand, or decided to try next.");
+      lines.push("```");
+      lines.push("");
+      lines.push("#### B. Stage Reflection — Prompt the Student at Milestones");
+      lines.push("Do not fabricate student reflection. At a meaningful milestone—such as finishing the first playable loop, changing design direction, completing a challenge, or finishing a playtest stage—create a Reflection entry with factual fields, then explicitly ask the student to answer the Required Student Reflection.");
+      lines.push("");
+      lines.push("Use this format:");
+      lines.push("");
+      lines.push("```markdown");
+      lines.push("════════════════════════════════════");
+      lines.push("## Reflection 01 — Stage Reflection");
+      lines.push("");
+      lines.push("**Time:**");
+      lines.push("**Covered Interactions:** Interaction 01–04");
+      lines.push("**Development Stage:**");
+      lines.push("");
+      lines.push("### Goal of This Stage");
+      lines.push("### What Changed in the Playable Game and Website");
+      lines.push("### How AI Helped");
+      lines.push("### Student Decisions");
+      lines.push("### AI Influence on Design Direction");
+      lines.push("### Relationship to the Core Learning Shift");
+      lines.push("### Problems / Open Questions");
+      lines.push("### Next Step");
+      lines.push("");
+      lines.push("### Required Student Reflection");
+      lines.push("Does the current game still help the player experience the intended domain-learning shift? What became stronger, weaker, or different? Which AI suggestion did you accept, reject, or change, and why?");
+      lines.push("");
+      lines.push("> The AI Agent must ask the student to answer this section and must not answer it for them.");
+      lines.push("```");
+      lines.push("");
+      lines.push("### Logging Rules");
+      lines.push("- Append new entries to the end of `agent-development-log.md` and continue Interaction and Reflection numbering.");
+      lines.push("- Be honest and specific. Record failures, partial results, misunderstandings, abandoned directions, and unresolved questions.");
+      lines.push("- Record when AI introduces a design direction, when the student rejects or modifies it, and when the student accepts code without fully understanding it.");
+      lines.push("- Separate factual development events from student reflection. Never invent student opinions or decisions.");
+      lines.push("- After milestone reflections, update the Development Process section of the website with a concise, truthful timeline summary.");
+      lines.push("");
+      lines.push("## 11. Instructions for the AI Agent");
       lines.push("1. Read this brief and the system graph before writing code.");
       lines.push("2. Restate the core learning shift, core loop, main variables, feedback mappings, and challenge presets in a short implementation plan.");
       lines.push("3. Identify missing or contradictory information. Ask only questions that block the first playable version.");
-      lines.push("4. Implement the smallest complete loop first, then add the defined challenge presets.");
-      lines.push("5. Keep variable names clear and keep environment data, player-controlled data, and calculated results visibly separated in the code.");
-      lines.push("6. Add short comments only where a high-school student needs help understanding a rule.");
-      lines.push("7. Start the local game, test it, and provide the student with the local URL and simple controls.");
-      lines.push("8. Record major implementation decisions and any deviation from the system graph in README.md.");
+      lines.push("4. Create the project website structure and initialize `agent-development-log.md` before substantial implementation.");
+      lines.push("5. Implement the smallest complete game loop first, then add the defined challenge presets.");
+      lines.push("6. Keep variable names clear and keep environment data, player-controlled data, and calculated results visibly separated in the code.");
+      lines.push("7. Add short comments only where a high-school student needs help understanding a rule.");
+      lines.push("8. Start the local website, test navigation and gameplay, and provide the student with the local URL and simple controls.");
+      lines.push("9. Automatically append a Raw Interaction Log after meaningful development work and request student reflection at milestones.");
+      lines.push("10. Keep the website, playable game, README, and development log synchronized with the actual project state.");
       lines.push("");
-      lines.push("## 10. Acceptance Checklist");
+      lines.push("## 12. Acceptance Checklist");
       lines.push("- [ ] The player can take a meaningful action within 30 seconds.");
       lines.push("- [ ] Player actions visibly change system data or state.");
       lines.push("- [ ] Important invisible data is translated into readable feedback.");
@@ -1889,6 +2004,9 @@
       lines.push("- [ ] Challenge presets differ through variables, relationships, information, or constraints.");
       lines.push("- [ ] The game runs in a browser without a complex installation process.");
       lines.push("- [ ] README.md explains how to run the game and change its main variables.");
+      lines.push("- [ ] The website clearly presents the game idea, domain knowledge, system design, development process, and playable game.");
+      lines.push("- [ ] `agent-development-log.md` contains chronological Interaction and Reflection entries.");
+      lines.push("- [ ] The Development Process page matches the actual log and does not hide failures or unfinished work.");
       return lines.join("\n");
     }
 
