@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -577,11 +577,18 @@
       }
 
       .brand-subtitle,
-      .mode-tabs,
       .hint,
       .site-footnote {
         display: none;
       }
+
+      .mode-tabs {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+
+      .mode-tab { white-space: nowrap; }
     }
   </style>
 </head>
@@ -602,6 +609,10 @@
       </p>
     </div>
     <nav class="mode-tabs" aria-label="Workshop steps">
+      <a class="mode-tab" href="index.html">
+        <span class="zh">首页</span>
+        <span class="en">Home</span>
+      </a>
       <a class="mode-tab active" href="inside-analysis-demo.html#slide-1">
         <span class="zh">Session 1 · INSIDE 分析</span>
         <span class="en">Session 1 · INSIDE Analysis</span>
@@ -1183,7 +1194,8 @@
     const total = slides.length;
     const savedSlide = Number.parseInt(localStorage.getItem("inside-demo-slide-v2") || "0", 10);
     let current = Number.isFinite(savedSlide) ? Math.min(Math.max(savedSlide, 0), total - 1) : 0;
-    let lang = localStorage.getItem("inside-demo-lang-v2") || "en";
+    const languageKey = "domain-learning-camp-language";
+    let lang = localStorage.getItem(languageKey) || "en";
 
     function setLanguage(nextLang) {
       lang = nextLang === "en" ? "en" : "zh";
@@ -1191,8 +1203,9 @@
       document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
       langButtons.forEach((button) => {
         button.classList.toggle("active", button.dataset.lang === lang);
+        button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
       });
-      localStorage.setItem("inside-demo-lang-v2", lang);
+      localStorage.setItem(languageKey, lang);
     }
 
     function renderDots() {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -770,14 +770,13 @@
       text-align: center;
     }
 
-    .sailing-example-figure img {
+    .sailing-example-figure svg {
       display: block;
       width: 100%;
       max-height: 54vh;
-      object-fit: contain;
       border: 1px solid rgba(211, 223, 222, 0.22);
       border-radius: 3px;
-      background: #ffffff;
+      background: #f4f7f4;
     }
 
     .sailing-example-figure figcaption {
@@ -872,11 +871,18 @@
       }
 
       .brand-subtitle,
-      .mode-tabs,
       .dots,
       .site-footnote {
         display: none;
       }
+
+      .mode-tabs {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+
+      .mode-tab { white-space: nowrap; }
     }
   </style>
 </head>
@@ -897,6 +903,10 @@
       </p>
     </div>
     <nav class="mode-tabs" aria-label="Workshop steps">
+      <a class="mode-tab" href="index.html">
+        <span class="zh">首页</span>
+        <span class="en">Home</span>
+      </a>
       <a class="mode-tab" href="inside-analysis-demo.html#slide-1">
         <span class="zh">Session 1 · INSIDE 分析</span>
         <span class="en">Session 1 · INSIDE Analysis</span>
@@ -914,7 +924,7 @@
       <button type="button" class="lang" data-lang="zh">中文</button>
       <button type="button" class="lang active" data-lang="en">English</button>
       <button type="button" id="prevBtn" aria-label="Previous slide">←</button>
-      <span class="counter" id="counter">1 / 33</span>
+      <span class="counter" id="counter">1 / 35</span>
       <button type="button" id="nextBtn" aria-label="Next slide">→</button>
     </div>
   </header>
@@ -963,8 +973,8 @@
         <label><span class="zh">主要开发工具或 AI Agent</span><span class="en">Main tool or AI Agent</span><input data-meta="agentTool" type="text" placeholder="Codex / WorkBuddy / p5.js / Unity..." /></label>
       </div>
       <div class="callout warm">
-        <p class="zh">如果不小心关闭网页，再用同一台电脑、同一个浏览器打开本页，答案会自动恢复。</p>
-        <p class="en">If you close this page by accident, reopen it on the same computer and browser to recover your answers.</p>
+        <p class="zh">答案只保存在当前浏览器，不会上传网站。关闭后使用同一台电脑、同一个浏览器可自动恢复；如果与他人共用浏览器，请在下载Markdown后点击“清空本地草稿”。</p>
+        <p class="en">Answers stay only in this browser and are not uploaded. Reopen this page on the same computer and browser to recover them. On a shared browser, download the Markdown and then select “Clear local draft.”</p>
       </div>
     </section>
 
@@ -1001,7 +1011,43 @@
           </div>
         </div>
         <figure class="sailing-example-figure">
-          <img src="assets/sailing-domain-knowledge-example.png" alt="Points of sail diagram showing wind direction, the no-go zone, tacking, reaches, and downwind sailing" />
+          <svg viewBox="0 0 620 520" role="img" aria-labelledby="sailingDiagramTitle sailingDiagramDescription">
+            <title id="sailingDiagramTitle">Points of sail and tacking diagram</title>
+            <desc id="sailingDiagramDescription">Wind comes from the top. A red no-go zone prevents direct upwind sailing. Two teal zigzag routes show how a boat tacks toward an upwind target.</desc>
+            <defs>
+              <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="#456d72" />
+              </marker>
+              <marker id="routeHead" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+                <path d="M0,0 L9,4.5 L0,9 Z" fill="#267f7a" />
+              </marker>
+            </defs>
+            <rect width="620" height="520" fill="#f4f7f4" />
+            <text x="310" y="35" text-anchor="middle" fill="#23383c" font-size="19" font-weight="800">WIND / 风向</text>
+            <g stroke="#456d72" stroke-width="4" marker-end="url(#arrowHead)">
+              <line x1="235" y1="48" x2="235" y2="112" />
+              <line x1="310" y1="48" x2="310" y2="112" />
+              <line x1="385" y1="48" x2="385" y2="112" />
+            </g>
+            <path d="M310 130 L205 310 A185 185 0 0 0 415 310 Z" fill="rgba(200,82,67,0.2)" stroke="#c85243" stroke-width="3" />
+            <text x="310" y="205" text-anchor="middle" fill="#9f392f" font-size="18" font-weight="800">NO-GO ZONE</text>
+            <text x="310" y="230" text-anchor="middle" fill="#9f392f" font-size="15">不可直接迎风航行</text>
+            <circle cx="310" cy="130" r="9" fill="#c85243" />
+            <text x="310" y="155" text-anchor="middle" fill="#23383c" font-size="15" font-weight="700">UPWIND TARGET / 上风目标</text>
+            <path d="M310 470 L205 370 L275 290 L205 220 L300 145" fill="none" stroke="#267f7a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#routeHead)" />
+            <path d="M310 470 L415 370 L345 290 L415 220 L320 145" fill="none" stroke="#78bcb6" stroke-width="3" stroke-dasharray="10 9" stroke-linecap="round" stroke-linejoin="round" />
+            <g fill="#267f7a">
+              <circle cx="310" cy="470" r="11" />
+              <circle cx="205" cy="370" r="7" />
+              <circle cx="275" cy="290" r="7" />
+              <circle cx="205" cy="220" r="7" />
+            </g>
+            <text x="310" y="505" text-anchor="middle" fill="#23383c" font-size="17" font-weight="800">START / 起点</text>
+            <text x="125" y="345" text-anchor="middle" fill="#267f7a" font-size="16" font-weight="800">TACK</text>
+            <text x="495" y="345" text-anchor="middle" fill="#267f7a" font-size="16" font-weight="800">换舷</text>
+            <text x="94" y="442" fill="#5f777a" font-size="14">Observe wind</text>
+            <text x="432" y="442" fill="#5f777a" font-size="14">Adjust route</text>
+          </svg>
           <figcaption>
             <span class="zh">不同风向要求不同船向、帆角与路线判断。</span>
             <span class="en">Different wind relationships require different boat directions, sail settings, and route decisions.</span>
@@ -1484,7 +1530,7 @@
     };
     const storageKey = "domain-learning-workbook-v1";
     const referenceKey = "domain-learning-workbook-reference-v1";
-    const languageKey = "domain-learning-workbook-language-v2";
+    const languageKey = "domain-learning-camp-language";
     const slideKey = "domain-learning-workbook-slide-v2";
     const storage = (() => {
       try {
@@ -1515,7 +1561,8 @@
     const questionSlide = document.getElementById("questionSlide");
     const answerBox = document.getElementById("answerBox");
     const saveState = document.getElementById("saveState");
-    let current = Number.parseInt(storage.getItem(slideKey) || "0", 10);
+    const savedSlide = Number.parseInt(storage.getItem(slideKey) || "0", 10);
+    let current = Number.isFinite(savedSlide) ? Math.min(Math.max(savedSlide, 0), totalSlides - 1) : 0;
     let lang = storage.getItem(languageKey) || "en";
 
     function readDraft() {
@@ -1549,6 +1596,7 @@
       document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
       document.querySelectorAll(".lang").forEach((button) => {
         button.classList.toggle("active", button.dataset.lang === lang);
+        button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
       });
       storage.setItem(languageKey, lang);
       render();
@@ -2111,16 +2159,19 @@
     function clearDraft() {
       if (!confirm(lang === "zh" ? "确定清空这台电脑上的本地草稿？" : "Clear the local draft on this computer?")) return;
       storage.removeItem(storageKey);
+      storage.removeItem(referenceKey);
+      storage.removeItem(slideKey);
+      current = 0;
       restoreMeta();
       render();
       saveState.textContent = lang === "zh" ? "本地草稿已清空" : "Local draft cleared";
     }
 
     function readHash() {
-      const match = window.location.hash.match(/slide-(\\d+)/);
+      const match = window.location.hash.match(/slide-(\d+)/);
       if (match) {
         const index = Number.parseInt(match[1], 10) - 1;
-        if (Number.isFinite(index)) current = index;
+        if (Number.isFinite(index)) current = Math.min(Math.max(index, 0), totalSlides - 1);
       }
     }
 

@@ -269,6 +269,7 @@
       <p class="brand-subtitle"><span class="zh">从设计文件到项目网站与可玩游戏</span><span class="en">From design files to a project website and playable game</span></p>
     </div>
     <nav class="mode-tabs" aria-label="Workshop sessions">
+      <a class="mode-tab" href="index.html"><span class="zh">首页</span><span class="en">Home</span></a>
       <a class="mode-tab" href="inside-analysis-demo.html#slide-1"><span class="zh">Session 1 · INSIDE分析</span><span class="en">Session 1 · INSIDE Analysis</span></a>
       <a class="mode-tab" href="domain-learning-workbook.html#slide-1"><span class="zh">Session 2 · 项目设计</span><span class="en">Session 2 · Project Design</span></a>
       <a class="mode-tab active" href="agent-development-workshop.html"><span class="zh">Session 3 · AI开发</span><span class="en">Session 3 · AI Development</span></a>
@@ -405,7 +406,7 @@
   <footer>NYU Shanghai · IMA · Game Design</footer>
 
   <script>
-    const languageKey = "agent-development-workshop-language";
+    const languageKey = "domain-learning-camp-language";
     let lang = localStorage.getItem(languageKey) || "en";
 
     function setLanguage(nextLanguage) {
@@ -414,6 +415,7 @@
       document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
       document.querySelectorAll(".lang").forEach((button) => {
         button.classList.toggle("active", button.dataset.lang === lang);
+        button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
       });
       localStorage.setItem(languageKey, lang);
     }
