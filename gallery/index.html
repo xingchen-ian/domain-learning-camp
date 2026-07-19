@@ -36,6 +36,60 @@
         linear-gradient(180deg, #162229 0%, #091015 48%, #05080a 100%);
     }
 
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.7;
+      background-image:
+        radial-gradient(1px 1px at 8% 12%, rgba(237, 242, 239, 0.55), transparent),
+        radial-gradient(1.5px 1.5px at 18% 34%, rgba(210, 180, 139, 0.28), transparent),
+        radial-gradient(1px 1px at 26% 18%, rgba(237, 242, 239, 0.35), transparent),
+        radial-gradient(1px 1px at 34% 62%, rgba(120, 188, 182, 0.4), transparent),
+        radial-gradient(1.5px 1.5px at 42% 22%, rgba(237, 242, 239, 0.42), transparent),
+        radial-gradient(1px 1px at 48% 78%, rgba(134, 169, 201, 0.35), transparent),
+        radial-gradient(1px 1px at 56% 14%, rgba(237, 242, 239, 0.3), transparent),
+        radial-gradient(1.5px 1.5px at 64% 48%, rgba(120, 188, 182, 0.32), transparent),
+        radial-gradient(1px 1px at 72% 28%, rgba(237, 242, 239, 0.5), transparent),
+        radial-gradient(1px 1px at 78% 70%, rgba(210, 180, 139, 0.25), transparent),
+        radial-gradient(1.5px 1.5px at 86% 16%, rgba(237, 242, 239, 0.38), transparent),
+        radial-gradient(1px 1px at 92% 54%, rgba(120, 188, 182, 0.3), transparent),
+        radial-gradient(1px 1px at 14% 72%, rgba(237, 242, 239, 0.28), transparent),
+        radial-gradient(1px 1px at 38% 88%, rgba(134, 169, 201, 0.28), transparent),
+        radial-gradient(1.5px 1.5px at 58% 36%, rgba(237, 242, 239, 0.45), transparent),
+        radial-gradient(1px 1px at 68% 84%, rgba(237, 242, 239, 0.32), transparent),
+        radial-gradient(1px 1px at 82% 40%, rgba(210, 180, 139, 0.22), transparent),
+        radial-gradient(1px 1px at 22% 48%, rgba(120, 188, 182, 0.25), transparent),
+        radial-gradient(2px 2px at 50% 8%, rgba(237, 242, 239, 0.2), transparent),
+        radial-gradient(1px 1px at 95% 88%, rgba(237, 242, 239, 0.35), transparent);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.35;
+      background-image:
+        radial-gradient(1px 1px at 12% 56%, rgba(237, 242, 239, 0.7), transparent),
+        radial-gradient(1px 1px at 31% 8%, rgba(237, 242, 239, 0.55), transparent),
+        radial-gradient(1px 1px at 45% 44%, rgba(120, 188, 182, 0.5), transparent),
+        radial-gradient(1px 1px at 61% 66%, rgba(237, 242, 239, 0.45), transparent),
+        radial-gradient(1px 1px at 74% 12%, rgba(134, 169, 201, 0.45), transparent),
+        radial-gradient(1px 1px at 88% 76%, rgba(237, 242, 239, 0.5), transparent);
+      animation: star-twinkle 7s ease-in-out infinite alternate;
+    }
+
+    @keyframes star-twinkle {
+      from { opacity: 0.22; }
+      to { opacity: 0.42; }
+    }
+
+    .stage { z-index: 1; }
+
     body[data-lang="zh"] .en,
     body[data-lang="en"] .zh { display: none !important; }
 
@@ -105,10 +159,10 @@
 
     .stage-copy {
       position: absolute;
-      top: 86px;
+      top: 72px;
       left: 50%;
       z-index: 5;
-      width: min(760px, calc(100% - 40px));
+      width: min(980px, calc(100% - 40px));
       transform: translateX(-50%);
       text-align: center;
       pointer-events: none;
@@ -124,14 +178,47 @@
     }
 
     .stage-copy h1 {
+      position: relative;
       margin: 0;
-      font-size: clamp(28px, 4vw, 46px);
-      line-height: 1.1;
-      text-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      font-size: clamp(56px, 9.5vw, 118px);
+      line-height: 0.95;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+
+    .stage-copy h1 .title-mark {
+      position: relative;
+      display: inline-block;
+      color: rgba(237, 242, 239, 0.04);
+      -webkit-text-stroke: 1.15px rgba(168, 181, 177, 0.34);
+      paint-order: stroke fill;
+      text-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+    }
+
+    .stage-copy h1 .title-mark::before {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      color: transparent;
+      -webkit-text-stroke: 3.2px rgba(120, 188, 182, 0.14);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .stage-copy h1 .title-mark::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      color: transparent;
+      -webkit-text-stroke: 0.6px rgba(210, 180, 139, 0.18);
+      transform: translate(0.5px, 0.5px);
+      z-index: -1;
+      pointer-events: none;
     }
 
     .hint {
-      margin: 10px 0 0;
+      margin: 14px 0 0;
       color: #9fadaa;
       font-size: 14px;
     }
@@ -318,6 +405,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .cloud-name { transition: none; }
+      body::after { animation: none; opacity: 0.3; }
     }
   </style>
 </head>
@@ -341,8 +429,8 @@
     <div class="stage-copy">
       <p class="eyebrow">NYU Shanghai · IMA · Summer Camp</p>
       <h1>
-        <span class="zh">游戏名称云</span>
-        <span class="en">Game Name Cloud</span>
+        <span class="zh title-mark" data-text="游戏设计">游戏设计</span>
+        <span class="en title-mark" data-text="Game Designs">Game Designs</span>
       </h1>
       <p class="hint">
         <span class="zh">拖动或移动鼠标旋转名称云，点击任意游戏名开始玩。</span>
