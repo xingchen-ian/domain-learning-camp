@@ -159,29 +159,20 @@
 
     .stage-copy {
       position: absolute;
-      top: 72px;
+      top: 58px;
       left: 50%;
       z-index: 5;
-      width: min(980px, calc(100% - 40px));
+      width: min(1100px, calc(100% - 32px));
       transform: translateX(-50%);
       text-align: center;
       pointer-events: none;
     }
 
-    .eyebrow {
-      margin: 0 0 10px;
-      color: #d9b8ad;
-      font-size: 12px;
-      font-weight: 850;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
     .stage-copy h1 {
       position: relative;
       margin: 0;
-      font-size: clamp(56px, 9.5vw, 118px);
-      line-height: 0.95;
+      font-size: clamp(72px, 12vw, 148px);
+      line-height: 0.92;
       font-weight: 900;
       letter-spacing: 0.04em;
       text-transform: none;
@@ -215,12 +206,6 @@
       transform: translate(0.5px, 0.5px);
       z-index: -1;
       pointer-events: none;
-    }
-
-    .hint {
-      margin: 14px 0 0;
-      color: #9fadaa;
-      font-size: 14px;
     }
 
     .cloud-shell {
@@ -427,15 +412,10 @@
 
   <main class="stage">
     <div class="stage-copy">
-      <p class="eyebrow">NYU Shanghai · IMA · Summer Camp</p>
       <h1>
         <span class="zh title-mark" data-text="游戏设计">游戏设计</span>
         <span class="en title-mark" data-text="Game Designs">Game Designs</span>
       </h1>
-      <p class="hint">
-        <span class="zh">拖动或移动鼠标旋转名称云，点击任意游戏名开始玩。</span>
-        <span class="en">Drag or move the mouse to rotate the cloud. Click any game title to play.</span>
-      </p>
     </div>
 
     <div class="cloud-shell" id="cloudShell" aria-label="Interactive game name cloud">
