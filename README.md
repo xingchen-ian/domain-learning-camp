@@ -12,5 +12,10 @@ Open `index.html` for the course overview, setup instructions, learning journey,
 - `inside-analysis-demo.html`: Session 1 standalone page
 - `domain-learning-workbook.html`: Session 2 workbook, development brief, and Step 6 system graph task
 - `agent-development-workshop.html`: Session 3 AI development pipeline, outcomes, and startup prompt
+- `gallery/`: public game exhibition searchable by game title (not by group)
 
 Student answers are stored locally in the browser. This site does not collect or transmit workbook answers.
+
+## Gallery intake
+
+Student projects are stored under `gallery/projects/group-XX/` (matching the student brief). The public Gallery page lists every game in one flat, searchable view by title. See `gallery/README.md`.

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Domain &amp; System — Sailer Game</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand"><span class="mark"></span> Sailer Game</div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="knowledge.html" class="active">Domain &amp; System</a>
+        <a href="process.html">Development Process</a>
+        <a href="game.html">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Domain Knowledge &amp; System Design</h1>
+    <p class="lead">Why sailing is hard, why the no-go zone exists, and how the game turns it into a learnable loop.</p>
+
+    <section class="card">
+      <h2>1. The real-world domain</h2>
+      <p>The designer joined a beginner sailing lesson and discovered an idea that felt almost unfair: <strong>the boat does not go where you point it.</strong> Speed depends on the angle between the wind and the boat, the angle of the sail, and the boat&rsquo;s current speed.</p>
+      <p>Real sailboats move in the direction of the <em>resultant</em> of three vectors: the wind force on the sail, the water resistance on the hull, and the rudder. Adjusting any one of them changes the others.</p>
+    </section>
+
+    <section class="card">
+      <h2>2. The novice misconception</h2>
+      <p>Beginners assume: <em>point the boat at the target, go.</em></p>
+      <p>This fails for three reasons:</p>
+      <ol>
+        <li><strong>No-go zone.</strong> If the wind is blowing roughly toward the bow, the boat stalls. It physically cannot move forward.</li>
+        <li><strong>Sail trim.</strong> The sail must be at a working angle to the wind. A sail aligned with the wind is useless.</li>
+        <li><strong>Route, not heading.</strong> To go upwind, the boat must zigzag — sail to one side of the wind, turn through it, sail to the other side. The route is what reaches the target, not the heading.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>3. The core learning shift</h2>
+      <p style="background:#eef4f9; padding:12px 14px; border-left:4px solid var(--accent-2); border-radius:8px;">
+        <strong>Beginner:</strong> sailing = steering toward the target.<br>
+        <strong>Expert:</strong> sailing = reading the wind, then choosing boat angle, sail angle, and route in relation to it.
+      </p>
+      <p>The game is built so the player can feel this shift through repetition, not through reading. They point the boat at the target, nothing happens, they read the wind, they tack, they reach the target.</p>
+    </section>
+
+    <section class="card">
+      <h2>4. System graph</h2>
+      <p>The graph below (by Ian, IMA Summer Program Group 4) maps environment data, player input, win / game over, and the three challenge presets. The game implements every node in this graph.</p>
+      <img class="graph" src="assets/system-graph.png" alt="Sailing system graph" />
+    </section>
+
+    <section class="card">
+      <h2>5. Data model</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Environment (driven by the level)</h3>
+          <ul>
+            <li>Wind direction (radians)</li>
+            <li>Wind strength (0–1)</li>
+            <li>Water current direction &amp; speed</li>
+            <li>Rock positions</li>
+            <li>Target position</li>
+            <li>Game time / time limit</li>
+            <li>Boat health (starts at 100)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Player-controlled</h3>
+          <ul>
+            <li>Boat direction — <span class="kbd">A</span> / <span class="kbd">D</span></li>
+            <li>Sail angle — <span class="kbd">W</span> / <span class="kbd">S</span></li>
+            <li>Path choice — implicit, by holding a heading over time</li>
+            <li>Turn timing — implicit, by releasing <span class="kbd">A</span> / <span class="kbd">D</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>System-calculated results</h3>
+          <ul>
+            <li>Boat speed (px / s)</li>
+            <li>Sideways drift (combined into speed for the v1)</li>
+            <li>Stability (visual heel)</li>
+            <li>Distance to target</li>
+            <li>Time remaining</li>
+            <li>Collision risk (rocks)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>6. Feedback mapping</h2>
+      <table>
+        <thead>
+          <tr><th>Invisible data</th><th>What the player sees / hears</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Sail angle is inefficient</td><td>Sail flaps visually + a soft flutter sound</td></tr>
+          <tr><td>Boat is in the no-go zone</td><td>Boat does not move, HUD warning lights up</td></tr>
+          <tr><td>Boat speed dropping</td><td>Wake sound gets quieter, speed value drops</td></tr>
+          <tr><td>Wind is on the side</td><td>Boat heels (leans)</td></tr>
+          <tr><td>Time running out</td><td>HUD timer turns red when under 10s</td></tr>
+          <tr><td>Collision with a rock</td><td>Health bar drops, boat is pushed back</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>7. Challenge presets</h2>
+      <p>Each level changes the system, not just the visuals.</p>
+      <table>
+        <thead>
+          <tr><th>Level</th><th>Wind</th><th>Current</th><th>Rocks</th><th>Time limit</th><th>What it teaches</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1 — Crosswind</strong></td>
+            <td>Crosswind (blows across the path)</td>
+            <td>None</td>
+            <td>0</td>
+            <td>None</td>
+            <td>Boat does not go where you point. You need to angle across the wind.</td>
+          </tr>
+          <tr>
+            <td><strong>2 — Headwind</strong></td>
+            <td>Headwind (blows from target toward you)</td>
+            <td>None</td>
+            <td>0</td>
+            <td>70 s</td>
+            <td>You cannot sail straight at the target. You must tack.</td>
+          </tr>
+          <tr>
+            <td><strong>3 — Rock field</strong></td>
+            <td>Crosswind</td>
+            <td>None</td>
+            <td>6</td>
+            <td>110 s</td>
+            <td>Route planning under time pressure with obstacles.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>8. Win and lose</h2>
+      <p><strong>Win:</strong> boat health &gt; 0 <em>and</em> game time &gt; 0 when the boat reaches the target.</p>
+      <p><strong>Lose:</strong> boat health &le; 0 <em>or</em> game time &le; 0 before reaching the target.</p>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div>Sailer Game · IMA Summer Program · 2026 · Built with WorkBuddy</div>
+  </footer>
+</body>
+</html>

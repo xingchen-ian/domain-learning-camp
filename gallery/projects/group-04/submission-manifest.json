@@ -1,0 +1,19 @@
+{
+  "group": "Group 04 · Xiao",
+  "projectTitle": "Sailer Game",
+  "domain": "Sailing / Wind reading",
+  "entryPage": "exhibition/index.html",
+  "gamePage": "exhibition/game.html",
+  "aiAgent": "WorkBuddy",
+  "submissionDate": "2026-07-15",
+  "knownIssues": [
+    "Original package lacked submission-manifest.json and preview.png; added by instructor during Gallery intake.",
+    "preview.png is currently the system-graph image; replace with a 16:9 gameplay screenshot when available."
+  ],
+  "externalDependencies": [],
+  "dependencyTrack": "A",
+  "exhibitionTestedAt": "1920x1080",
+  "publicDisplayConsent": "yes",
+  "originalBriefFile": "Sailer-Game.md",
+  "standardizedBriefFile": "development-brief.md"
+}

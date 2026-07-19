@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Development Process — Sailer Game</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand"><span class="mark"></span> Sailer Game</div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="knowledge.html">Domain &amp; System</a>
+        <a href="process.html" class="active">Development Process</a>
+        <a href="game.html">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Development Process</h1>
+    <p class="lead">A chronological log of how the project came together. The full record (including raw AI interactions and stage reflections) lives in <code>agent-development-log.md</code> at the project root.</p>
+
+    <section class="card">
+      <h2>Timeline (summary)</h2>
+      <div class="timeline" id="timeline">
+        <div class="entry">
+          <div class="when">2026-07-15 · Kickoff</div>
+          <h3>Project setup &amp; first build</h3>
+          <p class="summary">Xiao shared the development brief and the system graph. WorkBuddy selected Track A (no build step, plain HTML/CSS/JS/Canvas 2D), set up the folder layout (<code>source/</code> and <code>exhibition/</code>), initialized the development log, and shipped the first playable build: boat physics with the no-go zone, sail-trim feedback, three level presets, a side panel with the required exposed data, and a complete four-page website.</p>
+          <p><span class="tag">Track A</span><span class="tag">Canvas 2D</span><span class="tag">No build</span></p>
+        </div>
+      </div>
+      <p style="margin-top:14px;">This page will be expanded after each meaningful milestone (new mechanic, level, playtest, design change, or stage reflection). For the complete interaction-level record, open <code>agent-development-log.md</code>.</p>
+    </section>
+
+    <section class="card">
+      <h2>What AI handled</h2>
+      <ul>
+        <li>Choosing the dependency track (Track A — no build step) and explaining why.</li>
+        <li>Setting up the Gallery-compatible file structure (<code>exhibition/</code>, <code>source/</code>, <code>agent-development-log.md</code>, <code>README.md</code>, <code>system-graph.png</code>).</li>
+        <li>Writing the boat physics — wind angle, sail trim, no-go zone, drag, current.</li>
+        <li>Wiring all six exposed data points (wind direction, wind speed, current direction, current speed, rocks, time) plus a few helpful extras (heading, sail angle, speed, heel).</li>
+        <li>Adding the three challenge presets from the system graph exactly as drawn.</li>
+        <li>Generating audio (sail flap and wake) with the Web Audio API — no external sound files.</li>
+        <li>Drafting all four website pages with consistent navigation and a 1920×1080 friendly layout.</li>
+        <li>Writing this log automatically after every meaningful interaction.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Decisions left to Xiao</h2>
+      <ul>
+        <li>Whether the third level should keep crosswind or switch to headwind-with-rocks (the system supports both).</li>
+        <li>Whether the sail-trim sound is too loud or too distracting.</li>
+        <li>Whether to add a fourth level that uses water current (the physics is already in the code).</li>
+        <li>Final visual polish — the brief says prioritize clarity over polish, so this is optional.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Open questions</h2>
+      <ul>
+        <li>Are the on-screen text labels readable at 1920×1080 on the iMac, or do we need to bump font sizes?</li>
+        <li>Is the no-go zone too punishing at first? We can widen it from ±36° to ±45° if Level 2 is too hard.</li>
+        <li>Should the wind indicator also show wind strength, or just direction?</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div>Sailer Game · IMA Summer Program · 2026 · Built with WorkBuddy</div>
+  </footer>
+</body>
+</html>

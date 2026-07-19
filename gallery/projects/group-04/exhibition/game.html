@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Play the Game — Sailer Game</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand"><span class="mark"></span> Sailer Game</div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="knowledge.html">Domain &amp; System</a>
+        <a href="process.html">Development Process</a>
+        <a href="game.html" class="active">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Play the Game</h1>
+    <p class="lead">Read the wind. Trim the sail. Find the buoy. Three levels, increasing difficulty.</p>
+
+    <div class="game-shell">
+      <div class="game-canvas-wrap">
+        <canvas id="game" width="1600" height="900" aria-label="Sailing game canvas"></canvas>
+        <div class="menu" id="menu">
+          <h2>Ready to sail?</h2>
+          <p>Choose a level to begin. The wind arrow in the top-left shows where the wind is going.</p>
+          <div class="levels">
+            <button onclick="startLevel(0)">Level 1 — Crosswind</button>
+            <button onclick="startLevel(1)" class="alt">Level 2 — Headwind</button>
+            <button onclick="startLevel(2)" class="alt">Level 3 — Rock Field</button>
+          </div>
+          <p class="small">Controls: <span class="kbd">A</span>/<span class="kbd">D</span> turn · <span class="kbd">W</span>/<span class="kbd">S</span> trim sail · <span class="kbd">R</span> restart · <span class="kbd">N</span> next</p>
+        </div>
+      </div>
+
+      <aside class="hud" aria-label="Game status panel">
+        <h2 id="hud-level">Level 1 — Crosswind Basics</h2>
+        <p id="hud-blurb" style="margin:4px 0 14px; color: var(--muted); font-size: 13px;">Reach the target.</p>
+
+        <div class="row"><span class="k">Wind direction</span><span class="v" id="hud-wind">0°</span></div>
+        <div class="row"><span class="k">Wind strength</span><span class="v" id="hud-winds">0.70</span></div>
+        <div class="row"><span class="k">Current direction</span><span class="v" id="hud-curd">—</span></div>
+        <div class="row"><span class="k">Current speed</span><span class="v" id="hud-curs">0.00</span></div>
+        <div class="row"><span class="k">Rocks on field</span><span class="v" id="hud-rocks">0</span></div>
+        <div class="row"><span class="k">Game time</span><span class="v" id="hud-time">0.0s</span></div>
+
+        <h2 style="margin-top:18px;">Boat</h2>
+        <div class="row"><span class="k">Health</span><span class="v" id="hud-health">100 / 100</span></div>
+        <div class="healthbar"><div id="hud-health-bar" style="width:100%; background: var(--ok);"></div></div>
+        <div class="row" style="margin-top:8px;"><span class="k">Heading</span><span class="v" id="hud-heading">0°</span></div>
+        <div class="row"><span class="k">Sail angle</span><span class="v" id="hud-sail">0°</span></div>
+        <div class="row"><span class="k">Speed</span><span class="v" id="hud-speed">0 px/s</span></div>
+
+        <div class="nogo" id="hud-nogo">⚠ No-go zone — turn away from the wind.</div>
+        <div class="tip"  id="hud-tip">Hold a steady heading and watch the wind arrow.</div>
+
+        <div class="controls">
+          <strong>Controls</strong><br>
+          <span class="kbd">A</span> / <span class="kbd">D</span> &nbsp;turn boat<br>
+          <span class="kbd">W</span> / <span class="kbd">S</span> &nbsp;trim sail<br>
+          <span class="kbd">R</span> &nbsp;restart level<br>
+          <span class="kbd">N</span> &nbsp;next level (after winning)
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div>Sailer Game · IMA Summer Program · 2026 · Built with WorkBuddy</div>
+  </footer>
+
+  <script src="assets/game.js"></script>
+</body>
+</html>

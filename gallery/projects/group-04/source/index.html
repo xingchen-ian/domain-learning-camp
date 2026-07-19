@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sailer Game — A Wind-Reading Learning Game</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand"><span class="mark"></span> Sailer Game</div>
+      <nav>
+        <a href="index.html" class="active">Home</a>
+        <a href="knowledge.html">Domain &amp; System</a>
+        <a href="process.html">Development Process</a>
+        <a href="game.html">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="card">
+        <h1>Steering the boat is not enough.</h1>
+        <p class="lead">Sailer Game is a small browser game about the most counter-intuitive part of sailing: <strong>the boat does not go where you point it</strong>. It goes where the wind lets it go.</p>
+        <p>The game is built around a single learning shift:</p>
+        <p style="background:#eef4f9; padding:12px 14px; border-left:4px solid var(--accent-2); border-radius:8px;">
+          <strong>Beginner:</strong> sailing means steering toward the target.<br>
+          <strong>Expert:</strong> sailing means reading the wind, then choosing boat angle, sail angle, and route in relation to it.
+        </p>
+        <p>Wind direction, boat heading, and sail angle all combine. Some directions are <em>impossible</em> — the boat stalls in the &ldquo;no-go zone.&rdquo; To make progress, you must tack: zigzag across the wind.</p>
+        <a class="cta" href="game.html">Play the Game →</a>
+      </div>
+      <div class="preview">
+        <img src="assets/system-graph.png" alt="Sailing system graph by Ian" />
+      </div>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <h2>What you control</h2>
+        <p><span class="kbd">A</span> / <span class="kbd">D</span> — turn the boat left / right</p>
+        <p><span class="kbd">W</span> / <span class="kbd">S</span> — trim the sail in / out</p>
+        <p><span class="kbd">R</span> — restart the current level</p>
+        <p><span class="kbd">N</span> — next level (after winning)</p>
+      </div>
+      <div class="card">
+        <h2>What the game teaches</h2>
+        <ul>
+          <li>The <strong>no-go zone</strong> — you cannot sail straight into the wind.</li>
+          <li><strong>Sail trim</strong> — the sail must catch the wind at a good angle.</li>
+          <li><strong>Tacking</strong> — to go upwind, zigzag.</li>
+          <li><strong>Route planning</strong> — choose a path, not a heading.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>What's on screen</h2>
+        <p>The right-hand panel always shows the data you need:</p>
+        <ul>
+          <li>Wind direction &amp; strength</li>
+          <li>Water current direction &amp; speed</li>
+          <li>Rock count &amp; game time</li>
+          <li>Boat health, heading, sail angle, speed</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>How to read this website</h2>
+      <p><a href="knowledge.html">Domain &amp; System</a> — the real-world sailing context, the novice misconception, the system graph, and the three challenge presets.</p>
+      <p><a href="process.html">Development Process</a> — a chronological log of how the game and the website came together, including the AI&rsquo;s role and Xiao&rsquo;s decisions.</p>
+      <p><a href="game.html">Play the Game</a> — the playable build. Runs in the browser. No installation.</p>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div>Sailer Game · IMA Summer Program · 2026 · Built with WorkBuddy</div>
+  </footer>
+</body>
+</html>

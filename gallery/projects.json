@@ -1,0 +1,32 @@
+{
+  "updated": "2026-07-19",
+  "title": {
+    "zh": "夏令营游戏展览",
+    "en": "Summer Camp Game Gallery"
+  },
+  "description": {
+    "zh": "文件按小组存放；展览首页把全部游戏平铺展示，并支持按游戏名搜索。",
+    "en": "Files are stored by group; the exhibition homepage lists every game in one flat, searchable view."
+  },
+  "storage": "by-group",
+  "display": "flat-by-title",
+  "projects": [
+    {
+      "id": "sailer-game",
+      "title": "Sailer Game",
+      "titleZh": "帆船游戏",
+      "domain": "Sailing / Wind reading",
+      "domainZh": "帆船 / 读风",
+      "summary": "The boat does not go where you point it. Learn to read the wind, trim the sail, and tack to the buoy.",
+      "summaryZh": "船不会驶向你指向的方向。学习读风、调帆，并通过换舷到达浮标。",
+      "group": "group-04",
+      "team": "Group 04 · Xiao",
+      "teamDisplay": "Group 04 · Xiao",
+      "consent": "yes",
+      "preview": "projects/group-04/preview.png",
+      "entryPage": "projects/group-04/exhibition/index.html",
+      "gamePage": "projects/group-04/exhibition/game.html",
+      "featured": true
+    }
+  ]
+}

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Play student games from the NYU Shanghai IMA Game Design summer camp." />
+  <title>Game Gallery · Summer Camp Exhibition</title>
+  <style>
+    :root {
+      --bg: #091015;
+      --ink: #edf2ef;
+      --muted: #a8b5b1;
+      --line: rgba(211, 223, 222, 0.2);
+      --accent: #c85243;
+      --accent-light: #e27b6d;
+      --warm: #d2b48b;
+      --teal: #78bcb6;
+      --blue: #86a9c9;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(120, 188, 182, 0.12), transparent 42%),
+        radial-gradient(ellipse at 20% 80%, rgba(200, 82, 67, 0.1), transparent 36%),
+        linear-gradient(180deg, #162229 0%, #091015 48%, #05080a 100%);
+    }
+
+    body[data-lang="zh"] .en,
+    body[data-lang="en"] .zh { display: none !important; }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 22px;
+      background: linear-gradient(180deg, rgba(6, 11, 14, 0.92), rgba(6, 11, 14, 0.35) 70%, transparent);
+      pointer-events: none;
+    }
+
+    .topbar > * { pointer-events: auto; }
+
+    .brand-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0;
+      color: #93a7a9;
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ghost-link,
+    .lang,
+    .find-toggle {
+      min-height: 36px;
+      border: 1px solid rgba(202, 218, 220, 0.22);
+      border-radius: 3px;
+      padding: 7px 12px;
+      background: rgba(10, 16, 19, 0.45);
+      color: #dce5e2;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .lang.active,
+    .find-toggle[aria-expanded="true"] {
+      border-color: #e27b6d;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .stage {
+      position: relative;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 88px 20px 92px;
+    }
+
+    .stage-copy {
+      position: absolute;
+      top: 86px;
+      left: 50%;
+      z-index: 5;
+      width: min(760px, calc(100% - 40px));
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #d9b8ad;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stage-copy h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.1;
+      text-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .hint {
+      margin: 10px 0 0;
+      color: #9fadaa;
+      font-size: 14px;
+    }
+
+    .cloud-shell {
+      position: relative;
+      width: min(980px, 100%);
+      height: min(68vh, 620px);
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .cloud-shell.is-dragging { cursor: grabbing; }
+
+    .cloud-sphere {
+      position: absolute;
+      inset: 0;
+      will-change: contents;
+    }
+
+    .cloud-name {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      border: 0;
+      padding: 10px 14px;
+      background: transparent;
+      color: #edf2ef;
+      font: inherit;
+      font-weight: 800;
+      letter-spacing: 0;
+      white-space: nowrap;
+      cursor: pointer;
+      text-decoration: none;
+      text-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+      transition: color 160ms ease, text-shadow 160ms ease;
+      pointer-events: auto;
+    }
+
+    .cloud-name:hover,
+    .cloud-name:focus-visible {
+      color: #fff;
+      text-shadow: 0 0 18px rgba(226, 123, 109, 0.55), 0 10px 30px rgba(0, 0, 0, 0.65);
+      outline: none;
+    }
+
+    .cloud-name.is-placeholder {
+      color: rgba(168, 181, 177, 0.42);
+      cursor: default;
+      font-weight: 650;
+      pointer-events: none;
+    }
+
+    .cloud-name.is-placeholder:hover {
+      color: rgba(210, 180, 139, 0.72);
+      text-shadow: none;
+    }
+
+    .cloud-glow {
+      position: absolute;
+      inset: 18% 22%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(120, 188, 182, 0.16), transparent 68%);
+      pointer-events: none;
+      filter: blur(8px);
+    }
+
+    .footer-bar {
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 22px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(6, 11, 14, 0.82);
+      backdrop-filter: blur(12px);
+      color: #6f8283;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .find-panel {
+      position: fixed;
+      right: 22px;
+      bottom: 64px;
+      z-index: 45;
+      width: min(360px, calc(100% - 44px));
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: rgba(8, 13, 16, 0.94);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      transform: translateY(12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .find-panel.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .find-panel label {
+      display: block;
+      margin-bottom: 8px;
+      color: #d9b8ad;
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .find-panel input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid rgba(211, 223, 222, 0.24);
+      border-radius: 3px;
+      padding: 0 12px;
+      background: rgba(4, 8, 10, 0.8);
+      color: #f3f7f5;
+      font: inherit;
+      font-size: 15px;
+    }
+
+    .find-panel input:focus {
+      outline: none;
+      border-color: rgba(226, 123, 109, 0.9);
+      box-shadow: 0 0 0 3px rgba(200, 82, 67, 0.16);
+    }
+
+    .find-results {
+      display: grid;
+      gap: 6px;
+      margin-top: 12px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .find-result {
+      display: block;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      background: rgba(185, 205, 207, 0.06);
+      color: #dce5e2;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .find-result:hover {
+      border-color: rgba(226, 123, 109, 0.45);
+      background: rgba(200, 82, 67, 0.12);
+    }
+
+    .find-empty {
+      margin: 10px 0 0;
+      color: #93a7a9;
+      font-size: 13px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    @media (max-width: 720px) {
+      body { overflow: auto; }
+      .stage { min-height: 100vh; height: auto; }
+      .cloud-shell { height: 58vh; min-height: 360px; }
+      .brand-subtitle { display: none; }
+      .footer-bar { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cloud-name { transition: none; }
+    }
+  </style>
+</head>
+<body data-lang="en">
+  <header class="topbar">
+    <div class="brand">
+      <p class="brand-title"><span class="zh">游戏展览</span><span class="en">Game Gallery</span></p>
+      <p class="brand-subtitle"><span class="zh">移动鼠标旋转 · 点击名字进入</span><span class="en">Move to rotate · Click a name to play</span></p>
+    </div>
+    <div class="top-actions">
+      <a class="ghost-link" href="../index.html"><span class="zh">课程</span><span class="en">Course</span></a>
+      <button type="button" class="lang" data-lang="zh">中文</button>
+      <button type="button" class="lang active" data-lang="en">English</button>
+      <button type="button" class="find-toggle" id="findToggle" aria-expanded="false" aria-controls="findPanel">
+        <span class="zh">查找</span><span class="en">Find</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="stage-copy">
+      <p class="eyebrow">NYU Shanghai · IMA · Summer Camp</p>
+      <h1>
+        <span class="zh">游戏名称云</span>
+        <span class="en">Game Name Cloud</span>
+      </h1>
+      <p class="hint">
+        <span class="zh">拖动或移动鼠标旋转名称云，点击任意游戏名开始玩。</span>
+        <span class="en">Drag or move the mouse to rotate the cloud. Click any game title to play.</span>
+      </p>
+    </div>
+
+    <div class="cloud-shell" id="cloudShell" aria-label="Interactive game name cloud">
+      <div class="cloud-glow" aria-hidden="true"></div>
+      <div class="cloud-sphere" id="cloudSphere"></div>
+    </div>
+    <p class="sr-only" id="cloudStatus" aria-live="polite"></p>
+  </main>
+
+  <aside class="find-panel" id="findPanel" hidden>
+    <label for="searchInput">
+      <span class="zh">按游戏名查找</span>
+      <span class="en">Search by game title</span>
+    </label>
+    <input id="searchInput" type="search" autocomplete="off" spellcheck="false"
+      placeholder="Darkroom / One More Sip" />
+    <div class="find-results" id="findResults"></div>
+    <p class="find-empty" id="findEmpty" hidden></p>
+  </aside>
+
+  <footer class="footer-bar">
+    <div id="gameCount">—</div>
+    <div>NYU Shanghai · IMA · Game Design Summer Camp</div>
+  </footer>
+
+  <script>
+    const languageKey = "domain-learning-camp-language";
+    const cloudShell = document.getElementById("cloudShell");
+    const cloudSphere = document.getElementById("cloudSphere");
+    const cloudStatus = document.getElementById("cloudStatus");
+    const findToggle = document.getElementById("findToggle");
+    const findPanel = document.getElementById("findPanel");
+    const searchInput = document.getElementById("searchInput");
+    const findResults = document.getElementById("findResults");
+    const findEmpty = document.getElementById("findEmpty");
+    const gameCount = document.getElementById("gameCount");
+
+    const placeholderNames = {
+      zh: ["等待收录", "第一款游戏", "第二款游戏", "第三款游戏", "探索中", "试玩即将开始", "名称云", "夏令营"],
+      en: ["Awaiting Entry", "First Game", "Second Game", "Third Game", "Exploring", "Play Soon", "Name Cloud", "Summer Camp"]
+    };
+
+    let lang = localStorage.getItem(languageKey) || "en";
+    let projects = [];
+    let nodes = [];
+    let radius = 220;
+    let rotX = -12;
+    let rotY = 18;
+    let targetRotX = rotX;
+    let targetRotY = rotY;
+    let autoSpeed = 0.08;
+    let dragging = false;
+    let dragMoved = false;
+    let lastX = 0;
+    let lastY = 0;
+    let startX = 0;
+    let startY = 0;
+    let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function setLanguage(nextLanguage) {
+      lang = nextLanguage === "zh" ? "zh" : "en";
+      document.body.dataset.lang = lang;
+      document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+      document.querySelectorAll(".lang").forEach((button) => {
+        button.classList.toggle("active", button.dataset.lang === lang);
+        button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
+      });
+      localStorage.setItem(languageKey, lang);
+      buildCloud();
+      renderFindResults();
+      updateCount();
+    }
+
+    function displayTitle(project) {
+      return lang === "zh" && project.titleZh ? project.titleZh : project.title;
+    }
+
+    function playableProjects() {
+      return projects.filter((project) => project.consent !== "no" && (project.gamePage || project.entryPage));
+    }
+
+    function fibonacciSphere(count) {
+      const points = [];
+      if (count <= 0) return points;
+
+      // Few games: keep titles near the front equator so they stay easy to click.
+      if (count <= 6) {
+        for (let i = 0; i < count; i += 1) {
+          const theta = (i / count) * Math.PI * 2 - Math.PI / 2;
+          const y = count === 1 ? 0 : ((i % 2) * 2 - 1) * 0.18;
+          const r = Math.sqrt(Math.max(0, 1 - y * y));
+          points.push({
+            x: Math.cos(theta) * r,
+            y,
+            z: Math.sin(theta) * r
+          });
+        }
+        return points;
+      }
+
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < count; i += 1) {
+        const y = 1 - (i / Math.max(count - 1, 1)) * 2;
+        const r = Math.sqrt(1 - y * y);
+        const theta = golden * i;
+        points.push({
+          x: Math.cos(theta) * r,
+          y,
+          z: Math.sin(theta) * r
+        });
+      }
+      return points;
+    }
+
+    function resizeRadius() {
+      const bound = Math.min(cloudShell.clientWidth, cloudShell.clientHeight);
+      radius = Math.max(140, Math.floor(bound * 0.34));
+    }
+
+    function buildCloud() {
+      const playable = playableProjects();
+      const usingPlaceholders = playable.length === 0;
+      const items = usingPlaceholders
+        ? placeholderNames[lang].map((title) => ({ title, placeholder: true }))
+        : playable.map((project) => ({
+            title: displayTitle(project),
+            href: project.entryPage || project.gamePage,
+            placeholder: false,
+            project
+          }));
+
+      const points = fibonacciSphere(items.length);
+      cloudSphere.innerHTML = "";
+      nodes = items.map((item, index) => {
+        const el = document.createElement(item.placeholder ? "span" : "a");
+        el.className = "cloud-name" + (item.placeholder ? " is-placeholder" : "");
+        el.textContent = item.title;
+        if (!item.placeholder) {
+          el.href = item.href;
+          el.setAttribute("aria-label", lang === "zh" ? `打开 ${item.title} 项目首页` : `Open ${item.title} project home`);
+          el.addEventListener("click", (event) => {
+            // Ignore clicks that were actually short drags on the cloud.
+            if (dragMoved) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          });
+        }
+        cloudSphere.appendChild(el);
+        return {
+          el,
+          base: points[index],
+          size: item.placeholder ? 15 : 22 + (item.title.length > 14 ? 0 : 8)
+        };
+      });
+
+      cloudStatus.textContent = usingPlaceholders
+        ? (lang === "zh" ? "尚未收录公开游戏，当前显示占位名称云。" : "No public games yet. Showing a placeholder name cloud.")
+        : (lang === "zh" ? `已加载 ${playable.length} 个游戏名称。` : `Loaded ${playable.length} game titles.`);
+
+      paint();
+    }
+
+    function paint() {
+      const radX = (rotX * Math.PI) / 180;
+      const radY = (rotY * Math.PI) / 180;
+      const cosX = Math.cos(radX);
+      const sinX = Math.sin(radX);
+      const cosY = Math.cos(radY);
+      const sinY = Math.sin(radY);
+
+      nodes.forEach((node) => {
+        let { x, y, z } = node.base;
+        let y1 = y * cosX - z * sinX;
+        let z1 = y * sinX + z * cosX;
+        let x2 = x * cosY + z1 * sinY;
+        let z2 = -x * sinY + z1 * cosY;
+
+        const depth = (z2 + 1) / 2;
+        const scale = 0.7 + depth * 0.55;
+        const opacity = 0.28 + depth * 0.72;
+        node.el.style.fontSize = `${Math.round(node.size * scale)}px`;
+        node.el.style.opacity = String(opacity);
+        node.el.style.zIndex = String(Math.round(1000 + z2 * 1000));
+        // Project to 2D so the clickable box matches the visible label.
+        node.el.style.transform = `translate(-50%, -50%) translate(${x2 * radius}px, ${y1 * radius}px)`;
+        node.el.style.pointerEvents = z2 < -0.15 ? "none" : "auto";
+      });
+    }
+
+    function tick() {
+      if (!dragging && !reducedMotion) {
+        targetRotY += autoSpeed;
+      }
+      rotX += (targetRotX - rotX) * 0.08;
+      rotY += (targetRotY - rotY) * 0.08;
+      paint();
+      requestAnimationFrame(tick);
+    }
+
+    function updateCount() {
+      const n = playableProjects().length;
+      gameCount.textContent = lang === "zh"
+        ? (n ? `${n} 个可玩游戏` : "等待收录学生游戏")
+        : (n ? `${n} playable games` : "Awaiting student games");
+    }
+
+    function renderFindResults() {
+      const query = searchInput.value.trim().toLowerCase();
+      const list = playableProjects().filter((project) => {
+        if (!query) return true;
+        return [project.title, project.titleZh, project.domain, project.domainZh, project.id]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+      });
+
+      findResults.innerHTML = "";
+      list.slice(0, 12).forEach((project) => {
+        const link = document.createElement("a");
+        link.className = "find-result";
+        link.href = project.entryPage || project.gamePage;
+        link.textContent = displayTitle(project);
+        findResults.appendChild(link);
+      });
+
+      if (!playableProjects().length) {
+        findEmpty.hidden = false;
+        findEmpty.textContent = lang === "zh"
+          ? "还没有可查找的公开游戏。"
+          : "No public games to search yet.";
+      } else if (!list.length) {
+        findEmpty.hidden = false;
+        findEmpty.textContent = lang === "zh" ? "没有匹配的游戏名。" : "No matching titles.";
+      } else {
+        findEmpty.hidden = true;
+      }
+    }
+
+    function setFindOpen(open) {
+      findToggle.setAttribute("aria-expanded", String(open));
+      findPanel.hidden = !open;
+      findPanel.classList.toggle("open", open);
+      if (open) {
+        renderFindResults();
+        searchInput.focus();
+      }
+    }
+
+    cloudShell.addEventListener("pointerdown", (event) => {
+      // Let real game-name links receive normal click navigation.
+      if (event.target.closest("a.cloud-name")) return;
+
+      dragging = true;
+      dragMoved = false;
+      cloudShell.classList.add("is-dragging");
+      cloudShell.setPointerCapture(event.pointerId);
+      lastX = event.clientX;
+      lastY = event.clientY;
+      startX = event.clientX;
+      startY = event.clientY;
+    });
+
+    cloudShell.addEventListener("pointermove", (event) => {
+      if (!dragging) {
+        const rect = cloudShell.getBoundingClientRect();
+        const nx = (event.clientX - rect.left) / rect.width - 0.5;
+        const ny = (event.clientY - rect.top) / rect.height - 0.5;
+        targetRotY = rotY + nx * 1.8;
+        targetRotX = Math.max(-40, Math.min(40, -ny * 28));
+        return;
+      }
+      const dx = event.clientX - lastX;
+      const dy = event.clientY - lastY;
+      const totalDx = event.clientX - startX;
+      const totalDy = event.clientY - startY;
+      if (Math.hypot(totalDx, totalDy) > 6) dragMoved = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      targetRotY += dx * 0.35;
+      targetRotX = Math.max(-55, Math.min(55, targetRotX - dy * 0.35));
+    });
+
+    function endDrag(event) {
+      dragging = false;
+      cloudShell.classList.remove("is-dragging");
+      if (event && cloudShell.hasPointerCapture?.(event.pointerId)) {
+        cloudShell.releasePointerCapture(event.pointerId);
+      }
+      // Keep dragMoved true briefly so a suppressed click after drag is ignored.
+      window.setTimeout(() => { dragMoved = false; }, 0);
+    }
+
+    cloudShell.addEventListener("pointerup", endDrag);
+    cloudShell.addEventListener("pointercancel", endDrag);
+    cloudShell.addEventListener("pointerleave", () => {
+      if (!dragging) autoSpeed = 0.08;
+    });
+
+    findToggle.addEventListener("click", () => {
+      const open = findToggle.getAttribute("aria-expanded") !== "true";
+      setFindOpen(open);
+    });
+
+    searchInput.addEventListener("input", renderFindResults);
+
+    document.addEventListener("click", (event) => {
+      if (!findPanel.classList.contains("open")) return;
+      if (findPanel.contains(event.target) || findToggle.contains(event.target)) return;
+      setFindOpen(false);
+    });
+
+    document.querySelectorAll(".lang").forEach((button) => {
+      button.addEventListener("click", () => setLanguage(button.dataset.lang));
+    });
+
+    window.addEventListener("resize", () => {
+      resizeRadius();
+      paint();
+    });
+
+    async function loadProjects() {
+      try {
+        const response = await fetch("./projects.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        projects = Array.isArray(data.projects) ? data.projects : [];
+      } catch (error) {
+        projects = [];
+        cloudStatus.textContent = lang === "zh"
+          ? "无法加载游戏列表。请通过本地静态服务器打开本页。"
+          : "Could not load games. Open this page through a local static server.";
+      }
+      resizeRadius();
+      setLanguage(lang);
+      requestAnimationFrame(tick);
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>
