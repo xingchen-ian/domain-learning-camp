@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process — Raise a Cat Successfully</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="cat-icon">🐱</span> Raise a Cat Successfully
+    </a>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="domain.html">Domain & System</a></li>
+      <li><a href="process.html" class="active">Process</a></li>
+      <li><a href="game.html">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <div class="section">
+      <h2>Development Process</h2>
+      <p>This timeline is based on <code>agent-development-log.md</code> and reflects the actual human-AI collaboration process. It includes milestones, changes, and honest records of what worked and what didn't.</p>
+
+      <div class="timeline">
+        <!-- Interaction 01 -->
+        <div class="timeline-item">
+          <span class="time">2026-07-21</span>
+          <h4>Project Initialization & First Playable Build</h4>
+          <p><strong>Student Request:</strong> Build the first playable web game based on the design brief — a cat-keeping simulation teaching players to adjust care methods based on each cat's physical condition and personality.</p>
+          <p><strong>Agent Response:</strong> Chose Track A (no build step) with HTML, CSS, plain JavaScript, and Canvas 2D. Designed 3 challenge presets: Mimi (balanced), Shadow (formerly stray, sensitive), Bounce (energetic, fast metabolism). Implemented the full observe → judge → act → feedback → adjust loop.</p>
+          <p><strong>Development Action:</strong> Created complete project structure. Implemented game engine with cat state system (fullness, health, affection, energy, cleanliness, water, age). Built 5 website pages. Added visual feedback (cat animations, dim lighting when sick, tail flicking when happy, playfulness glow). Added audio feedback (synthesized meow sounds via Web Audio API). Created README, THIRD_PARTY, development brief, and submission manifest.</p>
+          <p><strong>Test Result:</strong> Tested navigation between all pages, game start with each cat preset, all actions (feeding, playing, cleaning, vet), health and affection feedback, success and failure conditions. All working.</p>
+          <p><strong>AI Influence:</strong> AI suggested the 3 cat personality presets based on the brief's mention of "different cats' characters." AI designed the personality modifier system (affectionRate, fullnessDecay, etc.) so each cat changes system relationships, not just appearance. AI chose Web Audio API for sounds to avoid external file dependencies.</p>
+        </div>
+
+        <!-- Interaction 02 -->
+        <div class="timeline-item">
+          <span class="time">2026-07-21</span>
+          <h4>System Graph & Documentation</h4>
+          <p><strong>Development Action:</strong> Created system-graph.svg showing the connection between player actions, cat stats, and feedback signals. Updated domain.html with the graph and full system design documentation.</p>
+          <p><strong>Files Changed:</strong> exhibition/assets/img/system-graph.svg, exhibition/domain.html</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tools & Technology -->
+    <div class="section">
+      <h2>Tools & Technology</h2>
+      <table class="data-table">
+        <tr><th>Component</th><th>Technology</th><th>Reason</th></tr>
+        <tr><td>Game rendering</td><td>Canvas 2D API</td><td>Built into browsers, no external library needed. Perfect for 2D game graphics.</td></tr>
+        <tr><td>Game logic</td><td>Plain JavaScript</td><td>No build step, no compilation. Simple for high school students to read and modify.</td></tr>
+        <tr><td>Styling</td><td>CSS3</td><td>Standard CSS with CSS variables for theming. No preprocessor.</td></tr>
+        <tr><td>Audio</td><td>Web Audio API</td><td>Synthesizes meow sounds at runtime. No external audio files needed — keeps the project self-contained.</td></tr>
+        <tr><td>AI Agent</td><td>AI Agent (WorkBuddy)</td><td>Used for code generation, design decisions, and project structure planning.</td></tr>
+      </table>
+    </div>
+
+    <!-- Design Decisions -->
+    <div class="section">
+      <h2>Key Design Decisions</h2>
+      <ol>
+        <li><strong>Track A over Track B/C:</strong> The game is 2D and doesn't need 3D (Three.js) or complex module loading. Plain HTML/CSS/JS is the simplest and most reliable approach for exhibition on an iMac.</li>
+        <li><strong>Three distinct cat personalities:</strong> Rather than difficulty levels (easy/hard), each cat has different system variables — Shadow's sensitive stomach, Bounce's fast metabolism, Mimi's balanced stats. This directly supports the core learning shift about adapting to different cats.</li>
+        <li><strong>Web Audio API for sounds:</strong> Instead of external audio files, meow sounds are synthesized programmatically. This ensures the game works offline with zero external dependencies.</li>
+        <li><strong>Visual feedback over text-only:</strong> The cat's animations, tail flicking, dim lighting when sick, and playfulness glow make the feedback intuitive — players learn to read cat behavior, just like in real life.</li>
+        <li><strong>Stat interdependence:</strong> Health is not directly controlled — it's calculated from fullness, water, cleanliness, and sickness state. This teaches players that neglecting any aspect affects overall health.</li>
+      </ol>
+    </div>
+
+    <!-- Student Reflection Prompt -->
+    <div class="section" style="border-left: 4px solid var(--accent);">
+      <h2>📝 Student Reflection (To Be Completed)</h2>
+      <p><em>At this milestone (first playable version complete), the student should answer:</em></p>
+      <div class="misconception-box">
+        <span class="label">Required Student Reflection:</span>
+        Does the current game still help the player experience the intended domain-learning shift? What became stronger, weaker, or different? Which AI suggestion did you accept, reject, or change, and why?
+      </div>
+      <p><em>This section will be updated with the student's reflection after they playtest the game.</em></p>
+    </div>
+  </div>
+</body>
+</html>

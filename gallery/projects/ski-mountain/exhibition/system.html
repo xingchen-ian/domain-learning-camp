@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ski Mountain — System Design</title>
+  <link rel="stylesheet" crossorigin href="./assets/style-BdQ1EHz-.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <span class="nav-logo">Ski Mountain</span>
+    <a href="./index.html">Home</a>
+    <a href="./domain.html">Domain</a>
+    <a href="./system.html" class="active">System</a>
+    <a href="./process.html">Process</a>
+    <a href="./game.html">Play</a>
+  </nav>
+
+  <div class="page-content">
+    <h1 class="page-title">System Design</h1>
+
+    <div class="card">
+      <h3>System Graph</h3>
+      <img src="./assets/system-graph.png" class="diagram-img" alt="Game system and challenge graph">
+      <p style="margin-top:0.5rem; color:#666">
+        The system graph shows how environment data, player-controlled data,
+        and system-calculated results connect to form the observe → judge → act → feedback → adjust loop.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Environment Data (per level)</h3>
+      <table style="width:100%; border-collapse:collapse">
+        <tr style="background:#f0f5ff"><th style="padding:8px; text-align:left">Variable</th><th style="padding:8px">Level 1</th><th style="padding:8px">Level 2</th><th style="padding:8px">Level 3</th></tr>
+        <tr><td style="padding:8px">Fog</td><td style="padding:8px; text-align:center">0</td><td style="padding:8px; text-align:center">Light</td><td style="padding:8px; text-align:center">Heavy</td></tr>
+        <tr><td style="padding:8px">Wind</td><td style="padding:8px; text-align:center">None</td><td style="padding:8px; text-align:center">Light →</td><td style="padding:8px; text-align:center">Strong →</td></tr>
+        <tr><td style="padding:8px">Snowstorm</td><td style="padding:8px; text-align:center">No</td><td style="padding:8px; text-align:center">No</td><td style="padding:8px; text-align:center">Yes</td></tr>
+        <tr><td style="padding:8px">Rocks</td><td style="padding:8px; text-align:center">0</td><td style="padding:8px; text-align:center">2</td><td style="padding:8px; text-align:center">5</td></tr>
+        <tr><td style="padding:8px">Trees</td><td style="padding:8px; text-align:center">0</td><td style="padding:8px; text-align:center">3</td><td style="padding:8px; text-align:center">5</td></tr>
+        <tr><td style="padding:8px">Time Limit</td><td style="padding:8px; text-align:center">None</td><td style="padding:8px; text-align:center">60s</td><td style="padding:8px; text-align:center">45s</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Player-Controlled Data</h3>
+      <ul style="margin-left:1.5rem">
+        <li><strong>A/D</strong> — Carve left/right (changes steer angle, creates S-turn drag)</li>
+        <li><strong>W</strong> — Lean forward (increases speed)</li>
+        <li><strong>S</strong> — Lean backward (decreases speed)</li>
+        <li><strong>Space</strong> — Jump (clears trees, blocked by rocks)</li>
+        <li><strong>Route choice</strong> — steering direction determines which obstacles you encounter</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>System-Calculated Results</h3>
+      <ul style="margin-left:1.5rem">
+        <li><strong>Speed</strong> = gravity + lean − carve drag − friction + wind</li>
+        <li><strong>Health</strong> = max − collision damage (rock: 30, tree: 15)</li>
+        <li><strong>Screen shake</strong> = intensity when speed > 60% (feedback: slow down)</li>
+        <li><strong>Crash</strong> = automatic when speed > 90% (no S-turns = death)</li>
+        <li><strong>Stop timeout</strong> = 5 seconds at zero speed = game over</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Success &amp; Failure</h3>
+      <p><strong>Win:</strong> reach the bottom of the slope with health > 0.</p>
+      <p><strong>Lose:</strong> health ≤ 0, 5-second complete stop, speed crash, or time-out.</p>
+    </div>
+  </div>
+</body>
+</html>

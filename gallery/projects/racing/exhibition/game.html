@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Racing — Play the Game</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; font-family: 'Segoe UI', sans-serif; color: #fff; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: rgba(10,10,20,0.95);
+    border-bottom: 1px solid #2a2a3c; height: 48px;
+  }
+  nav .logo { font-weight: bold; font-size: 18px; letter-spacing: 1px; }
+  nav .nav-links { display: flex; gap: 24px; list-style: none; }
+  nav .nav-links a { color: #888; text-decoration: none; font-size: 14px; transition: color 0.2s; }
+  nav .nav-links a:hover, nav .nav-links a.active { color: #fff; }
+
+  .game-wrapper {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: calc(100vh - 48px);
+    padding: 60px 20px 20px;
+  }
+  .game-container {
+    position: relative; width: 100%; max-width: 500px;
+    aspect-ratio: 9/16; border: 1px solid #2a2a3c; border-radius: 8px;
+    overflow: hidden; background: #000;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  #hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    pointer-events: none; padding: 10px 12px;
+    font-family: sans-serif; z-index: 10;
+  }
+  .hud-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .hud-bars { display: flex; flex-direction: column; gap: 4px; }
+  .hud-bar-row { display: flex; align-items: center; gap: 6px; }
+  .hud-label { color: #888; font-size: 9px; width: 30px; text-align: right; }
+  .hud-bar-bg { width: 80px; height: 7px; background: #222; border-radius: 3px; overflow: hidden; }
+  .hud-bar-fill { height: 100%; border-radius: 3px; }
+  .hud-val { color: #fff; font-size: 9px; font-weight: bold; width: 24px; }
+  .hud-center { text-align: center; }
+  .hud-speed { color: #fff; font-size: 22px; font-weight: bold; }
+  .hud-unit { color: #888; font-size: 10px; }
+  .hud-time { color: #ffaa00; font-size: 15px; font-weight: bold; font-family: monospace; }
+  .hud-right { text-align: right; }
+  .hud-dist { color: #aaa; font-size: 10px; }
+  .hud-cop { font-size: 10px; font-weight: bold; margin-top: 3px; }
+  .hud-cop.chasing { color: #ff4444; }
+  .hud-cop.losing { color: #44cc66; }
+  .hud-cop.close { color: #ff4444; animation: pulse 0.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  #menu-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(5,5,12,0.92); z-index: 20;
+  }
+  #menu-overlay.hidden { display: none; }
+  .menu-title { color: #fff; font-size: 42px; font-weight: bold; margin-bottom: 6px; }
+  .menu-sub { color: #888; font-size: 13px; margin-bottom: 4px; }
+  .menu-quote { color: #ffaa00; font-style: italic; font-size: 12px; margin-bottom: 28px; text-align: center; padding: 0 20px; }
+  .level-cards { display: flex; flex-direction: column; gap: 12px; }
+  .level-card {
+    width: 200px; padding: 16px 20px;
+    background: #14141f; border: 1px solid #2a2a3c;
+    border-radius: 10px; text-align: center; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .level-card:hover { background: #1c1c2e; transform: translateY(-3px); }
+  .level-card .lc-name { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+  .level-card .lc-desc { color: #888; font-size: 11px; line-height: 1.4; }
+  .level-card .lc-key { color: #555; font-size: 10px; margin-top: 10px; }
+
+  #end-overlay {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.8); z-index: 25;
+  }
+  #end-overlay.show { display: flex; }
+  #end-title { font-size: 40px; font-weight: bold; margin-bottom: 10px; }
+  #end-reason { color: #ccc; font-size: 14px; margin-bottom: 4px; }
+  #end-stats { color: #888; font-size: 12px; margin-bottom: 20px; }
+  #end-restart { color: #fff; font-size: 14px; animation: pulse 1s infinite; }
+
+  .controls-hint {
+    margin-top: 14px; text-align: center; color: #8888aa; font-size: 0.85rem;
+  }
+  .controls-hint kbd {
+    display: inline-block; background: #1c1c2e;
+    border: 1px solid #2a2a3c; border-radius: 4px;
+    padding: 2px 8px; font-size: 0.8rem; margin: 0 2px;
+    font-family: inherit; color: #e8e8f0;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">RACING</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="game.html" class="active">Play Game</a></li>
+    <li><a href="process.html">Process</a></li>
+  </ul>
+</nav>
+
+<div class="game-wrapper">
+  <div class="game-container" id="container">
+    <canvas id="game"></canvas>
+
+    <div id="hud" style="display:none">
+      <div class="hud-top">
+        <div class="hud-bars">
+          <div class="hud-bar-row">
+            <span class="hud-label">HP</span>
+            <div class="hud-bar-bg"><div class="hud-bar-fill" id="hp-bar" style="background:#44cc66;width:100%"></div></div>
+            <span class="hud-val" id="hp-val">100</span>
+          </div>
+          <div class="hud-bar-row">
+            <span class="hud-label">GAS</span>
+            <div class="hud-bar-bg"><div class="hud-bar-fill" id="gas-bar" style="background:#ffaa00;width:100%"></div></div>
+            <span class="hud-val" id="gas-val">100</span>
+          </div>
+          <div class="hud-bar-row">
+            <span class="hud-label">NOS</span>
+            <div class="hud-bar-bg"><div class="hud-bar-fill" id="boost-bar" style="background:#4488ff;width:100%"></div></div>
+            <span class="hud-val" id="boost-val">100</span>
+          </div>
+        </div>
+        <div class="hud-center">
+          <div class="hud-speed"><span id="speed-num">0</span> <span class="hud-unit">km/h</span></div>
+          <div class="hud-time" id="hud-time">4:00</div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-dist" id="hud-dist">0% 0.0km</div>
+          <div class="hud-cop chasing" id="hud-cop">COP: CHASING</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="menu-overlay">
+      <div class="menu-title">RACING</div>
+      <div class="menu-sub">Outrun the police. Manage your fuel. Stay alive.</div>
+      <div class="menu-quote">&ldquo;Sometimes you have to slow down to stay in control.&rdquo;</div>
+      <div class="level-cards">
+        <div class="level-card" data-level="novice">
+          <div class="lc-name" style="color:#44cc66">Novice</div>
+          <div class="lc-desc">Light traffic, slow cops<br>learn the basics.</div>
+          <div class="lc-key">Press 1 or click</div>
+        </div>
+        <div class="level-card" data-level="driver">
+          <div class="lc-name" style="color:#ffaa00">Driver</div>
+          <div class="lc-desc">More traffic, faster cops<br>manage your resources.</div>
+          <div class="lc-key">Press 2 or click</div>
+        </div>
+        <div class="level-card" data-level="expert">
+          <div class="lc-name" style="color:#ff4444">Expert</div>
+          <div class="lc-desc">Heavy traffic, relentless cops<br>true control is everything.</div>
+          <div class="lc-key">Press 3 or click</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="end-overlay">
+      <div id="end-title"></div>
+      <div id="end-reason"></div>
+      <div id="end-stats"></div>
+      <div id="end-restart">Press R to restart</div>
+    </div>
+  </div>
+  <div class="controls-hint">
+    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive &nbsp; <kbd>Space</kbd> boost &nbsp; <kbd>R</kbd> restart
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var container = document.getElementById('container');
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var hudEl = document.getElementById('hud');
+  var menuOverlay = document.getElementById('menu-overlay');
+  var endOverlay = document.getElementById('end-overlay');
+
+  // Dimensions
+  var W = 450, H = 800;
+
+  function resize() {
+    var rect = container.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    W = rect.width;
+    H = rect.height;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Road is a simple straight rectangle
+  var ROAD_W_RATIO = 0.85; // road takes 85% of screen width
+  var LANE_COUNT = 5;
+  function roadLeft() { return W * (1 - ROAD_W_RATIO) / 2; }
+  function roadWidth() { return W * ROAD_W_RATIO; }
+  function laneWidth() { return roadWidth() / LANE_COUNT; }
+
+  // Levels
+  var LEVELS = {
+    novice: { name:'Novice', track:40000, time:240, traffic:5,  copCatch:1.2, copFall:1.0,  gasDrain:0.022 },
+    driver: { name:'Driver', track:60000, time:300, traffic:8,  copCatch:1.6, copFall:0.9,  gasDrain:0.028 },
+    expert: { name:'Expert', track:80000, time:360, traffic:12, copCatch:2.0, copFall:0.75, gasDrain:0.035 }
+  };
+
+  // State
+  var G = {
+    lvl: null, playing: false,
+    px: 0, speed: 0,
+    gas: 100, hp: 100, boost: 100, boosting: false,
+    dist: 0, timeLeft: 0,
+    copDist: 500, copTimer: 10
+  };
+
+  var keys = {};
+  var traffic = [];
+  var gasTokens = [];
+  var repairTokens = [];
+  var dashes = [];
+  var gasCD = 0;
+  var repairCD = 0;
+
+  // Audio
+  var actx = null;
+  function initAudio() {
+    if (actx) return;
+    try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  function beep(f, d, t, v) {
+    if (!actx) return;
+    t = t || 'square'; v = v || 0.1;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = t; o.frequency.value = f;
+    g.gain.setValueAtTime(v, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + d);
+  }
+  function sfxCollect() { beep(1200, 0.08, 'sine', 0.12); beep(1600, 0.06, 'sine', 0.08); }
+  function sfxCrash() {
+    if (!actx) return;
+    var len = actx.sampleRate * 0.15;
+    var buf = actx.createBuffer(1, len, actx.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    var s = actx.createBufferSource(), g = actx.createGain();
+    s.buffer = buf; g.gain.value = 0.3;
+    s.connect(g); g.connect(actx.destination);
+    s.start();
+  }
+  function sfxAlert() { beep(440, 0.15, 'square', 0.08); }
+
+  // Lanes: -2, -1, 0, 1, 2 (left to right)
+  var LANES = [-2, -1, 0, 1, 2];
+  function laneCenterX(lane) {
+    return roadLeft() + roadWidth() / 2 + lane * laneWidth() - laneWidth() / 2;
+  }
+  // Lane center X positions
+  function laneCenterX(lane) {
+    return roadLeft() + roadWidth() / 2 + lane * laneWidth();
+  }
+
+  // Spawn traffic — avoids overlapping with existing cars
+  function spawnTraffic() {
+    var cols = ['#cc3333','#3388cc','#33aa55','#cc8833','#aa33cc','#888888'];
+    var MIN_GAP = 120; // minimum y-distance between cars on same lane
+    // Shuffle lanes to try them in random order
+    var lanes = LANES.slice().sort(function() { return Math.random() - 0.5; });
+    for (var li = 0; li < lanes.length; li++) {
+      var lane = lanes[li];
+      var y = -60 - Math.random() * 300;
+      var overlaps = false;
+      for (var ti = 0; ti < traffic.length; ti++) {
+        if (traffic[ti].lane === lane && Math.abs(traffic[ti].y - y) < MIN_GAP) {
+          overlaps = true; break;
+        }
+      }
+      if (!overlaps) {
+        traffic.push({
+          lane: lane,
+          y: y,
+          c: cols[Math.floor(Math.random() * cols.length)]
+        });
+        return;
+      }
+    }
+    // All lanes full in this region — spawn further back on random lane
+    traffic.push({
+      lane: LANES[Math.floor(Math.random() * LANES.length)],
+      y: -300 - Math.random() * 200,
+      c: cols[Math.floor(Math.random() * cols.length)]
+    });
+  }
+
+  function spawnGas() {
+    gasTokens.push({
+      lane: LANES[Math.floor(Math.random() * LANES.length)],
+      y: -30 - Math.random() * 100
+    });
+  }
+
+  function spawnRepair() {
+    repairTokens.push({
+      lane: LANES[Math.floor(Math.random() * LANES.length)],
+      y: -30 - Math.random() * 100
+    });
+  }
+
+  // Start
+  function start(key) {
+    initAudio();
+    var L = LEVELS[key];
+    G.lvl = L;
+    G.playing = true;
+    G.px = 0;
+    G.speed = 0;
+    G.gas = 100;
+    G.hp = 100;
+    G.boost = 100;
+    G.boosting = false;
+    G.dist = 0;
+    G.timeLeft = L.time;
+    G.copDist = 500;
+    G.copTimer = 10;
+
+    traffic.length = 0;
+    gasTokens.length = 0;
+    repairTokens.length = 0;
+    dashes.length = 0;
+    gasCD = 0;
+    repairCD = 0;
+
+    for (var i = 0; i < 40; i++) dashes.push({ y: i * 40 });
+    for (var i = 0; i < L.traffic; i++) spawnTraffic();
+    for (var i = 0; i < 8; i++) spawnGas();
+
+    menuOverlay.classList.add('hidden');
+    hudEl.style.display = 'block';
+    endOverlay.classList.remove('show');
+    updateHUD();
+  }
+
+  // Update
+  function update(dt) {
+    if (!G.playing) return;
+    dt = Math.min(dt, 0.1);
+    var L = G.lvl;
+
+    // Input
+    if (keys[87] || keys[38]) G.speed += (G.boosting ? 0.18 : 0.12);
+    if (keys[83] || keys[40]) { G.speed -= 0.08; if (G.speed < 0) G.speed = 0; }
+    if (!(keys[87] || keys[38]) && !(keys[83] || keys[40])) {
+      if (G.speed > 0) G.speed -= 0.03;
+      if (G.speed < 0) G.speed = 0;
+    }
+    G.boosting = !!(keys[32] && G.boost > 0);
+    if (G.boosting) { G.boost -= 0.5; if (G.boost < 0) { G.boost = 0; G.boosting = false; } }
+    else G.boost = Math.min(100, G.boost + 0.08);
+
+    // Steering
+    var sr = 0.04 * (G.hp < 50 ? 0.5 + G.hp / 100 : 1);
+    if (keys[65] || keys[37]) G.px -= sr;
+    if (keys[68] || keys[39]) G.px += sr;
+    G.px = Math.max(-1, Math.min(1, G.px));
+
+    // Speed cap
+    var mx = (G.boosting ? 9 : 6) * (0.5 + G.hp / 200);
+    if (G.speed > mx) G.speed = mx;
+    if (G.speed < 0) G.speed = 0;
+
+    // Distance & time
+    var mps = G.speed * 10;
+    G.dist += mps * dt;
+    G.timeLeft -= dt;
+
+    // Gas drain
+    G.gas -= L.gasDrain * (1 + G.speed / 6) * (G.boosting ? 2 : 1) * (G.hp < 50 ? 1.5 : 1);
+    if (G.gas < 0) G.gas = 0;
+
+    // Cop
+    G.copTimer -= dt;
+    var sf = G.speed / 6;
+    if (G.copTimer > 0) G.copDist -= L.copCatch * (1 - sf * 0.85) * dt * 10;
+    else G.copDist += L.copFall * dt * 10;
+    G.copDist = Math.max(0, Math.min(1000, G.copDist));
+
+    // Scroll speed
+    var ss = G.speed * 2;
+
+    // Dashes
+    for (var i = 0; i < dashes.length; i++) {
+      dashes[i].y += ss;
+      if (dashes[i].y > H) dashes[i].y -= H;
+    }
+
+    // Traffic
+    for (var i = 0; i < traffic.length; i++) traffic[i].y += ss;
+    for (var i = traffic.length - 1; i >= 0; i--) { if (traffic[i].y > H + 80) traffic.splice(i, 1); }
+    while (traffic.length < L.traffic) spawnTraffic();
+
+    // Gas — same speed as traffic, ~1.5s spawn, max 8
+    gasCD += dt;
+    for (var i = 0; i < gasTokens.length; i++) gasTokens[i].y += ss;
+    for (var i = gasTokens.length - 1; i >= 0; i--) { if (gasTokens[i].y > H + 60) gasTokens.splice(i, 1); }
+    if (gasCD >= 1.5 && gasTokens.length < 8) { gasCD = 0; spawnGas(); }
+
+    // Repair — slower spawn (~8s), max 2 on screen
+    repairCD += dt;
+    for (var i = 0; i < repairTokens.length; i++) repairTokens[i].y += ss;
+    for (var i = repairTokens.length - 1; i >= 0; i--) { if (repairTokens[i].y > H + 60) repairTokens.splice(i, 1); }
+    if (repairCD >= 8 && repairTokens.length < 2) { repairCD = 0; spawnRepair(); }
+
+    // Player position
+    var carW = 38, carH = 64;
+    var pSX = W / 2 + G.px * (roadWidth() / 2 - carW / 2);
+    var pSY = H - 80;
+
+    // Collision: traffic
+    for (var i = traffic.length - 1; i >= 0; i--) {
+      var t = traffic[i];
+      var tx = laneCenterX(t.lane);
+      var dx = Math.abs(pSX - tx), dy = Math.abs(pSY - t.y);
+      if (dx < (carW + 28) / 2 && dy < (carH + 46) / 2) {
+        G.hp -= 20; if (G.hp < 0) G.hp = 0;
+        G.copTimer = 10;
+        sfxCrash();
+        traffic.splice(i, 1);
+      }
+    }
+
+    // Gas collect
+    for (var i = gasTokens.length - 1; i >= 0; i--) {
+      var g = gasTokens[i];
+      var gx = laneCenterX(g.lane);
+      var dx = Math.abs(pSX - gx), dy = Math.abs(pSY - g.y);
+      if (dx < (carW + 24) / 2 && dy < (carH + 24) / 2) {
+        G.gas = Math.min(100, G.gas + 40);
+        gasTokens.splice(i, 1);
+        sfxCollect();
+      }
+    }
+
+    // Repair collect
+    for (var i = repairTokens.length - 1; i >= 0; i--) {
+      var r = repairTokens[i];
+      var rx = laneCenterX(r.lane);
+      var dx = Math.abs(pSX - rx), dy = Math.abs(pSY - r.y);
+      if (dx < (carW + 24) / 2 && dy < (carH + 24) / 2) {
+        G.hp = Math.min(100, G.hp + 20);
+        repairTokens.splice(i, 1);
+        beep(800, 0.06, 'sine', 0.1); beep(1000, 0.06, 'sine', 0.1); beep(1200, 0.08, 'sine', 0.1);
+      }
+    }
+
+    // Win/Lose
+    if (G.hp <= 0) lose('Your car was destroyed!');
+    else if (G.gas <= 0) lose('Out of fuel!');
+    else if (G.copDist <= 0) lose('The police caught you!');
+    else if (G.timeLeft <= 0) lose('Time ran out!');
+    else if (G.dist >= L.track) win();
+    updateHUD();
+  }
+
+  function win() {
+    G.playing = false;
+    showEnd('#44cc66', 'ESCAPED!', 'You outran the police!',
+      'Distance: ' + (G.dist / 1000).toFixed(1) + 'km | Health: ' + Math.floor(G.hp) + '%');
+  }
+  function lose(r) {
+    G.playing = false;
+    showEnd('#ff4444', 'BUSTED', r,
+      'Distance: ' + (G.dist / 1000).toFixed(1) + 'km');
+  }
+  function showEnd(col, title, reason, stats) {
+    endOverlay.classList.add('show');
+    document.getElementById('end-title').style.color = col;
+    document.getElementById('end-title').textContent = title;
+    document.getElementById('end-reason').textContent = reason;
+    document.getElementById('end-stats').textContent = stats;
+  }
+
+  // Render
+  function drawTrafficCar(cx, cy, w, h, color) {
+    // Body
+    ctx.fillStyle = color;
+    ctx.fillRect(cx - w/2, cy - h/2, w, h);
+    // Windshield
+    ctx.fillStyle = 'rgba(100,180,255,0.5)';
+    ctx.fillRect(cx - w/2 + 3, cy - h/2 + 6, w - 6, h * 0.3);
+    // Front lights (bottom)
+    ctx.fillStyle = '#ff3333';
+    ctx.fillRect(cx - w/2 + 2, cy - h/2 + 1, 5, 4);
+    ctx.fillRect(cx + w/2 - 7, cy - h/2 + 1, 5, 4);
+    // Rear lights (top)
+    ctx.fillStyle = '#ffff88';
+    ctx.fillRect(cx - w/2 + 2, cy + h/2 - 6, 5, 4);
+    ctx.fillRect(cx + w/2 - 7, cy + h/2 - 6, 5, 4);
+    // Wheels
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx - w/2 - 2, cy - h/2 + 6, 3, 10);
+    ctx.fillRect(cx + w/2 - 1, cy - h/2 + 6, 3, 10);
+    ctx.fillRect(cx - w/2 - 2, cy + h/2 - 16, 3, 10);
+    ctx.fillRect(cx + w/2 - 1, cy + h/2 - 16, 3, 10);
+  }
+
+  function drawSportsCar(cx, cy, w, h) {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath(); ctx.ellipse(cx, cy + h/2 + 4, w/2 + 5, 6, 0, 0, Math.PI*2); ctx.fill();
+
+    // Wheels (behind body)
+    ctx.fillStyle = '#111';
+    var ww = 6, wh = 14;
+    ctx.fillRect(cx - w/2 - 3, cy - h/2 + 14, ww, wh);
+    ctx.fillRect(cx + w/2 - 3, cy - h/2 + 14, ww, wh);
+    ctx.fillRect(cx - w/2 - 3, cy + h/2 - 28, ww, wh);
+    ctx.fillRect(cx + w/2 - 3, cy + h/2 - 28, ww, wh);
+    // Rim highlights
+    ctx.fillStyle = '#444';
+    ctx.fillRect(cx - w/2 - 1, cy - h/2 + 20, 2, 4);
+    ctx.fillRect(cx + w/2 - 1, cy - h/2 + 20, 2, 4);
+    ctx.fillRect(cx - w/2 - 1, cy + h/2 - 22, 2, 4);
+    ctx.fillRect(cx + w/2 - 1, cy + h/2 - 22, 2, 4);
+
+    // Body — sports car shape (wider at bottom, narrower at top)
+    ctx.fillStyle = '#3366cc';
+    ctx.beginPath();
+    // Front bumper (bottom)
+    ctx.moveTo(cx - w/2 + 6, cy + h/2);
+    ctx.lineTo(cx + w/2 - 6, cy + h/2);
+    // Right side going up — curves inward for cabin
+    ctx.lineTo(cx + w/2 - 4, cy + h/2 - 16);
+    ctx.lineTo(cx + w/2 - 2, cy + h/2 - 30);
+    // Cabin roof
+    ctx.lineTo(cx + w/2 - 10, cy - h/2 + 22);
+    // Front slope (nose)
+    ctx.lineTo(cx + w/2 - 14, cy - h/2 + 10);
+    ctx.lineTo(cx + w/2 - 6, cy - h/2 + 2);
+    ctx.lineTo(cx - w/2 + 6, cy - h/2 + 2);
+    // Left side — mirror
+    ctx.lineTo(cx - w/2 + 14, cy - h/2 + 10);
+    ctx.lineTo(cx - w/2 + 10, cy - h/2 + 22);
+    ctx.lineTo(cx - w/2 + 2, cy + h/2 - 30);
+    ctx.lineTo(cx - w/2 + 4, cy + h/2 - 16);
+    ctx.closePath();
+    ctx.fill();
+
+    // Racing stripe
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(cx - 3, cy - h/2 + 12, 6, h - 20);
+
+    // Windshield (darker tint)
+    ctx.fillStyle = 'rgba(40,120,200,0.7)';
+    ctx.beginPath();
+    ctx.moveTo(cx - w/2 + 8, cy - h/2 + 18);
+    ctx.lineTo(cx + w/2 - 8, cy - h/2 + 18);
+    ctx.lineTo(cx + w/2 - 10, cy - h/2 + 30);
+    ctx.lineTo(cx - w/2 + 10, cy - h/2 + 30);
+    ctx.closePath();
+    ctx.fill();
+
+    // Side windows
+    ctx.fillStyle = 'rgba(40,120,200,0.5)';
+    ctx.fillRect(cx - w/2 + 4, cy - h/2 + 30, 5, 8);
+    ctx.fillRect(cx + w/2 - 9, cy - h/2 + 30, 5, 8);
+
+    // Headlights (bottom/front)
+    ctx.fillStyle = '#ffffcc';
+    ctx.fillRect(cx - w/2 + 8, cy + h/2 - 4, 8, 3);
+    ctx.fillRect(cx + w/2 - 16, cy + h/2 - 4, 8, 3);
+
+    // Tail lights (top/rear)
+    ctx.fillStyle = '#ff2222';
+    ctx.fillRect(cx - w/2 + 8, cy - h/2 + 2, 8, 3);
+    ctx.fillRect(cx + w/2 - 16, cy - h/2 + 2, 8, 3);
+
+    // Spoiler
+    ctx.fillStyle = '#222';
+    ctx.fillRect(cx - w/2, cy - h/2 + 4, w, 4);
+    ctx.fillRect(cx - w/2 + 2, cy - h/2 - 2, w - 4, 3);
+
+    // Front splitter
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx - w/2 + 8, cy + h/2 - 2, w - 16, 2);
+  }
+
+  function drawAll() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Grass background
+    ctx.fillStyle = '#1a3a1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // Road — simple straight rectangle
+    var rl = roadLeft(), rw = roadWidth();
+    ctx.fillStyle = '#333';
+    ctx.fillRect(rl, 0, rw, H);
+
+    // Road edges
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(rl - 3, 0, 3, H);
+    ctx.fillRect(rl + rw, 0, 3, H);
+
+    // Lane dashes — 4 dividers for 5 lanes
+    ctx.fillStyle = '#fff';
+    for (var i = 0; i < dashes.length; i++) {
+      var d = dashes[i];
+      if (d.y < 0 || d.y > H) continue;
+      for (var ld = 1; ld < LANE_COUNT; ld++) {
+        ctx.fillRect(rl + laneWidth() * ld - 1.5, d.y, 3, 20);
+      }
+    }
+
+    // Traffic
+    for (var i = 0; i < traffic.length; i++) {
+      var t = traffic[i];
+      if (t.y < -60 || t.y > H + 60) continue;
+      drawTrafficCar(laneCenterX(t.lane), t.y, 28, 46, t.c);
+    }
+
+    // Gas — just yellow circles
+    for (var i = 0; i < gasTokens.length; i++) {
+      var g = gasTokens[i];
+      if (g.y < -30 || g.y > H + 30) continue;
+      ctx.fillStyle = '#ffdd00';
+      ctx.beginPath();
+      ctx.arc(laneCenterX(g.lane), g.y, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff5aa';
+      ctx.beginPath();
+      ctx.arc(laneCenterX(g.lane) - 3, g.y - 3, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Repair — green cross
+    for (var i = 0; i < repairTokens.length; i++) {
+      var rp = repairTokens[i];
+      if (rp.y < -30 || rp.y > H + 30) continue;
+      var rpx = laneCenterX(rp.lane), rpy = rp.y;
+      // Glow
+      ctx.fillStyle = 'rgba(68,204,102,0.2)';
+      ctx.beginPath(); ctx.arc(rpx, rpy, 18, 0, Math.PI*2); ctx.fill();
+      // White cross
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(rpx - 10, rpy - 3, 20, 6);
+      ctx.fillRect(rpx - 3, rpy - 10, 6, 20);
+      // Green cross
+      ctx.fillStyle = '#44cc66';
+      ctx.fillRect(rpx - 8, rpy - 2, 16, 4);
+      ctx.fillRect(rpx - 2, rpy - 8, 4, 16);
+    }
+
+    // Player car — sports car
+    var carW = 38, carH = 64;
+    var pSX = W / 2 + G.px * (roadWidth() / 2 - carW / 2);
+    var pSY = H - 80;
+    drawSportsCar(pSX, pSY, carW, carH);
+
+    // Boost flame
+    if (G.boosting && G.playing) {
+      var fl = 10 + Math.random() * 8;
+      ctx.fillStyle = '#ffaa00';
+      ctx.beginPath();
+      ctx.moveTo(pSX - 6, pSY + carH/2);
+      ctx.lineTo(pSX, pSY + carH/2 + fl);
+      ctx.lineTo(pSX + 6, pSY + carH/2);
+      ctx.fill();
+      ctx.fillStyle = '#ff4400';
+      ctx.beginPath();
+      ctx.moveTo(pSX - 3, pSY + carH/2);
+      ctx.lineTo(pSX, pSY + carH/2 + fl * 0.6);
+      ctx.lineTo(pSX + 3, pSY + carH/2);
+      ctx.fill();
+    }
+
+    // Cop indicator
+    if (G.playing) {
+      var cox = rl + rw + 15;
+      var coy = 30;
+      if (G.copTimer > 0 && G.copDist < 150) {
+        var fl = Math.sin(Date.now() / 200) > 0;
+        ctx.fillStyle = fl ? '#ff0000' : '#0000ff';
+        ctx.beginPath(); ctx.arc(cox, coy, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = fl ? '#0000ff' : '#ff0000';
+        ctx.beginPath(); ctx.arc(cox, coy + 12, 5, 0, Math.PI*2); ctx.fill();
+      } else {
+        ctx.fillStyle = G.copTimer > 0 ? '#ff4444' : '#44cc66';
+        ctx.beginPath(); ctx.arc(cox, coy, 4, 0, Math.PI*2); ctx.fill();
+      }
+    }
+
+    // Progress bar at bottom
+    if (G.playing && G.lvl) {
+      var pbH = 6, pbY = H - pbH;
+      var pct = Math.min(100, (G.dist / G.lvl.track) * 100);
+      // Background
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0, pbY, W, pbH);
+      // Fill
+      var fillW = W * pct / 100;
+      var grd = ctx.createLinearGradient(0, 0, W, 0);
+      grd.addColorStop(0, '#44cc66');
+      grd.addColorStop(0.5, '#ffaa00');
+      grd.addColorStop(1, '#ff4444');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, pbY, fillW, pbH);
+      // Label above bar
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(Math.floor(pct) + '%  (' + (G.dist/1000).toFixed(1) + 'km / ' + (G.lvl.track/1000) + 'km)', W/2, pbY - 3);
+      ctx.textAlign = 'start';
+      // Finish line marker on road
+      if (pct > 95 && G.dist < G.lvl.track) {
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 4]);
+        ctx.beginPath();
+        ctx.moveTo(rl, H * 0.05);
+        ctx.lineTo(rl + rw, H * 0.05);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.lineWidth = 1;
+      }
+    }
+  }
+
+  // HUD
+  function updateHUD() {
+    if (!G.lvl) return;
+    var L = G.lvl;
+    document.getElementById('hp-bar').style.width = G.hp + '%';
+    document.getElementById('hp-val').textContent = Math.floor(G.hp);
+    document.getElementById('gas-bar').style.width = G.gas + '%';
+    document.getElementById('gas-val').textContent = Math.floor(G.gas);
+    document.getElementById('boost-bar').style.width = G.boost + '%';
+    document.getElementById('boost-val').textContent = Math.floor(G.boost);
+    document.getElementById('speed-num').textContent = Math.floor(G.speed * 30);
+    var m = Math.floor(G.timeLeft / 60), s = Math.floor(G.timeLeft % 60);
+    document.getElementById('hud-time').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    document.getElementById('hud-time').style.color = G.timeLeft <= 30 ? '#ff4444' : '#ffaa00';
+    document.getElementById('hud-dist').textContent = Math.floor((G.dist / L.track) * 100) + '% ' + (G.dist/1000).toFixed(1) + 'km';
+    var ce = document.getElementById('hud-cop');
+    if (G.copDist < 50) { ce.className = 'hud-cop close'; ce.textContent = 'COP: ' + Math.floor(G.copDist) + 'm'; }
+    else if (G.copTimer > 0) { ce.className = 'hud-cop chasing'; ce.textContent = 'COP: ' + Math.floor(G.copDist) + 'm'; }
+    else { ce.className = 'hud-cop losing'; ce.textContent = 'COP: far'; }
+    document.getElementById('hp-bar').style.background = G.hp <= 25 ? '#ff4444' : G.hp <= 50 ? '#ffaa00' : '#44cc66';
+    document.getElementById('gas-bar').style.background = G.gas <= 25 ? '#ff4444' : G.gas <= 50 ? '#ff8800' : '#ffaa00';
+  }
+
+  // Input
+  window.addEventListener('keydown', function(e) {
+    keys[e.keyCode] = true;
+    if (e.keyCode === 32) e.preventDefault();
+    if (!G.playing) {
+      if (e.keyCode === 49) start('novice');
+      if (e.keyCode === 50) start('driver');
+      if (e.keyCode === 51) start('expert');
+    }
+    if (e.keyCode === 82 && !G.playing && G.lvl) {
+      for (var k in LEVELS) { if (LEVELS[k] === G.lvl) { start(k); break; } }
+    }
+  });
+  window.addEventListener('keyup', function(e) { keys[e.keyCode] = false; });
+
+  // Level click
+  var cards = document.querySelectorAll('.level-card');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].addEventListener('click', function() {
+      var lv = this.getAttribute('data-level');
+      if (lv) start(lv);
+    });
+  }
+
+  // Loop
+  var lastT = 0, alertCD = 0;
+  function loop(ts) {
+    requestAnimationFrame(loop);
+    if (lastT === 0) lastT = ts;
+    var dt = (ts - lastT) / 1000;
+    lastT = ts;
+    if (dt > 0.1) dt = 0.1;
+    if (dt <= 0) dt = 0.016;
+    update(dt);
+    if (G.playing && G.gas > 0 && G.gas <= 20) {
+      alertCD += dt;
+      if (alertCD >= 2) { alertCD = 0; sfxAlert(); }
+    } else { alertCD = 0; }
+    drawAll();
+  }
+
+  drawAll();
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>

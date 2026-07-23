@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3x3 Rubik's Cube — IMA Summer Program</title>
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+<div class="game-shell">
+  <header class="topbar">
+    <div class="left">
+      <a class="brand" href="index.html" style="text-decoration:none">3x3 Rubik's Cube</a>
+      <div class="level-pills" role="tablist" aria-label="Difficulty">
+        <button class="active" data-level="1" title="Full algorithm hints for each stage">Level 1</button>
+        <button data-level="2" title="Brief hints only">Level 2</button>
+        <button data-level="3" title="No hints, 5-minute countdown">Level 3</button>
+      </div>
+    </div>
+    <div class="right">
+      <button class="btn" id="btn-shuffle" title="Apply a few random moves">🎲 Shuffle</button>
+      <button class="btn" id="btn-undo" title="Undo last move">↶ Undo</button>
+      <button class="btn" id="btn-redo" title="Redo last undone move">↷ Redo</button>
+      <button class="btn danger" id="btn-giveup" title="Give up this attempt">Give Up</button>
+      <button class="btn primary" id="btn-restart" title="Reset and reshuffle">↻ Restart</button>
+      <a class="btn" href="index.html" title="Back to project home">← Home</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="face-indicator" id="face-indicator">Click a face on the cube (or press <span class='key'>R L U D F B</span>) to select a face</div>
+    <div id="canvas-wrap">
+      <canvas id="cube-canvas"></canvas>
+    </div>
+
+    <div class="stage-toast" id="stage-toast">
+      <div class="toast-title" id="toast-title">Stage Complete!</div>
+      <div class="toast-stage" id="toast-stage">Next: First Two Layers</div>
+      <div class="toast-algo" id="toast-algo">R U R' U'</div>
+    </div>
+
+    <div class="face-rotator" id="face-rotator">
+      <button class="rotator-btn" data-dir="-1" title="Counter-clockwise 90°">⟲</button>
+      <span class="face-name" id="rot-face-name">R</span>
+      <button class="rotator-btn" data-dir="1" title="Clockwise 90°">⟳</button>
+    </div>
+
+    <div class="zoom-hint">
+      Drag to rotate view · scroll to zoom<br />
+      Click face to select · press again to turn
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="stat-card">
+      <div class="label">Time</div>
+      <div class="value" id="stat-time">00:00.00</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="label">Percent Solved</div>
+      <div class="value ok" id="stat-percent">0%</div>
+      <div class="progress-bar"><div id="stat-bar-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="stat-card">
+      <div class="label">Moves Made</div>
+      <div class="value" id="stat-moves">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="label">Difficulty</div>
+      <div class="value" id="stat-level">Level 1</div>
+      <div class="label" style="margin-top:6px" id="stat-difficulty">Full Algorithms</div>
+    </div>
+
+    <div class="hint-card" id="hint-card">
+      <div class="head">
+        <span class="label">Stage: White Cross</span>
+        <span class="stage-name">Algorithm</span>
+      </div>
+      <div class="body">Loading hints…</div>
+      <div class="algo">F R U R' U' F'</div>
+    </div>
+
+    <div class="controls-help">
+      <h4>Controls</h4>
+      <p><kbd>R</kbd><kbd>L</kbd><kbd>U</kbd><kbd>D</kbd><kbd>F</kbd><kbd>B</kbd> — select a face</p>
+      <p><kbd>→</kbd> turn CW · <kbd>←</kbd> turn CCW</p>
+      <p><kbd>Shift</kbd> + face key — turn the face counter-clockwise</p>
+      <p><kbd>Esc</kbd> — deselect face</p>
+      <p>Drag stage to rotate camera · scroll to zoom</p>
+    </div>
+  </aside>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 class="win" id="overlay-title">🎉 Solved!</h2>
+    <p id="overlay-text">Great work. The cube is fully solved.</p>
+    <div class="summary">
+      <div class="stat">
+        <div class="label">Time</div>
+        <div class="value" id="ov-time">00:00.00</div>
+      </div>
+      <div class="stat">
+        <div class="label">Moves</div>
+        <div class="value" id="ov-moves">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">Level</div>
+        <div class="value" id="ov-level">1</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="overlay-restart">Play Again</button>
+      <button class="btn" id="overlay-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="assets/js/game.js"></script>
+</body>
+</html>

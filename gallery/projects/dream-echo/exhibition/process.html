@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dream — Development Process</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <span class="logo">dream</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="knowledge.html">Domain Knowledge</a></li>
+    <li><a href="system.html">System Design</a></li>
+    <li><a href="process.html" class="active">Development Process</a></li>
+    <li><a href="game.html">Play the Game</a></li>
+  </ul>
+</nav>
+
+<main class="page-content">
+
+  <h1>Development Process</h1>
+  <p>A chronological record of how the game was built through human–AI collaboration, based on <code>agent-development-log.md</code>.</p>
+
+  <div class="timeline">
+
+    <div class="timeline-entry">
+      <div class="time-col">2026-07-15</div>
+      <div class="desc-col">
+        <div class="entry-title">Planning &amp; Confirmation</div>
+        <div class="entry-body">
+          Wu Zhen provided the development brief and system graph. WorkBuddy restated the core learning shift, player loop, data model, feedback relationships, challenge presets, website structure, dependency track, and first milestone. Blocking questions answered: title "dream", English language, simple illustrated cards, one day per run, Track A (no build step). Student confirmed and implementation began.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-entry">
+      <div class="time-col">2026-07-15</div>
+      <div class="desc-col">
+        <div class="entry-title">Project Structure &amp; Website Shell</div>
+        <div class="entry-body">
+          Created the directory structure (exhibition/, source/). Initialized agent-development-log.md, README.md, and THIRD_PARTY.md. Built the 5-page website shell (Home, Domain Knowledge, System Design, Process, Play Game) with shared CSS and consistent navigation. All content uses real project information from the brief.
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline entries will be added as development progresses -->
+
+  </div>
+
+  <h2>AI Influence on Design</h2>
+  <p>
+    WorkBuddy proposed the Track A dependency (no build step) to keep the exhibition simple. WorkBuddy also suggested the "excitement threshold" as the hidden constraint even in Level 1, so the tutorial already hints that quantity isn't the answer. The character "Lin" and the specific activity set were designed by WorkBuddy based on the brief's domain description. All decisions were reviewed with Wu Zhen before implementation.
+  </p>
+
+  <a href="game.html" class="play-btn">Play the Game</a>
+
+</main>
+
+<footer class="site-footer">
+  dream — Wu Zhen — Have a good dream domain — Built with WorkBuddy
+</footer>
+
+</body>
+</html>

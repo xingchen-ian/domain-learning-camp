@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Skating Novice — Play</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* Gauge bars */
+    .gauge-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+    }
+    .gauge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--white);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--deep-blue);
+      box-shadow: var(--shadow);
+    }
+    .gauge-bar {
+      width: 80px;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .gauge-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.1s, background 0.3s;
+    }
+    #balance-fill { background: #2a9d8f; width: 100%; }
+    #speed-fill { background: #457b9d; width: 0%; }
+    #knee-fill { background: #e9c46a; width: 50%; }
+    #message {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      min-height: 24px;
+      color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">A Skating Novice</a>
+      <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="game.html" class="active">Play Game</a></li>
+        <li><a href="process.html">Development</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Scroll prompt -->
+    <div class="scroll-hint" style="background: linear-gradient(135deg, #ffc864, #e9c46a); color: #1d3557; text-align: center; padding: 10px 20px; font-weight: bold; font-size: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+      &#x1F4DC; Scroll down for instructions, then scroll back up to play! &#x1F446;
+    </div>
+    <div class="game-wrapper">
+      <!-- Level Selection -->
+      <div class="level-select" style="margin-bottom:8px">
+        <button class="level-btn active" data-level="0">Level 1: Straight Line</button>
+        <button class="level-btn" data-level="1">Level 2: Winding Path</button>
+        <button class="level-btn" data-level="2">Level 3: Alpine Slalom</button>
+      </div>
+
+      <!-- Game Canvas -->
+      <div class="game-container">
+        <canvas id="game-canvas"></canvas>
+      </div>
+
+      <!-- Game UI -->
+      <div class="game-info">
+        <span>⏱ Timer: <span class="timer" id="timer">0:50</span></span>
+        <span>⭐ Score: <span class="score" id="score">0</span></span>
+        <span id="level-name">Lv1: First Steps</span>
+      </div>
+
+      <!-- Gauges -->
+      <div class="gauge-row">
+        <div class="gauge">Balance <div class="gauge-bar"><div class="gauge-fill" id="balance-fill"></div></div></div>
+        <div class="gauge">Speed <div class="gauge-bar"><div class="gauge-fill" id="speed-fill"></div></div></div>
+        <div class="gauge">Knee Bend <div class="gauge-bar"><div class="gauge-fill" id="knee-fill"></div></div></div>
+      </div>
+
+      <!-- Knee Bend Angle Slider -->
+      <div class="knee-slider-container">
+        <label>Knee Bend Angle: <span class="angle-value neutral" id="knee-angle-value">0°</span></label>
+        <input type="range" id="knee-slider" min="0" max="180" value="0" step="1">
+        <div class="knee-labels">
+          <span>0° Straight</span>
+          <span>45°</span>
+          <span>90°</span>
+          <span>135°</span>
+          <span>180° Deep</span>
+        </div>
+        <div style="margin-top:6px;color:#666;font-size:0.85rem;">
+          Starts at 0° — you can't stand on ice with straight legs! Use ↑/↓ arrows or drag the slider to find your balance.
+          You won't fall during the initial phase — but bending too far (170°+) during skating will cause a fall!
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="game-controls">
+        <button class="btn btn-start" id="btn-start">▶ Start</button>
+        <button class="btn btn-pause" id="btn-pause">⏸ Pause</button>
+        <button class="btn btn-restart" id="btn-restart">↺ Restart</button>
+      </div>
+
+      <!-- Message -->
+      <div id="message"></div>
+
+      <!-- Instructions -->
+      <div class="instructions">
+        <h4>How to Play (Top-Down View)</h4>
+        <p>
+          <kbd>&uarr;</kbd> or <kbd>W</kbd> — Increase Knee Bend &nbsp;&nbsp;
+          <kbd>&darr;</kbd> or <kbd>S</kbd> — Decrease Knee Bend &nbsp;&nbsp;
+          <kbd>&larr;</kbd> or <kbd>A</kbd> — Slide LEFT &nbsp;&nbsp;
+          <kbd>&rarr;</kbd> or <kbd>D</kbd> — Slide RIGHT &nbsp;&nbsp;
+          <kbd>Space</kbd> — Start &nbsp;&nbsp;
+          <kbd>P</kbd> — Pause &nbsp;&nbsp;
+          <kbd>R</kbd> — Restart &nbsp;&nbsp;
+          <kbd>1 2 3</kbd> — Switch levels
+        </p>
+        <p>
+          <strong style="color:#c1121f;">&#9888; At game start, your knees are straight (0&deg;) &mdash; you can't stand on ice!</strong>
+          Use <kbd>&uarr;</kbd>/<kbd>&darr;</kbd> arrows or the slider to adjust your Knee Bend Angle and find balance.
+          <strong style="color:#2a9d8f;">You won't fall during this initial phase &mdash; take your time!</strong>
+        </p>
+        <p>
+          Once skating, <strong>bending too far (170&deg;+) will make you fall!</strong>
+          <strong style="color:#e63946;">Stay within the red track boundaries!</strong>
+          <strong style="color:#c1121f;">Level 1:</strong> Wide straight track — dodge the center cones! Hit one = fall, miss one = Game Over.
+          <strong style="color:#c1121f;">Level 2:</strong> S-curve track + center cones &mdash; <strong>hitting the wall = instant Game Over!</strong>
+          <strong style="color:#c1121f;">Level 3:</strong> Pure S-curve, no cones &mdash; <strong>wall = death! + 20s timer!</strong> <strong style="color:#ffc864;">More knee bend = slower speed!</strong>
+        </p>
+        <p>
+          <strong>Minimap:</strong> Side view in bottom-right shows your knee bend posture and upper body forward lean.
+        </p>
+        <p>
+          <strong>Level 1:</strong> Wide straight track, dodge center cones &nbsp;|&nbsp;
+          <strong>Level 2:</strong> Wide S-curve + center cones &mdash; <strong style="color:#c1121f;">wall = death!</strong> &nbsp;|&nbsp;
+          <strong>Level 3:</strong> S-curve, tight turns &mdash; <strong style="color:#c1121f;">wall = death! + 20s!</strong> <strong style="color:#ffc864;">Use knee bend to control speed!</strong>
+        </p>
+        <p>
+          <strong style="color:#ffc864;">Tip:</strong> Keep your knee bend around 70-110° for best stability. The farther from 90°, the wobblier you get! <strong style="color:#ffc864;">More knee bend = slower, less bend = faster!</strong>
+        </p>
+        <p>
+          <strong style="color:#ffc864;">Speed Control:</strong> Use <kbd>,</kbd> / <kbd>.</kbd> keys (or <kbd>&lt;</kbd> / <kbd>&gt;</kbd>) to <strong>slow down</strong> or <strong>speed up</strong> — adjust your pace to handle sharp turns!
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Sihan Lyu / Group 4 — A Skating Novice — Built with WorkBuddy</p>
+  </footer>
+
+  <script src="assets/js/game.js"></script>
+</body>
+</html>

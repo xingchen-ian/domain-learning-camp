@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wing Flight — Born With Wings</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="logo"><span>🕊</span> Wing Flight</a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="index.html#domain">Domain Knowledge</a></li>
+      <li><a href="index.html#system">System Design</a></li>
+      <li><a href="process.html">Development Process</a></li>
+      <li><a href="game.html">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <h1>🕊 Wing Flight</h1>
+    <p class="tagline">Born with a wing flying — observe the wind, manage your energy, plan your route.</p>
+    <a href="game.html" class="cta-btn">▶ Play the Game</a>
+  </section>
+
+  <div class="container">
+
+    <!-- ===== GAME IDEA ===== -->
+    <div class="section" id="idea">
+      <h2>Game Idea</h2>
+      <p><strong>Project Title:</strong> Wing Flight — Born With Wings</p>
+      <p><strong>Domain:</strong> Be born with a wing flying.</p>
+      <p><strong>Concept:</strong> A side-view flying game where you control a winged creature across a landscape full of wind zones, storms, and obstacles. Unlike simple "fly and enjoy the view" games, this one demands real piloting skill — you must read the wind vane, manage your energy reserves, and choose your route wisely.</p>
+      <p><strong>Player Goal:</strong> Reach the target portal on the far right side of the map. Along the way, collect coins and grab energy refills while avoiding storms, land masses, and running out of energy.</p>
+
+      <div class="highlight-box">
+        <strong>Core Learning Shift:</strong> Beginners think flying means floating towards the target. Experts know it needs observing the wind vane and evaluating energy loss.
+      </div>
+
+      <div class="card-grid">
+        <div class="info-card">
+          <div class="icon">🌬</div>
+          <h3>Observe Wind</h3>
+          <p>Each zone has different wind direction and strength. Read the wind vane before choosing your path.</p>
+        </div>
+        <div class="info-card">
+          <div class="icon">⚡</div>
+          <h3>Manage Energy</h3>
+          <p>Ascending costs energy. Diving regenerates it. Plan when to climb and when to dive.</p>
+        </div>
+        <div class="info-card">
+          <div class="icon">🛤</div>
+          <h3>Plan Route</h3>
+          <p>Storms and land masses block the direct path. Choose alternate routes to survive.</p>
+        </div>
+        <div class="info-card">
+          <div class="icon">🪙</div>
+          <h3>Collect Coins</h3>
+          <p>Coins reward risk-taking — the most valuable ones are often on dangerous paths.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DOMAIN KNOWLEDGE ===== -->
+    <div class="section" id="domain">
+      <h2>Domain Knowledge</h2>
+
+      <h3>The Real Experience</h3>
+      <p>The student once played a game called "Fly" where they could fly freely and see different views. But that game had no struggle — no challenge, no consequence. It felt unrealistic. This game aims to recreate the sensation of flight while adding the real-world challenges that make flying meaningful: wind resistance, energy management, and route planning.</p>
+
+      <h3>Novice vs. Expert</h3>
+      <table class="compare-table">
+        <tr>
+          <th>Aspect</th>
+          <th><span class="badge badge-novice">Novice</span></th>
+          <th><span class="badge badge-expert">Expert</span></th>
+        </tr>
+        <tr>
+          <td class="label">Flying</td>
+          <td>Float directly toward the target</td>
+          <td>Observe wind vane, evaluate energy, plan route</td>
+        </tr>
+        <tr>
+          <td class="label">Wind</td>
+          <td>Ignore it or fight it head-on</td>
+          <td>Use updrafts to gain altitude for free, avoid downdrafts</td>
+        </tr>
+        <tr>
+          <td class="label">Energy</td>
+          <td>Ascend constantly until energy runs out</td>
+          <td>Dive to regenerate energy, ascend in bursts when needed</td>
+        </tr>
+        <tr>
+          <td class="label">Route</td>
+          <td>Take the straightest, safest-looking path</td>
+          <td>Zigzag into headwinds, detour around storms, exploit tailwinds</td>
+        </tr>
+        <tr>
+          <td class="label">Wing Choice</td>
+          <td>Pick the strongest wing (it seems best)</td>
+          <td>Match wing strength to conditions — light wings save energy in calm air</td>
+        </tr>
+      </table>
+
+      <h3>Novice Misconception</h3>
+      <p>Beginners think the prettiest wing is the strongest one, and the trail that seems safe is definitely correct. They choose the direct path without reading the wind or evaluating whether their energy will last.</p>
+
+      <h3>Why This Knowledge Becomes Playable</h3>
+      <p>The relationship between wind direction, coin collection, and energy use is the core challenge. Every flight decision has a visible consequence: fly into a headwind with a strong wing and you drain energy fast; dive through an updraft and you gain height for free. The game turns an abstract concept (aerodynamic efficiency) into immediate, tactile feedback the player can feel.</p>
+    </div>
+
+    <!-- ===== SYSTEM DESIGN ===== -->
+    <div class="section" id="system">
+      <h2>System Design</h2>
+
+      <h3>Environment Data (System-Controlled)</h3>
+      <ul>
+        <li><strong>Wind direction & strength</strong> — varies by zone; shown on the wind vane HUD</li>
+        <li><strong>Wing shape</strong> — light / medium / strong; affects speed, power, and energy cost</li>
+        <li><strong>Energy refreshment</strong> — green pickup orbs that restore 30% energy, and rare blue large orbs that restore 50%</li>
+        <li><strong>Coins</strong> — gold collectibles scattered along all routes</li>
+        <li><strong>Road length</strong> — distance from start to target (5000m)</li>
+      </ul>
+
+      <h3>Player-Controlled Data</h3>
+      <ul>
+        <li><strong>Ascend / Dive</strong> — W/S or Arrow keys; manage altitude and energy</li>
+        <li><strong>Wing strength</strong> — 1/2/3 keys; switch between Sparrow (light, efficient), Bluebird (balanced), and Eagle (powerful, energy-hungry). Each form has a unique appearance and flight characteristic.</li>
+        <li><strong>Boost flap</strong> — Space; temporary speed and lift burst</li>
+        <li><strong>Route choice</strong> — vertical positioning determines which wind zones and obstacles you pass through</li>
+      </ul>
+
+      <h3>System-Calculated Results</h3>
+      <ul>
+        <li>Forward speed (base + wind + wing modifier)</li>
+        <li>Vertical velocity (gravity + input + wind)</li>
+        <li>Energy level (drains when ascending, regens when diving, drains fast in storms)</li>
+        <li>Coin count</li>
+        <li>Route efficiency (distance covered vs. energy used)</li>
+      </ul>
+
+      <h3>Feedback Translation</h3>
+      <table class="feedback-table">
+        <tr>
+          <th>Signal</th>
+          <th>Cause</th>
+          <th>Meaning</th>
+          <th>How It Appears</th>
+        </tr>
+        <tr>
+          <td>Flight flapping</td>
+          <td>Wing not strong enough for wind; route inefficient</td>
+          <td>Wrong wing choice or bad route</td>
+          <td>Screen shake + flapping sound</td>
+        </tr>
+        <tr>
+          <td>Speed drops</td>
+          <td>Energy too low to maintain wings</td>
+          <td>Find energy supplies or dive to regen</td>
+          <td>Speed decreases, altitude drops, warning beep</td>
+        </tr>
+        <tr>
+          <td>Route drifts</td>
+          <td>Wind pushing player off course; instability</td>
+          <td>Adjust route or wing strength</td>
+          <td>Red screen flash on edges</td>
+        </tr>
+        <tr>
+          <td>Storm turbulence</td>
+          <td>Player entered a storm cloud</td>
+          <td>Energy draining rapidly — leave now</td>
+          <td>Dark sky, heavy shake, lightning, rumble sound</td>
+        </tr>
+        <tr>
+          <td>Low energy border</td>
+          <td>Energy below 25%</td>
+          <td>Critical — dive to regen or find a pickup</td>
+          <td>Red pulsing border around screen</td>
+        </tr>
+      </table>
+
+      <h3>Important States</h3>
+      <ul>
+        <li><strong>Route:</strong> efficient ↔ inefficient</li>
+        <li><strong>Wing:</strong> strong but energy-hungry ↔ light but efficient</li>
+        <li><strong>Zone:</strong> safe ↔ danger (storm)</li>
+        <li><strong>Energy:</strong> sufficient ↔ insufficient</li>
+      </ul>
+
+      <h3>Success & Failure</h3>
+      <p><strong>Success:</strong> Reach the target portal (and collect minimum coins if required).</p>
+      <p><strong>Failure:</strong> Run out of time · Hit a land mass · Lose too much energy and crash · Drift into a storm and get stuck.</p>
+
+      <h3>Challenge Presets</h3>
+      <div class="card-grid">
+        <div class="info-card" style="border-left-color: #4caf50;">
+          <div class="icon">🌿</div>
+          <h3>Level 1: First Flight</h3>
+          <p><strong>Scene:</strong> Sunny meadow — bright blue sky, white clouds, green grassy terrain.</p>
+          <p><strong>Variable changes:</strong> Light wind zones, no storms, full starting energy, 90s time limit, 0 minimum coins.</p>
+          <p><strong>Teaches:</strong> Basic ascend/dive controls, energy management, reading the wind vane.</p>
+        </div>
+        <div class="info-card" style="border-left-color: #ff9800;">
+          <div class="icon">⛰</div>
+          <h3>Level 2: Headwind Trial</h3>
+          <p><strong>Scene:</strong> Mountain pass — cool gray sky, mountain silhouettes with snow caps, rocky gray-brown terrain, wind streaks.</p>
+          <p><strong>Variable changes:</strong> Strong headwind zones, updraft zones to exploit, lower starting energy (80%), 75s time limit, 5 minimum coins.</p>
+          <p><strong>Teaches:</strong> Wind observation, using updrafts for free altitude, energy conservation by diving.</p>
+        </div>
+        <div class="info-card" style="border-left-color: #e53935;">
+          <div class="icon">🌩</div>
+          <h3>Level 3: Storm Alley</h3>
+          <p><strong>Scene:</strong> Stormy valley — dark ominous sky, distant lightning flashes, heavy dark clouds, jagged rocky terrain.</p>
+          <p><strong>Variable changes:</strong> Six storm clouds blocking paths, variable wind, low starting energy (70%), 70s time limit, 8 minimum coins.</p>
+          <p><strong>Teaches:</strong> Route planning around obstacles, risk management for coin collection, adapting to shifting wind.</p>
+        </div>
+        <div class="info-card" style="border-left-color: #0277bd;">
+          <div class="icon">🌊</div>
+          <h3>Level 4: Coastal Crossing</h3>
+          <p><strong>Scene:</strong> Golden sunset over the sea — orange sky, large low sun, sandy islands with palm trees, animated ocean waves with sun reflection, soaring seagulls.</p>
+          <p><strong>Variable changes:</strong> Shifting sea breezes (tailwind ↔ headwind), 3 sea storms, island-hopping terrain, 85% starting energy, 80s time limit, 6 minimum coins.</p>
+          <p><strong>Special mechanic — Fish Transformation:</strong> Fly through the glowing dive portal mid-level to transform into a fish! Dive underwater, swim with light buoyancy physics, and collect exclusive blue underwater coins. After 10 seconds, you transform back into a bird and launch into the sky. A whole new physics system within the same level.</p>
+          <p><strong>Teaches:</strong> Adapting to rapidly shifting wind direction, island-hopping route planning, and switching between two completely different movement systems (flying vs. swimming).</p>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <strong>Each level changes system variables</strong> — wind strength, wind direction, obstacle placement, energy availability, time limits, and coin requirements. They are not just visual reskins; the player must adapt their strategy to different aerodynamic conditions.
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>Wing Flight — Born With Wings | A domain-learning game about wind, energy, and route planning.</p>
+    <p>Built with HTML, CSS, and Canvas 2D — no build step, no internet required.</p>
+  </footer>
+
+</body>
+</html>

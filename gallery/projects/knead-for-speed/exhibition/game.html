@@ -1,0 +1,3743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knead for Speed - Play</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Comic Sans MS', cursive, sans-serif;
+      background: #fff0f5;
+      color: #5d3a4b;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+    #gameContainer {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+    #topBar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #f8a5c2, #e8b4d0);
+      color: #fff;
+      padding: 8px 24px;
+      font-size: 14px;
+      height: 40px;
+      box-shadow: 0 2px 8px rgba(248,165,194,0.3);
+      z-index: 20;
+    }
+    #topBar a { color: #fff; text-decoration: none; font-weight: bold; }
+    #topBar a:hover { text-decoration: underline; }
+    #mainArea {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    #leftPanel {
+      width: 300px;
+      min-width: 300px;
+      background: #fff5f7;
+      border-right: 3px solid #f8a5c2;
+      padding: 12px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+    #leftPanel h2 { font-size: 22px; margin-bottom: 12px; color: #d4789c; text-decoration: underline; text-underline-offset: 3px; font-weight: bold; }
+    .recipeStep {
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      font-size: 12px;
+      background: #fce4ec;
+      border-left: 4px solid #f8a5c2;
+      word-wrap: break-word;
+      line-height: 1.3;
+    }
+    .recipeStep.active {
+      background: #f8bbd0;
+      border-left-color: #e91e63;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(233,30,99,0.2);
+    }
+    .recipeStep.done {
+      background: #e8f5e9;
+      border-left-color: #81c784;
+      opacity: 0.6;
+    }
+    #gameCanvas {
+      flex: 1;
+      display: block;
+      background: #fff0f5;
+      cursor: pointer;
+    }
+    #rightPanel {
+      width: 240px;
+      min-width: 240px;
+      background: #fff5f7;
+      border-left: 3px solid #f8a5c2;
+      padding: 12px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+    #rightPanel h2 { font-size: 16px; margin-bottom: 10px; color: #d4789c; }
+    .statBox {
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 6px rgba(248,165,194,0.12);
+      border: 1px solid #f8bbd0;
+    }
+    .statBox .label { font-size: 10px; color: #d4789c; text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold; }
+    .statBox .value { font-size: 16px; font-weight: bold; color: #5d3a4b; }
+    .statBox .value.green { color: #66bb6a; }
+    .statBox .value.red { color: #ef5350; }
+    .statusPerfect { color: #66bb6a; }
+    .statusOkay { color: #ffa726; }
+    .statusBad { color: #ef5350; }
+    #controlsHint {
+      background: linear-gradient(135deg, #f8a5c2, #e8b4d0);
+      color: #fff;
+      padding: 8px 24px;
+      font-size: 12px;
+      text-align: center;
+    }
+    #controlsHint kbd {
+      background: rgba(255,255,255,0.3);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    #menuOverlay, #resultOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(93,58,75,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .overlayContent {
+      background: #fff5f7;
+      border-radius: 20px;
+      padding: 28px 32px;
+      max-width: 700px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(93,58,75,0.3);
+      border: 3px solid #f8a5c2;
+      max-height: 95vh;
+      overflow-y: auto;
+    }
+    .overlayContent.resultContent {
+      max-width: 580px;
+      padding: 20px 24px;
+    }
+    .overlayContent h1 { font-size: 26px; color: #d4789c; margin-bottom: 8px; }
+    .overlayContent h2 { font-size: 18px; color: #c0608a; margin-bottom: 12px; }
+    .overlayContent p { font-size: 14px; color: #7d5a6a; margin-bottom: 8px; line-height: 1.5; }
+    .levelBtn {
+      display: inline-block;
+      margin: 6px;
+      padding: 12px 24px;
+      font-size: 15px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .levelBtn:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(93,58,75,0.2); }
+    .levelBtn.easy { background: #c8e6c9; color: #2e7d32; border: 2px solid #a5d6a7; }
+    .levelBtn.medium { background: #ffe082; color: #e65100; border: 2px solid #ffcc02; }
+    .levelBtn.hard { background: #ef9a9a; color: #b71c1c; border: 2px solid #e57373; }
+    .levelBtn.pink { background: #f8a5c2; color: #fff; border: 2px solid #f48fb1; }
+    .resultTables {
+      display: flex;
+      gap: 14px;
+      margin: 10px 0;
+      text-align: left;
+    }
+    .resultTable {
+      flex: 1;
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 11px;
+      border: 1px solid #f8bbd0;
+    }
+    .resultTable h4 {
+      font-size: 12px;
+      color: #d4789c;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #fce4ec;
+    }
+    .resultTable .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+      border-bottom: 1px solid #fce4ec;
+    }
+    .resultTable .row:last-child { border-bottom: none; }
+    .tipAmount {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 6px 0;
+    }
+    .tipAmount.green { color: #66bb6a; }
+    .tipAmount.red { color: #ef5350; }
+    .hidden { display: none !important; }
+    #resultCanvas {
+      display: block;
+      margin: 4px auto;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer">
+    <div id="topBar">
+      <div><strong>Knead for Speed</strong> &mdash; Baking Game</div>
+      <div><a href="index.html">Back to Project</a></div>
+    </div>
+    <div id="mainArea">
+      <div id="leftPanel">
+        <h2>Recipe</h2>
+        <div id="recipeList"></div>
+      </div>
+      <canvas id="gameCanvas"></canvas>
+      <div id="rightPanel">
+        <h2>Kitchen Stats</h2>
+        <div class="statBox">
+          <div class="label">Current Step</div>
+          <div class="value" id="currentStepText">Select a level</div>
+        </div>
+        <div class="statBox" id="measureBox">
+          <div class="label">Target</div>
+          <div class="value" id="targetAmountText"></div>
+        </div>
+        <div class="statBox" id="pouredBox">
+          <div class="label">Poured</div>
+          <div class="value" id="pouredAmountText"></div>
+        </div>
+        <div class="statBox">
+          <div class="label">Status</div>
+          <div class="value" id="measureStatusText"></div>
+        </div>
+        <div class="statBox">
+          <div class="label">Mix Progress</div>
+          <div class="value" id="mixerTimeText"></div>
+        </div>
+        <div class="statBox">
+          <div class="label">Oven Timer</div>
+          <div class="value" id="ovenTimeText"></div>
+        </div>
+        <div class="statBox">
+          <div class="label">Total Time</div>
+          <div class="value" id="totalTimeText"></div>
+        </div>
+      </div>
+    </div>
+    <div id="controlsHint">
+      <kbd>Mouse</kbd> to select &nbsp;|&nbsp;
+      <kbd>Space</kbd> to pour / bake &nbsp;|&nbsp;
+      <kbd>&larr; &rarr;</kbd> to mix &nbsp;|&nbsp;
+      <kbd>Hold Space</kbd> while pouring
+    </div>
+  </div>
+
+  <!-- Menu Overlay -->
+  <div id="menuOverlay">
+    <div class="overlayContent">
+      <h1>Knead for Speed</h1>
+      <p>Balance <strong>accuracy</strong> and <strong>timing</strong> to bake the perfect pastry.<br>
+      Measure precisely, mix and bake just right, and serve before time runs out!</p>
+      <h2>Select a Level</h2>
+      <button class="levelBtn easy" onclick="startGame(0)">Level 0: Cake<br><small>No time limit &middot; 5 ingredients</small></button>
+      <button class="levelBtn medium" onclick="startGame(1)">Level 1: Cookies<br><small>1.5 min limit &middot; 5 ingredients</small></button>
+      <button class="levelBtn hard" onclick="startGame(2)">Level 2: Brownies<br><small>1 min limit &middot; 7 ingredients</small></button>
+      <button class="levelBtn pink" onclick="startCustomersGame()">Level 3: Customers!<br><small>Serve a customer &middot; Random pastry</small></button>
+    </div>
+  </div>
+
+  <!-- Result Overlay -->
+  <div id="resultOverlay" class="hidden">
+    <div class="overlayContent resultContent">
+      <h1 id="resultTitle">Level Complete!</h1>
+      <canvas id="resultCanvas" width="240" height="160"></canvas>
+      <div class="tipAmount" id="tipDisplay">$0</div>
+      <div id="customerText" class="hidden" style="font-size: 20px; font-weight: bold; margin: 8px 0; color: #d4789c;"></div>
+      <div class="resultTables">
+        <div class="resultTable" id="resultLeft"></div>
+        <div class="resultTable" id="resultRight"></div>
+      </div>
+      <button class="levelBtn pink" onclick="showMenu()">Back to Menu</button>
+      <button class="levelBtn pink" onclick="restartLevel()">Retry Level</button>
+    </div>
+  </div>
+
+  <script>
+    // ===================== COLOR THEME =====================
+    const C = {
+      bg: "#fff0f5",
+      pink: "#f8a5c2",
+      pinkDark: "#d4789c",
+      pinkLight: "#fce4ec",
+      panelBg: "#fff5f7",
+      text: "#5d3a4b",
+      textLight: "#7d5a6a",
+      white: "#ffffff",
+      success: "#a5d6a7",
+      successDark: "#66bb6a",
+      warn: "#ffcc80",
+      warnDark: "#ffa726",
+      error: "#ef9a9a",
+      errorDark: "#ef5350",
+      cupFill: "rgba(248,165,194,0.5)",
+      progressBg: "#fce4ec",
+      progressFill: "#f8a5c2",
+      pastelPurple: "#d1c4e9",
+      pastelGreen: "#c8e6c9",
+      pastelYellow: "#fff9c4",
+      pastelBlue: "#bbdefb",
+      pastelLavender: "#e1bee7",
+      pastelMint: "#b2dfdb",
+      bowlInner: "#ffffff",
+      bowlRim: "#f8a5c2",
+      modalBg: "rgba(93,58,75,0.95)"
+    };
+
+    // ===================== GAME DATA =====================
+    const LEVELS = [
+      {
+        name: "Cake", pastryType: "cake", timeLimit: null,
+        allIngredients: [
+          { name: "Butter", amount: 1, unit: "cup", icon: "butter" },
+          { name: "Sugar", amount: 1.5, unit: "cup", icon: "sugar" },
+          { name: "Flour", amount: 2, unit: "cup", icon: "flour" },
+          { name: "Baking Powder", amount: 1, unit: "tsp", icon: "bakingpowder" },
+          { name: "Milk", amount: 1, unit: "cup", icon: "milk" }
+        ],
+        recipe: [
+          { type: "measure", items: [{ name: "Butter", amount: 1, unit: "cup", icon: "butter" }, { name: "Sugar", amount: 1.5, unit: "cup", icon: "sugar" }] },
+          { type: "mix", targetTime: 10, timeLimit: 7 },
+          { type: "measure", items: [{ name: "Flour", amount: 2, unit: "cup", icon: "flour" }, { name: "Baking Powder", amount: 1, unit: "tsp", icon: "bakingpowder" }] },
+          { type: "mix", targetTime: 10, timeLimit: 7 },
+          { type: "measure", items: [{ name: "Milk", amount: 1, unit: "cup", icon: "milk" }] },
+          { type: "mix", targetTime: 5, timeLimit: 5 },
+          { type: "oven", targetTime: 15 },
+          { type: "serve" }
+        ]
+      },
+      {
+        name: "Cookies", pastryType: "cookies", timeLimit: 90,
+        allIngredients: [
+          { name: "Butter", amount: 1, unit: "cup", icon: "butter" },
+          { name: "Sugar", amount: 1, unit: "cup", icon: "sugar" },
+          { name: "Flour", amount: 2.5, unit: "cup", icon: "flour" },
+          { name: "Baking Powder", amount: 1, unit: "tsp", icon: "bakingpowder" },
+          { name: "Vanilla", amount: 1, unit: "tsp", icon: "vanilla" }
+        ],
+        recipe: [
+          { type: "measure", items: [{ name: "Butter", amount: 1, unit: "cup", icon: "butter" }, { name: "Sugar", amount: 1, unit: "cup", icon: "sugar" }] },
+          { type: "mix", targetTime: 10, timeLimit: 6 },
+          { type: "measure", items: [{ name: "Flour", amount: 2.5, unit: "cup", icon: "flour" }, { name: "Baking Powder", amount: 1, unit: "tsp", icon: "bakingpowder" }] },
+          { type: "mix", targetTime: 10, timeLimit: 6 },
+          { type: "measure", items: [{ name: "Vanilla", amount: 1, unit: "tsp", icon: "vanilla" }] },
+          { type: "mix", targetTime: 5, timeLimit: 4 },
+          { type: "oven", targetTime: 15 },
+          { type: "serve" }
+        ]
+      },
+      {
+        name: "Brownies", pastryType: "brownies", timeLimit: 60,
+        allIngredients: [
+          { name: "Butter", amount: 1, unit: "cup", icon: "butter" },
+          { name: "Sugar", amount: 1, unit: "cup", icon: "sugar" },
+          { name: "Vanilla", amount: 1, unit: "tsp", icon: "vanilla" },
+          { name: "Eggs", amount: 2, unit: "", icon: "eggs" },
+          { name: "Flour", amount: 1.5, unit: "cup", icon: "flour" },
+          { name: "Baking Powder", amount: 1, unit: "tsp", icon: "bakingpowder" },
+          { name: "Chocolate", amount: 1, unit: "cup", icon: "chocolate" }
+        ],
+        recipe: [
+          { type: "measure", items: [{ name: "Butter", amount: 1, unit: "cup", icon: "butter" }, { name: "Sugar", amount: 1, unit: "cup", icon: "sugar" }, { name: "Vanilla", amount: 1, unit: "tsp", icon: "vanilla" }, { name: "Eggs", amount: 2, unit: "", icon: "eggs" }] },
+          { type: "mix", targetTime: 20, timeLimit: 10 },
+          { type: "measure", items: [{ name: "Flour", amount: 1.5, unit: "cup", icon: "flour" }, { name: "Baking Powder", amount: 1, unit: "tsp", icon: "bakingpowder" }] },
+          { type: "mix", targetTime: 10, timeLimit: 5 },
+          { type: "measure", items: [{ name: "Chocolate", amount: 1, unit: "cup", icon: "chocolate" }] },
+          { type: "mix", targetTime: 5, timeLimit: 3 },
+          { type: "oven", targetTime: 10 },
+          { type: "serve" }
+        ]
+      }
+    ];
+
+    // ===================== AUDIO =====================
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    function initAudio() { if (!audioCtx) audioCtx = new AudioCtx(); }
+    function playTone(freq, dur, type, vol) {
+      type = type || "sine"; vol = vol || 0.3;
+      if (!audioCtx) initAudio();
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    }
+    function playJingle(result) {
+      if (result === "perfect") { playTone(600, 0.12); setTimeout(function(){ playTone(750, 0.12); }, 100); setTimeout(function(){ playTone(900, 0.2); }, 200); }
+      else if (result === "okay") { playTone(500, 0.18); setTimeout(function(){ playTone(600, 0.18); }, 150); }
+      else { playTone(350, 0.25); setTimeout(function(){ playTone(280, 0.25); }, 180); }
+    }
+    function playWinSound() { [600, 750, 900, 1200].forEach(function(f, i){ setTimeout(function(){ playTone(f, 0.25); }, i * 130); }); }
+    function playLoseSound() { [350, 320, 290, 260].forEach(function(f, i){ setTimeout(function(){ playTone(f, 0.25); }, i * 130); }); }
+    function playClick() { playTone(800, 0.06, "sine", 0.15); }
+    function playError() { playTone(200, 0.3, "square", 0.15); }
+    function playOvenStart() { playTone(440, 0.3, "triangle", 0.2); }
+    function playOvenDone() { playTone(660, 0.2, "triangle", 0.2); setTimeout(function(){ playTone(880, 0.25, "triangle", 0.2); }, 150); }
+
+    // ===================== GAME STATE =====================
+    var canvas, ctx, currentLevel, stepIndex, gameState = "menu";
+    var startTime, spaceHeld, currentAction, actionStartTime;
+    var pouredAmount, selectedIngredient;
+    var applianceSelected;
+    var mixerTimeLimit, mixerStartTime, mixerTimedOut, mixerTarget;
+    var mixWhiskX, mixCircles, mixProgress;
+    var mixActive, mixWasLeft;
+    var arrowLeftHeld = arrowRightHeld = false;
+    var mixTrail = [];
+    var eggsCracked = 0, eggsTarget = 0, eggCrackActive = false;
+    var countdownStartTime = 0, countdownActive = false;
+    var ovenRunning, ovenStartTime, ovenElapsed;
+    var measuredIngredients = [], bowlIngredients = [], mixResults = [], ovenResult = null;
+    var totalTip, gameResult, animationId;
+    var bowlBlobCache = null, bowlBlobCacheKey = "";
+    var ingredientButtons = [], applianceButtons = [], serveButton = null;
+    var accuracyScore = 0;
+    var mixStepIdx = 0;
+
+    // ===================== CUSTOMERS LEVEL STATE =====================
+    var isCustomersMode = false;
+    var customersSubLevel = 0;
+    var customersStartTime = 0;
+    var customersCharX = 0;
+    var customersRequestedItem = "";
+    var customersPastryX = 0, customersPastryY = 0;
+    var customersPastryStartX = 0, customersPastryStartY = 0;
+    var customersPastryDragging = false;
+    var customersPastryDropped = false;
+    var customersEatStartTime = 0;
+    var customersFaceState = "smile";
+    var customersBakeFinishTime = 0;
+
+    function resetState() {
+      stepIndex = 0; startTime = performance.now(); spaceHeld = false;
+      currentAction = null; actionStartTime = 0; pouredAmount = 0;
+      selectedIngredient = null; applianceSelected = null;
+      mixerTimeLimit = 0; mixerStartTime = 0; mixerTimedOut = false; mixerTarget = 0;
+      mixWhiskX = 0; mixCircles = 0; mixProgress = 0;
+      mixActive = false; mixWasLeft = true;
+      arrowLeftHeld = false; arrowRightHeld = false; mixTrail = [];
+      eggsCracked = 0; eggsTarget = 0; eggCrackActive = false;
+      countdownStartTime = 0; countdownActive = false;
+      ovenRunning = false; ovenStartTime = 0; ovenElapsed = 0;
+      measuredIngredients = []; bowlIngredients = []; mixResults = [];
+      bowlBlobCache = null; bowlBlobCacheKey = "";
+      ovenResult = null; totalTip = 0; gameResult = null; accuracyScore = 0;
+      mixStepIdx = 0;
+      // Note: isCustomersMode is NOT reset here — it's set by startGame/startCustomersGame before calling resetState
+      customersSubLevel = 0;
+      customersStartTime = 0;
+      customersCharX = 0;
+      customersRequestedItem = "";
+      customersPastryX = 0; customersPastryY = 0;
+      customersPastryStartX = 0; customersPastryStartY = 0;
+      customersPastryDragging = false;
+      customersPastryDropped = false;
+      customersEatStartTime = 0;
+      customersFaceState = "smile";
+      customersBakeFinishTime = 0;
+    }
+
+    // ===================== CANVAS SETUP =====================
+    function resizeCanvas() {
+      canvas = document.getElementById("gameCanvas");
+      if (!canvas) return;
+      var rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = Math.max(rect.width, 200);
+      canvas.height = Math.max(rect.height, 200);
+      ctx = canvas.getContext("2d");
+    }
+    window.addEventListener("resize", function(){ resizeCanvas(); });
+
+    // ===================== INPUT =====================
+    var keyDebounce = false;
+    document.addEventListener("keydown", function(e) {
+      if (e.code !== "Space" || gameState !== "playing") return;
+      e.preventDefault();
+      var step = getCurrentStep();
+      if (!step) return;
+
+      // Oven: toggle on/off (only when oven is selected)
+      if (step.type === "oven" && applianceSelected === "oven") {
+        if (keyDebounce) return;
+        keyDebounce = true;
+        setTimeout(function(){ keyDebounce = false; }, 300);
+        toggleOven();
+        return;
+      }
+
+      // Mix: mouse circling (handled by mousemove)
+      if (step.type === "mix" && applianceSelected === "mixer") {
+        return;
+      }
+
+      // Measure or Serve: hold space
+      if (!spaceHeld && (step.type === "measure" || step.type === "serve")) {
+        spaceHeld = true;
+        onSpacePress();
+      }
+    });
+
+    document.addEventListener("keyup", function(e) {
+      if (e.code !== "Space" || gameState !== "playing") return;
+      e.preventDefault();
+      var step = getCurrentStep();
+      if (step && (step.type === "serve" || step.type === "measure")) {
+        spaceHeld = false;
+        onSpaceRelease();
+      }
+    });
+
+    // Arrow key mixing
+    document.addEventListener("keydown", function(e) {
+      if (gameState !== "playing") return;
+      var step = getCurrentStep();
+      if (!step || step.type !== "mix" || !mixActive) return;
+      if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+        e.preventDefault();
+        if (e.code === "ArrowLeft") arrowLeftHeld = true;
+        if (e.code === "ArrowRight") arrowRightHeld = true;
+      }
+    });
+
+    document.addEventListener("keyup", function(e) {
+      if (e.code === "ArrowLeft") arrowLeftHeld = false;
+      if (e.code === "ArrowRight") arrowRightHeld = false;
+    });
+
+    // ===================== GAME LOGIC =====================
+    function startGame(levelIndex) {
+      initAudio();
+      isCustomersMode = false;
+      currentLevel = LEVELS[levelIndex];
+      resetState();
+      document.getElementById("menuOverlay").classList.add("hidden");
+      document.getElementById("resultOverlay").classList.add("hidden");
+      document.getElementById("customerText").classList.add("hidden");
+      buildRecipeUI();
+      buildInteractables();
+      updateStats();
+      // Start countdown animation before playing
+      countdownActive = true;
+      countdownStartTime = performance.now();
+      gameState = "countdown";
+      if (animationId) cancelAnimationFrame(animationId);
+      gameLoop();
+    }
+
+    function showMenu() {
+      gameState = "menu";
+      if (animationId) cancelAnimationFrame(animationId);
+      document.getElementById("menuOverlay").classList.remove("hidden");
+      document.getElementById("resultOverlay").classList.add("hidden");
+      document.getElementById("customerText").classList.add("hidden");
+    }
+
+    function restartLevel() {
+      if (isCustomersMode) {
+        startCustomersGame();
+      } else {
+        var idx = LEVELS.indexOf(currentLevel);
+        startGame(idx);
+      }
+    }
+
+    // ===================== CUSTOMERS LEVEL =====================
+    function startCustomersGame() {
+      initAudio();
+      isCustomersMode = true;
+      customersSubLevel = Math.floor(Math.random() * 3);
+      currentLevel = LEVELS[customersSubLevel];
+      resetState();
+      customersRequestedItem = currentLevel.name.toLowerCase();
+      document.getElementById("menuOverlay").classList.add("hidden");
+      document.getElementById("resultOverlay").classList.add("hidden");
+      document.getElementById("customerText").classList.add("hidden");
+      buildRecipeUI();
+      buildInteractables();
+      updateStats();
+      customersStartTime = performance.now();
+      gameState = "customers_intro";
+      if (animationId) cancelAnimationFrame(animationId);
+      gameLoop();
+    }
+
+    function computeAccuracyScore() {
+      var totalScore = 0, totalSteps = 0;
+      measuredIngredients.forEach(function(m) {
+        totalSteps++;
+        if (m.status === "Bad") totalScore += 0;
+        else if (m.status === "Okay") totalScore += 0.5;
+        else totalScore += 1;
+      });
+      mixResults.forEach(function(m) {
+        totalSteps++;
+        if (m.status !== "Mixed") totalScore += 0;
+        else totalScore += 1;
+      });
+      if (ovenResult) {
+        totalSteps++;
+        if (ovenResult.status !== "Perfect") totalScore += 0;
+        else totalScore += 1;
+      }
+      accuracyScore = totalSteps > 0 ? totalScore / totalSteps : 0;
+    }
+
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function buildRecipeUI() {
+      var list = document.getElementById("recipeList");
+      list.innerHTML = "";
+      currentLevel.recipe.forEach(function(step, i) {
+        var div = document.createElement("div");
+        div.className = "recipeStep";
+        div.id = "step-" + i;
+        var text = "";
+        if (step.type === "measure") {
+          text = step.items.map(function(it){
+            if (it.icon === "eggs") return "Crack " + it.amount + " " + it.name;
+            return it.amount + " " + it.unit + " " + it.name;
+          }).join(" + ");
+        } else if (step.type === "mix") {
+          text = "Mix within " + step.timeLimit + "s (\u2190\u2192 arrow keys)";
+        } else if (step.type === "oven") {
+          text = "Bake ~" + step.targetTime + "s (tap to start/stop)";
+        } else if (step.type === "serve") {
+          text = isCustomersMode ? "Drag pastry to customer!" : "Serve the pastry!";
+        }
+        div.textContent = text;
+        list.appendChild(div);
+      });
+      highlightStep(0);
+    }
+
+    function highlightStep(idx) {
+      document.querySelectorAll(".recipeStep").forEach(function(el, i) {
+        el.classList.remove("active", "done");
+        if (i < idx) el.classList.add("done");
+        else if (i === idx) el.classList.add("active");
+      });
+    }
+
+    function getCurrentStep() { return currentLevel && currentLevel.recipe[stepIndex]; }
+
+    function buildInteractables() {
+      ingredientButtons = []; applianceButtons = []; serveButton = null;
+      var step = getCurrentStep();
+      if (!step) return;
+      var w = canvas.width, h = canvas.height;
+      var cx = w / 2 - 30;  // shift left to center gameplay relative to asymmetric panels
+      var cy = h / 2 - 20;
+
+      // === INGREDIENTS (top section) ===
+      var allIngs = currentLevel.allIngredients;
+      var ingCols = Math.min(allIngs.length, Math.ceil(Math.sqrt(allIngs.length * 2.2)));
+      var ingRows = Math.ceil(allIngs.length / ingCols);
+      var cellW = 100, cellH = 90, gapX = 14, gapY = 12;
+      var ingTotalW = ingCols * cellW + (ingCols - 1) * gapX;
+      var ingTotalH = ingRows * cellH + (ingRows - 1) * gapY;
+      var ingStartX = cx - ingTotalW / 2 + cellW / 2;
+      var ingStartY = cy - 80 - ingTotalH / 2;
+
+      allIngs.forEach(function(item, i) {
+        ingredientButtons.push({
+          x: ingStartX + (i % ingCols) * (cellW + gapX),
+          y: ingStartY + Math.floor(i / ingCols) * (cellH + gapY),
+          w: cellW, h: cellH,
+          item: item, label: item.name, icon: item.icon
+        });
+      });
+
+      // === APPLIANCES (bottom section, centered) ===
+      var isMixStep = step && step.type === "mix";
+      var isOvenStep = step && step.type === "oven";
+      var appCellW = 120, appCellH = 100, appGap = 24;
+      var appTotalW = 2 * appCellW + appGap;
+      var appStartX = cx - appTotalW / 2 + appCellW / 2;
+      var appStartY = cy + 170;
+
+      applianceButtons.push({
+        x: appStartX,
+        y: appStartY,
+        w: appCellW, h: appCellH,
+        type: "mixer", label: "Whisk", isActive: isMixStep
+      });
+      applianceButtons.push({
+        x: appStartX + appCellW + appGap,
+        y: appStartY,
+        w: appCellW, h: appCellH,
+        type: "oven", label: "Oven", isActive: isOvenStep
+      });
+
+      // Set up step-specific appliance state
+      if (isMixStep) {
+        mixerTimeLimit = step.timeLimit;
+        mixerTarget = step.targetTime;
+        mixerStartTime = 0;
+        mixerTimedOut = false;
+        mixWhiskX = 0; mixCircles = 0; mixProgress = 0;
+        mixActive = false; mixWasLeft = true;
+        arrowLeftHeld = false; arrowRightHeld = false;
+        mixTrail = [];
+        mixStepIdx++;
+        applianceSelected = null;
+      } else if (isOvenStep) {
+        ovenRunning = false; ovenElapsed = 0;
+        applianceSelected = null;
+      } else {
+        applianceSelected = null;
+      }
+
+      if (step && step.type === "serve" && !isCustomersMode) {
+        serveButton = { x: cx, y: cy + 90, w: 180, h: 70, label: "Serve!" };
+      }
+      // Customers mode: set up pastry position on counter for drag
+      if (step && step.type === "serve" && isCustomersMode) {
+        customersPastryX = w * 0.2;
+        customersPastryY = h * 0.63;
+        customersPastryStartX = customersPastryX;
+        customersPastryStartY = customersPastryY;
+        customersPastryDragging = false;
+        customersPastryDropped = false;
+        customersBakeFinishTime = performance.now();
+      }
+    }
+
+    function onCanvasClick(e) {
+      if (gameState !== "playing") return;
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = canvas.width / rect.width;
+      var scaleY = canvas.height / rect.height;
+      var mx = (e.clientX - rect.left) * scaleX;
+      var my = (e.clientY - rect.top) * scaleY;
+      var step = getCurrentStep();
+      if (!step) return;
+
+      // Egg crack clicks inside the egg modal
+      if (eggCrackActive && selectedIngredient) {
+        var w2 = canvas.width, h2 = canvas.height;
+        var ecx = w2 / 2, ecy = h2 / 2;
+        // Egg positions computed in renderEggCrackModal — match layout
+        var eggSpacing = 70;
+        var totalW = eggsTarget * eggSpacing;
+        var eggStartX = ecx - totalW / 2 + eggSpacing / 2;
+        var eggY = ecy - 20;
+        for (var ei = 0; ei < eggsTarget; ei++) {
+          var eggX = eggStartX + ei * eggSpacing;
+          var dx2 = mx - eggX, dy2 = my - eggY;
+          if (dx2 * dx2 + dy2 * dy2 < 35 * 35) {
+            // Only crack if not already cracked
+            if (ei >= eggsCracked) {
+              eggsCracked++;
+              playClick();
+              if (eggsCracked >= eggsTarget) {
+                // All eggs cracked — mark as Perfect
+                measuredIngredients.push({
+                  name: selectedIngredient.name,
+                  targetAmount: eggsTarget,
+                  actualAmount: eggsTarget,
+                  unit: " eggs",
+                  status: "Perfect",
+                  icon: "eggs"
+                });
+                playJingle("perfect");
+                eggCrackActive = false;
+                selectedIngredient = null;
+                currentAction = null;
+                updateStats();
+                var allMeasured = step.items.every(function(it){
+                  return measuredIngredients.some(function(m){ return m.name === it.name; });
+                });
+                if (allMeasured) advanceStep();
+              }
+            }
+            return;
+          }
+        }
+        return;
+      }
+
+      // Check appliance clicks for mix/oven steps
+      if (step.type === "mix" || step.type === "oven") {
+        for (var i = 0; i < applianceButtons.length; i++) {
+          var btn = applianceButtons[i];
+          if (mx >= btn.x - btn.w/2 && mx <= btn.x + btn.w/2 &&
+              my >= btn.y - btn.h/2 && my <= btn.y + btn.h/2) {
+            if (!btn.isActive) {
+              playError();
+              return;
+            }
+            applianceSelected = btn.type;
+            if (btn.type === "mixer") {
+              mixWhiskX = 0;
+              mixCircles = 0;
+              mixProgress = 0;
+              mixerStartTime = 0;
+              mixerTimedOut = false;
+              mixActive = true;
+              mixWasLeft = true;
+              arrowLeftHeld = false; arrowRightHeld = false;
+              mixTrail = [];
+            }
+            playClick();
+            updateStats();
+            return;
+          }
+        }
+        return;
+      }
+
+      // Ingredient clicks for measure steps
+      if (step.type === "measure") {
+        for (var j = 0; j < ingredientButtons.length; j++) {
+          var ibtn = ingredientButtons[j];
+          if (mx >= ibtn.x - ibtn.w/2 && mx <= ibtn.x + ibtn.w/2 &&
+              my >= ibtn.y - ibtn.h/2 && my <= ibtn.y + ibtn.h/2) {
+            if (measuredIngredients.some(function(m){ return m.name === ibtn.item.name; })) return;
+            var needed = step.items.some(function(it){ return it.name === ibtn.item.name; });
+            if (!needed) {
+              playError();
+              return;
+            }
+            // Eggs → crack interaction instead of pouring
+            if (ibtn.item.icon === "eggs") {
+              selectedIngredient = ibtn.item;
+              eggsTarget = ibtn.item.amount;
+              eggsCracked = 0;
+              eggCrackActive = true;
+              currentAction = "cracking";
+              playClick();
+              updateStats();
+              return;
+            }
+            selectedIngredient = ibtn.item;
+            pouredAmount = 0;
+            currentAction = "pouring";
+            actionStartTime = performance.now();
+            updateStats();
+            return;
+          }
+        }
+      }
+
+      // Customers serve: start drag on pastry
+      if (step.type === "serve" && isCustomersMode) {
+        var dx = mx - customersPastryX;
+        var dy = my - customersPastryY;
+        if (dx * dx + dy * dy < 60 * 60) {
+          customersPastryDragging = true;
+          playClick();
+        }
+        return;
+      }
+
+      // Serve button
+      if (step.type === "serve" && serveButton) {
+        if (mx >= serveButton.x - serveButton.w/2 && mx <= serveButton.x + serveButton.w/2 &&
+            my >= serveButton.y - serveButton.h/2 && my <= serveButton.y + serveButton.h/2) {
+          currentAction = "serving";
+          actionStartTime = performance.now();
+          finishGame();
+          return;
+        }
+      }
+    }
+
+    function onSpacePress() {
+      var step = getCurrentStep();
+      if (!step) return;
+      if (step.type === "measure" && selectedIngredient) {
+        // pouring already started via click
+      } else if (step.type === "serve") {
+        if (!currentAction) {
+          currentAction = "serving";
+          actionStartTime = performance.now();
+        }
+      }
+    }
+
+    function onSpaceRelease() {
+      var step = getCurrentStep();
+      if (!step) return;
+      // Egg cracking doesn't use Space
+      if (currentAction === "cracking") return;
+      if (currentAction === "pouring" && selectedIngredient) {
+        var target = selectedIngredient.amount;
+        var actual = pouredAmount;
+        var diff = Math.abs(actual - target);
+        var pctDiff = diff / target;
+        var status, resultKey;
+        if (pctDiff <= 0.05) { status = "Perfect"; resultKey = "perfect"; }
+        else if (pctDiff <= 0.15) { status = "Okay"; resultKey = "okay"; }
+        else { status = "Bad"; resultKey = "bad"; }
+        measuredIngredients.push({ name: selectedIngredient.name, targetAmount: target, actualAmount: actual, unit: selectedIngredient.unit, status: status, icon: selectedIngredient.icon });
+        playJingle(resultKey);
+        selectedIngredient = null; pouredAmount = 0; currentAction = null;
+        updateStats();
+        var allMeasured = step.items.every(function(it){ return measuredIngredients.some(function(m){ return m.name === it.name; }); });
+        if (allMeasured) advanceStep();
+      } else if (currentAction === "serving") {
+        currentAction = null;
+        finishGame();
+      }
+      updateStats();
+    }
+
+    function toggleOven() {
+      var step = getCurrentStep();
+      if (!step || step.type !== "oven") return;
+      if (!ovenRunning) {
+        ovenRunning = true; ovenStartTime = performance.now();
+        playOvenStart();
+      } else {
+        ovenRunning = false;
+        ovenElapsed = (performance.now() - ovenStartTime) / 1000;
+        var target = step.targetTime;
+        var diff = Math.abs(ovenElapsed - target);
+        var status;
+        if (diff < 2) status = "Perfect";
+        else if (ovenElapsed < target) status = "Underbaked";
+        else status = "Burnt";
+        ovenResult = { targetTime: target, actualTime: ovenElapsed, status: status };
+        playOvenDone();
+        playJingle(diff < 2 ? "perfect" : (diff < 5 ? "okay" : "bad"));
+        advanceStep();
+      }
+    }
+
+    function finishMixing() {
+      mixActive = false; arrowLeftHeld = false; arrowRightHeld = false;
+      var step = getCurrentStep();
+      var target = step.targetTime;
+      var actual = mixCircles;
+      var status;
+      if (mixCircles >= target) status = "Mixed";
+      else status = "Undermixed";
+      mixResults.push({ targetTime: target, actualTime: actual, status: status });
+      playJingle(mixCircles >= target ? "perfect" : "bad");
+      advanceStep();
+    }
+
+    function failMixingTimeout() {
+      mixerTimedOut = true;
+      mixActive = false; arrowLeftHeld = false; arrowRightHeld = false;
+      var step = getCurrentStep();
+      mixResults.push({ targetTime: step.targetTime, actualTime: mixCircles, status: "Undermixed (too slow!)" });
+      playTone(200, 0.4, "square", 0.2);
+      advanceStep();
+    }
+
+    function advanceStep() {
+      selectedIngredient = null; pouredAmount = 0; applianceSelected = null; currentAction = null;
+      mixActive = false; arrowLeftHeld = false; arrowRightHeld = false;
+      stepIndex++;
+      highlightStep(stepIndex);
+      buildInteractables();
+      updateStats();
+    }
+
+    function finishGame() {
+      gameState = "result";
+      if (animationId) cancelAnimationFrame(animationId);
+      // In customers mode, use bake finish time (before eating animation) so eating time doesn't count
+      var totalTime = isCustomersMode && customersBakeFinishTime > 0
+        ? (customersBakeFinishTime - startTime) / 1000
+        : (performance.now() - startTime) / 1000;
+      var timeLimit = currentLevel.timeLimit;
+      var failures = [];
+      var tip = 20;
+      var totalMeasureScore = 0, totalSteps = 0;
+
+      measuredIngredients.forEach(function(m) {
+        totalSteps++;
+        if (m.status === "Bad") { failures.push(m.name + " measured poorly"); tip -= 3; totalMeasureScore += 0; }
+        else if (m.status === "Okay") { tip -= 1; totalMeasureScore += 0.5; }
+        else { totalMeasureScore += 1; }
+      });
+      mixResults.forEach(function(m) {
+        totalSteps++;
+        if (m.status !== "Mixed") { failures.push("Mix: " + m.status.toLowerCase()); tip -= 4; totalMeasureScore += 0; }
+        else { totalMeasureScore += 1; }
+      });
+      if (ovenResult) {
+        totalSteps++;
+        if (ovenResult.status !== "Perfect") { failures.push("Bake: " + ovenResult.status.toLowerCase()); tip -= 5; totalMeasureScore += 0; }
+        else { totalMeasureScore += 1; }
+      }
+      accuracyScore = totalSteps > 0 ? totalMeasureScore / totalSteps : 0;
+
+      var timeFail = false;
+      if (timeLimit && totalTime > timeLimit) {
+        failures.push("Exceeded time limit (" + timeLimit + "s)");
+        timeFail = true;
+        tip = Math.floor(tip * 0.5);
+      }
+
+      var hasCriticalFail = measuredIngredients.some(function(m){ return m.status === "Bad"; }) ||
+                            mixResults.some(function(m){ return m.status !== "Mixed"; }) ||
+                            (ovenResult && ovenResult.status !== "Perfect") || timeFail;
+
+      if (hasCriticalFail) { gameResult = "lose"; totalTip = Math.max(0, tip); playLoseSound(); }
+      else { gameResult = "win"; if (timeLimit) tip += Math.max(0, Math.floor((timeLimit - totalTime) * 0.5)); totalTip = Math.max(5, tip); playWinSound(); }
+
+      showResult(totalTime, failures);
+    }
+
+    function showResult(totalTime, failures) {
+      var overlay = document.getElementById("resultOverlay");
+      var title = document.getElementById("resultTitle");
+      var tipDisplay = document.getElementById("tipDisplay");
+
+      if (gameResult === "win") { title.textContent = "Perfect Bake!"; title.style.color = "#66bb6a"; }
+      else { title.textContent = "Baking Failed"; title.style.color = "#ef5350"; }
+
+      // Customers mode: show customer satisfaction text
+      var customerTextEl = document.getElementById("customerText");
+      if (isCustomersMode) {
+        if (gameResult === "win") {
+          customerTextEl.textContent = "customer happy!";
+          customerTextEl.style.color = "#66bb6a";
+        } else {
+          customerTextEl.textContent = "customer dissatisfied";
+          customerTextEl.style.color = "#ef5350";
+        }
+        customerTextEl.classList.remove("hidden");
+      } else {
+        customerTextEl.classList.add("hidden");
+      }
+
+      tipDisplay.textContent = "$" + totalTip;
+      tipDisplay.className = "tipAmount " + (gameResult === "win" ? "green" : "red");
+
+      var left = '<h4>Summary</h4>';
+      left += '<div class="row"><span>Level</span><span>' + currentLevel.name + '</span></div>';
+      left += '<div class="row"><span>Time</span><span>' + totalTime.toFixed(1) + 's' + (currentLevel.timeLimit ? ' / ' + currentLevel.timeLimit + 's' : '') + '</span></div>';
+      left += '<div class="row"><span>Accuracy</span><span>' + (accuracyScore * 100).toFixed(0) + '%</span></div>';
+      var resultColor = gameResult === 'win' ? '#66bb6a' : '#ef5350';
+      left += '<div class="row"><span>Result</span><span style="color:' + resultColor + '">' + (gameResult === 'win' ? 'Win' : 'Try Again') + '</span></div>';
+      left += '<h4 style="margin-top:8px;">Ingredients</h4>';
+      measuredIngredients.forEach(function(m) {
+        var clr = m.status === "Perfect" ? "#66bb6a" : (m.status === "Okay" ? "#ffa726" : "#ef5350");
+        left += '<div class="row"><span>' + m.name + '</span><span style="color:' + clr + '">' + m.actualAmount.toFixed(2) + '/' + m.targetAmount + ' ' + m.unit + '</span></div>';
+      });
+
+      var right = '<h4>Appliances</h4>';
+      mixResults.forEach(function(m) {
+        var clr = m.status === "Mixed" ? "#66bb6a" : "#ef5350";
+        right += '<div class="row"><span>Mix</span><span style="color:' + clr + '">' + m.actualTime + '/' + m.targetTime + ' circles</span></div>';
+      });
+      if (ovenResult) {
+        var oclr = ovenResult.status === "Perfect" ? "#66bb6a" : "#ef5350";
+        right += '<div class="row"><span>Bake</span><span style="color:' + oclr + '">' + ovenResult.actualTime.toFixed(1) + 's/' + ovenResult.targetTime + 's</span></div>';
+      }
+      if (failures.length > 0) {
+        right += '<h4 style="margin-top:8px;">Issues</h4>';
+        failures.forEach(function(f) {
+          right += '<div class="row"><span style="color:#ef5350;font-size:10px">' + f + '</span></div>';
+        });
+      }
+
+      document.getElementById("resultLeft").innerHTML = left;
+      document.getElementById("resultRight").innerHTML = right;
+      overlay.classList.remove("hidden");
+      drawResultPastry();
+    }
+
+    function drawResultPastry() {
+      var rc = document.getElementById("resultCanvas");
+      if (isCustomersMode) {
+        // Customers mode: draw character face with appropriate expression (larger)
+        rc.width = 360; rc.height = 280;
+        var rctx = rc.getContext("2d");
+        rctx.clearRect(0, 0, rc.width, rc.height);
+        rctx.fillStyle = C.pinkLight;
+        rctx.beginPath();
+        rctx.arc(180, 130, 120, 0, Math.PI * 2);
+        rctx.fill();
+        // Draw character face
+        drawCharacter(rctx, 180, 160, 0.95, customersFaceState, performance.now(), false, 0);
+        rctx.fillStyle = C.text;
+        rctx.font = "bold 14px sans-serif";
+        rctx.textAlign = "center";
+        rctx.fillText("Accuracy: " + (accuracyScore * 100).toFixed(0) + "%", 180, 270);
+      } else {
+        // Normal mode: draw pastry (50% larger)
+        rc.width = 360; rc.height = 240;
+        var rctx = rc.getContext("2d");
+        rctx.clearRect(0, 0, rc.width, rc.height);
+        rctx.fillStyle = C.pinkLight;
+        rctx.beginPath();
+        rctx.arc(180, 110, 105, 0, Math.PI * 2);
+        rctx.fill();
+        var sat = 0.2 + accuracyScore * 0.8;
+        rctx.save();
+        rctx.translate(180, 115);
+        rctx.scale(1.5, 1.5);
+        if (currentLevel.pastryType === "cake") drawCake(rctx, 0, 0, sat);
+        else if (currentLevel.pastryType === "cookies") drawCookies(rctx, 0, 0, sat);
+        else drawBrownie(rctx, 0, 0, sat);
+        rctx.restore();
+        rctx.fillStyle = C.text;
+        rctx.font = "14px sans-serif";
+        rctx.textAlign = "center";
+        rctx.fillText("Accuracy: " + (accuracyScore * 100).toFixed(0) + "%", 180, 228);
+      }
+    }
+
+    // ===================== PASTRY DRAWING =====================
+    function drawCake(rctx, cx, cy, sat) {
+      rctx.filter = 'saturate(' + sat + ')';
+      rctx.fillStyle = "#f8bbd0";
+      roundRectCtx(rctx, cx - 38, cy - 8, 76, 48, 5); rctx.fill();
+      rctx.fillStyle = "#f48fb1"; roundRectCtx(rctx, cx - 38, cy - 8, 76, 16, 5); rctx.fill();
+      rctx.beginPath();
+      rctx.moveTo(cx - 34, cy + 8); rctx.quadraticCurveTo(cx - 22, cy + 18, cx - 16, cy + 8);
+      rctx.quadraticCurveTo(cx - 8, cy + 16, cx, cy + 8); rctx.quadraticCurveTo(cx + 8, cy + 18, cx + 16, cy + 8);
+      rctx.quadraticCurveTo(cx + 24, cy + 16, cx + 34, cy + 8);
+      rctx.fillStyle = "#f48fb1"; rctx.fill();
+      rctx.fillStyle = "#e91e63"; rctx.beginPath(); rctx.arc(cx, cy - 12, 7, 0, Math.PI*2); rctx.fill();
+      rctx.strokeStyle = "#880e4f"; rctx.lineWidth = 1;
+      rctx.beginPath(); rctx.moveTo(cx, cy - 5); rctx.lineTo(cx + 2, cy + 3); rctx.stroke();
+      rctx.filter = "none";
+    }
+    function drawCookies(rctx, cx, cy, sat) {
+      rctx.filter = 'saturate(' + sat + ')';
+      var positions = [{x: cx - 26, y: cy}, {x: cx + 26, y: cy - 4}, {x: cx, y: cy + 16}];
+      positions.forEach(function(p) {
+        rctx.fillStyle = "#d7a86e"; rctx.beginPath(); rctx.arc(p.x, p.y, 15, 0, Math.PI*2); rctx.fill();
+        rctx.fillStyle = "#5d3a1a";
+        rctx.beginPath(); rctx.arc(p.x - 5, p.y - 3, 2.5, 0, Math.PI*2); rctx.fill();
+        rctx.beginPath(); rctx.arc(p.x + 6, p.y + 2, 2, 0, Math.PI*2); rctx.fill();
+        rctx.beginPath(); rctx.arc(p.x + 1, p.y - 7, 1.8, 0, Math.PI*2); rctx.fill();
+      });
+      rctx.filter = "none";
+    }
+    function drawBrownie(rctx, cx, cy, sat) {
+      rctx.filter = 'saturate(' + sat + ')';
+      rctx.fillStyle = "#5d3a1a"; roundRectCtx(rctx, cx - 38, cy - 25, 76, 50, 5); rctx.fill();
+      rctx.fillStyle = "#3e2222"; roundRectCtx(rctx, cx - 34, cy - 20, 68, 12, 3); rctx.fill();
+      rctx.fillStyle = "#d7a86e";
+      rctx.beginPath(); rctx.ellipse(cx - 12, cy - 14, 4, 2.5, 0, 0, Math.PI*2); rctx.fill();
+      rctx.beginPath(); rctx.ellipse(cx + 8, cy - 12, 3.5, 2.5, 0.5, 0, Math.PI*2); rctx.fill();
+      rctx.beginPath(); rctx.ellipse(cx + 20, cy - 16, 3, 2, -0.3, 0, Math.PI*2); rctx.fill();
+      rctx.filter = "none";
+    }
+
+    // ===================== INGREDIENT ICONS =====================
+    function drawIngredientIcon(rctx, x, y, s, iconType, measured) {
+      rctx.save();
+      var alpha = measured ? 0.45 : 1;
+      rctx.globalAlpha = alpha;
+      rctx.strokeStyle = "#000000";
+      rctx.lineWidth = 1.5;
+      switch (iconType) {
+        case "butter":
+          rctx.fillStyle = "#ffe082"; roundRectCtx(rctx, x - s*0.25, y - s*0.3, s*0.5, s*0.6, s*0.08); rctx.fill();
+          rctx.stroke();
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 1;
+          roundRectCtx(rctx, x - s*0.25, y - s*0.3, s*0.5, s*0.6, s*0.08); rctx.stroke();
+          break;
+        case "sugar":
+          rctx.fillStyle = "#ffffff"; roundRectCtx(rctx, x - s*0.22, y - s*0.28, s*0.44, s*0.56, s*0.06); rctx.fill();
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+          roundRectCtx(rctx, x - s*0.22, y - s*0.28, s*0.44, s*0.56, s*0.06); rctx.stroke();
+          rctx.fillStyle = "#b0bec5";
+          rctx.beginPath(); rctx.arc(x, y - s*0.05, s*0.08, 0, Math.PI*2); rctx.fill();
+          rctx.beginPath(); rctx.arc(x + s*0.1, y + s*0.08, s*0.06, 0, Math.PI*2); rctx.fill();
+          rctx.beginPath(); rctx.arc(x - s*0.08, y + s*0.1, s*0.05, 0, Math.PI*2); rctx.fill();
+          break;
+        case "flour":
+          rctx.fillStyle = "#fafafa"; roundRectCtx(rctx, x - s*0.2, y - s*0.35, s*0.4, s*0.7, s*0.05); rctx.fill();
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+          roundRectCtx(rctx, x - s*0.2, y - s*0.35, s*0.4, s*0.7, s*0.05); rctx.stroke();
+          rctx.fillStyle = "#333333"; rctx.font = "bold " + (s*0.25) + "px sans-serif"; rctx.textAlign = "center";
+          rctx.fillText("F", x, y + s*0.08);
+          break;
+        case "bakingpowder":
+          drawSpoonWithPowder(rctx, x, y, s);
+          break;
+        case "milk":
+          rctx.fillStyle = "#e3f2fd"; roundRectCtx(rctx, x - s*0.2, y - s*0.3, s*0.4, s*0.6, s*0.06); rctx.fill();
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+          roundRectCtx(rctx, x - s*0.2, y - s*0.3, s*0.4, s*0.6, s*0.06); rctx.stroke();
+          rctx.fillStyle = "#42a5f5"; rctx.font = "bold " + (s*0.22) + "px sans-serif"; rctx.textAlign = "center";
+          rctx.fillText("M", x, y + s*0.06);
+          break;
+        case "vanilla":
+          drawVanillaFlower(rctx, x, y, s);
+          break;
+        case "eggs":
+          rctx.fillStyle = "#fff8e1"; rctx.beginPath(); rctx.ellipse(x - s*0.1, y - s*0.05, s*0.17, s*0.22, -0.3, 0, Math.PI*2); rctx.fill();
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+          rctx.beginPath(); rctx.ellipse(x - s*0.1, y - s*0.05, s*0.17, s*0.22, -0.3, 0, Math.PI*2); rctx.stroke();
+          rctx.fillStyle = "#fff8e1"; rctx.beginPath(); rctx.ellipse(x + s*0.1, y + s*0.05, s*0.17, s*0.22, 0.3, 0, Math.PI*2); rctx.fill();
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+          rctx.beginPath(); rctx.ellipse(x + s*0.1, y + s*0.05, s*0.17, s*0.22, 0.3, 0, Math.PI*2); rctx.stroke();
+          break;
+        case "chocolate":
+          rctx.fillStyle = "#5d4037"; roundRectCtx(rctx, x - s*0.25, y - s*0.25, s*0.5, s*0.5, s*0.08); rctx.fill();
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+          roundRectCtx(rctx, x - s*0.25, y - s*0.25, s*0.5, s*0.5, s*0.08); rctx.stroke();
+          rctx.fillStyle = "#3e2723";
+          rctx.beginPath(); rctx.arc(x - s*0.08, y - s*0.05, s*0.06, 0, Math.PI*2); rctx.fill();
+          rctx.beginPath(); rctx.arc(x + s*0.1, y + s*0.08, s*0.05, 0, Math.PI*2); rctx.fill();
+          rctx.beginPath(); rctx.arc(x + s*0.02, y - s*0.12, s*0.04, 0, Math.PI*2); rctx.fill();
+          break;
+      }
+      rctx.restore();
+    }
+
+    function drawSpoonWithPowder(rctx, x, y, s) {
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = s * 0.08; rctx.lineCap = "round";
+      rctx.beginPath();
+      rctx.moveTo(x + s * 0.25, y - s * 0.3);
+      rctx.lineTo(x - s * 0.3, y + s * 0.15);
+      rctx.stroke();
+      rctx.fillStyle = "#d7ccc8";
+      rctx.beginPath();
+      rctx.ellipse(x - s * 0.3, y + s * 0.2, s * 0.22, s * 0.14, 0.3, 0, Math.PI * 2);
+      rctx.fill();
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+      rctx.stroke();
+      rctx.fillStyle = "#ffffff";
+      rctx.beginPath();
+      rctx.arc(x - s * 0.32, y + s * 0.15, s * 0.13, 0, Math.PI * 2);
+      rctx.fill();
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 1;
+      rctx.stroke();
+      rctx.fillStyle = "#e0e0e0";
+      rctx.beginPath(); rctx.arc(x - s*0.38, y + s*0.12, s*0.03, 0, Math.PI*2); rctx.fill();
+      rctx.beginPath(); rctx.arc(x - s*0.28, y + s*0.1, s*0.025, 0, Math.PI*2); rctx.fill();
+    }
+
+    function drawVanillaFlower(rctx, x, y, s) {
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5; rctx.lineCap = "round";
+      rctx.beginPath();
+      rctx.moveTo(x, y + s * 0.3);
+      rctx.quadraticCurveTo(x - s*0.05, y + s*0.1, x - s*0.05, y - s*0.05);
+      rctx.stroke();
+      rctx.fillStyle = "#a5d6a7";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 1;
+      rctx.beginPath(); rctx.ellipse(x + s*0.08, y + s*0.15, s*0.1, s*0.05, 0.4, 0, Math.PI*2); rctx.fill(); rctx.stroke();
+      rctx.beginPath(); rctx.ellipse(x - s*0.15, y + s*0.08, s*0.1, s*0.05, -0.4, 0, Math.PI*2); rctx.fill(); rctx.stroke();
+      var petalColor = "#fff9c4";
+      var petalR = s * 0.14;
+      for (var i = 0; i < 5; i++) {
+        var angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+        var px = x - s*0.05 + Math.cos(angle) * petalR*0.9;
+        var py = y - s*0.05 + Math.sin(angle) * petalR*0.9;
+        rctx.fillStyle = petalColor;
+        rctx.beginPath(); rctx.arc(px, py, petalR * 0.55, 0, Math.PI*2); rctx.fill();
+        rctx.strokeStyle = "#000000"; rctx.lineWidth = 1; rctx.stroke();
+      }
+      rctx.fillStyle = "#ffee58";
+      rctx.beginPath(); rctx.arc(x - s*0.05, y - s*0.05, s*0.07, 0, Math.PI*2); rctx.fill();
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 1; rctx.stroke();
+    }
+
+    // ===================== WHISK (replaces mixer) =====================
+    function drawWhisk(rctx, x, y, s) {
+      rctx.save();
+      var handleH = s * 0.55;
+      var headR = s * 0.35;
+      var handleW = s * 0.14;
+
+      // Handle body
+      var hGrad = rctx.createLinearGradient(x, y - s*0.15, x, y + handleH);
+      hGrad.addColorStop(0, "#efebe9");
+      hGrad.addColorStop(0.5, "#d7ccc8");
+      hGrad.addColorStop(1, "#bcaaa4");
+      rctx.fillStyle = hGrad;
+      roundRectCtx(rctx, x - handleW/2, y - s*0.15, handleW, handleH, s*0.04); rctx.fill();
+      rctx.strokeStyle = "#8d6e63"; rctx.lineWidth = 2;
+      roundRectCtx(rctx, x - handleW/2, y - s*0.15, handleW, handleH, s*0.04); rctx.stroke();
+
+      // Handle top grip
+      rctx.fillStyle = "#f48fb1";
+      roundRectCtx(rctx, x - handleW/2 - 2, y - s*0.15, handleW + 4, s*0.12, s*0.04); rctx.fill();
+      rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 1.5;
+      roundRectCtx(rctx, x - handleW/2 - 2, y - s*0.15, handleW + 4, s*0.12, s*0.04); rctx.stroke();
+
+      // Wire loops (wider, more visible)
+      var wireY = y + handleH - s*0.12;
+      rctx.strokeStyle = "#a1887f"; rctx.lineWidth = 3; rctx.lineCap = "round";
+      for (var i = 0; i < 5; i++) {
+        rctx.beginPath();
+        var ox = (i - 2) * s * 0.12;
+        var tipX = x + ox * 0.55;
+        var tipY = wireY + headR * 1.5;
+        rctx.moveTo(x + ox * 0.3, wireY);
+        rctx.quadraticCurveTo(x + ox * 1.3, wireY + headR * 0.9, tipX, tipY);
+        rctx.stroke();
+      }
+
+      rctx.restore();
+    }
+
+    // ===================== APPLIANCE ICON (oven) =====================
+    function drawOvenIcon(rctx, x, y, s) {
+      rctx.save();
+      rctx.fillStyle = "#f8a5c2"; roundRectCtx(rctx, x - s*0.35, y - s*0.3, s*0.7, s*0.65, s*0.08); rctx.fill();
+      rctx.fillStyle = "#333333"; roundRectCtx(rctx, x - s*0.28, y - s*0.22, s*0.56, s*0.48, s*0.05); rctx.fill();
+      rctx.fillStyle = "#ffe082";
+      rctx.beginPath(); rctx.arc(x - s*0.1, y + s*0.15, s*0.08, 0, Math.PI*2); rctx.fill();
+      rctx.beginPath(); rctx.arc(x + s*0.1, y + s*0.15, s*0.08, 0, Math.PI*2); rctx.fill();
+      rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 2;
+      rctx.beginPath(); rctx.moveTo(x - s*0.35, y - s*0.1); rctx.lineTo(x + s*0.35, y - s*0.1); rctx.stroke();
+      rctx.fillStyle = "#d4789c"; rctx.beginPath();
+      rctx.ellipse(x + s*0.25, y - s*0.1, s*0.06, s*0.03, 0, 0, Math.PI*2); rctx.fill();
+      rctx.restore();
+    }
+
+    // ===================== STOPWATCH =====================
+    function drawStopwatch(rctx, x, y, r, elapsed, timeLimit, now) {
+      if (!timeLimit) {
+        // No time limit: show infinity symbol
+        rctx.save();
+        rctx.fillStyle = "#ffffff"; rctx.strokeStyle = "#333333"; rctx.lineWidth = 3;
+        rctx.beginPath(); rctx.arc(x, y, r, 0, Math.PI * 2); rctx.fill(); rctx.stroke();
+        rctx.fillStyle = "#333333"; rctx.font = "bold 26px monospace"; rctx.textAlign = "center";
+        rctx.fillText("\u221E", x, y + 9);
+        rctx.fillStyle = "#333333"; rctx.font = "bold 14px sans-serif";
+        rctx.fillText("Timer", x, y + r + 20);
+        rctx.restore();
+        return;
+      }
+
+      // Flash effect when 15s or less remain
+      var remaining = timeLimit - elapsed;
+      var flashing = remaining <= 15 && remaining > 0;
+      var flashOn = flashing && (Math.floor(now / 250) % 2 === 0);
+
+      rctx.save();
+
+      // Flash glow behind the timer
+      if (flashing && flashOn) {
+        rctx.fillStyle = "rgba(239, 83, 80, 0.25)";
+        rctx.beginPath(); rctx.arc(x, y, r + 8, 0, Math.PI * 2); rctx.fill();
+      }
+
+      // Outer ring with black outline
+      rctx.fillStyle = flashOn ? "#fff5f5" : "#ffffff";
+      rctx.strokeStyle = flashOn ? "#ef5350" : "#333333";
+      rctx.lineWidth = 3.5;
+      rctx.beginPath(); rctx.arc(x, y, r, 0, Math.PI * 2); rctx.fill(); rctx.stroke();
+
+      // Inner pink ring
+      rctx.strokeStyle = flashOn ? "#ef5350" : C.pink; rctx.lineWidth = 2.5;
+      rctx.beginPath(); rctx.arc(x, y, r - 4, 0, Math.PI * 2); rctx.stroke();
+
+      // Inner face
+      rctx.fillStyle = flashOn ? "#fff0f0" : "#fff5f7"; rctx.beginPath(); rctx.arc(x, y, r - 6, 0, Math.PI * 2); rctx.fill();
+
+      // Tick marks
+      for (var i = 0; i < 12; i++) {
+        var angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        var inner = r - 15, outer = r - 7;
+        rctx.strokeStyle = "#333333"; rctx.lineWidth = 1.5;
+        rctx.beginPath();
+        rctx.moveTo(x + Math.cos(angle) * inner, y + Math.sin(angle) * inner);
+        rctx.lineTo(x + Math.cos(angle) * outer, y + Math.sin(angle) * outer);
+        rctx.stroke();
+      }
+
+      // Hand: starts at 12 o'clock, moves counterclockwise
+      var frac = Math.min(elapsed / timeLimit, 1);
+      var handAngle = -Math.PI / 2 - frac * Math.PI * 2;
+      rctx.strokeStyle = flashOn ? "#ef5350" : "#e91e63"; rctx.lineWidth = 3.5; rctx.lineCap = "round";
+      rctx.beginPath();
+      rctx.moveTo(x, y);
+      rctx.lineTo(x + Math.cos(handAngle) * (r - 22), y + Math.sin(handAngle) * (r - 22));
+      rctx.stroke();
+
+      // Center dot
+      rctx.fillStyle = "#333333"; rctx.beginPath(); rctx.arc(x, y, 4, 0, Math.PI * 2); rctx.fill();
+      rctx.strokeStyle = "#333333"; rctx.lineWidth = 1.5;
+      rctx.beginPath(); rctx.arc(x, y, 4, 0, Math.PI * 2); rctx.stroke();
+
+      // "Timer" label below
+      rctx.fillStyle = flashOn ? "#ef5350" : "#333333"; rctx.font = "bold 14px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("Timer", x, y + r + 20);
+
+      // Time text — bigger
+      var timeColor = remaining <= 15 ? "#ef5350" : (elapsed <= timeLimit ? C.successDark : "#ef5350");
+      rctx.fillStyle = timeColor; rctx.font = "bold 20px monospace";
+      rctx.fillText(elapsed.toFixed(1) + "s", x, y + r + 42);
+      rctx.fillText("/ " + timeLimit + "s", x, y + r + 62);
+
+      rctx.restore();
+    }
+
+    // ===================== DECORATIONS =====================
+    function drawDecorations(rctx, w, h, now) {
+      rctx.save();
+      var t = now * 0.001;
+
+      // Floating hearts & flowers — evenly distributed grid
+      var decorEmojis = [
+        "\u{1F495}", "\u{1F497}", "\u2764", "\u{1F338}",
+        "\u{1F337}", "\u{1F33C}", "\u{1F33A}", "\u2728",
+        "\u{1F382}", "\u{1F36A}"
+      ];
+      var cols = Math.ceil(w / 140);
+      var rows = Math.ceil(h / 140);
+      var count = 0;
+      for (var gr = 0; gr < rows; gr++) {
+        for (var gc = 0; gc < cols; gc++) {
+          var px = (gc + 0.5) * (w / cols) + Math.sin(t * 0.5 + count * 2.3) * 25;
+          var py = (gr + 0.5) * (h / rows) + Math.cos(t * 0.5 + count * 1.7) * 25;
+          rctx.globalAlpha = 0.25 + Math.sin(t * 1.5 + count) * 0.05;
+          rctx.font = (18 + (count % 8)) + "px sans-serif";
+          rctx.textAlign = "center";
+          rctx.fillText(decorEmojis[count % decorEmojis.length], px, py);
+          count++;
+        }
+      }
+
+      rctx.globalAlpha = 1;
+
+      // Whisk decor (bottom left)
+      var wx = 70, wy = h - 80;
+      rctx.save(); rctx.translate(wx, wy);
+      rctx.rotate(Math.sin(t * 2) * 0.08);
+      rctx.globalAlpha = 0.18;
+      drawWhisk(rctx, 0, 0, 50);
+      rctx.restore();
+
+      // Chef's hat (top left)
+      var hx = 65, hy = 75;
+      rctx.globalAlpha = 0.15;
+      rctx.fillStyle = "#ffffff";
+      rctx.beginPath(); rctx.arc(hx, hy - 14, 22, Math.PI, 0); rctx.fill();
+      rctx.fillRect(hx - 22, hy - 14, 44, 12);
+      rctx.fillStyle = "#f5f5f5"; roundRectCtx(rctx, hx - 18, hy + 2, 36, 14, 4); rctx.fill();
+
+      // Pot (bottom right)
+      var potX = w - 70, potY = h - 70;
+      rctx.globalAlpha = 0.15;
+      rctx.fillStyle = C.pastelPurple;
+      rctx.beginPath();
+      rctx.moveTo(potX - 25, potY - 20);
+      rctx.lineTo(potX - 20, potY + 18);
+      rctx.quadraticCurveTo(potX, potY + 24, potX + 20, potY + 18);
+      rctx.lineTo(potX + 25, potY - 20);
+      rctx.closePath(); rctx.fill();
+      rctx.strokeStyle = "#b39ddb"; rctx.lineWidth = 1.5; rctx.stroke();
+      rctx.beginPath(); rctx.arc(potX - 26, potY - 8, 8, -Math.PI/2, Math.PI/2); rctx.stroke();
+      rctx.beginPath(); rctx.arc(potX + 26, potY - 8, 8, Math.PI/2, -Math.PI/2); rctx.stroke();
+      rctx.strokeStyle = "#ce93d8"; rctx.lineWidth = 1;
+      for (var si = 0; si < 3; si++) {
+        var sx = potX - 10 + si * 10;
+        rctx.beginPath(); rctx.moveTo(sx, potY - 24);
+        rctx.quadraticCurveTo(sx + 3 + Math.sin(t + si) * 2, potY - 34, sx, potY - 42);
+        rctx.stroke();
+      }
+
+      // Rolling pin (top right)
+      var rpx = w - 75, rpy = 75;
+      rctx.globalAlpha = 0.15;
+      rctx.save(); rctx.translate(rpx, rpy); rctx.rotate(0.3 + Math.sin(t*1.5)*0.1);
+      rctx.fillStyle = "#d7ccc8"; roundRectCtx(rctx, -30, -8, 60, 16, 8); rctx.fill();
+      rctx.fillStyle = "#8d6e63"; roundRectCtx(rctx, -42, -4, 12, 8, 3); rctx.fill();
+      roundRectCtx(rctx, 30, -4, 12, 8, 3); rctx.fill();
+      rctx.strokeStyle = "#bcaaa4"; rctx.lineWidth = 1; roundRectCtx(rctx, -30, -8, 60, 16, 8); rctx.stroke();
+      rctx.restore();
+
+      // Completed pastries
+      drawSmallPastry(rctx, w - 55, h - 145, "cake", t);
+      drawSmallPastry(rctx, w - 55, h - 85, "cookies", t + 1);
+      drawSmallPastry(rctx, 55, h - 145, "brownies", t + 2);
+
+      // Accent dots
+      var dots = [
+        { x: w * 0.15, y: h * 0.1, c: C.pastelGreen, rad: 6 },
+        { x: w * 0.85, y: h * 0.2, c: C.pastelYellow, rad: 5 },
+        { x: w * 0.1, y: h * 0.5, c: C.pastelBlue, rad: 7 },
+        { x: w * 0.9, y: h * 0.6, c: C.pastelLavender, rad: 5 },
+        { x: w * 0.2, y: h * 0.75, c: C.pastelMint, rad: 4 },
+        { x: w * 0.8, y: h * 0.8, c: C.pastelPurple, rad: 6 },
+      ];
+      dots.forEach(function(d) {
+        rctx.globalAlpha = 0.10 + Math.sin(t * 2 + d.rad) * 0.04;
+        rctx.fillStyle = d.c; rctx.beginPath(); rctx.arc(d.x, d.y, d.rad, 0, Math.PI*2); rctx.fill();
+      });
+
+      rctx.restore();
+    }
+
+    function drawSmallPastry(rctx, x, y, type, t) {
+      rctx.save();
+      rctx.globalAlpha = 0.12 + Math.sin(t * 1.2) * 0.03;
+      var s = 18;
+      if (type === "cake") {
+        rctx.fillStyle = "#f8bbd0"; roundRectCtx(rctx, x - s*0.5, y - s*0.2, s, s*0.7, 3); rctx.fill();
+        rctx.fillStyle = "#f48fb1"; roundRectCtx(rctx, x - s*0.5, y - s*0.2, s, s*0.25, 3); rctx.fill();
+        rctx.fillStyle = "#e91e63"; rctx.beginPath(); rctx.arc(x, y - s*0.25, s*0.12, 0, Math.PI*2); rctx.fill();
+      } else if (type === "cookies") {
+        rctx.fillStyle = "#d7a86e";
+        rctx.beginPath(); rctx.arc(x - s*0.3, y, s*0.35, 0, Math.PI*2); rctx.fill();
+        rctx.beginPath(); rctx.arc(x + s*0.3, y + s*0.05, s*0.35, 0, Math.PI*2); rctx.fill();
+      } else {
+        rctx.fillStyle = "#5d3a1a"; roundRectCtx(rctx, x - s*0.5, y - s*0.4, s, s*0.8, 3); rctx.fill();
+      }
+      rctx.restore();
+    }
+
+    // ---- Seeded RNG (stable per ingredient name) ----
+    function seededRng(seedStr) {
+      var s = 0;
+      for (var i = 0; i < seedStr.length; i++) s = (s * 31 + seedStr.charCodeAt(i)) >>> 0;
+      if (s === 0) s = 1;
+      return function() {
+        s = (s * 1103515245 + 12345) & 0x7fffffff;
+        return s / 0x7fffffff;
+      };
+    }
+
+    // ---- Organic shapeless blob path (stable per seed) ----
+    function organicBlobPath(rctx, x, y, baseRX, baseRY, seedStr) {
+      var rng = seededRng(seedStr);
+      var n = 14;
+      var pts = [];
+      for (var i = 0; i < n; i++) {
+        var a = (i / n) * Math.PI * 2;
+        var r = 0.68 + rng() * 0.64; // 0.68..1.32 variance
+        pts.push({ x: x + Math.cos(a) * baseRX * r, y: y + Math.sin(a) * baseRY * r });
+      }
+      var mid0 = { x: (pts[0].x + pts[n-1].x) / 2, y: (pts[0].y + pts[n-1].y) / 2 };
+      rctx.beginPath();
+      rctx.moveTo(mid0.x, mid0.y);
+      for (var j = 0; j < n; j++) {
+        var p1 = pts[j];
+        var p2 = pts[(j+1) % n];
+        var mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        rctx.quadraticCurveTo(p1.x, p1.y, mid.x, mid.y);
+      }
+      rctx.closePath();
+    }
+
+    // ===================== TOP-DOWN WHITE BOWL =====================
+    function drawBowlInCenter(rctx, cx, cy, now) {
+      var t = now * 0.001;
+      var bowlCY = cy + 25;
+      var bowlR = 88;
+
+      rctx.save();
+      // Shadow
+      rctx.fillStyle = "rgba(180,160,170,0.10)";
+      rctx.beginPath(); rctx.ellipse(cx, bowlCY + 4, bowlR + 8, bowlR * 0.4, 0, 0, Math.PI*2); rctx.fill();
+
+      // Bowl outer rim (pink)
+      rctx.fillStyle = C.bowlRim;
+      rctx.beginPath(); rctx.ellipse(cx, bowlCY, bowlR + 6, bowlR * 0.4, 0, 0, Math.PI*2); rctx.fill();
+      rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 2.5;
+      rctx.beginPath(); rctx.ellipse(cx, bowlCY, bowlR + 6, bowlR * 0.4, 0, 0, Math.PI*2); rctx.stroke();
+
+      // Bowl inner (WHITE)
+      rctx.fillStyle = "#ffffff";
+      rctx.beginPath(); rctx.ellipse(cx, bowlCY, bowlR, bowlR * 0.36, 0, 0, Math.PI*2); rctx.fill();
+      rctx.strokeStyle = "#e8e0e4"; rctx.lineWidth = 1.5;
+      rctx.beginPath(); rctx.ellipse(cx, bowlCY, bowlR, bowlR * 0.36, 0, 0, Math.PI*2); rctx.stroke();
+
+      // Ingredients inside bowl as colored blobs
+      bowlIngredients = measuredIngredients.slice();
+      if (bowlIngredients.length > 0) {
+        // Build a cache key — only re-randomize positions when ingredients change
+        var cacheKey = bowlIngredients.map(function(ing){
+          return ing.name + ":" + ing.targetAmount + ":" + ing.icon + ":" + ing.status;
+        }).join("|");
+
+        if (cacheKey !== bowlBlobCacheKey || !bowlBlobCache) {
+          bowlBlobCacheKey = cacheKey;
+
+          // Map ingredient to blob color
+          var ingColors = {
+            "Butter": "#ffe082",
+            "Sugar": "#f5f5f5",
+            "Flour": "#fafafa",
+            "Baking Powder": "#fefefe",
+            "Milk": "#e3f2fd",
+            "Vanilla": "#d4a76a",
+            "Eggs": "#fff9c4",
+            "Chocolate": "#795548"
+          };
+
+          // Build blob list — eggs become N separate small blobs
+          var amounts = bowlIngredients.map(function(ing){ return ing.targetAmount; });
+          var maxAmount = Math.max.apply(null, amounts);
+          var minBlobR = 15, maxBlobR = bowlR * 0.38;
+          var blobs = [];
+          bowlIngredients.forEach(function(ing) {
+            if (ing.icon === "eggs") {
+              // Create N small egg blobs
+              for (var ei = 0; ei < ing.targetAmount; ei++) {
+                blobs.push({ name: ing.name, amount: 1, r: 10, color: ingColors[ing.name], status: ing.status, isEgg: true });
+              }
+            } else {
+              var ratio = ing.targetAmount / maxAmount;
+              var r = minBlobR + ratio * (maxBlobR - minBlobR);
+              // Vanilla is smaller than other blobs
+              if (ing.icon === "vanilla") r = 11;
+              blobs.push({ name: ing.name, amount: ing.targetAmount, r: r, color: ingColors[ing.name] || "#e0e0e0", status: ing.status, isEgg: false, seed: ing.name + "_" + ing.icon });
+            }
+          });
+
+          // Shuffle blobs for random placement order
+          for (var sh = blobs.length - 1; sh > 0; sh--) {
+            var swapIdx = Math.floor(Math.random() * (sh + 1));
+            var tmp = blobs[sh]; blobs[sh] = blobs[swapIdx]; blobs[swapIdx] = tmp;
+          }
+
+          // Place blobs randomly in the bowl
+          var innerEllipseH = bowlR * 0.36 * 0.85;
+          var innerEllipseW = bowlR * 0.85;
+          var placed = [];
+
+          blobs.forEach(function(blob) {
+            var bestX = 0, bestY = 0, found = false;
+
+            // Random search — try random positions within the bowl
+            for (var attempt = 0; attempt < 200; attempt++) {
+              // Random point within ellipse (uniform distribution)
+              var angle = Math.random() * Math.PI * 2;
+              var dist = Math.sqrt(Math.random()) * (1 - blob.r / bowlR * 0.9);
+              var rx = Math.cos(angle) * dist * innerEllipseW;
+              var ry = Math.sin(angle) * dist * innerEllipseH;
+              var sx = cx + rx;
+              var sy = (bowlCY - 2) + ry;
+
+              // Check overlap with placed blobs
+              var overlaps = false;
+              for (var p = 0; p < placed.length; p++) {
+                var ddx = sx - placed[p].x;
+                var ddy = (sy - placed[p].y) / (innerEllipseH / innerEllipseW);
+                var dist2 = Math.sqrt(ddx * ddx + ddy * ddy);
+                if (dist2 < blob.r + placed[p].r + 3) { overlaps = true; break; }
+              }
+              if (!overlaps) { bestX = sx; bestY = sy; found = true; break; }
+            }
+
+            // Fallback: place at center if no spot found
+            if (!found) { bestX = cx; bestY = bowlCY - 2; }
+
+            placed.push({ x: bestX, y: bestY, r: blob.r, color: blob.color, name: blob.name, status: blob.status, isEgg: blob.isEgg, seed: blob.seed || blob.name });
+          });
+
+          bowlBlobCache = placed;
+        }
+
+        // Use cached positions
+        var placed = bowlBlobCache;
+        var innerEllipseH = bowlR * 0.36 * 0.85;
+        var innerEllipseW = bowlR * 0.85;
+
+        // Draw each blob
+        placed.forEach(function(blob) {
+          rctx.save();
+          var brx = blob.r;
+          var bry = blob.r * (innerEllipseH / innerEllipseW);
+
+          if (blob.isEgg) {
+            // Draw cracked egg blob — transparent yellow outside, yellow circle inside
+            // Transparent outer (egg white)
+            rctx.fillStyle = "rgba(255, 249, 196, 0.5)";
+            rctx.beginPath();
+            rctx.ellipse(blob.x, blob.y, brx, bry, 0, 0, Math.PI * 2);
+            rctx.fill();
+            rctx.strokeStyle = "#000000"; rctx.lineWidth = 1;
+            rctx.beginPath();
+            rctx.ellipse(blob.x, blob.y, brx, bry, 0, 0, Math.PI * 2);
+            rctx.stroke();
+            // Yellow yolk circle inside
+            rctx.fillStyle = "#ffd54f";
+            rctx.strokeStyle = "#f9a825"; rctx.lineWidth = 1;
+            rctx.beginPath();
+            rctx.arc(blob.x, blob.y, brx * 0.5, 0, Math.PI * 2);
+            rctx.fill(); rctx.stroke();
+            // Yolk shine
+            rctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            rctx.beginPath(); rctx.arc(blob.x - brx * 0.15, blob.y - brx * 0.15, brx * 0.15, 0, Math.PI * 2); rctx.fill();
+          } else {
+            // Shapeless organic blob (not an egg)
+            organicBlobPath(rctx, blob.x, blob.y, brx, bry, blob.seed);
+            rctx.fillStyle = blob.color;
+            rctx.fill();
+            rctx.strokeStyle = "#000000"; rctx.lineWidth = 1.5;
+            rctx.stroke();
+
+            // Status indicator dot
+            var dotClr = blob.status === "Perfect" ? C.successDark : (blob.status === "Okay" ? C.warnDark : C.errorDark);
+            rctx.fillStyle = dotClr;
+            rctx.beginPath();
+            rctx.arc(blob.x + brx * 0.5, blob.y - bry * 0.5, 4, 0, Math.PI * 2);
+            rctx.fill();
+            rctx.strokeStyle = "#000000"; rctx.lineWidth = 1;
+            rctx.stroke();
+          }
+          rctx.restore();
+        });
+      }
+      rctx.restore();
+    }
+
+    // ===================== BAKERY SCENE =====================
+    function drawBakeryScene(rctx, w, h, now) {
+      var t = now * 0.001;
+
+      // Wall background
+      rctx.fillStyle = "#fff0f5";
+      rctx.fillRect(0, 0, w, h);
+
+      // Wall pattern — subtle vertical stripes (wall area only)
+      rctx.fillStyle = "rgba(248, 165, 194, 0.06)";
+      for (var i = 0; i < w; i += 50) {
+        rctx.fillRect(i, 0, 25, h * 0.55);
+      }
+
+      // Menu board on wall (left side, doubled size, fits in empty wall space)
+      var menuW = Math.min(330, w * 0.38);
+      var menuH = Math.min(270, h * 0.46);
+      drawMenuBoard(rctx, w * 0.03, h * 0.04, menuW, menuH);
+
+      // Wall decorations — shelf with jars (right side)
+      var shelfY = h * 0.14;
+      var shelfStart = w * 0.45;
+      var shelfEnd = w * 0.95;
+      rctx.fillStyle = "#d4789c";
+      rctx.fillRect(shelfStart, shelfY, shelfEnd - shelfStart, 8);
+      rctx.fillStyle = "rgba(93, 58, 75, 0.1)";
+      rctx.fillRect(shelfStart, shelfY + 8, shelfEnd - shelfStart, 3);
+
+      // Jars on shelf
+      var jarColors = ["#f8a5c2", "#e8b4d0", "#fce4ec", "#f48fb1", "#f8bbd0"];
+      var jarCount = 5;
+      var jarSpacing = (shelfEnd - shelfStart - 40) / Math.max(1, jarCount - 1);
+      for (var j = 0; j < jarCount; j++) {
+        var jarX = shelfStart + 20 + j * jarSpacing;
+        rctx.fillStyle = jarColors[j % jarColors.length];
+        roundRectCtx(rctx, jarX - 14, shelfY - 38, 28, 38, 5);
+        rctx.fill();
+        rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 1.5;
+        rctx.stroke();
+        rctx.fillStyle = "#8d6e63";
+        roundRectCtx(rctx, jarX - 16, shelfY - 44, 32, 8, 2);
+        rctx.fill();
+        rctx.strokeStyle = "#5d4037"; rctx.lineWidth = 1;
+        rctx.stroke();
+      }
+
+      // Floor strip (visible below counter)
+      rctx.fillStyle = "#f3e5e8";
+      rctx.fillRect(0, h * 0.95, w, h * 0.05);
+
+      // Draw counter with countertop perspective
+      drawCounter(rctx, w, h);
+    }
+
+    function drawCounter(rctx, w, h) {
+      var counterTopY = h * 0.58;
+      var counterFrontY = h * 0.70;
+      var counterBottomY = h * 0.95;
+
+      // Countertop surface (perspective trapezoid — wider at front)
+      rctx.fillStyle = "#e8b4d0";
+      rctx.beginPath();
+      rctx.moveTo(w * 0.03, counterTopY);
+      rctx.lineTo(w * 0.97, counterTopY);
+      rctx.lineTo(w, counterFrontY);
+      rctx.lineTo(0, counterFrontY);
+      rctx.closePath();
+      rctx.fill();
+
+      // Countertop highlight (back edge)
+      rctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+      rctx.beginPath();
+      rctx.moveTo(w * 0.03, counterTopY);
+      rctx.lineTo(w * 0.97, counterTopY);
+      rctx.lineTo(w * 0.965, counterTopY + 5);
+      rctx.lineTo(w * 0.035, counterTopY + 5);
+      rctx.closePath();
+      rctx.fill();
+
+      // Countertop front lip
+      rctx.fillStyle = "#d4789c";
+      rctx.fillRect(0, counterFrontY, w, 7);
+
+      // ---- Cash register (left side of countertop, larger & detailed) ----
+      var regW = Math.min(120, w * 0.14);
+      var regH = 78;
+      var regX = w * 0.05;
+      var regY = counterTopY + 6;
+
+      // Register base body
+      rctx.fillStyle = "#8d6e63";
+      roundRectCtx(rctx, regX, regY, regW, regH, 6);
+      rctx.fill();
+      rctx.strokeStyle = "#5d4037"; rctx.lineWidth = 2;
+      rctx.stroke();
+
+      // Money slot (horizontal slit at top)
+      rctx.fillStyle = "#3e2723";
+      roundRectCtx(rctx, regX + regW * 0.15, regY + 4, regW * 0.7, 5, 2);
+      rctx.fill();
+      rctx.strokeStyle = "#5d4037"; rctx.lineWidth = 1;
+      rctx.stroke();
+      // "INSERT" label
+      rctx.fillStyle = "#d7ccc8";
+      rctx.font = "6px sans-serif";
+      rctx.textAlign = "center";
+      rctx.textBaseline = "middle";
+      rctx.fillText("MONEY", regX + regW / 2, regY + 7);
+
+      // Display screen (green LCD)
+      rctx.fillStyle = "#1b5e20";
+      roundRectCtx(rctx, regX + 8, regY + 14, regW - 16, 20, 3);
+      rctx.fill();
+      rctx.strokeStyle = "#5d4037"; rctx.lineWidth = 1.5;
+      rctx.stroke();
+      rctx.fillStyle = "#a5d6a7";
+      rctx.font = "bold 10px monospace";
+      rctx.fillText("$0.00", regX + regW / 2, regY + 24);
+
+      // Button grid (3 rows x 4 cols)
+      var btnSize = 4;
+      var btnStartX = regX + 12;
+      var btnStartY = regY + 40;
+      var btnSpacingX = (regW - 24) / 3;
+      var btnSpacingY = 8;
+      rctx.fillStyle = "#6d4c41";
+      for (var by = 0; by < 3; by++) {
+        for (var bx = 0; bx < 4; bx++) {
+          rctx.beginPath();
+          rctx.arc(btnStartX + bx * btnSpacingX, btnStartY + by * btnSpacingY, btnSize, 0, Math.PI * 2);
+          rctx.fill();
+        }
+      }
+
+      // Receipt printer slot (right side)
+      rctx.fillStyle = "#3e2723";
+      rctx.fillRect(regX + regW - 5, regY + 16, 4, 14);
+
+      // Cash drawer at bottom (with handle)
+      rctx.strokeStyle = "#5d4037"; rctx.lineWidth = 1.5;
+      rctx.strokeRect(regX + 6, regY + regH - 12, regW - 12, 8);
+      rctx.fillStyle = "#bcaaa4";
+      rctx.beginPath();
+      rctx.arc(regX + regW / 2, regY + regH - 8, 2, 0, Math.PI * 2);
+      rctx.fill();
+
+      // ---- Glass display case for baked goods ----
+      var emojis = ["\uD83E\uDDC1", "\uD83C\uDF70", "\uD83C\uDF82", "\uD83C\uDF69", "\uD83C\uDF6A"];
+      var goodsStartX = w * 0.28;
+      var goodsEndX = w * 0.86;
+      var colSpacing = (goodsEndX - goodsStartX) / 4;
+      var emojiSize = Math.min(45, w / 18);
+      var casePadX = 28;
+      var casePadY = 10;
+      var caseX = goodsStartX - casePadX;
+      var caseY = counterTopY + 2;
+      var caseW = (goodsEndX - goodsStartX) + casePadX * 2;
+      var caseH = emojiSize * 1.85 + casePadY * 2;
+
+      // Glass case frame (metallic)
+      rctx.fillStyle = "#b0bec5";
+      roundRectCtx(rctx, caseX, caseY, caseW, caseH, 6);
+      rctx.fill();
+      rctx.strokeStyle = "#78909c"; rctx.lineWidth = 2;
+      rctx.stroke();
+
+      // Glass case interior (dark interior so goods are visible)
+      rctx.fillStyle = "rgba(255, 248, 235, 0.7)";
+      roundRectCtx(rctx, caseX + 4, caseY + 4, caseW - 8, caseH - 8, 4);
+      rctx.fill();
+
+      // Shelf line inside case (separating the two rows)
+      rctx.strokeStyle = "rgba(176, 190, 197, 0.5)"; rctx.lineWidth = 1.5;
+      rctx.beginPath();
+      rctx.moveTo(caseX + 6, caseY + caseH / 2);
+      rctx.lineTo(caseX + caseW - 6, caseY + caseH / 2);
+      rctx.stroke();
+
+      // Baked goods (5 types, 2 each, vertical)
+      rctx.textAlign = "center";
+      rctx.textBaseline = "middle";
+      rctx.font = emojiSize + "px sans-serif";
+      for (var i = 0; i < 5; i++) {
+        var ex = goodsStartX + i * colSpacing;
+        rctx.fillText(emojis[i], ex, caseY + casePadY + emojiSize * 0.45);
+        rctx.fillText(emojis[i], ex, caseY + casePadY + emojiSize * 0.45 + emojiSize * 0.85);
+      }
+
+      // Glass reflection highlight (diagonal stripe)
+      rctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+      rctx.beginPath();
+      rctx.moveTo(caseX + 8, caseY + 4);
+      rctx.lineTo(caseX + 28, caseY + 4);
+      rctx.lineTo(caseX + 14, caseY + caseH - 4);
+      rctx.lineTo(caseX + 4, caseY + caseH - 4);
+      rctx.closePath();
+      rctx.fill();
+
+      // ---- Counter front face ----
+      rctx.fillStyle = "#f8a5c2";
+      rctx.fillRect(0, counterFrontY + 7, w, counterBottomY - counterFrontY - 7);
+
+      // Cabinet doors on front face
+      rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 2;
+      var doorH = counterBottomY - counterFrontY - 22;
+      for (var cd = 0; cd < w; cd += 130) {
+        rctx.strokeRect(cd + 6, counterFrontY + 15, 118, doorH);
+        rctx.fillStyle = "#8d6e63";
+        rctx.beginPath();
+        rctx.arc(cd + 65, counterFrontY + 15 + doorH / 2, 3, 0, Math.PI * 2);
+        rctx.fill();
+      }
+    }
+
+    function drawMenuBoard(rctx, x, y, bw, bh) {
+      // Board frame (dark wood)
+      rctx.fillStyle = "#5d4037";
+      roundRectCtx(rctx, x, y, bw, bh, 8);
+      rctx.fill();
+      rctx.strokeStyle = "#3e2723"; rctx.lineWidth = 2;
+      rctx.stroke();
+
+      // Inner board (cream)
+      rctx.fillStyle = "#fff8e1";
+      roundRectCtx(rctx, x + 6, y + 6, bw - 12, bh - 12, 5);
+      rctx.fill();
+
+      // Heading
+      rctx.fillStyle = "#5d3a4b";
+      rctx.font = "bold 24px sans-serif";
+      rctx.textAlign = "center";
+      rctx.textBaseline = "middle";
+      rctx.fillText("Menu", x + bw / 2, y + 26);
+
+      // Divider
+      rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 1.5;
+      rctx.beginPath();
+      rctx.moveTo(x + 18, y + 44);
+      rctx.lineTo(x + bw - 18, y + 44);
+      rctx.stroke();
+
+      // Menu items with emojis
+      rctx.textAlign = "left";
+      rctx.textBaseline = "middle";
+      var items = [
+        { name: "cake", emoji: "\uD83C\uDF82" },
+        { name: "cookies", emoji: "\uD83C\uDF6A" },
+        { name: "brownies", emoji: "\uD83C\uDF6B" }
+      ];
+      var startY = y + 60;
+      var lineH = (bh - 66) / 3;
+      for (var i = 0; i < items.length; i++) {
+        var iy = startY + i * lineH + lineH / 2;
+        rctx.fillStyle = "#5d3a4b";
+        rctx.font = "bold 18px sans-serif";
+        rctx.fillText("\u2022", x + 18, iy);
+        rctx.font = "24px sans-serif";
+        rctx.fillText(items[i].emoji, x + 34, iy);
+        rctx.font = "18px sans-serif";
+        rctx.fillText(items[i].name, x + 70, iy);
+      }
+    }
+
+    // ===================== CHARACTER =====================
+    // faceState: "smile", "neutral", "frown"
+    function drawCharacter(rctx, x, y, scale, faceState, now, eating, biteProgress) {
+      var s = scale;
+      var t = now * 0.001;
+      var chew = eating ? Math.sin(t * 12) * 2 * s : 0; // chewing motion
+
+      rctx.save();
+      rctx.translate(x, y);
+
+      // ---- BODY (torso) ----
+      var bodyH = 100 * s;
+      rctx.fillStyle = "#7e57c2"; // purple shirt
+      roundRectCtx(rctx, -35 * s, 0, 70 * s, bodyH, 12 * s);
+      rctx.fill();
+      rctx.strokeStyle = "#5e35b1"; rctx.lineWidth = 2 * s;
+      rctx.stroke();
+
+      // Shirt collar
+      rctx.fillStyle = "#9575cd";
+      rctx.beginPath();
+      rctx.moveTo(-12 * s, 0);
+      rctx.lineTo(0, 12 * s);
+      rctx.lineTo(12 * s, 0);
+      rctx.closePath();
+      rctx.fill();
+
+      // ---- ARMS ----
+      rctx.strokeStyle = "#7e57c2"; rctx.lineWidth = 14 * s; rctx.lineCap = "round";
+
+      // Left arm (always down)
+      rctx.beginPath();
+      rctx.moveTo(-30 * s, 15 * s);
+      rctx.lineTo(-52 * s, 55 * s);
+      rctx.stroke();
+      // Left hand
+      rctx.fillStyle = "#ffccbc";
+      rctx.beginPath(); rctx.arc(-52 * s, 55 * s, 9 * s, 0, Math.PI * 2); rctx.fill();
+      rctx.strokeStyle = "#e0a090"; rctx.lineWidth = 1.5 * s;
+      rctx.stroke();
+
+      // Right arm
+      rctx.strokeStyle = "#7e57c2"; rctx.lineWidth = 14 * s;
+      if (eating) {
+        // Arm raised to mouth
+        rctx.beginPath();
+        rctx.moveTo(30 * s, 15 * s);
+        rctx.quadraticCurveTo(50 * s, -10 * s, 18 * s, -38 * s);
+        rctx.stroke();
+        // Right hand (holding pastry)
+        rctx.fillStyle = "#ffccbc";
+        rctx.beginPath(); rctx.arc(18 * s, -38 * s, 9 * s, 0, Math.PI * 2); rctx.fill();
+        rctx.strokeStyle = "#e0a090"; rctx.lineWidth = 1.5 * s;
+        rctx.stroke();
+      } else {
+        // Arm down
+        rctx.beginPath();
+        rctx.moveTo(30 * s, 15 * s);
+        rctx.lineTo(52 * s, 55 * s);
+        rctx.stroke();
+        // Right hand
+        rctx.fillStyle = "#ffccbc";
+        rctx.beginPath(); rctx.arc(52 * s, 55 * s, 9 * s, 0, Math.PI * 2); rctx.fill();
+        rctx.strokeStyle = "#e0a090"; rctx.lineWidth = 1.5 * s;
+        rctx.stroke();
+      }
+
+      // ---- NECK ----
+      rctx.fillStyle = "#ffccbc";
+      rctx.fillRect(-9 * s, -8 * s, 18 * s, 12 * s);
+
+      // ---- HEAD ----
+      var headY = -48 * s + chew;
+      var headR = 40 * s;
+
+      rctx.fillStyle = "#ffccbc";
+      rctx.beginPath(); rctx.arc(0, headY, headR, 0, Math.PI * 2); rctx.fill();
+      rctx.strokeStyle = "#e0a090"; rctx.lineWidth = 2 * s;
+      rctx.stroke();
+
+      // ---- HAIR ----
+      rctx.fillStyle = "#5d4037";
+      rctx.beginPath();
+      rctx.arc(0, headY, headR + 1, Math.PI + 0.25, -0.25, false);
+      rctx.lineTo(headR * 0.65, headY - headR * 0.45);
+      rctx.quadraticCurveTo(0, headY - headR * 1.1, -headR * 0.65, headY - headR * 0.45);
+      rctx.closePath();
+      rctx.fill();
+
+      // Hair side strands
+      rctx.strokeStyle = "#5d4037"; rctx.lineWidth = 4 * s; rctx.lineCap = "round";
+      rctx.beginPath();
+      rctx.moveTo(-headR * 0.85, headY - headR * 0.2);
+      rctx.lineTo(-headR * 0.9, headY + headR * 0.25);
+      rctx.stroke();
+      rctx.beginPath();
+      rctx.moveTo(headR * 0.85, headY - headR * 0.2);
+      rctx.lineTo(headR * 0.9, headY + headR * 0.25);
+      rctx.stroke();
+
+      // ---- EYES ----
+      rctx.fillStyle = "#000000";
+      rctx.beginPath(); rctx.arc(-14 * s, headY - 2 * s, 5 * s, 0, Math.PI * 2); rctx.fill();
+      rctx.beginPath(); rctx.arc(14 * s, headY - 2 * s, 5 * s, 0, Math.PI * 2); rctx.fill();
+      // Eye shines
+      rctx.fillStyle = "#ffffff";
+      rctx.beginPath(); rctx.arc(-12 * s, headY - 4 * s, 2 * s, 0, Math.PI * 2); rctx.fill();
+      rctx.beginPath(); rctx.arc(16 * s, headY - 4 * s, 2 * s, 0, Math.PI * 2); rctx.fill();
+
+      // ---- EYEBROWS ----
+      rctx.strokeStyle = "#5d4037"; rctx.lineWidth = 4 * s; rctx.lineCap = "round";
+      if (faceState === "frown") {
+        // Downturned (angled down toward center)
+        rctx.beginPath();
+        rctx.moveTo(-22 * s, headY - 16 * s);
+        rctx.lineTo(-8 * s, headY - 11 * s);
+        rctx.stroke();
+        rctx.beginPath();
+        rctx.moveTo(22 * s, headY - 16 * s);
+        rctx.lineTo(8 * s, headY - 11 * s);
+        rctx.stroke();
+      } else if (faceState === "smile") {
+        // Slightly raised
+        rctx.beginPath();
+        rctx.moveTo(-22 * s, headY - 16 * s);
+        rctx.lineTo(-8 * s, headY - 18 * s);
+        rctx.stroke();
+        rctx.beginPath();
+        rctx.moveTo(8 * s, headY - 18 * s);
+        rctx.lineTo(22 * s, headY - 16 * s);
+        rctx.stroke();
+      } else {
+        // Neutral
+        rctx.beginPath();
+        rctx.moveTo(-22 * s, headY - 16 * s);
+        rctx.lineTo(-8 * s, headY - 16 * s);
+        rctx.stroke();
+        rctx.beginPath();
+        rctx.moveTo(8 * s, headY - 16 * s);
+        rctx.lineTo(22 * s, headY - 16 * s);
+        rctx.stroke();
+      }
+
+      // ---- MOUTH ----
+      rctx.strokeStyle = "#c04040"; rctx.lineWidth = 3.5 * s; rctx.lineCap = "round";
+      rctx.beginPath();
+      var mouthY = headY + 14 * s;
+      if (faceState === "smile") {
+        rctx.arc(0, mouthY - 6 * s, 15 * s, 0.2, Math.PI - 0.2);
+      } else if (faceState === "neutral") {
+        rctx.moveTo(-11 * s, mouthY);
+        rctx.lineTo(11 * s, mouthY);
+      } else {
+        rctx.arc(0, mouthY + 11 * s, 15 * s, Math.PI + 0.2, -0.2);
+      }
+      rctx.stroke();
+
+      // Blush cheeks for smile
+      if (faceState === "smile") {
+        rctx.fillStyle = "rgba(248, 165, 194, 0.45)";
+        rctx.beginPath(); rctx.arc(-24 * s, headY + 6 * s, 9 * s, 0, Math.PI * 2); rctx.fill();
+        rctx.beginPath(); rctx.arc(24 * s, headY + 6 * s, 9 * s, 0, Math.PI * 2); rctx.fill();
+      }
+
+      // ---- PASTRY IN HAND (during eating) ----
+      if (eating && biteProgress !== undefined && biteProgress < 0.95) {
+        var pastryScale = (1 - biteProgress) * s;
+        if (pastryScale > 0.05) {
+          rctx.save();
+          rctx.translate(18 * s, -38 * s);
+          rctx.scale(pastryScale, pastryScale);
+          var sat = 0.2 + accuracyScore * 0.8;
+          if (currentLevel.pastryType === "cake") drawCake(rctx, 0, 0, sat);
+          else if (currentLevel.pastryType === "cookies") drawCookies(rctx, 0, 0, sat);
+          else drawBrownie(rctx, 0, 0, sat);
+          rctx.restore();
+        }
+      }
+
+      rctx.restore();
+    }
+
+    // ===================== MODAL OVERLAY =====================
+    function drawModalOverlay(rctx, w, h) {
+      rctx.save();
+      rctx.fillStyle = C.modalBg;
+      rctx.fillRect(0, 0, w, h);
+      rctx.restore();
+    }
+
+    // ===================== COUNTDOWN ANIMATION =====================
+    function renderCountdown(now) {
+      var w = canvas.width, h = canvas.height;
+      var cx = w / 2, cy = h / 2;
+      var elapsed = (now - countdownStartTime) / 1000;
+
+      // Clear with solid background — hide everything else
+      rctx = ctx;
+      rctx.clearRect(0, 0, w, h);
+      rctx.fillStyle = C.bg;
+      rctx.fillRect(0, 0, w, h);
+
+      // Determine current number (3 → 2 → 1)
+      var cdNum = 3 - Math.floor(elapsed);
+      if (cdNum < 1) cdNum = 1;
+      var phaseT = elapsed - Math.floor(elapsed); // 0..1 within each second
+
+      // Scale animation: number starts large and shrinks
+      var scale = 1.5 - phaseT * 0.8; // 1.5 → 0.7
+      var alpha = 1 - phaseT * 0.5;  // fade slightly
+
+      // Draw the big number — takes up at least 50% of screen
+      rctx.save();
+      rctx.translate(cx, cy);
+      rctx.scale(scale, scale);
+      rctx.globalAlpha = alpha;
+
+      // Number shadow/glow
+      var numSize = Math.min(w, h) * 0.35;
+      rctx.font = "bold " + numSize + "px sans-serif";
+      rctx.textAlign = "center";
+      rctx.textBaseline = "middle";
+
+      // Glow behind number
+      var glowR = rctx.createRadialGradient(0, 0, 10, 0, 0, numSize * 0.8);
+      glowR.addColorStop(0, "rgba(248, 165, 194, 0.3)");
+      glowR.addColorStop(1, "rgba(248, 165, 194, 0)");
+      rctx.fillStyle = glowR;
+      rctx.beginPath(); rctx.arc(0, 0, numSize * 0.8, 0, Math.PI * 2); rctx.fill();
+
+      // Number with gradient
+      var numGrad = rctx.createLinearGradient(0, -numSize * 0.5, 0, numSize * 0.5);
+      numGrad.addColorStop(0, C.pink);
+      numGrad.addColorStop(1, C.pinkDark);
+      rctx.fillStyle = numGrad;
+      rctx.strokeStyle = "#ffffff";
+      rctx.lineWidth = 4;
+      rctx.fillText(String(cdNum), 0, 0);
+      rctx.strokeText(String(cdNum), 0, 0);
+
+      rctx.restore();
+
+      // "Make sure to follow the recipe!" reminder below the number
+      rctx.save();
+      rctx.globalAlpha = 0.7 + Math.sin(elapsed * 4) * 0.3; // gentle pulse
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold " + Math.min(w, h) * 0.06 + "px sans-serif";
+      rctx.textAlign = "center";
+      rctx.textBaseline = "middle";
+      rctx.fillText("Make sure to follow the recipe!", cx, cy + Math.min(w, h) * 0.28);
+      rctx.restore();
+
+      // Level name at top
+      rctx.save();
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold " + Math.min(w, h) * 0.05 + "px sans-serif";
+      rctx.textAlign = "center";
+      rctx.textBaseline = "middle";
+      rctx.fillText(currentLevel.name + " Level", cx, cy - Math.min(w, h) * 0.28);
+      rctx.restore();
+    }
+
+    // ===================== RENDER LOOP =====================
+    function gameLoop() {
+      var now = performance.now();
+
+      // Customers intro phase — character enters and speaks
+      if (gameState === "customers_intro") {
+        var introElapsed = (now - customersStartTime) / 1000;
+        if (introElapsed >= 4) {
+          // Transition to countdown
+          countdownActive = true;
+          countdownStartTime = performance.now();
+          gameState = "countdown";
+        } else {
+          renderCustomersIntro(now);
+          animationId = requestAnimationFrame(gameLoop);
+          return;
+        }
+      }
+
+      // Customers eating animation phase
+      if (gameState === "customers_eating") {
+        renderCustomersEating(now);
+        if (gameState === "customers_eating") {
+          animationId = requestAnimationFrame(gameLoop);
+        }
+        return;
+      }
+
+      // Countdown animation phase
+      if (gameState === "countdown") {
+        var cdElapsed = (now - countdownStartTime) / 1000;
+        if (cdElapsed >= 3.0) {
+          // Countdown finished → start playing
+          countdownActive = false;
+          gameState = "playing";
+          startTime = performance.now(); // reset game timer
+          updateStats();
+        } else {
+          renderCountdown(now);
+          animationId = requestAnimationFrame(gameLoop);
+          return;
+        }
+      }
+
+      if (gameState !== "playing") { animationId = requestAnimationFrame(gameLoop); return; }
+
+      if (currentAction === "pouring" && selectedIngredient) {
+        var dt = (now - actionStartTime) / 1000;
+        var pourRate = selectedIngredient.amount / 2.5;
+        pouredAmount = Math.min(selectedIngredient.amount * 2, dt * pourRate);
+      }
+      if (ovenRunning) {
+        ovenElapsed = (now - ovenStartTime) / 1000;
+      }
+
+      // Arrow-key whisk movement for mixing
+      var step = getCurrentStep();
+      if (step && step.type === "mix" && mixActive && !mixerTimedOut && mixProgress < 1) {
+        var WHISK_SPEED = 3.5; // units per second, full sweep -1 to 1 in ~0.57s
+        var frameDt = 0.016; // approximate frame time
+        if (arrowLeftHeld && !arrowRightHeld) mixWhiskX = Math.max(-1, mixWhiskX - WHISK_SPEED * frameDt);
+        if (arrowRightHeld && !arrowLeftHeld) mixWhiskX = Math.min(1, mixWhiskX + WHISK_SPEED * frameDt);
+        // Count circles: crossing center from one side to the other
+        var nowLeft = mixWhiskX < 0;
+        if (nowLeft !== mixWasLeft) {
+          mixCircles++;
+          mixWasLeft = nowLeft;
+          if (mixerStartTime === 0) mixerStartTime = performance.now();
+        }
+        // Progress = circles / target
+        if (mixerTarget > 0 && mixerStartTime > 0) {
+          mixProgress = Math.min(1, mixCircles / mixerTarget);
+        }
+        if (mixCircles >= mixerTarget) {
+          mixProgress = 1;
+          finishMixing();
+        }
+        // Update whisk motion trail
+        if (arrowLeftHeld || arrowRightHeld) {
+          mixTrail.push(mixWhiskX);
+          if (mixTrail.length > 30) mixTrail.shift();
+        }
+      }
+
+      // Mix time limit check
+      if (step && step.type === "mix" && mixerStartTime > 0 && !mixerTimedOut && mixProgress < 1) {
+        var mixElapsed = (now - mixerStartTime) / 1000;
+        if (mixElapsed >= mixerTimeLimit) failMixingTimeout();
+      }
+
+      updateStats();
+      render(now);
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function render(now) {
+      var w = canvas.width, h = canvas.height;
+      rctx = ctx; // alias for convenience in draw functions
+      rctx.clearRect(0, 0, w, h);
+
+      var step = getCurrentStep();
+
+      // Customers serve: full-screen bakery scene (skip normal decorations/gameplay)
+      // Also return early if pastry dropped (waiting for eating state to kick in)
+      if (step && step.type === "serve" && isCustomersMode) {
+        if (!customersPastryDropped) renderCustomersServe(now);
+        return;
+      }
+
+      rctx.fillStyle = C.bg; rctx.fillRect(0, 0, w, h);
+      drawDecorations(rctx, w, h, now);
+
+      var cx = w / 2 - 30, cy = h / 2;  // shift left to center gameplay relative to asymmetric panels
+      var step = getCurrentStep();
+      if (!step) return;
+
+      // Stopwatch in top-left — bigger and more prominent
+      var elapsed = (now - startTime) / 1000;
+      drawStopwatch(rctx, 100, 100, 74, elapsed, currentLevel.timeLimit, now);
+
+      // Bowl with accumulated ingredients (not on serve step)
+      if (step.type !== "serve") {
+        drawBowlInCenter(rctx, cx, cy, now);
+        // Ingredients heading — positioned above the top-most ingredient button
+        var ingTopY = cy - 125;
+        if (ingredientButtons.length > 0) {
+          ingTopY = Math.min.apply(null, ingredientButtons.map(function(b){ return b.y - b.h/2; })) - 14;
+        }
+        rctx.fillStyle = C.pinkDark;
+        rctx.font = "bold 13px sans-serif";
+        rctx.textAlign = "center";
+        rctx.fillText("--- INGREDIENTS ---", cx, ingTopY);
+      }
+
+      // Determine if we need a modal overlay
+      var showModal = false;
+      if (step.type === "measure" && selectedIngredient) showModal = true;
+      if ((step.type === "mix" && applianceSelected === "mixer") || 
+          (step.type === "oven" && applianceSelected === "oven")) showModal = true;
+
+      // Render based on step
+      if (step.type === "measure") {
+        renderMeasureScreen(cx, cy, step, now, showModal);
+      } else if (step.type === "mix") {
+        if (applianceSelected === "mixer") {
+          renderMixModal(cx, cy, step, now);
+        } else {
+          renderSelectableScreen(cx, cy, step, now, false);
+        }
+      } else if (step.type === "oven") {
+        if (applianceSelected === "oven") {
+          renderOvenModal(cx, cy, step, now);
+        } else {
+          renderSelectableScreen(cx, cy, step, now, false);
+        }
+      } else if (step.type === "serve") {
+        renderServeScreen(cx, cy);
+      }
+    }
+
+    function renderSelectableScreen(cx, cy, step, now, showModal) {
+      if (showModal) drawModalOverlay(rctx, canvas.width, canvas.height);
+
+      // --- INGREDIENTS ---
+      ingredientButtons.forEach(function(btn) {
+        var isMeasured = measuredIngredients.some(function(m){ return m.name === btn.item.name; });
+        var bgColor = isMeasured ? "#e8f5e9" : "#ffffff";
+        rctx.fillStyle = bgColor;
+        rctx.strokeStyle = isMeasured ? "#a5d6a7" : "#e0e0e0";
+        rctx.lineWidth = 2;
+        roundRectCtx(rctx, btn.x - btn.w/2, btn.y - btn.h/2, btn.w, btn.h, 12);
+        rctx.fill(); rctx.stroke();
+        drawIngredientIcon(rctx, btn.x, btn.y - 10, 32, btn.icon, isMeasured);
+        rctx.fillStyle = isMeasured ? "#a5d6a7" : C.text;
+        rctx.font = "bold 11px sans-serif"; rctx.textAlign = "center";
+        var lines = btn.label.split(" ");
+        if (lines.length > 1) { rctx.fillText(lines[0], btn.x, btn.y + 26); rctx.fillText(lines[1], btn.x, btn.y + 40); }
+        else rctx.fillText(btn.label, btn.x, btn.y + 33);
+      });
+
+      // --- SECTION DIVIDER ---
+      var divY = cy + 90;
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 13px sans-serif";
+      rctx.textAlign = "center";
+      rctx.fillText("--- APPLIANCES ---", cx, divY);
+
+      // --- APPLIANCES ---
+      applianceButtons.forEach(function(btn) {
+        var isActive = btn.isActive;
+        rctx.fillStyle = isActive ? C.pinkLight : "#ffffff";
+        rctx.strokeStyle = isActive ? C.pinkDark : "#e0e0e0";
+        rctx.lineWidth = isActive ? 3 : 2;
+        roundRectCtx(rctx, btn.x - btn.w/2, btn.y - btn.h/2, btn.w, btn.h, 14);
+        rctx.fill(); rctx.stroke();
+
+        if (btn.type === "mixer") {
+          drawWhisk(rctx, btn.x, btn.y - 14, 36);
+        } else {
+          drawOvenIcon(rctx, btn.x, btn.y - 5, 32);
+        }
+
+        rctx.fillStyle = isActive ? C.pinkDark : "#999";
+        rctx.font = "bold 11px sans-serif"; rctx.textAlign = "center";
+        rctx.fillText(btn.label, btn.x, btn.y + 36);
+
+        if (isActive) {
+          // "Click to use!" placed OUTSIDE the box
+          rctx.fillStyle = C.pinkDark;
+          rctx.font = "bold 10px sans-serif";
+          rctx.fillText("Click to use!", btn.x, btn.y + btn.h/2 + 16);
+        }
+      });
+
+      // Hint at bottom
+      if (step.type === "mix" || step.type === "oven") {
+        var needed = step.type === "mix" ? "whisk" : "oven";
+        rctx.fillStyle = C.textLight;
+        rctx.font = "13px sans-serif";
+        rctx.textAlign = "center";
+        rctx.fillText("Click the " + needed + " above to get started!", cx, cy + 255);
+      }
+    }
+
+    // ---- MEASURE SCREEN with modal when pouring ----
+    function renderMeasureScreen(cx, cy, step, now, showModal) {
+      if (showModal) {
+        // Draw modal overlay behind
+        drawModalOverlay(rctx, canvas.width, canvas.height);
+
+        // Draw measuring visual — egg crack for eggs, spoon for baking powder, butter stick for butter, vanilla bottle for vanilla, cup for others
+        if (selectedIngredient.icon === "eggs") {
+          renderEggCrackModal(cx, cy, selectedIngredient);
+        } else if (selectedIngredient.icon === "bakingpowder") {
+          renderBakingPowderModal(cx, cy, selectedIngredient);
+        } else if (selectedIngredient.icon === "butter") {
+          renderButterModal(cx, cy, selectedIngredient);
+        } else if (selectedIngredient.icon === "vanilla") {
+          renderVanillaModal(cx, cy, selectedIngredient);
+        } else {
+          renderMeasuringCupModal(cx, cy, selectedIngredient);
+        }
+      } else {
+        // Normal select screen
+        renderSelectableScreen(cx, cy, step, now, false);
+
+        rctx.fillStyle = C.textLight;
+        rctx.font = "14px sans-serif"; rctx.textAlign = "center";
+        rctx.fillText("Click the right ingredient from the recipe, then hold SPACE to pour!", cx, cy + 255);
+      }
+    }
+
+    function renderMeasuringCupModal(cx, cy, ingredient) {
+      var cupW = 60, cupH = 130;
+      var modalW = 300, modalH = 340;
+      var modalX = cx - modalW/2, modalY = cy - modalH/2;
+
+      // Card background
+      rctx.fillStyle = "#ffffff";
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.fill();
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 3;
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.stroke();
+
+      // Title at top
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 16px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("Measuring: " + ingredient.name, cx, modalY + 30);
+
+      // --- CENTERED: Cup graphic ---
+      var cupX = cx - cupW/2;
+      var cupY = modalY + 52;
+
+      // Target line (drawn wider than cup)
+      var maxFill = ingredient.amount * 1.5;
+      var targetH = (ingredient.amount / maxFill) * (cupH - 10);
+      var targetY = cupY + cupH - 5 - targetH;
+
+      rctx.strokeStyle = "#e91e63"; rctx.lineWidth = 2.5; rctx.setLineDash([6, 4]);
+      rctx.beginPath(); rctx.moveTo(cupX - 15, targetY); rctx.lineTo(cupX + cupW + 15, targetY); rctx.stroke();
+      rctx.setLineDash([]);
+
+      // Cup body (trapezoid)
+      rctx.strokeStyle = "#333333"; rctx.lineWidth = 3;
+      rctx.beginPath();
+      rctx.moveTo(cupX, cupY);
+      rctx.lineTo(cupX + 6, cupY + cupH);
+      rctx.lineTo(cupX + cupW - 6, cupY + cupH);
+      rctx.lineTo(cupX + cupW, cupY);
+      rctx.closePath(); rctx.stroke();
+      rctx.fillStyle = "#fafafa"; rctx.fill();
+
+      // Fill liquid
+      var fillH = Math.min(cupH - 10, (pouredAmount / maxFill) * (cupH - 10));
+      var fillY = cupY + cupH - 5 - fillH;
+      rctx.fillStyle = C.cupFill;
+      rctx.fillRect(cupX + 10, fillY, cupW - 20, Math.max(0, fillH));
+
+      // --- CENTERED: Text labels below cup ---
+      rctx.textAlign = "center";
+
+      // Target label
+      rctx.fillStyle = "#e91e63"; rctx.font = "bold 13px sans-serif";
+      rctx.fillText("Target: " + ingredient.amount + " " + ingredient.unit, cx, cupY + cupH + 28);
+
+      // Current amount
+      rctx.fillStyle = C.pinkDark; rctx.font = "bold 13px sans-serif";
+      rctx.fillText("Now:", cx, cupY + cupH + 50);
+      rctx.fillStyle = pouredAmount > ingredient.amount * 1.15 ? C.errorDark :
+                       (Math.abs(pouredAmount - ingredient.amount) / ingredient.amount <= 0.05 ? C.successDark : C.warnDark);
+      rctx.font = "bold 20px monospace";
+      rctx.fillText(pouredAmount.toFixed(2) + " " + ingredient.unit, cx, cupY + cupH + 72);
+
+      // Status indicator
+      var diff = Math.abs(pouredAmount - ingredient.amount) / ingredient.amount;
+      var statusText, statusColor;
+      if (pouredAmount === 0) { statusText = "Start pouring!"; statusColor = C.textLight; }
+      else if (diff <= 0.05) { statusText = "\u2714 Perfect!"; statusColor = C.successDark; }
+      else if (diff <= 0.15) { statusText = "~ Close enough"; statusColor = C.warnDark; }
+      else if (pouredAmount < ingredient.amount) { statusText = "\u2193 Too little"; statusColor = C.errorDark; }
+      else { statusText = "\u2191 Too much!"; statusColor = C.errorDark; }
+      rctx.fillStyle = statusColor; rctx.font = "bold 14px sans-serif";
+      rctx.fillText(statusText, cx, cupY + cupH + 92);
+
+      // Hint at bottom of modal
+      rctx.fillStyle = C.text; rctx.font = "bold 13px sans-serif";
+      rctx.fillText("Hold SPACE to pour", cx, modalY + modalH - 38);
+      rctx.fillStyle = C.textLight; rctx.font = "11px sans-serif";
+      rctx.fillText("Release when you hit the red target line", cx, modalY + modalH - 20);
+    }
+
+    // ---- BUTTER STICK MODAL (dotted line moves along stick) ----
+    function renderButterModal(cx, cy, ingredient) {
+      var modalW = 380, modalH = 380;
+      var modalX = cx - modalW/2, modalY = cy - modalH/2;
+
+      // Card background
+      rctx.fillStyle = "#ffffff";
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.fill();
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 3;
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.stroke();
+
+      // Title
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 16px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("Cut: " + ingredient.name, cx, modalY + 28);
+
+      // --- BUTTER STICK (horizontal) ---
+      var stickW = 220, stickH = 64;
+      var stickX = cx - stickW/2;
+      var stickY = modalY + 60;
+
+      var maxFill = ingredient.amount * 1.5;
+      var fillPct = Math.min(1, pouredAmount / maxFill);
+      var targetPct = ingredient.amount / maxFill;
+
+      // "Added" portion (left of cut line) — slightly darker
+      if (fillPct > 0) {
+        rctx.fillStyle = "#f0d060";
+        roundRectCtx(rctx, stickX, stickY, fillPct * stickW, stickH, 6);
+        rctx.fill();
+        // Diagonal hatch on added portion
+        rctx.save();
+        rctx.beginPath();
+        roundRectCtx(rctx, stickX, stickY, fillPct * stickW, stickH, 6);
+        rctx.clip();
+        rctx.strokeStyle = "rgba(180,140,40,0.25)"; rctx.lineWidth = 1;
+        for (var hx = stickY - stickH; hx < stickY + stickH + stickW; hx += 8) {
+          rctx.beginPath();
+          rctx.moveTo(stickX, hx);
+          rctx.lineTo(stickX + stickW, hx - stickW);
+          rctx.stroke();
+        }
+        rctx.restore();
+      }
+
+      // Stick body (yellow) drawn as outline + unfilled remainder
+      rctx.fillStyle = "#ffe082";
+      roundRectCtx(rctx, stickX + fillPct * stickW, stickY, (1 - fillPct) * stickW, stickH, 6);
+      rctx.fill();
+
+      // Stick outline
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2.5;
+      roundRectCtx(rctx, stickX, stickY, stickW, stickH, 6);
+      rctx.stroke();
+
+      // Parchment wrapper (bottom third)
+      rctx.fillStyle = "#faf0e1";
+      roundRectCtx(rctx, stickX, stickY + stickH * 0.62, stickW, stickH * 0.38, 6);
+      rctx.fill();
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2.5;
+      rctx.beginPath();
+      rctx.moveTo(stickX, stickY + stickH * 0.62);
+      rctx.lineTo(stickX + stickW, stickY + stickH * 0.62);
+      rctx.stroke();
+      // Wrapper lines
+      rctx.strokeStyle = "#d4c4a8"; rctx.lineWidth = 1;
+      for (var wl = 0; wl < 6; wl++) {
+        rctx.beginPath();
+        rctx.moveTo(stickX + 12 + wl * 35, stickY + stickH * 0.68);
+        rctx.lineTo(stickX + 12 + wl * 35, stickY + stickH - 6);
+        rctx.stroke();
+      }
+      // Re-draw full stick outline on top
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2.5;
+      roundRectCtx(rctx, stickX, stickY, stickW, stickH, 6);
+      rctx.stroke();
+
+      // Tick marks along the top of the stick
+      rctx.strokeStyle = "#999999"; rctx.lineWidth = 1;
+      for (var tk = 0; tk <= 6; tk++) {
+        var tx = stickX + (tk / 6) * stickW;
+        rctx.beginPath();
+        rctx.moveTo(tx, stickY);
+        rctx.lineTo(tx, stickY - 6);
+        rctx.stroke();
+      }
+
+      // --- TARGET LINE (where the correct amount is) ---
+      var targetX = stickX + targetPct * stickW;
+      rctx.strokeStyle = "#e91e63"; rctx.lineWidth = 2.5; rctx.setLineDash([5, 4]);
+      rctx.beginPath();
+      rctx.moveTo(targetX, stickY - 16);
+      rctx.lineTo(targetX, stickY + stickH + 16);
+      rctx.stroke();
+      rctx.setLineDash([]);
+      // Target label
+      rctx.fillStyle = "#e91e63"; rctx.font = "bold 10px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("TARGET", targetX, stickY - 20);
+
+      // --- CURRENT CUT LINE (moves as you hold space) ---
+      var cutX = stickX + fillPct * stickW;
+      rctx.strokeStyle = "#333333"; rctx.lineWidth = 3; rctx.setLineDash([7, 4]);
+      rctx.beginPath();
+      rctx.moveTo(cutX, stickY - 10);
+      rctx.lineTo(cutX, stickY + stickH + 10);
+      rctx.stroke();
+      rctx.setLineDash([]);
+      // Knife icon at top of cut line
+      rctx.fillStyle = "#666666";
+      rctx.beginPath();
+      rctx.moveTo(cutX - 4, stickY - 14);
+      rctx.lineTo(cutX + 4, stickY - 14);
+      rctx.lineTo(cutX, stickY - 6);
+      rctx.closePath();
+      rctx.fill();
+
+      // --- TEXT LABELS ---
+      rctx.textAlign = "center";
+      rctx.fillStyle = "#e91e63"; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Target: " + ingredient.amount + " " + ingredient.unit, cx, modalY + 185);
+
+      rctx.fillStyle = C.pinkDark; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Cut so far:", cx, modalY + 212);
+      var diff = Math.abs(pouredAmount - ingredient.amount) / ingredient.amount;
+      var amountColor = pouredAmount > ingredient.amount * 1.15 ? C.errorDark :
+                       (diff <= 0.05 ? C.successDark : C.warnDark);
+      rctx.fillStyle = amountColor; rctx.font = "bold 22px monospace";
+      rctx.fillText(pouredAmount.toFixed(2) + " " + ingredient.unit, cx, modalY + 240);
+
+      var statusText, statusColor;
+      if (pouredAmount === 0) { statusText = "Start cutting!"; statusColor = C.textLight; }
+      else if (diff <= 0.05) { statusText = "\u2714 Perfect!"; statusColor = C.successDark; }
+      else if (diff <= 0.15) { statusText = "~ Close enough"; statusColor = C.warnDark; }
+      else if (pouredAmount < ingredient.amount) { statusText = "\u2193 Too little"; statusColor = C.errorDark; }
+      else { statusText = "\u2191 Too much!"; statusColor = C.errorDark; }
+      rctx.fillStyle = statusColor; rctx.font = "bold 15px sans-serif";
+      rctx.fillText(statusText, cx, modalY + 268);
+
+      // Hint at bottom
+      rctx.fillStyle = C.text; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Hold SPACE to cut", cx, modalY + modalH - 40);
+      rctx.fillStyle = C.textLight; rctx.font = "12px sans-serif";
+      rctx.fillText("Release when the cut reaches the red target line", cx, modalY + modalH - 20);
+    }
+
+    // ---- VANILLA ESSENCE MODAL (bottle pouring into teaspoon) ----
+    function renderVanillaModal(cx, cy, ingredient) {
+      var modalW = 380, modalH = 420;
+      var modalX = cx - modalW/2, modalY = cy - modalH/2;
+
+      // Card background
+      rctx.fillStyle = "#ffffff";
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.fill();
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 3;
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.stroke();
+
+      // Title
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 16px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("Pour: " + ingredient.name, cx, modalY + 28);
+
+      // --- VANILLA BOTTLE (left side) ---
+      var bottleX = cx - 80, bottleY = modalY + 55;
+      var bottleW = 50, bottleH = 110;
+      var neckW = 18, neckH = 20;
+
+      // Bottle body (rounded rectangle)
+      rctx.fillStyle = "#e8d5b8";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2.5;
+      roundRectCtx(rctx, bottleX - bottleW/2, bottleY, bottleW, bottleH, 8);
+      rctx.fill(); rctx.stroke();
+
+      // Bottle neck
+      rctx.fillStyle = "#e8d5b8";
+      rctx.beginPath();
+      rctx.moveTo(bottleX - neckW/2, bottleY);
+      rctx.lineTo(bottleX - neckW/2, bottleY - neckH);
+      rctx.lineTo(bottleX + neckW/2, bottleY - neckH);
+      rctx.lineTo(bottleX + neckW/2, bottleY);
+      rctx.closePath();
+      rctx.fill(); rctx.stroke();
+
+      // Bottle cap
+      rctx.fillStyle = "#8d6e63";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2;
+      roundRectCtx(rctx, bottleX - neckW/2 - 2, bottleY - neckH - 8, neckW + 4, 8, 2);
+      rctx.fill(); rctx.stroke();
+
+      // Vanilla liquid inside bottle (brown)
+      rctx.fillStyle = "#d4a76a";
+      rctx.save();
+      rctx.beginPath();
+      roundRectCtx(rctx, bottleX - bottleW/2 + 3, bottleY + 3, bottleW - 6, bottleH - 6, 6);
+      rctx.clip();
+      rctx.fillRect(bottleX - bottleW/2, bottleY + bottleH * 0.2, bottleW, bottleH * 0.8);
+      rctx.restore();
+
+      // Label on bottle
+      rctx.fillStyle = "#5d4037"; rctx.font = "bold 7px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("VANILLA", bottleX, bottleY + bottleH * 0.5);
+      rctx.fillText("ESSENCE", bottleX, bottleY + bottleH * 0.5 + 10);
+
+      // Pouring stream from bottle to spoon (wavy line)
+      var maxFill = ingredient.amount * 1.5;
+      var fillPct = Math.min(1, pouredAmount / maxFill);
+      if (fillPct < 1) {
+        rctx.strokeStyle = "#d4a76a"; rctx.lineWidth = 3; rctx.lineCap = "round";
+        rctx.beginPath();
+        var streamStartX = bottleX, streamStartY = bottleY - neckH + 2;
+        var streamEndX = cx + 45, streamEndY = modalY + 90 + 16;
+        // Wavy stream
+        rctx.moveTo(streamStartX, streamStartY);
+        rctx.quadraticCurveTo(
+          (streamStartX + streamEndX) / 2 + 8, (streamStartY + streamEndY) / 2 - 15,
+          streamEndX, streamEndY
+        );
+        rctx.stroke();
+      }
+
+      // --- TEASPOON (right side) — same fill mechanic as baking powder ---
+      var spoonX = cx + 45, spoonY = modalY + 90;
+      var spoonBowlRX = 36, spoonBowlRY = 24;
+
+      // Spoon handle (pointing right)
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 5; rctx.lineCap = "round";
+      rctx.beginPath();
+      rctx.moveTo(spoonX - 15, spoonY - 20);
+      rctx.lineTo(spoonX - 60, spoonY - 48);
+      rctx.stroke();
+
+      // Spoon bowl (1 tsp) — large
+      rctx.fillStyle = "#d7ccc8";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2.5;
+      rctx.beginPath();
+      rctx.ellipse(spoonX, spoonY + 8, spoonBowlRX, spoonBowlRY, 0, 0, Math.PI*2);
+      rctx.fill(); rctx.stroke();
+
+      // Vanilla liquid in spoon — fill from bottom up, same color as blob
+      if (fillPct > 0) {
+        rctx.save();
+        rctx.beginPath();
+        rctx.ellipse(spoonX, spoonY + 8, spoonBowlRX - 2, spoonBowlRY - 2, 0, 0, Math.PI*2);
+        rctx.clip();
+        var fillH = fillPct * (spoonBowlRY * 2 - 4);
+        var fillTopY = spoonY + 8 + spoonBowlRY - 2 - fillH;
+        rctx.fillStyle = "#d4a76a";
+        rctx.fillRect(spoonX - spoonBowlRX, fillTopY, spoonBowlRX * 2, fillH);
+        // Shine on liquid surface
+        rctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        rctx.fillRect(spoonX - spoonBowlRX, fillTopY, spoonBowlRX * 2, 2);
+        rctx.restore();
+      }
+
+      // Target line on spoon — thick and prominent
+      var targetPct = ingredient.amount / maxFill;
+      var targetH = targetPct * (spoonBowlRY * 2 - 4);
+      var targetLineY = spoonY + 8 + spoonBowlRY - 2 - targetH;
+      rctx.strokeStyle = "#e91e63"; rctx.lineWidth = 3; rctx.setLineDash([6, 4]);
+      rctx.beginPath(); rctx.moveTo(spoonX - spoonBowlRX - 10, targetLineY); rctx.lineTo(spoonX + spoonBowlRX + 10, targetLineY); rctx.stroke();
+      rctx.setLineDash([]);
+      // Target label
+      rctx.fillStyle = "#e91e63"; rctx.font = "bold 10px sans-serif"; rctx.textAlign = "left";
+      rctx.fillText("TARGET", spoonX + spoonBowlRX + 12, targetLineY + 3);
+
+      // --- TEXT LABELS ---
+      rctx.textAlign = "center";
+      rctx.fillStyle = "#e91e63"; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Target: " + ingredient.amount + " " + ingredient.unit, cx, modalY + 215);
+
+      rctx.fillStyle = C.pinkDark; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Poured:", cx, modalY + 242);
+      var diff = Math.abs(pouredAmount - ingredient.amount) / ingredient.amount;
+      var amountColor = pouredAmount > ingredient.amount * 1.15 ? C.errorDark :
+                       (diff <= 0.05 ? C.successDark : C.warnDark);
+      rctx.fillStyle = amountColor; rctx.font = "bold 22px monospace";
+      rctx.fillText(pouredAmount.toFixed(2) + " " + ingredient.unit, cx, modalY + 270);
+
+      var statusText, statusColor;
+      if (pouredAmount === 0) { statusText = "Start pouring!"; statusColor = C.textLight; }
+      else if (diff <= 0.05) { statusText = "\u2714 Perfect!"; statusColor = C.successDark; }
+      else if (diff <= 0.15) { statusText = "~ Close enough"; statusColor = C.warnDark; }
+      else if (pouredAmount < ingredient.amount) { statusText = "\u2193 Too little"; statusColor = C.errorDark; }
+      else { statusText = "\u2191 Too much!"; statusColor = C.errorDark; }
+      rctx.fillStyle = statusColor; rctx.font = "bold 15px sans-serif";
+      rctx.fillText(statusText, cx, modalY + 298);
+
+      // Hint at bottom
+      rctx.fillStyle = C.text; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Hold SPACE to pour", cx, modalY + modalH - 40);
+      rctx.fillStyle = C.textLight; rctx.font = "12px sans-serif";
+      rctx.fillText("Release when vanilla reaches the red target line", cx, modalY + modalH - 20);
+    }
+
+    // ---- EGG CRACK MODAL (click to crack eggs) ----
+    function renderEggCrackModal(cx, cy, ingredient) {
+      var modalW = 420, modalH = 300;
+      var modalX = cx - modalW/2, modalY = cy - modalH/2;
+
+      // Card background
+      rctx.fillStyle = "#ffffff";
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.fill();
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 3;
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.stroke();
+
+      // Title
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 18px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("Crack the Eggs!", cx, modalY + 32);
+
+      // Instructions
+      rctx.fillStyle = "#2e7d32"; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Click each egg to crack it", cx, modalY + 58);
+
+      // Draw eggs in a row
+      var eggSpacing = 70;
+      var totalW = eggsTarget * eggSpacing;
+      var eggStartX = cx - totalW / 2 + eggSpacing / 2;
+      var eggY = cy - 20;
+
+      for (var i = 0; i < eggsTarget; i++) {
+        var eggX = eggStartX + i * eggSpacing;
+        var isCracked = i < eggsCracked;
+
+        if (isCracked) {
+          // Draw cracked egg — shell halves + yolk
+          rctx.save();
+          // Left shell half
+          rctx.fillStyle = "#fff8e1";
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 2;
+          rctx.beginPath();
+          rctx.moveTo(eggX, eggY + 5);
+          rctx.quadraticCurveTo(eggX - 18, eggY + 2, eggX - 14, eggY + 18);
+          rctx.quadraticCurveTo(eggX - 8, eggY + 25, eggX, eggY + 22);
+          rctx.fill(); rctx.stroke();
+          // Right shell half
+          rctx.fillStyle = "#fff8e1";
+          rctx.beginPath();
+          rctx.moveTo(eggX, eggY + 5);
+          rctx.quadraticCurveTo(eggX + 18, eggY + 2, eggX + 14, eggY + 18);
+          rctx.quadraticCurveTo(eggX + 8, eggY + 25, eggX, eggY + 22);
+          rctx.fill(); rctx.stroke();
+          // Yolk
+          rctx.fillStyle = "#ffd54f";
+          rctx.strokeStyle = "#f9a825"; rctx.lineWidth = 1.5;
+          rctx.beginPath();
+          rctx.arc(eggX, eggY + 16, 9, 0, Math.PI * 2);
+          rctx.fill(); rctx.stroke();
+          // Yolk shine
+          rctx.fillStyle = "#fff9c4";
+          rctx.beginPath(); rctx.arc(eggX - 3, eggY + 13, 3, 0, Math.PI * 2); rctx.fill();
+          rctx.restore();
+        } else {
+          // Draw whole egg (clickable)
+          rctx.save();
+          // Egg glow to show it's clickable
+          var eggGlow = rctx.createRadialGradient(eggX, eggY, 5, eggX, eggY, 35);
+          eggGlow.addColorStop(0, "rgba(248,165,194,0.3)");
+          eggGlow.addColorStop(1, "rgba(248,165,194,0)");
+          rctx.fillStyle = eggGlow;
+          rctx.beginPath(); rctx.arc(eggX, eggY, 35, 0, Math.PI * 2); rctx.fill();
+
+          // Egg shape
+          rctx.fillStyle = "#fff8e1";
+          rctx.strokeStyle = "#000000"; rctx.lineWidth = 2;
+          rctx.beginPath();
+          rctx.ellipse(eggX, eggY, 18, 23, 0, 0, Math.PI * 2);
+          rctx.fill(); rctx.stroke();
+          rctx.restore();
+        }
+      }
+
+      // Progress: cracked / target
+      rctx.fillStyle = C.text; rctx.font = "bold 16px monospace"; rctx.textAlign = "center";
+      rctx.fillText(eggsCracked + " / " + eggsTarget + " eggs cracked", cx, modalY + modalH - 50);
+
+      // Status
+      if (eggsCracked < eggsTarget) {
+        rctx.fillStyle = C.textLight; rctx.font = "13px sans-serif";
+        rctx.fillText("Click the eggs to crack them!", cx, modalY + modalH - 25);
+      } else {
+        rctx.fillStyle = C.successDark; rctx.font = "bold 14px sans-serif";
+        rctx.fillText("\u2714 All eggs cracked! Perfect!", cx, modalY + modalH - 25);
+      }
+    }
+
+    // ---- BAKING POWDER MODAL (spoon scooping from box) ----
+    function renderBakingPowderModal(cx, cy, ingredient) {
+      var modalW = 380, modalH = 420;
+      var modalX = cx - modalW/2, modalY = cy - modalH/2;
+
+      // Card background
+      rctx.fillStyle = "#ffffff";
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.fill();
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 3;
+      roundRectCtx(rctx, modalX, modalY, modalW, modalH, 20);
+      rctx.stroke();
+
+      // Title
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 16px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("Scoop: " + ingredient.name, cx, modalY + 28);
+
+      // --- LEFT: Baking powder box ---
+      var boxX = cx - 85, boxY = modalY + 55;
+      // Box body
+      rctx.fillStyle = "#f5f5f5";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2;
+      roundRectCtx(rctx, boxX - 40, boxY, 80, 95, 6);
+      rctx.fill(); rctx.stroke();
+      // Box lid (open, angled)
+      rctx.fillStyle = "#e0e0e0";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2;
+      rctx.beginPath();
+      rctx.moveTo(boxX - 35, boxY);
+      rctx.lineTo(boxX - 45, boxY - 20);
+      rctx.lineTo(boxX + 45, boxY - 20);
+      rctx.lineTo(boxX + 35, boxY);
+      rctx.closePath();
+      rctx.fill(); rctx.stroke();
+      // Label on box
+      rctx.fillStyle = "#666666"; rctx.font = "bold 9px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("Baking", boxX, boxY + 35);
+      rctx.fillText("Powder", boxX, boxY + 48);
+      // Powder inside box (white mound)
+      rctx.fillStyle = "#ffffff";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 1;
+      rctx.beginPath();
+      rctx.ellipse(boxX, boxY + 10, 32, 12, 0, 0, Math.PI);
+      rctx.fill(); rctx.stroke();
+
+      // --- RIGHT: Large measuring spoon (1 tsp) ---
+      var spoonX = cx + 65, spoonY = modalY + 85;
+      var spoonBowlRX = 36, spoonBowlRY = 24;
+
+      // Spoon handle
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 5; rctx.lineCap = "round";
+      rctx.beginPath();
+      rctx.moveTo(spoonX + 15, spoonY - 20);
+      rctx.lineTo(spoonX + 60, spoonY - 48);
+      rctx.stroke();
+
+      // Spoon bowl (1 tsp) — large
+      rctx.fillStyle = "#d7ccc8";
+      rctx.strokeStyle = "#000000"; rctx.lineWidth = 2.5;
+      rctx.beginPath();
+      rctx.ellipse(spoonX, spoonY + 8, spoonBowlRX, spoonBowlRY, 0, 0, Math.PI*2);
+      rctx.fill(); rctx.stroke();
+
+      // Powder in spoon — fill from bottom up like a cup
+      var maxFill = ingredient.amount * 1.5;
+      var fillPct = Math.min(1, pouredAmount / maxFill);
+      if (fillPct > 0) {
+        // Clip to spoon bowl shape, then fill rectangle from bottom
+        rctx.save();
+        rctx.beginPath();
+        rctx.ellipse(spoonX, spoonY + 8, spoonBowlRX - 2, spoonBowlRY - 2, 0, 0, Math.PI*2);
+        rctx.clip();
+        var fillH = fillPct * (spoonBowlRY * 2 - 4);
+        var fillTopY = spoonY + 8 + spoonBowlRY - 2 - fillH;
+        rctx.fillStyle = "#ffffff";
+        rctx.fillRect(spoonX - spoonBowlRX, fillTopY, spoonBowlRX * 2, fillH);
+        // Sparkle dots
+        rctx.fillStyle = "#e0e0e0";
+        rctx.beginPath(); rctx.arc(spoonX - 8, spoonY + 5, 2, 0, Math.PI*2); rctx.fill();
+        rctx.beginPath(); rctx.arc(spoonX + 10, spoonY + 12, 1.5, 0, Math.PI*2); rctx.fill();
+        rctx.restore();
+      }
+
+      // Target line on spoon — thick and prominent
+      var targetPct = ingredient.amount / maxFill;
+      var targetH = targetPct * (spoonBowlRY * 2 - 4);
+      var targetLineY = spoonY + 8 + spoonBowlRY - 2 - targetH;
+      rctx.strokeStyle = "#e91e63"; rctx.lineWidth = 3; rctx.setLineDash([6, 4]);
+      rctx.beginPath(); rctx.moveTo(spoonX - spoonBowlRX - 10, targetLineY); rctx.lineTo(spoonX + spoonBowlRX + 10, targetLineY); rctx.stroke();
+      rctx.setLineDash([]);
+      // Target label
+      rctx.fillStyle = "#e91e63"; rctx.font = "bold 10px sans-serif"; rctx.textAlign = "left";
+      rctx.fillText("TARGET", spoonX + spoonBowlRX + 12, targetLineY + 3);
+
+      // --- TEXT LABELS ---
+      rctx.textAlign = "center";
+      rctx.fillStyle = "#e91e63"; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Target: " + ingredient.amount + " " + ingredient.unit, cx, modalY + 215);
+
+      rctx.fillStyle = C.pinkDark; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Scooped:", cx, modalY + 242);
+      var diff = Math.abs(pouredAmount - ingredient.amount) / ingredient.amount;
+      var amountColor = pouredAmount > ingredient.amount * 1.15 ? C.errorDark :
+                       (diff <= 0.05 ? C.successDark : C.warnDark);
+      rctx.fillStyle = amountColor; rctx.font = "bold 22px monospace";
+      rctx.fillText(pouredAmount.toFixed(2) + " " + ingredient.unit, cx, modalY + 270);
+
+      var statusText, statusColor;
+      if (pouredAmount === 0) { statusText = "Start scooping!"; statusColor = C.textLight; }
+      else if (diff <= 0.05) { statusText = "\u2714 Perfect!"; statusColor = C.successDark; }
+      else if (diff <= 0.15) { statusText = "~ Close enough"; statusColor = C.warnDark; }
+      else if (pouredAmount < ingredient.amount) { statusText = "\u2193 Too little"; statusColor = C.errorDark; }
+      else { statusText = "\u2191 Too much!"; statusColor = C.errorDark; }
+      rctx.fillStyle = statusColor; rctx.font = "bold 15px sans-serif";
+      rctx.fillText(statusText, cx, modalY + 298);
+
+      // Hint at bottom
+      rctx.fillStyle = C.text; rctx.font = "bold 14px sans-serif";
+      rctx.fillText("Hold SPACE to scoop", cx, modalY + modalH - 40);
+      rctx.fillStyle = C.textLight; rctx.font = "12px sans-serif";
+      rctx.fillText("Release when powder reaches the red target line", cx, modalY + modalH - 20);
+    }
+
+    // ---- MIX MODAL (arrow-key whisk) ----
+    function renderMixModal(cx, cy, step, now) {
+      drawModalOverlay(rctx, canvas.width, canvas.height);
+
+      // Mix elapsed and remaining
+      var mixElapsed = mixerStartTime > 0 ? (performance.now() - mixerStartTime) / 1000 : 0;
+      var remaining = Math.max(0, mixerTimeLimit - mixElapsed);
+      var timePct = mixerTimeLimit > 0 ? (remaining / mixerTimeLimit) : 1;
+
+      // Modal card — larger for better readability
+      var modalW = 440, modalH = 480;
+      var mx = cx - modalW/2, my = cy - modalH/2;
+      rctx.fillStyle = "#ffffff";
+      roundRectCtx(rctx, mx, my, modalW, modalH, 24);
+      rctx.fill();
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 3;
+      roundRectCtx(rctx, mx, my, modalW, modalH, 24);
+      rctx.stroke();
+
+      // ---- TITLE ----
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 18px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText(mixerTimedOut ? "Time's Up!" : "Whisk the Batter!", cx, my + 30);
+
+      // ---- INSTRUCTIONS BANNER (like other appliances) ----
+      var instrY = my + 52;
+      rctx.fillStyle = "#e8f5e9";
+      roundRectCtx(rctx, mx + 15, instrY, modalW - 30, 44, 10);
+      rctx.fill();
+      rctx.strokeStyle = "#a5d6a7"; rctx.lineWidth = 2;
+      roundRectCtx(rctx, mx + 15, instrY, modalW - 30, 44, 10);
+      rctx.stroke();
+
+      rctx.fillStyle = "#2e7d32"; rctx.font = "bold 14px sans-serif"; rctx.textAlign = "center";
+      if (!mixActive) {
+        rctx.fillText("Click the whisk appliance to start!", cx, instrY + 18);
+        rctx.fillStyle = "#66bb6a"; rctx.font = "11px sans-serif";
+        rctx.fillText("Then hold arrow keys to whisk", cx, instrY + 36);
+      } else if (mixProgress < 1 && !mixerTimedOut) {
+        rctx.fillText("Hold \u2190  \u2192  arrow keys to whisk back and forth", cx, instrY + 18);
+        rctx.fillStyle = C.textLight; rctx.font = "12px sans-serif";
+        rctx.fillText(mixProgress > 0 ? "Cross the center for each stir circle" : "Move whisk left \u2194 right", cx, instrY + 36);
+      } else if (mixProgress >= 1) {
+        rctx.fillText("\u2714 Done whisking! Great job!", cx, instrY + 18);
+        rctx.fillStyle = C.textLight; rctx.font = "12px sans-serif";
+        rctx.fillText("Close this window to continue", cx, instrY + 36);
+      } else if (mixerTimedOut) {
+        rctx.fillStyle = C.errorDark; rctx.font = "bold 14px sans-serif";
+        rctx.fillText("\u2718 Didn't finish in time!", cx, instrY + 18);
+        rctx.fillStyle = C.textLight; rctx.font = "12px sans-serif";
+        rctx.fillText("Close this window to continue", cx, instrY + 36);
+      }
+
+      // ---- LARGE BOWL TRACK AREA ----
+      var trackY = my + 160;
+      var trackW = 260;
+      var trackA = trackW / 2;            // horizontal radius
+      var trackB = 40;                     // vertical radius (flattened ellipse)
+
+      // Draw bowl background
+      rctx.fillStyle = "#fafafa";
+      rctx.beginPath();
+      rctx.ellipse(cx, trackY, trackA + 8, trackB + 8, 0, 0, Math.PI * 2);
+      rctx.fill();
+
+      // Bowl rim
+      rctx.strokeStyle = "#e0c0d0"; rctx.lineWidth = 3;
+      rctx.beginPath();
+      rctx.ellipse(cx, trackY, trackA, trackB, 0, 0, Math.PI * 2);
+      rctx.stroke();
+
+      // Bowl fill (bottom half)
+      rctx.fillStyle = "#fce4ec40";
+      rctx.beginPath();
+      rctx.ellipse(cx, trackY + trackB - 2, trackA - 2, trackB * 0.5, 0, Math.PI, Math.PI * 2);
+      rctx.fill();
+
+      // "BOWL" label
+      rctx.fillStyle = "#c0a0b0"; rctx.font = "10px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("BOWL", cx, trackY + trackB + 16);
+
+      // ---- MOTION TRAIL BEHIND WHISK ----
+      if (mixActive && mixTrail.length > 1) {
+        for (var ti = 0; ti < mixTrail.length - 1; ti++) {
+          var alpha = 0.05 + (ti / mixTrail.length) * 0.2;
+          var tx = cx + mixTrail[ti] * trackA;
+          var tdx = mixTrail[ti];
+          var tdy = Math.sqrt(Math.max(0, 1 - tdx * tdx)) * trackB;
+          var tScale = 0.55 + 0.45 * (tdy / trackB);
+          var tS = 70 * tScale;
+          var ty = trackY + tdy - 5 - 0.955 * tS;
+          rctx.fillStyle = "rgba(248, 165, 194, " + alpha.toFixed(2) + ")";
+          rctx.beginPath();
+          rctx.arc(tx, ty, 3, 0, Math.PI * 2);
+          rctx.fill();
+        }
+      }
+
+      // ---- PROGRESS ARC AROUND THE ELLIPTICAL TRACK ----
+      if (mixProgress > 0 && !mixerTimedOut) {
+        // Left half: from -PI to 0  (goes counterclockwise on canvas)
+        // mixProgress 0→0.5 fills left half, 0.5→1 fills right half
+        var arcStart = -Math.PI / 2;
+        var arcEnd = arcStart + mixProgress * Math.PI * 2;
+        rctx.strokeStyle = C.pink; rctx.lineWidth = 4;
+        rctx.beginPath();
+        rctx.ellipse(cx, trackY, trackA + 2, trackB + 2, 0, arcStart, arcEnd);
+        rctx.stroke();
+      }
+
+      if (mixerTimedOut) {
+        rctx.strokeStyle = C.errorDark; rctx.lineWidth = 3;
+        rctx.setLineDash([4, 4]);
+        rctx.beginPath();
+        rctx.ellipse(cx, trackY, trackA + 2, trackB + 2, 0, 0, Math.PI * 2);
+        rctx.stroke();
+        rctx.setLineDash([]);
+      }
+
+      // ---- WHISK ON THE TRACK ----
+      // Wire-loop bottom offset fraction (from whisk y to wire tip) = 0.955 * s
+      var wX = cx + mixWhiskX * trackA;
+      var dx = mixWhiskX;
+      var dy = Math.sqrt(Math.max(0, 1 - dx * dx)) * trackB;
+      // Scale whisk down toward edges where bowl is thinner; full size at center
+      var whiskScale = 0.55 + 0.45 * (dy / trackB);
+      var whiskS = 70 * whiskScale;
+      // Position so wire tips sit 5px inside the bowl bottom at this x
+      var wY = trackY + dy - 5 - 0.955 * whiskS;
+
+      // Glow around the whisk wire area
+      if (mixActive) {
+        var glowY = wY + 0.5 * whiskS;
+        var glowR = 22 + whiskScale * 18;
+        var glowGrad = rctx.createRadialGradient(wX, glowY, 8, wX, glowY, glowR);
+        glowGrad.addColorStop(0, "rgba(248, 165, 194, 0.4)");
+        glowGrad.addColorStop(1, "rgba(248, 165, 194, 0)");
+        rctx.fillStyle = glowGrad;
+        rctx.beginPath(); rctx.arc(wX, glowY, glowR, 0, Math.PI * 2); rctx.fill();
+      }
+
+      // Draw the whisk (scales with bowl depth so wire loops stay inside)
+      drawWhisk(rctx, wX, wY, whiskS);
+
+      // ---- TIMER RING (below bowl) ----
+      var timerY = trackY + 115;
+      var ringR = 34;
+      rctx.strokeStyle = C.progressBg; rctx.lineWidth = 8;
+      rctx.beginPath(); rctx.arc(cx - 90, timerY, ringR, -Math.PI/2, Math.PI*1.5); rctx.stroke();
+
+      var timerColor = timePct > 0.4 ? C.successDark : (timePct > 0.2 ? C.warnDark : C.errorDark);
+      rctx.strokeStyle = timerColor; rctx.lineWidth = 8;
+      rctx.beginPath(); rctx.arc(cx - 90, timerY, ringR, -Math.PI/2, -Math.PI/2 + timePct * Math.PI*2); rctx.stroke();
+
+      // Timer label + value
+      rctx.fillStyle = C.textLight; rctx.font = "bold 11px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("TIME LEFT", cx - 90, timerY - ringR - 10);
+      rctx.fillStyle = timerColor; rctx.font = "bold 18px monospace";
+      rctx.fillText(remaining.toFixed(1) + "s", cx - 90, timerY + 6);
+
+      if (mixerStartTime === 0 && mixActive) {
+        rctx.fillStyle = C.textLight; rctx.font = "11px monospace";
+        rctx.fillText("(waiting...)", cx - 90, timerY + ringR + 20);
+      }
+
+      // ---- PROGRESS BAR (large, centered) ----
+      var barW = 180, barH = 24;
+      var barX = cx + 10, barY = timerY - barH/2;
+      rctx.fillStyle = C.progressBg;
+      roundRectCtx(rctx, barX, barY, barW, barH, barH/2);
+      rctx.fill();
+
+      var fillW = mixProgress * barW;
+      if (fillW > 4) {
+        var barGrad = rctx.createLinearGradient(barX, 0, barX + barW, 0);
+        barGrad.addColorStop(0, C.pink);
+        barGrad.addColorStop(1, C.pastelPurple);
+        rctx.fillStyle = barGrad;
+        roundRectCtx(rctx, barX, barY, fillW, barH, barH/2);
+        rctx.fill();
+      }
+
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 2;
+      roundRectCtx(rctx, barX, barY, barW, barH, barH/2);
+      rctx.stroke();
+
+      // Progress label above bar
+      rctx.fillStyle = C.textLight; rctx.font = "bold 11px sans-serif"; rctx.textAlign = "center";
+      rctx.fillText("PROGRESS", barX + barW/2, barY - 8);
+
+      // Circles count below bar
+      rctx.fillStyle = C.text; rctx.font = "bold 15px monospace"; rctx.textAlign = "center";
+      rctx.fillText(mixCircles + " / " + mixerTarget + " circles  (" + (mixProgress * 100).toFixed(0) + "%)", barX + barW/2, barY + barH + 22);
+
+      // ---- ARROW SYMBOLS (below timer/progress bar) ----
+      if (mixActive && mixProgress < 1 && !mixerTimedOut) {
+        var arrowY = timerY + 82;
+        var arrowSize = 26;
+        var pulse = 1 + Math.sin(now * 0.008) * 0.12;
+
+        // Left arrow (pointing left)
+        rctx.save();
+        rctx.translate(cx - 50, arrowY);
+        rctx.scale(pulse, pulse);
+        rctx.fillStyle = arrowLeftHeld ? "#e91e63" : "rgba(244, 143, 177, 0.7)";
+        rctx.strokeStyle = arrowLeftHeld ? "#ad1457" : "#e8b4d0";
+        rctx.lineWidth = 2.5;
+        rctx.beginPath();
+        rctx.moveTo(-arrowSize, 0);
+        rctx.lineTo(arrowSize * 0.5, -arrowSize * 0.7);
+        rctx.lineTo(arrowSize * 0.5, -arrowSize * 0.25);
+        rctx.lineTo(arrowSize, -arrowSize * 0.25);
+        rctx.lineTo(arrowSize, arrowSize * 0.25);
+        rctx.lineTo(arrowSize * 0.5, arrowSize * 0.25);
+        rctx.lineTo(arrowSize * 0.5, arrowSize * 0.7);
+        rctx.closePath();
+        rctx.fill(); rctx.stroke();
+        rctx.restore();
+
+        // Right arrow (pointing right)
+        rctx.save();
+        rctx.translate(cx + 50, arrowY);
+        rctx.scale(pulse, pulse);
+        rctx.fillStyle = arrowRightHeld ? "#e91e63" : "rgba(244, 143, 177, 0.7)";
+        rctx.strokeStyle = arrowRightHeld ? "#ad1457" : "#e8b4d0";
+        rctx.lineWidth = 2.5;
+        rctx.beginPath();
+        rctx.moveTo(arrowSize, 0);
+        rctx.lineTo(-arrowSize * 0.5, -arrowSize * 0.7);
+        rctx.lineTo(-arrowSize * 0.5, -arrowSize * 0.25);
+        rctx.lineTo(-arrowSize, -arrowSize * 0.25);
+        rctx.lineTo(-arrowSize, arrowSize * 0.25);
+        rctx.lineTo(-arrowSize * 0.5, arrowSize * 0.25);
+        rctx.lineTo(-arrowSize * 0.5, arrowSize * 0.7);
+        rctx.closePath();
+        rctx.fill(); rctx.stroke();
+        rctx.restore();
+      }
+
+      // ---- BOTTOM STATUS BAR ----
+      var bottomY = my + modalH - 20;
+      if (mixerTimedOut) {
+        rctx.fillStyle = C.errorDark; rctx.font = "bold 14px sans-serif";
+        rctx.fillText("TIME'S UP! You needed " + mixerTarget + " circles", cx, bottomY);
+      } else if (mixProgress >= 1) {
+        rctx.fillStyle = C.successDark; rctx.font = "bold 14px sans-serif";
+        rctx.fillText("\u2714 Mixing complete! " + mixCircles + " circles in " + mixElapsed.toFixed(1) + "s", cx, bottomY);
+      } else if (mixActive && mixProgress === 0) {
+        rctx.fillStyle = C.textLight; rctx.font = "13px sans-serif";
+        rctx.fillText("Hold arrow keys to start whisking!", cx, bottomY);
+      }
+    }
+
+    // ---- OVEN MODAL ----
+    function renderOvenModal(cx, cy, step, now) {
+      drawModalOverlay(rctx, canvas.width, canvas.height);
+
+      // Modal card
+      var modalW = 320, modalH = 280;
+      rctx.fillStyle = "#ffffff";
+      roundRectCtx(rctx, cx - modalW/2, cy - modalH/2, modalW, modalH, 24);
+      rctx.fill();
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 3;
+      roundRectCtx(rctx, cx - modalW/2, cy - modalH/2, modalW, modalH, 24);
+      rctx.stroke();
+
+      // Large oven
+      drawOvenIcon(rctx, cx, cy - 35, 90);
+
+      // Timer display
+      var displayY = cy + 35;
+      var displayW = 180, displayH = 44;
+      var displayX = cx - displayW/2;
+      rctx.fillStyle = ovenRunning ? "#fff3e0" : C.white;
+      rctx.strokeStyle = C.pink; rctx.lineWidth = 2;
+      roundRectCtx(rctx, displayX, displayY, displayW, displayH, 10);
+      rctx.fill(); rctx.stroke();
+      var ovenNow = ovenRunning ? (performance.now() - ovenStartTime) / 1000 : ovenElapsed;
+      rctx.fillStyle = C.text; rctx.font = "bold 24px monospace"; rctx.textAlign = "center";
+      rctx.fillText(ovenNow.toFixed(1) + "s", cx, displayY + 30);
+
+      if (ovenRunning) {
+        rctx.fillStyle = "#ff7043"; rctx.font = "12px sans-serif";
+        rctx.fillText("BAKING... press SPACE to stop", cx, displayY + displayH + 22);
+      } else if (ovenElapsed === 0) {
+        rctx.fillStyle = C.textLight; rctx.font = "13px sans-serif";
+        rctx.fillText("Press SPACE to start the oven", cx, displayY + displayH + 22);
+      }
+      rctx.fillStyle = C.textLight; rctx.font = "11px sans-serif";
+      rctx.fillText("Target: ~" + step.targetTime + "s", cx, displayY + displayH + 42);
+    }
+
+    function renderServeScreen(cx, cy) {
+      // Draw plate with finished pastry
+      var plateX = cx, plateY = cy - 20;
+
+      // Plate shadow
+      rctx.fillStyle = "rgba(180,160,170,0.10)";
+      rctx.beginPath(); rctx.ellipse(plateX, plateY + 6, 100, 38, 0, 0, Math.PI*2); rctx.fill();
+
+      // Plate outer
+      rctx.fillStyle = "#ffffff";
+      rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 3;
+      rctx.beginPath(); rctx.ellipse(plateX, plateY, 95, 36, 0, 0, Math.PI*2);
+      rctx.fill(); rctx.stroke();
+
+      // Plate inner ring
+      rctx.fillStyle = "#fce4ec";
+      rctx.strokeStyle = "#f48fb1"; rctx.lineWidth = 2;
+      rctx.beginPath(); rctx.ellipse(plateX, plateY, 72, 26, 0, 0, Math.PI*2);
+      rctx.fill(); rctx.stroke();
+
+      // Draw the pastry on the plate
+      rctx.save();
+      if (currentLevel.pastryType === "cake") drawCake(rctx, plateX, plateY - 14, 1.0);
+      else if (currentLevel.pastryType === "cookies") drawCookies(rctx, plateX, plateY - 14, 1.0);
+      else drawBrownie(rctx, plateX, plateY - 14, 1.0);
+      rctx.restore();
+
+      // Serve button
+      if (serveButton) {
+        var grad = rctx.createLinearGradient(serveButton.x - 90, 0, serveButton.x + 90, 0);
+        grad.addColorStop(0, "#f8a5c2"); grad.addColorStop(1, "#e8b4d0");
+        rctx.fillStyle = grad; rctx.strokeStyle = C.pinkDark; rctx.lineWidth = 3;
+        roundRectCtx(rctx, serveButton.x - serveButton.w/2, serveButton.y - serveButton.h/2, serveButton.w, serveButton.h, 16);
+        rctx.fill(); rctx.stroke();
+        rctx.fillStyle = "#fff"; rctx.font = "bold 20px sans-serif"; rctx.textAlign = "center";
+        rctx.fillText("Serve!", serveButton.x, serveButton.y + 6);
+        rctx.fillStyle = C.textLight; rctx.font = "14px sans-serif";
+        rctx.fillText("Click to serve!", serveButton.x, serveButton.y + serveButton.h/2 + 22);
+      }
+    }
+
+    // ===================== CUSTOMERS RENDER FUNCTIONS =====================
+    function renderCustomersIntro(now) {
+      var w = canvas.width, h = canvas.height;
+      rctx = ctx;
+      rctx.clearRect(0, 0, w, h);
+
+      // Draw bakery scene (full screen, no other decorations)
+      drawBakeryScene(rctx, w, h, now);
+
+      // Character entrance — walks in from right
+      var elapsed = (now - customersStartTime) / 1000;
+      var targetX = w * 0.6;
+      var startX = w + 120;
+      var counterY = h * 0.58;
+      var charY = counterY - 110;
+
+      var charX;
+      if (elapsed < 2) {
+        charX = startX + (targetX - startX) * easeOut(elapsed / 2);
+      } else {
+        charX = targetX;
+      }
+      customersCharX = charX;
+
+      // Draw character behind counter
+      drawCharacter(rctx, charX, charY, 1.3, "smile", now, false, 0);
+
+      // Re-draw counter to cover character's lower body
+      drawCounter(rctx, w, h);
+
+      // Speech bubble (after character arrives)
+      if (elapsed >= 2) {
+        var speechAlpha = Math.min(1, (elapsed - 2) / 0.4);
+        rctx.save();
+        rctx.globalAlpha = speechAlpha;
+
+        var bubbleW = 260, bubbleH = 80;
+        var bubbleX = charX - bubbleW * 0.7;
+        var bubbleY = charY - 220;
+
+        // Speech bubble background
+        rctx.fillStyle = "#ffffff";
+        rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 3;
+        roundRectCtx(rctx, bubbleX, bubbleY, bubbleW, bubbleH, 16);
+        rctx.fill(); rctx.stroke();
+
+        // Bubble tail (pointing down to character)
+        rctx.fillStyle = "#ffffff";
+        rctx.beginPath();
+        rctx.moveTo(bubbleX + bubbleW * 0.55, bubbleY + bubbleH);
+        rctx.lineTo(bubbleX + bubbleW * 0.65, bubbleY + bubbleH + 22);
+        rctx.lineTo(bubbleX + bubbleW * 0.75, bubbleY + bubbleH);
+        rctx.closePath();
+        rctx.fill();
+        rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 3;
+        rctx.beginPath();
+        rctx.moveTo(bubbleX + bubbleW * 0.55, bubbleY + bubbleH);
+        rctx.lineTo(bubbleX + bubbleW * 0.65, bubbleY + bubbleH + 22);
+        rctx.stroke();
+        rctx.beginPath();
+        rctx.moveTo(bubbleX + bubbleW * 0.75, bubbleY + bubbleH);
+        rctx.lineTo(bubbleX + bubbleW * 0.65, bubbleY + bubbleH + 22);
+        rctx.stroke();
+
+        // Speech text
+        rctx.fillStyle = "#5d3a4b";
+        rctx.font = "bold 20px sans-serif";
+        rctx.textAlign = "center";
+        rctx.fillText("I want " + customersRequestedItem + "!", bubbleX + bubbleW / 2, bubbleY + bubbleH / 2 + 7);
+
+        rctx.restore();
+      }
+
+      // Title at top
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 26px sans-serif";
+      rctx.textAlign = "center";
+      rctx.fillText("Customers!", w * 0.72, 24);
+    }
+
+    function renderCustomersServe(now) {
+      var w = canvas.width, h = canvas.height;
+      rctx = ctx;
+      rctx.clearRect(0, 0, w, h);
+
+      // Draw bakery scene
+      drawBakeryScene(rctx, w, h, now);
+
+      // Character at their position (behind counter)
+      var charX = w * 0.65;
+      var counterY = h * 0.58;
+      var charY = counterY - 110;
+      customersCharX = charX;
+
+      // Draw character
+      drawCharacter(rctx, charX, charY, 1.3, "smile", now, false, 0);
+
+      // Re-draw counter to cover character's lower body
+      drawCounter(rctx, w, h);
+
+      // Pastry on counter (if not yet dropped at character)
+      if (!customersPastryDropped) {
+        var plateX = customersPastryX;
+        var plateY = customersPastryY;
+
+        // Plate
+        rctx.fillStyle = "#ffffff";
+        rctx.strokeStyle = "#d4789c"; rctx.lineWidth = 2.5;
+        rctx.beginPath();
+        rctx.ellipse(plateX, plateY, 48, 20, 0, 0, Math.PI * 2);
+        rctx.fill(); rctx.stroke();
+        // Plate inner
+        rctx.fillStyle = "#fce4ec";
+        rctx.beginPath();
+        rctx.ellipse(plateX, plateY, 35, 14, 0, 0, Math.PI * 2);
+        rctx.fill();
+
+        // Pastry on plate
+        rctx.save();
+        var sat = 0.2 + accuracyScore * 0.8;
+        if (currentLevel.pastryType === "cake") drawCake(rctx, plateX, plateY - 14, 1.0);
+        else if (currentLevel.pastryType === "cookies") drawCookies(rctx, plateX, plateY - 14, 1.0);
+        else drawBrownie(rctx, plateX, plateY - 14, 1.0);
+        rctx.restore();
+
+        // Glow around pastry to indicate it's draggable
+        if (!customersPastryDragging) {
+          var glowAlpha = 0.2 + Math.sin(now * 0.005) * 0.15;
+          rctx.fillStyle = "rgba(248, 165, 194, " + glowAlpha + ")";
+          rctx.beginPath();
+          rctx.ellipse(plateX, plateY, 55, 25, 0, 0, Math.PI * 2);
+          rctx.fill();
+        }
+      }
+
+      // Hint text
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 18px sans-serif";
+      rctx.textAlign = "center";
+      if (!customersPastryDropped) {
+        if (customersPastryDragging) {
+          rctx.fillText("Drop the pastry near the customer!", w / 2, h - 30);
+        } else {
+          rctx.fillText("Drag the pastry to the customer!", w / 2, h - 30);
+        }
+      }
+
+      // Title at top
+      rctx.fillStyle = C.pinkDark;
+      rctx.font = "bold 22px sans-serif";
+      rctx.textAlign = "center";
+      rctx.fillText("Serve the customer!", w * 0.72, 24);
+    }
+
+    function renderCustomersEating(now) {
+      var w = canvas.width, h = canvas.height;
+      rctx = ctx;
+      rctx.clearRect(0, 0, w, h);
+
+      // Solid background only — remove everything else
+      rctx.fillStyle = C.bg;
+      rctx.fillRect(0, 0, w, h);
+
+      var elapsed = (now - customersEatStartTime) / 1000;
+
+      // Character centered, large (50%+ of screen)
+      // Character total height ~188 units (head top at -88, body bottom at 100)
+      var charScale = Math.min(w, h) / 220; // makes character ~50%+ of screen
+      var charX = w / 2;
+      // Center vertically: charY = h/2 - 6*charScale (offset so head and body are balanced)
+      var charY = h / 2 - 6 * charScale;
+
+      // Eating animation phases:
+      // 0-0.4s: arm starts raising
+      // 0.4-1.5s: biting (pastry shrinks)
+      // 1.5-2.5s: chewing
+      // 2.5-3s: face reacts
+      var eating = elapsed > 0.3;
+      var biteProgress = Math.min(1, Math.max(0, (elapsed - 0.4) / 1.1));
+
+      // Face state during eating
+      var faceState = "smile"; // start with smile
+      if (elapsed > 2) {
+        faceState = customersFaceState; // show final reaction
+      }
+
+      drawCharacter(rctx, charX, charY, charScale, faceState, now, eating, biteProgress);
+
+      // Transition to result after 3 seconds
+      if (elapsed >= 3) {
+        finishGame();
+      }
+    }
+
+    // ===================== MOUSE DRAG HANDLERS =====================
+    function onCanvasMouseMove(e) {
+      if (!customersPastryDragging) return;
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = canvas.width / rect.width;
+      var scaleY = canvas.height / rect.height;
+      customersPastryX = (e.clientX - rect.left) * scaleX;
+      customersPastryY = (e.clientY - rect.top) * scaleY;
+    }
+
+    function onCanvasMouseUp(e) {
+      if (!customersPastryDragging) return;
+      customersPastryDragging = false;
+      // Check if near character
+      var w = canvas.width, h = canvas.height;
+      var charX = w * 0.65;
+      var charY = h * 0.58 - 110;
+      var dx = customersPastryX - charX;
+      var dy = customersPastryY - charY;
+      if (dx * dx + dy * dy < 150 * 150) {
+        // Near character — start eating animation
+        customersPastryDropped = true;
+        // Compute accuracy and game result for face state
+        computeAccuracyScore();
+        var _bakeTime = (customersBakeFinishTime - startTime) / 1000;
+        var _timeLimit = currentLevel.timeLimit;
+        var _timeFail = _timeLimit && _bakeTime > _timeLimit;
+        var _hasCriticalFail = measuredIngredients.some(function(m){ return m.status === "Bad"; }) ||
+                              mixResults.some(function(m){ return m.status !== "Mixed"; }) ||
+                              (ovenResult && ovenResult.status !== "Perfect") || _timeFail;
+        customersFaceState = _hasCriticalFail ? "frown" : "smile";
+        // Start eating animation
+        gameState = "customers_eating";
+        customersEatStartTime = performance.now();
+        playClick();
+      } else {
+        // Snap back to counter
+        customersPastryX = customersPastryStartX;
+        customersPastryY = customersPastryStartY;
+      }
+    }
+
+    function roundRectCtx(rctx, x, y, w, h, r) {
+      rctx.beginPath();
+      rctx.moveTo(x + r, y);
+      rctx.lineTo(x + w - r, y); rctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      rctx.lineTo(x + w, y + h - r); rctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      rctx.lineTo(x + r, y + h); rctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      rctx.lineTo(x, y + r); rctx.quadraticCurveTo(x, y, x + r, y);
+      rctx.closePath();
+    }
+
+    // ===================== STATS UPDATE =====================
+    function updateStats() {
+      var step = getCurrentStep();
+      var elapsed;
+      if (gameState === "playing") {
+        // In customers serve step, freeze time at bake finish (drag time doesn't count)
+        if (isCustomersMode && step && step.type === "serve" && customersBakeFinishTime > 0) {
+          elapsed = (customersBakeFinishTime - startTime) / 1000;
+        } else {
+          elapsed = (performance.now() - startTime) / 1000;
+        }
+      } else {
+        elapsed = 0;
+      }
+
+      var stepText = "Done!";
+      if (gameState === "countdown") stepText = "Get ready...";
+      else if (step) {
+        if (step.type === "measure") stepText = "Measure ingredients";
+        else if (step.type === "mix") stepText = applianceSelected === "mixer" ? "Mixing..." : "Select whisk";
+        else if (step.type === "oven") stepText = applianceSelected === "oven" ? (ovenRunning ? "Baking..." : "Oven ready") : "Select oven";
+        else if (step.type === "serve") stepText = isCustomersMode ? "Drag to customer" : "Serve!";
+      }
+      document.getElementById("currentStepText").textContent = stepText;
+
+      if (step && step.type === "measure" && selectedIngredient) {
+        document.getElementById("targetAmountText").textContent = selectedIngredient.amount + " " + selectedIngredient.unit;
+        document.getElementById("pouredAmountText").textContent = pouredAmount.toFixed(2) + " " + selectedIngredient.unit;
+        var diff = Math.abs(pouredAmount - selectedIngredient.amount) / selectedIngredient.amount;
+        var sel = document.getElementById("measureStatusText");
+        if (diff <= 0.05) { sel.textContent = "Perfect"; sel.className = "value statusPerfect"; }
+        else if (diff <= 0.15) { sel.textContent = "Okay"; sel.className = "value statusOkay"; }
+        else if (pouredAmount < selectedIngredient.amount * 0.95) { sel.textContent = "Too Little"; sel.className = "value statusBad"; }
+        else { sel.textContent = "Too Much"; sel.className = "value statusBad"; }
+      } else if (!step || step.type !== "measure") {
+        document.getElementById("targetAmountText").textContent = "";
+        document.getElementById("pouredAmountText").textContent = "";
+        document.getElementById("measureStatusText").textContent = "";
+        document.getElementById("measureStatusText").className = "value";
+      }
+
+      if (step && step.type === "mix" && applianceSelected === "mixer") {
+        var mixElapsed = mixerStartTime > 0 ? (performance.now() - mixerStartTime) / 1000 : 0;
+        var rem = Math.max(0, (mixerTimeLimit || 0) - mixElapsed);
+        document.getElementById("mixerTimeText").textContent = mixElapsed > 0 ?
+          mixCircles + "/" + mixerTarget + " circles  |  " + rem.toFixed(1) + "s left" :
+          "Use \u2190 \u2192 arrow keys!";
+      } else if (step && step.type === "mix") {
+        document.getElementById("mixerTimeText").textContent = "Click whisk to start";
+      } else {
+        document.getElementById("mixerTimeText").textContent = "";
+      }
+
+      if (step && step.type === "oven" && applianceSelected === "oven") {
+        var ovenNow = ovenRunning ? (performance.now() - ovenStartTime) / 1000 : ovenElapsed;
+        document.getElementById("ovenTimeText").textContent = ovenNow.toFixed(1) + "s";
+      } else if (step && step.type === "oven") {
+        document.getElementById("ovenTimeText").textContent = "Click oven to start";
+      } else {
+        document.getElementById("ovenTimeText").textContent = "";
+      }
+
+      var timeText = elapsed.toFixed(1) + "s" + (currentLevel && currentLevel.timeLimit ? " / " + currentLevel.timeLimit + "s" : "");
+      var timeEl = document.getElementById("totalTimeText");
+      timeEl.textContent = timeText;
+      timeEl.className = "value " + (currentLevel && currentLevel.timeLimit && elapsed > currentLevel.timeLimit ? "red" : "green");
+    }
+
+    // ===================== INIT =====================
+    window.addEventListener("load", function() {
+      resizeCanvas();
+      canvas.addEventListener("mousedown", onCanvasClick);
+      canvas.addEventListener("mousemove", onCanvasMouseMove);
+      canvas.addEventListener("mouseup", onCanvasMouseUp);
+      showMenu();
+    });
+  </script>
+</body>
+</html>

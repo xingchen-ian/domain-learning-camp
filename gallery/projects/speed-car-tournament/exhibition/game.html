@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Speed Car Master Tournament · First-Person F1 Racing</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #05070a;
+    color: #e8eef5;
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    overflow: hidden;
+  }
+  #stage {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #0e1622, #05070a 70%);
+  }
+  #wrap {
+    position: relative;
+    width: min(100vw, 177.78vh);
+    aspect-ratio: 16 / 9;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+    background: #000;
+  }
+  canvas#game { display: block; width: 100%; height: 100%; image-rendering: auto; }
+
+  /* ---------------- Menu ---------------- */
+  .overlay-screen {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, rgba(8,14,24,0.92), rgba(4,8,14,0.96));
+    padding: 4% 6%; text-align: center;
+  }
+  #menu h1 {
+    font-size: clamp(28px, 4vw, 54px); letter-spacing: 2px;
+    background: linear-gradient(90deg, #ffd400, #ff5a3c);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 6px;
+  }
+  #menu .sub { color: #9fb3c8; font-size: clamp(13px, 1.3vw, 18px); margin-bottom: 18px; }
+  .levels { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin: 10px 0 18px; }
+  .level-btn {
+    width: clamp(180px, 22vw, 260px);
+    background: linear-gradient(160deg, #16243a, #0d1626);
+    border: 1px solid #2b3b54; border-radius: 12px; padding: 16px;
+    color: #e8eef5; cursor: pointer; text-align: left; transition: .15s;
+  }
+  .level-btn:hover { transform: translateY(-3px); border-color: #ffd400; box-shadow: 0 8px 24px rgba(255,212,0,.15); }
+  .level-btn b { font-size: 18px; color: #ffd400; display: block; margin-bottom: 6px; }
+  .level-btn span { font-size: 12.5px; color: #aebfd2; line-height: 1.5; }
+  .controls-hint {
+    font-size: clamp(11px, 1.1vw, 14px); color: #8aa0b8; line-height: 1.9;
+    background: rgba(255,255,255,.04); border-radius: 10px; padding: 12px 18px; max-width: 720px;
+  }
+  .controls-hint b { color: #ffd400; }
+  kbd {
+    background: #1c2738; border: 1px solid #34507a; border-bottom-width: 2px;
+    border-radius: 5px; padding: 1px 7px; font-size: 12px; color: #cfe; margin: 0 1px;
+  }
+
+  /* ---------------- HUD ---------------- */
+  #hud { position: absolute; inset: 0; display: none; pointer-events: none; }
+  #levelTag {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.15);
+    padding: 5px 16px; border-radius: 20px; font-size: 14px; color: #ffd400; letter-spacing: 1px;
+  }
+  .hud-panel {
+    position: absolute; top: 14px; left: 14px;
+    background: rgba(6,10,16,.55); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px; padding: 10px 14px; min-width: 210px; backdrop-filter: blur(3px);
+  }
+  .hud-row { display: flex; justify-content: space-between; font-size: 13px; margin: 3px 0; }
+  .hud-row .k { color: #9fb3c8; }
+  .hud-row .v { color: #fff; font-weight: 700; }
+  .bar { height: 7px; background: rgba(255,255,255,.12); border-radius: 4px; overflow: hidden; margin-top: 2px; }
+  .bar > i { display: block; height: 100%; width: 0; }
+  #wearBar { background: linear-gradient(90deg,#23e06b,#ffd400,#e23b3b); }
+  #healthBar { background: linear-gradient(90deg,#e23b3b,#23e06b); }
+  #pressureBar { background: linear-gradient(90deg,#3b7de2,#ffd400,#e23b3b); }
+
+  #hudRight {
+    position: absolute; top: 14px; right: 14px; text-align: right;
+    background: rgba(6,10,16,.55); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px; padding: 10px 14px;
+  }
+  #hudSpeed { font-size: 30px; font-weight: 800; color: #23e06b; }
+  #hudRank { font-size: 15px; color: #ffd400; margin-top: 4px; }
+
+  #warnBox {
+    position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+    background: rgba(10,14,20,.7); border: 1px solid rgba(255,255,255,.12);
+    padding: 6px 18px; border-radius: 18px; font-size: 13px; color: #9fe6b0; max-width: 80%;
+    text-align: center; transition: .2s;
+  }
+  #warnBox.warn-on { color: #ffce4a; border-color: #ffce4a; background: rgba(60,40,0,.6); }
+
+  #radioBox {
+    position: absolute; bottom: 146px; left: 14px; max-width: 380px;
+    background: rgba(0,30,40,.6); border-left: 4px solid #23e0c0;
+    padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #c9fff4; line-height: 1.5;
+  }
+  #radioBox::before { content: "Team Radio"; display: block; font-size: 11px; color: #23e0c0; margin-bottom: 2px; }
+
+  #muteBtn {
+    position: absolute; bottom: 14px; right: 14px; pointer-events: auto;
+    background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.2);
+    color: #fff; padding: 7px 12px; border-radius: 8px; font-size: 13px; cursor: pointer;
+  }
+
+  /* ---------------- Result screen ---------------- */
+  .overlay { display: none; }
+  #result {
+    position: absolute; inset: 0; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 4% 6%;
+    background: linear-gradient(160deg, rgba(8,14,24,.9), rgba(4,8,14,.95));
+  }
+  #result.win { background: radial-gradient(circle at 50% 40%, rgba(20,80,30,.85), rgba(4,8,14,.96)); }
+  #result.cross { background: radial-gradient(circle at 50% 40%, rgba(120,90,10,.7), rgba(4,8,14,.96)); }
+  #result.lose { background: radial-gradient(circle at 50% 40%, rgba(90,20,20,.8), rgba(4,8,14,.96)); }
+  #resTitle { font-size: clamp(30px, 5vw, 60px); margin-bottom: 12px; }
+  #result.win #resTitle { color: #5dffa0; text-shadow: 0 0 24px rgba(93,255,160,.5); }
+  #result.cross #resTitle { color: #ffd400; }
+  #result.lose #resTitle { color: #ff6b6b; }
+  #resDetail { font-size: clamp(15px, 1.7vw, 20px); color: #d6e2ef; max-width: 720px; line-height: 1.6; margin-bottom: 14px; }
+  #resStats { font-size: 13px; color: #9fb3c8; margin-bottom: 26px; }
+  .res-btns { display: flex; gap: 14px; }
+  .res-btns button {
+    background: linear-gradient(160deg, #ffd400, #ff8c1a); color: #1a1200;
+    border: none; padding: 12px 28px; font-size: 16px; font-weight: 700;
+    border-radius: 10px; cursor: pointer; transition: .15s;
+  }
+  .res-btns button.ghost { background: transparent; color: #cfe; border: 1px solid #34507a; }
+  .res-btns button:hover { transform: translateY(-2px); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wrap">
+    <canvas id="game"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div id="levelTag">LEVEL</div>
+      <div class="hud-panel">
+        <div class="hud-row"><span class="k">Time</span><span class="v" id="hudTime">0.0 s</span></div>
+        <div class="hud-row"><span class="k">To Finish</span><span class="v" id="hudDist">0 m</span></div>
+        <div class="hud-row"><span class="k">Tire wear</span><span class="v" id="hudWear">0 %</span></div>
+        <div class="bar"><i id="wearBar"></i></div>
+        <div class="hud-row"><span class="k">Tire Life</span><span class="v" id="hudLife">100 %</span></div>
+        <div class="hud-row"><span class="k">Tire Press</span><span class="v" id="hudPressure">2.00</span></div>
+        <div class="bar"><i id="pressureBar"></i></div>
+        <div class="hud-row"><span class="k">Car health</span><span class="v" id="hudHealth">100</span></div>
+        <div class="bar"><i id="healthBar"></i></div>
+        <div class="hud-row"><span class="k">Driver body temp</span><span class="v" id="hudTemp">36.5 °C</span></div>
+      </div>
+      <div id="hudRight">
+        <div id="hudSpeed">0 km/h</div>
+        <div id="hudRank">Rank 1 / 6</div>
+      </div>
+      <div id="warnBox">Vehicle normal, keep your rhythm</div>
+      <div id="radioBox">Team radio ready.</div>
+      <button id="muteBtn">Voice: On</button>
+    </div>
+
+    <!-- Menu -->
+    <div id="menu" class="overlay-screen">
+      <h1>SPEED CAR MASTER</h1>
+      <div class="sub">First-Person F1 Racing · Driving is not just flooring the throttle, it is reading data and pacing yourself</div>
+      <div class="levels">
+        <button class="level-btn" data-level="1">
+          <b>Level 1 · Rookie Straight</b>
+          <span>Gentle corners, slightly slower rivals, no pit. Learn the first-person view, throttle and brakes.</span>
+        </button>
+        <button class="level-btn" data-level="2">
+          <b>Level 2 · Technical Corners</b>
+          <span>More corners, evenly matched rivals. Pit for tires at least once or the win will not count.</span>
+        </button>
+        <button class="level-btn" data-level="3">
+          <b>Level 3 · Extreme Sharp Corners</b>
+          <span>Continuous sharp corners, slightly faster rivals. Watch tire wear or risk blowout.</span>
+        </button>
+      </div>
+      <div class="controls-hint">
+        <b>Controls: </b>
+        <kbd>W</kbd>/<kbd>↑</kbd> Throttle (forward) ·
+        <kbd>S</kbd>/<kbd>↓</kbd> Brake; hold after stop to reverse ·
+        <kbd>A</kbd>/<kbd>←</kbd> Steer left ·
+        <kbd>D</kbd>/<kbd>→</kbd> Steer right ·
+        Enter pit lane and press <kbd>E</kbd> for tires ·
+        <kbd>M</kbd> Toggle voice<br>
+        <b>Goal:</b> Drive first-person, cross the finish line and beat the required share of rivals (L1/L3 beat 50%, L2 beat 70%). Lose if car health hits zero, or if you fail to finish within 30s after half the field finished.</div>
+    </div>
+
+    <!-- Result -->
+    <div id="result" class="overlay">
+      <div id="resTitle">Result</div>
+      <div id="resDetail">Details</div>
+      <div id="resStats">Stats</div>
+      <div class="res-btns">
+        <button id="restartBtn">Race Again (R)</button>
+        <button id="menuBtn" class="ghost">Back to Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>

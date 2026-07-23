@@ -1,0 +1,648 @@
+/* To the End — site and game styles */
+
+:root {
+  --bg: #f8f9fa;
+  --panel: #ffffff;
+  --text: #1a1a1a;
+  --muted: #555;
+  --accent: #2980b9;
+  --accent-hover: #1c5a85;
+  --danger: #c0392b;
+  --warning: #f39c12;
+  --success: #27ae60;
+  --border: #ddd;
+  --shadow: rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.site-header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 2rem;
+}
+
+.nav {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.site-footer {
+  text-align: center;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 2rem;
+  margin: 1rem 0 0.5rem;
+}
+
+/* Home and process pages */
+.content-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.content-page h2 {
+  color: var(--accent);
+  margin-top: 2rem;
+}
+
+.content-page h3 {
+  margin-top: 1.5rem;
+  color: var(--text);
+}
+
+.content-page p,
+.content-page li {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.content-page ul {
+  padding-left: 1.5rem;
+}
+
+.content-page img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.play-button {
+  display: inline-block;
+  margin: 1rem 0;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.play-button:hover {
+  background: var(--accent-hover);
+}
+
+/* Game page */
+.game-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem 2rem;
+}
+
+.level-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.level-selector .label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.level-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.level-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.level-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Locked levels: greyed out, not clickable, with a small padlock. */
+.level-btn.locked,
+.level-btn:disabled {
+  background: #eceef1;
+  color: #a0a6ad;
+  border-color: #d7dbe0;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.level-btn.locked:hover {
+  border-color: #d7dbe0;
+  color: #a0a6ad;
+}
+
+.level-btn.locked::after {
+  content: " (locked)";
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.top-bar {
+  text-align: center;
+  padding: 0.5rem 1rem;
+  margin: 0 auto 0.75rem;
+  max-width: 1200px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--muted);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.canvas-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+#gameCanvas {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow);
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+}
+
+.message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.message.won {
+  background: var(--success);
+  color: #fff;
+}
+
+.message.lost {
+  background: var(--danger);
+  color: #fff;
+}
+
+.message.hidden {
+  display: none;
+}
+
+.control-panel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.panel h2 {
+  font-size: 1.2rem;
+  margin: 0 0 1rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+/* Sub-heading for the per-player "Data" grid that sits under each
+   player's own controls (multiplayer exposes P1 & P2 data). */
+.panel .data-head {
+  margin: 1.25rem 0 0.75rem;
+  font-size: 1rem;
+  color: var(--muted);
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 0.4rem;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.control-row label,
+.control-row .label {
+  font-weight: 600;
+  min-width: 120px;
+  color: var(--text);
+}
+
+.control-row input[type="range"] {
+  flex: 1;
+  min-width: 120px;
+}
+
+.control-row .value {
+  min-width: 70px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.control-row .value.big {
+  font-size: 1.5rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.toggle-btn,
+.small-btn,
+.primary-btn,
+.secondary-btn {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s, transform 0.05s;
+}
+
+.toggle-btn {
+  padding: 0.45rem 1rem;
+  background: var(--accent);
+  color: #fff;
+}
+
+.toggle-btn:hover {
+  background: var(--accent-hover);
+}
+
+.small-btn {
+  width: 34px;
+  height: 34px;
+  font-size: 1.2rem;
+  background: #eee;
+  color: var(--text);
+}
+
+.small-btn:hover {
+  background: #ddd;
+}
+
+.primary-btn {
+  padding: 0.6rem 1.4rem;
+  background: var(--success);
+  color: #fff;
+  font-size: 1rem;
+}
+
+.primary-btn:hover {
+  background: #1e8449;
+}
+
+.secondary-btn {
+  padding: 0.6rem 1.4rem;
+  background: #eee;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.secondary-btn:hover {
+  background: #ddd;
+}
+
+/* Standalone Start/Restart box sitting above the player controls. */
+.game-controls {
+  margin-bottom: 1.5rem;
+}
+
+.game-controls .control-row.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0;
+}
+
+.game-controls .primary-btn,
+.game-controls .secondary-btn {
+  min-width: 140px;
+}
+
+.gear-row {
+  justify-content: flex-start;
+}
+
+.buttons {
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 1rem;
+}
+
+.hint kbd {
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-family: monospace;
+}
+
+/* Dashboard */
+.data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.data-item {
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.data-item.stamina {
+  grid-column: span 2;
+}
+
+.data-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.data-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.data-value.danger {
+  color: var(--danger);
+  animation: pulse 0.8s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+#hrValue.danger {
+  color: var(--danger);
+  animation: pulse 0.8s infinite;
+}
+
+.bar {
+  height: 12px;
+  background: #eee;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.1s, background 0.2s;
+}
+
+.bar-fill.ok { background: var(--success); }
+.bar-fill.warning { background: var(--warning); }
+.bar-fill.danger { background: var(--danger); }
+
+/* Heart-rate bar with a fixed red line at the 185 bpm danger threshold */
+.data-item.hr {
+  grid-column: span 2;
+}
+
+.hr-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.hr-bar .red-line {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 89.3%; /* (185 - 60) / (200 - 60) = 89.3% */
+  width: 2px;
+  background: var(--danger);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+
+/* Level info */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.info-value {
+  text-align: right;
+  max-width: 60%;
+  color: var(--text);
+}
+
+/* Process page timeline */
+.timeline {
+  border-left: 3px solid var(--accent);
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.timeline-entry {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.timeline-entry::before {
+  content: "";
+  position: absolute;
+  left: -1.7rem;
+  top: 0.4rem;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.timeline-entry h3 {
+  margin: 0 0 0.25rem;
+  color: var(--accent);
+}
+
+.timeline-entry time {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Generic hidden helper (homepage ↔ game, P2 panel) */
+.hidden { display: none !important; }
+
+/* Homepage / mode selection */
+.homepage {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #eaf4fb 0%, #f8f9fa 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.home-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+  padding: 2.5rem 3rem;
+  text-align: center;
+  max-width: 520px;
+}
+.home-card h2 {
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+}
+.home-sub {
+  color: var(--muted);
+  margin: 0 0 1.5rem;
+}
+.home-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.mode-btn {
+  padding: 0.9rem 1.6rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  transition: background 0.15s, transform 0.05s;
+}
+.mode-btn:hover { background: var(--accent-hover); }
+.mode-btn:active { transform: translateY(1px); }
+
+/* Level buttons: current level = blue, beaten (unlocked) = green */
+.level-btn.active {
+  background: #1f6feb;
+  color: #fff;
+  border-color: #1f6feb;
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.25);
+}
+.level-btn.cleared {
+  border-color: var(--success);
+  color: var(--success);
+}
+.level-btn.cleared::after {
+  content: " (done)";
+  font-size: 0.8em;
+  font-weight: 500;
+}
+.menu-btn { margin-left: 0.5rem; }
+
+/* "Lock Levels" toggle — turns orange/red while engaged so the player can
+ * see that Levels 2 & 3 are currently force-locked. */
+.lock-btn { margin-left: 0.5rem; }
+.lock-btn[data-locked="true"] {
+  background: #e67e22;
+  color: #fff;
+  border-color: #e67e22;
+  box-shadow:0 0 0 3px rgba(230, 126, 34, 0.25);
+}
+
+/* Control panel adapts to 1–4 panels (P2 appears in multiplayer) */
+.control-panel {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .control-panel {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .control-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .nav {
+    justify-content: center;
+  }
+
+  .game-page {
+    padding: 1rem;
+  }
+}

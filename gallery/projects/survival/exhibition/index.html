@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survival — Game Idea</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#" class="brand">Survival</a>
+    <a href="#" data-nav="idea">Game Idea</a>
+    <a href="#" data-nav="domain">Domain & System</a>
+    <a href="#" data-nav="process">Process</a>
+    <a href="#" data-nav="play" class="active">Play Game</a>
+  </nav>
+
+  <main>
+
+    <!-- ============ GAME IDEA ============ -->
+    <section id="idea" class="section">
+      <div class="hero">
+        <span class="tag">First Playable Web Game · Running</span>
+        <h1>Survival</h1>
+        <p class="muted">A 2D top-down evasion game by Sawyer Johanneman. Run from enemies, dodge obstacles, and manage a limited energy reserve — all while the screen gets harder the longer you last.</p>
+        <a href="#" class="btn" data-nav="play">▶ Play the Game</a>
+      </div>
+
+      <section class="card">
+        <h2>Concept</h2>
+        <p><strong>Survival</strong> is about fast action and a quiet resource balance: energy. The real challenge isn't speed, it's reading the landscape — gaps between obstacles, enemy angles, and how much sprint you can still afford.</p>
+        <p>The game is built with plain <strong>HTML, CSS, and JavaScript</strong> on an HTML5 <strong>Canvas</strong>. No libraries, no build step, and no internet connection are required for exhibition.</p>
+      </section>
+
+      <section class="card">
+        <h2>Player Goal</h2>
+        <p>Survive long enough to reach a score of <strong>1000</strong> while keeping your health above zero. The longer you last, the more enemies appear, the more obstacles block your path, and the slower your base running speed becomes — so you must rely on smart movement and energy management rather than raw speed. Obstacles come in distinct types (crate, rock, hazard, barrier, crystal), and enemies knock you back on contact, so standing still is never safe.</p>
+      </section>
+
+      <section class="card">
+        <h2>Core Learning Shift</h2>
+        <p>Beginners think <strong>safety is a location on the map</strong>: they find a corner and stay there. Experts understand that safety is <strong>dynamic</strong>: it comes from constantly judging spaces, predicting enemy movement, and using energy at the right moments.</p>
+        <p>This game makes that shift playable by forcing the player to keep moving, reroute around obstacles, and decide when to sprint or use the interact ability.</p>
+      </section>
+
+      <section class="card">
+        <h2>Controls</h2>
+        <table>
+          <thead><tr><th>Action</th><th>Key</th><th>Cost / Note</th></tr></thead>
+          <tbody>
+            <tr><td>Move</td><td>W A S D</td><td>Hold one direction to build <strong>momentum</strong> (higher speed)</td></tr>
+            <tr><td>Sprint</td><td>SHIFT</td><td>Drains energy; cannot sprint at 0 energy</td></tr>
+            <tr><td>Jump</td><td>SPACE</td><td>Hop toward/away from the screen to sail over enemies and obstacles</td></tr>
+            <tr><td>Push</td><td>E</td><td>Costs energy; pushes nearby obstacles and knocks enemies away</td></tr>
+            <tr><td>Start / Restart</td><td>SPACE</td><td>From start, win, or game-over screen</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- ============ DOMAIN & SYSTEM ============ -->
+    <section id="domain" class="section">
+      <h1>Domain Knowledge & System Design</h1>
+
+      <section class="card">
+        <h2>Real-World Domain: Running</h2>
+        <p>Running at speed is not just about moving quickly. It is about reading the terrain ahead, judging whether you can fit through a gap, deciding when to burn extra energy, and reacting to sudden changes. In a chase, the runner who freezes or clings to one spot is usually caught.</p>
+      </section>
+
+      <section class="card">
+        <h2>Novice Misconception</h2>
+        <p>Beginners believe that staying in one safe spot will keep them safe. In the game this is punished because enemies keep spawning and obstacles eventually fill the map, so standing still leads to being surrounded.</p>
+      </section>
+
+      <section class="card">
+        <h2>Expert Judgment</h2>
+        <p>Experts keep scanning the environment, plan routes through obstacles, and use bursts of speed only when needed. They treat safety as a process of continuous adjustment rather than a single place.</p>
+      </section>
+
+      <section class="card">
+        <h2>System Graph</h2>
+        <img src="assets/images/system-graph.png" alt="Survival system graph" class="system-graph">
+        <p class="muted">The system graph shows win/game-over conditions, player inputs, environment data, level presets, and exposed on-screen feedback.</p>
+      </section>
+
+      <section class="card">
+        <h2>Data Model</h2>
+        <h3>Environment Data</h3>
+        <ul>
+          <li><strong>Obstacle locations</strong> — rectangles that block movement and reduce health on contact.</li>
+          <li><strong>Enemy positions and types</strong> — basic chasers, fast bullets, and strong tanks.</li>
+          <li><strong>Player position</strong> — current x, y location on the canvas.</li>
+          <li><strong>Energy remaining</strong> — resource shared with sprint and interact.</li>
+        </ul>
+        <h3>Player-Controlled Data</h3>
+        <ul>
+          <li><strong>Movement</strong> — W, A, S, D direction.</li>
+          <li><strong>Sprint</strong> — Shift increases speed at energy cost.</li>
+          <li><strong>Interact</strong> — E pushes obstacles and knocks enemies away.</li>
+        </ul>
+        <h3>System-Calculated Results</h3>
+        <ul>
+          <li><strong>Level</strong> — derived from current score.</li>
+          <li><strong>Player speed</strong> — base speed set by level plus sprint multiplier.</li>
+          <li><strong>Enemy spawn rates and types</strong> — increase with level.</li>
+          <li><strong>Score</strong> — grows over time and faster at higher levels.</li>
+        </ul>
+        <h3>Feedback Translation</h3>
+        <ul>
+          <li><strong>Score</strong> — top-left number showing progress toward 1000.</li>
+          <li><strong>Health / lives</strong> — top-right bar showing how close you are to losing.</li>
+          <li><strong>Energy</strong> — bar below score showing remaining sprint/interact resource.</li>
+          <li><strong>Level and objective</strong> — center-top text telling you the current challenge.</li>
+          <li><strong>Visual feedback</strong> — red flash on damage, shockwave on interact, sprint aura.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Rules, Boundaries, and Outcomes</h2>
+        <ul>
+          <li><strong>Win:</strong> score reaches 10,000 with health still above 0.</li>
+          <li><strong>Lose:</strong> health drops to 0 or below from enemy or obstacle contact.</li>
+          <li><strong>Energy:</strong> sprint and interact drain the same energy pool; energy regenerates slowly when not sprinting.</li>
+          <li><strong>Just-right range:</strong> the player must move at a rhythm that avoids enemies without running out of energy or cornering themselves.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Challenge Presets</h2>
+        <table>
+          <thead><tr><th>Level</th><th>Objective</th><th>Player Speed</th><th>Obstacles</th><th>Enemies</th></tr></thead>
+          <tbody>
+            <tr><td>Level 1</td><td>Don't lose lives</td><td>Fast</td><td>None</td><td>Basic</td></tr>
+            <tr><td>Level 2</td><td>Gain higher scores</td><td>Medium</td><td>Minimal</td><td>Basic + Bullet</td></tr>
+            <tr><td>Level 3</td><td>Reach a new top score</td><td>Slow</td><td>Numerous</td><td>Basic + Bullet + Strong</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- ============ PROCESS ============ -->
+    <section id="process" class="section">
+      <h1>Development Process</h1>
+      <p class="muted">A chronological timeline of how Survival was built. This page is kept in sync with <code>agent-development-log.md</code>.</p>
+
+      <section class="card">
+        <h2>Milestone 1 — Project Setup</h2>
+        <ul>
+          <li>Created <code>source/</code> and <code>exhibition/</code> folders.</li>
+          <li>Built the game with plain HTML5 Canvas + vanilla JavaScript (no third-party library).</li>
+          <li>Wrote <code>README.md</code>, <code>THIRD_PARTY.md</code>, <code>submission-manifest.json</code>, and <code>agent-development-log.md</code>.</li>
+          <li>Generated a clean <code>system-graph.png</code> from the provided system graph image.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Milestone 2 — First Playable Loop</h2>
+        <ul>
+          <li>Player moves with WASD; speed and energy are visible.</li>
+          <li>Basic enemies spawn and chase the player.</li>
+          <li>Health decreases on contact; red flash gives immediate feedback.</li>
+          <li>Score increases over time, shown top-left.</li>
+          <li>Game-over and win screens allow restart.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Milestone 3 — Challenge Presets</h2>
+        <ul>
+          <li>Level thresholds tied to score: 0–199; 200–349; 350+ (win at 1000).</li>
+          <li>Each level changes player base speed, obstacle count, enemy spawn rates, and enemy types.</li>
+          <li>Added bullet enemies (fast straight-line movers) and strong enemies (slow, high damage).</li>
+          <li>Added interact ability (E key) that pushes obstacles and knocks enemies away.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Milestone 4 — Website Integration</h2>
+        <ul>
+          <li>Built a single-page site with Game Idea, Domain & System, Process, and Play Game sections.</li>
+          <li>Used in-page navigation so the preview webview always serves the same entry file.</li>
+          <li>Used relative paths so the project works inside a Gallery subfolder.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Milestone 5 — Exhibition Test & Packaging</h2>
+        <ul>
+          <li>Copied verified source files into <code>exhibition/</code>.</li>
+          <li>Tested with a local static HTTP server and confirmed all assets load.</li>
+          <li>Generated <code>preview.png</code> and the final ZIP archive.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Student Reflection</h2>
+        <blockquote>Does the current game still help the player experience the intended domain-learning shift? What became stronger, weaker, or different? Which AI suggestion did you accept, reject, or change, and why?</blockquote>
+        <blockquote class="reflection-answer">I accepted the suggestions that I felt would lead to a better platform, and rejected ideas that could change the game in a negative way, although most ideas within the game were my own. The current game helps the player experience the intended domain learning shift through reaction time training and speed control, although it could be stronger in the future.</blockquote>
+      </section>
+    </section>
+
+    <!-- ============ PLAY GAME ============ -->
+    <section id="play" class="section active">
+      <h1>Play Survival</h1>
+      <p class="muted">Reach a score of <strong>1000</strong> while keeping your health above zero. The levels get harder and your available space shrinks.</p>
+
+      <div class="game-frame">
+        <div id="game-container"></div>
+        <div class="controls-hint">
+          <strong>Controls:</strong> <strong>W A S D</strong> move (hold to build momentum) · <strong>SHIFT</strong> sprint · <strong>SPACE</strong> jump · <strong>E</strong> push
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    Sawyer Johanneman · Survival · First Playable Web Game
+  </footer>
+
+  <script>
+    // In-page navigation: switch sections without changing the URL path.
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(function (s) { s.classList.remove('active'); });
+      var target = document.getElementById(id);
+      if (target) target.classList.add('active');
+      document.querySelectorAll('nav a[data-nav]').forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-nav') === id);
+      });
+      window.scrollTo(0, 0);
+    }
+    document.querySelectorAll('nav a[data-nav], a[data-nav]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        showSection(a.getAttribute('data-nav'));
+      });
+    });
+    showSection('play');
+  </script>
+
+  <script src="assets/js/game.js"></script>
+</body>
+</html>

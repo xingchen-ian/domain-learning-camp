@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animal Dash — Play the Game</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body { overflow: hidden; }
+    nav .logo::after { content: ' ⚡'; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="logo">Animal Dash</span>
+    <a href="index.html">Home</a>
+    <a href="game.html" class="active">Play Game</a>
+    <a href="process.html">Development Process</a>
+  </nav>
+  <div class="game-container">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+  <script src="assets/game.js"></script>
+</body>
+</html>

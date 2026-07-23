@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In the Opera House — Project</title>
+  <link rel="stylesheet" href="assets/game.css">
+  <style>
+    body { overflow: auto; }
+    .site-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    nav {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 16px;
+    }
+    nav a {
+      color: var(--gold);
+      text-decoration: none;
+      font-family: Georgia, serif;
+      font-size: 1.1rem;
+    }
+    nav a:hover { text-decoration: underline; }
+    h1, h2 { font-family: Georgia, serif; color: var(--gold-light); }
+    h1 { text-align: center; font-size: 2.6rem; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: var(--gold); font-size: 1.2rem; margin-bottom: 32px; }
+    .card {
+      background: rgba(0,0,0,0.35);
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .card h2 { margin-top: 0; }
+    .card p { font-size: 1.15rem; line-height: 1.55; }
+    .cta {
+      text-align: center;
+      margin: 40px 0;
+    }
+    .cta a {
+      display: inline-block;
+      padding: 16px 36px;
+      font-family: Georgia, serif;
+      font-size: 1.3rem;
+      color: var(--cream);
+      background: var(--velvet-red);
+      border: 2px solid var(--gold);
+      border-radius: 6px;
+      text-decoration: none;
+    }
+    .cta a:hover { background: var(--velvet-red-light); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+    .system-list { margin: 0; padding-left: 22px; }
+    .system-list li { margin-bottom: 10px; font-size: 1.1rem; }
+    footer.site-footer {
+      text-align: center;
+      padding: 30px 0;
+      color: var(--gold);
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="site-wrapper">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="game.html">Play Game</a>
+      <a href="process.html">Development Process</a>
+    </nav>
+
+    <h1>In the Opera House</h1>
+    <p class="subtitle">A vintage theatre escape game by Yuyue Ji</p>
+
+    <div class="cta">
+      <a href="game.html">Play the Game</a>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>Game Idea</h2>
+        <p>
+          A blonde opera singer is locked inside the theatre after the final curtain.
+          You control her as she walks between the dressing room and the hidden stage,
+          find clues, collect tools, and escape through the side door before the building locks for the night.
+        </p>
+      </div>
+      <div class="card">
+        <h2>Domain & Learning</h2>
+        <p>
+          <strong>Domain:</strong> Room escaping / finding the right tool at the right time.
+          <br><br>
+          <strong>Novice misconception:</strong> Players often rush to the stage curtain and try to lift it manually.
+          <br><br>
+          <strong>Core shift:</strong> Learn to read visual clues (mirror colors, poem), collect tools (lens, key),
+          and chain them into a sequence: open drawer → fix spotlight → open curtain → reveal key → escape.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>System Design Summary</h2>
+      <ul class="system-list">
+        <li><strong>Environment data:</strong> Color code on the mirror (red, blue, gold); invisible lens and poem inside the locked drawer; the stage is hidden until the singer walks onto it.</li>
+        <li><strong>Player-controlled data:</strong> Singer position in each room, inventory items (lens, poem, key), current code entry, and spotlight angle.</li>
+        <li><strong>Calculated results:</strong> Code correctness, room transitions, whether the beam hits the chair, remaining time.</li>
+        <li><strong>Feedback:</strong> Items glow when useful, drawers open, the spotlight turns on, the curtain opens automatically, and the key appears only when the chair is lit.</li>
+        <li><strong>Success:</strong> Escape through the side door before the 10-minute timer reaches zero.</li>
+        <li><strong>Failure:</strong> Time runs out and the theatre locks.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Controls</h2>
+      <p>
+        Use <strong>Arrow keys</strong> or <strong>WASD</strong> to move the opera singer. Walk to the right edge
+        of the dressing room to enter the stage, and to the left edge of the stage to return.
+        Click objects to investigate or use them. Select colors for the drawer code in the correct order.
+        Once the spotlight is fixed and turned on, use the on-screen arrows or <strong>Q / E</strong>
+        to rotate the beam until it illuminates the chair on stage.
+      </p>
+    </div>
+
+    <footer class="site-footer">
+      Built with HTML, CSS, and plain JavaScript — no build step required.
+    </footer>
+  </div>
+</body>
+</html>

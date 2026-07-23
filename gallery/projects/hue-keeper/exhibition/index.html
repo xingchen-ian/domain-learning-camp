@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hue Keeper — Home</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">
+            <span class="logo-dot"></span>
+            Hue Keeper
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="domain.html">Domain Knowledge</a></li>
+            <li><a href="system.html">System Design</a></li>
+            <li><a href="process.html">Development Process</a></li>
+            <li><a href="game.html" class="nav-cta">Play Game</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <h1 class="hero-title">Hue Keeper</h1>
+        <p class="hero-subtitle">
+            A color theory game where you restore an ancient fresco by collecting,
+            mixing, and matching colors — while defending against monsters that can
+            only be defeated by their complementary opposite.
+        </p>
+        <div class="hero-actions">
+            <a href="game.html" class="btn btn-primary">Play the Game</a>
+            <a href="domain.html" class="btn btn-secondary">Learn the Domain</a>
+        </div>
+    </section>
+
+    <div class="container">
+        <section class="section">
+            <h2 class="section-title">Game Idea</h2>
+            <p class="section-subtitle">What is Hue Keeper, and what does the player learn?</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon" style="background:#fce4de;">
+                        <span style="color:#c44d33;">&#127912;</span>
+                    </div>
+                    <h3>Concept</h3>
+                    <p>You play as Pixie, a tiny guardian of an ancient cave fresco. The fresco's colors are fading. Venture into the garden, collect colors from flowers, mix them at the fountain, and restore the fresco before it fades away. In later levels, monsters emerge — and only complementary colors can defeat them.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon" style="background:#d5f0ec;">
+                        <span style="color:#1a7a6e;">&#127919;</span>
+                    </div>
+                    <h3>Player Goal</h3>
+                    <p>Fill every broken area of the fresco with the correct color. In Level 3, also survive monster attacks by splattering them with their complementary color — the opposite on the color wheel. Using the same color as a monster makes it stronger!</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon" style="background:#fdf2d5;">
+                        <span style="color:#b8941e;">&#128161;</span>
+                    </div>
+                    <h3>Core Learning Shift</h3>
+                    <p>Players begin thinking "match the same color." Through gameplay, they shift to a comprehensive technique of <strong>judging, mixing, and matching</strong> — understanding complementary colors, efficiency under time pressure, and strategic color choice.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Three Levels of Challenge</h2>
+            <p class="section-subtitle">Each level introduces a new color theory concept.</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <span class="tag tag-terra">Level 1</span>
+                    <h3 style="margin-top:12px;">Color Matching</h3>
+                    <p>Collect primary colors (Red, Blue, Yellow) from flowers and match them to the fresco's missing areas. No time pressure — learn the basics of observation and matching.</p>
+                </div>
+                <div class="card">
+                    <span class="tag tag-gold">Level 2</span>
+                    <h3 style="margin-top:12px;">Color Mixing</h3>
+                    <p>The fresco needs five secondary colors (Green, Orange, Purple, and repeats). Only primary-color flowers grow in the garden. Mix two primaries at the fountain — each splattered color fades over 60 seconds, so work fast!</p>
+                </div>
+                <div class="card">
+                    <span class="tag tag-teal">Level 3</span>
+                    <h3 style="margin-top:12px;">Color Conflict</h3>
+                    <p>Six fresco pieces need restoring while monsters emerge and chase Pixie. Each monster has a color — only the <em>complementary</em> color defeats it. The same color makes it stronger. Colors fade 60 seconds after splattering.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Color Theory at a Glance</h2>
+            <div class="card">
+                <div style="display:flex; gap:24px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">
+                    <div class="color-swatch" style="background:#fce4de;"><span class="swatch-dot" style="background:#E63946;"></span>Red</div>
+                    <div class="color-swatch" style="background:#dce8f1;"><span class="swatch-dot" style="background:#457B9D;"></span>Blue</div>
+                    <div class="color-swatch" style="background:#fdf2d5;"><span class="swatch-dot" style="background:#F4D35E;"></span>Yellow</div>
+                    <span style="color:var(--text-light); align-self:center;">Primary Colors</span>
+                </div>
+                <div style="display:flex; gap:24px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">
+                    <div class="color-swatch" style="background:#d5f0ec;"><span class="swatch-dot" style="background:#2A9D8F;"></span>Green = Blue + Yellow</div>
+                    <div class="color-swatch" style="background:#fce4de;"><span class="swatch-dot" style="background:#F4A261;"></span>Orange = Red + Yellow</div>
+                    <div class="color-swatch" style="background:#f0e0f8;"><span class="swatch-dot" style="background:#9B5DE5;"></span>Purple = Red + Blue</div>
+                </div>
+                <div style="display:flex; gap:24px; flex-wrap:wrap; justify-content:center; padding-top:16px; border-top:1px solid var(--border-soft);">
+                    <span style="color:var(--text-light); align-self:center;">Complementary Pairs (defeat monsters):</span>
+                    <div class="color-swatch"><span class="swatch-dot" style="background:#E63946;"></span>Red &harr; <span class="swatch-dot" style="background:#2A9D8F;"></span>Green</div>
+                    <div class="color-swatch"><span class="swatch-dot" style="background:#457B9D;"></span>Blue &harr; <span class="swatch-dot" style="background:#F4A261;"></span>Orange</div>
+                    <div class="color-swatch"><span class="swatch-dot" style="background:#F4D35E;"></span>Yellow &harr; <span class="swatch-dot" style="background:#9B5DE5;"></span>Purple</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>Hue Keeper &mdash; A color theory learning game by Amy Fang &mdash; Built with HTML, CSS, and Canvas 2D</p>
+    </footer>
+</body>
+</html>

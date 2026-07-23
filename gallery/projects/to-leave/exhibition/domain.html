@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To Leave — Domain Knowledge & System Design</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div id="site-wrapper">
+
+  <!-- NAVIGATION -->
+  <nav id="site-nav">
+    <div class="nav-brand">To Leave</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="domain.html" class="nav-link active">Domain & Design</a>
+      <a href="process.html" class="nav-link">Development</a>
+      <a href="game.html" class="nav-link">Play Game</a>
+    </div>
+  </nav>
+
+  <!-- DOMAIN KNOWLEDGE -->
+  <section id="domain-detail" class="content-section">
+    <h2 class="section-title">Domain Knowledge</h2>
+    <div class="section-card">
+      <h3>Real-World Domain: Packing Puzzle</h3>
+      <p>Packing bags is essential to everyday life: school bags for daily use, suitcases for travel, moving boxes for relocation. The physical act of selecting and arranging items is something everyone does, but few think about <em>why</em> they choose what they choose.</p>
+      <p>The act of leaving is deeply connected to packing. Leaving a place, memories, or time itself involves deciding what to carry forward. Some things are necessary for survival; others carry emotional weight that makes life worth living. The tension between these two forces is the core of this game.</p>
+
+      <h3>Novice Misconception</h3>
+      <div class="misconception-box">
+        <p><strong>"Everything can fit if I try hard enough."</strong> — Beginners believe the challenge is purely spatial: arrange items cleverly, compress, stack, and everything goes in.</p>
+        <p><strong>"Packing is more important than understanding the character."</strong> — Beginners focus on the container and the items, not on the person who is leaving.</p>
+      </div>
+
+      <h3>Expert Judgment</h3>
+      <div class="expert-box">
+        <p><strong>Read the character first.</strong> Experts study the clues — art, scribbles, fragments — before deciding what to pack. Understanding who is leaving determines what matters.</p>
+        <p><strong>Balance Need and Want.</strong> Experts know that pure utility (Need) and pure emotion (Want) both matter. A perfectly practical bag that ignores emotion leaves a person feeling empty; a purely emotional bag may leave them stranded.</p>
+        <p><strong>Letting go is part of leaving.</strong> Experts accept that some things must be left behind — and that making room for new things requires releasing old ones.</p>
+      </div>
+
+      <h3>Why This Knowledge Becomes Playable</h3>
+      <p>The limited container creates genuine trade-offs. Understanding the character creates meaningful choices (not arbitrary ones). The emotional weight of objects — revealed through interactive memories — makes the decision feel real, not abstract. Each case presents a different character with different clues, so the player must adapt their strategy rather than apply one formula.</p>
+    </div>
+  </section>
+
+  <!-- SYSTEM DESIGN -->
+  <section id="system-design" class="content-section">
+    <h2 class="section-title">System Design</h2>
+
+    <div class="system-grid">
+      <!-- Environment Data -->
+      <div class="system-card env-card">
+        <h3>🌍 Environment Data</h3>
+        <ul>
+          <li><strong>Object sizes</strong> — Each item occupies 1–3 container slots. Larger items create harder trade-offs.</li>
+          <li><strong>Container capacity</strong> — Each case has a different bag/suitcase with limited slots (6–8).</li>
+          <li><strong>Character clues</strong> — Text notes, sketches, doodles, photographs. The player must interpret them.</li>
+          <li><strong>Object memories</strong> — Each item has a memory the player can enter, revealing emotional significance.</li>
+        </ul>
+      </div>
+
+      <!-- Player-Controlled Data -->
+      <div class="system-card player-card">
+        <h3>🎮 Player-Controlled Data</h3>
+        <ul>
+          <li><strong>Select objects</strong> — Click an item to see its details, Need/Want scores, and clue connection.</li>
+          <li><strong>Enter memories</strong> — Step into an object's memory to experience its emotional weight.</li>
+          <li><strong>Pack / Unpack</strong> — Move items into or out of the container. When full, must remove to add more.</li>
+          <li><strong>Read clues</strong> — Open the clue panel to review character information at any time.</li>
+          <li><strong>Finish packing</strong> — Decide when to stop and see the results.</li>
+        </ul>
+      </div>
+
+      <!-- System-Calculated Results -->
+      <div class="system-card calc-card">
+        <h3>⚙️ System-Calculated Results</h3>
+        <ul>
+          <li><strong>Need total</strong> — Sum of Need scores for all packed items. Measures practical preparedness.</li>
+          <li><strong>Want total</strong> — Sum of Want scores for all packed items. Measures emotional care.</li>
+          <li><strong>Satisfaction</strong> — Weighted combination of Need% and Want%, penalized for extreme imbalance. Each character has a threshold (70–75%).</li>
+          <li><strong>Character reaction</strong> — Different dialogue based on satisfaction level (high/medium/low).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feedback Mappings -->
+    <div class="section-card" style="margin-top: 24px;">
+      <h3>Feedback Mappings</h3>
+
+      <div class="feedback-table">
+        <div class="feedback-row">
+          <div class="feedback-type">Immediate</div>
+          <div class="feedback-desc">Container full → cannot add more items. Voice line from character on each pack/unpack action.</div>
+        </div>
+        <div class="feedback-row">
+          <div class="feedback-type">Discovered over time</div>
+          <div class="feedback-desc">Need/Want scores revealed in item detail panel. Clue connections shown when examining items. Memory scenes reveal emotional significance.</div>
+        </div>
+        <div class="feedback-row">
+          <div class="feedback-type">End-of-game</div>
+          <div class="feedback-desc">Total Need/Want breakdown. Satisfaction percentage. Character reaction quote. Specific feedback about what was missing (low Need or low Want).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success/Failure -->
+    <div class="section-card" style="margin-top: 24px;">
+      <h3>Success & Failure Conditions</h3>
+      <p><strong>Success:</strong> Satisfaction above the character's threshold (70–75% depending on case). The character gives a warm, understanding reaction.</p>
+      <p><strong>Failure (low satisfaction):</strong> The character is disappointed. The player receives specific feedback about what was missing — too few practical items, too few emotional items, or both.</p>
+      <p><strong>No hard fail:</strong> The player doesn't "lose" — they always get a result. But low satisfaction clearly signals they didn't understand the character, encouraging a retry with better observation.</p>
+    </div>
+
+    <!-- Challenge Presets -->
+    <div class="section-card" style="margin-top: 24px;">
+      <h3>Challenge Presets — What Changes Between Cases</h3>
+
+      <div class="challenge-comparison">
+        <div class="challenge-col">
+          <h4>Case 1: Wealthy Lady</h4>
+          <ul>
+            <li>Container: 8 slots (large suitcase)</li>
+            <li>10 objects, sizes 1–3</li>
+            <li>Talkative character — gives feedback on every action</li>
+            <li>Clues are explicit text and art</li>
+            <li>Key challenge: She talks so much that the real clues are buried in noise</li>
+          </ul>
+        </div>
+        <div class="challenge-col">
+          <h4>Case 2: College Student</h4>
+          <ul>
+            <li>Container: 6 slots (smaller backpack)</li>
+            <li>9 objects, sizes 1–2</li>
+            <li>Quiet character — minimal verbal feedback</li>
+            <li>Clues are scribbles and doodles (harder to interpret)</li>
+            <li>Key challenge: The "REAL" letter vs. the "copy" — same content, different emotional weight</li>
+          </ul>
+        </div>
+        <div class="challenge-col">
+          <h4>Case 3: Elderly Man</h4>
+          <ul>
+            <li>Container: 7 slots (medium travel bag)</li>
+            <li>10 objects, sizes 1–3</li>
+            <li>Silent character — almost no verbal feedback</li>
+            <li>Clues are old photographs and newspaper clippings</li>
+            <li>Key challenge: Some items (chair, clock) can't fit — accepting what must be left behind</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="site-footer">
+    <p>To Leave — A packing puzzle game by Tianle Zhao · Built with WorkBuddy (CodeBuddy)</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

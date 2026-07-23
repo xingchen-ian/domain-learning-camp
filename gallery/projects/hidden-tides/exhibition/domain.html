@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidden Tides — Domain Knowledge &amp; System Design</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a href="index.html">Home</a>
+    <a href="domain.html" class="active">Domain &amp; System Design</a>
+    <a href="process.html">Development Process</a>
+    <a href="game.html">Play Game</a>
+  </nav>
+
+  <main class="content">
+
+    <h1>Domain Knowledge &amp; System Design</h1>
+
+    <!-- Domain -->
+    <div class="card">
+      <h2>Domain: Maritime Survival Judgment</h2>
+      <p><strong>Real-world parallel:</strong> At sea, the safest-looking route is often the most dangerous. Experienced sailors know that shallow rocky waters (which seem hazardous) can protect against larger predators, while deep open water invites threats you can't see until it's too late.</p>
+
+      <p><strong>Novice misconception:</strong> "Open water with fewer obstacles must be safer than crowded, rocky areas."</p>
+
+      <p><strong>Expert judgment:</strong> Danger is not visible — it hides where things look clear. The best route balances between visible hazards (stones) and invisible ones (sharks). Warning signs (flags, sounds) give you time to react if you pay attention to them early enough.</p>
+
+      <p><strong>Why this is playable:</strong> The game makes this trade-off concrete by putting sharks only in open water far from rocks, making stone fields genuinely safe from sharks but risky at high speed. The player physically experiences the tension between "looks safe" and "is safe."</p>
+    </div>
+
+    <!-- System Data Model -->
+    <div class="card">
+      <h2>System Data Model</h2>
+
+      <h3 style="font-size:1.1rem;margin-top:1rem;">Environment Data</h3>
+      <ul>
+        <li><strong>Rocks / Stone fields:</strong> Position, radius, angle — static obstacles that block shark spawning zones</li>
+        <li><strong>Sharks:</strong> Position, velocity, alive state, aggro range, fin visibility — spawn only in open water (far from rocks)</li>
+        <li><strong>Pirates:</strong> Position, velocity, alive state, flag range, shoot cooldown — patrol leftward toward player</li>
+        <li><strong>Crates:</strong> Position, collected state, content type (~55% have repair stones, rest are decoys)</li>
+        <li><strong>Pink River Zones:</strong> Position, size — heal health + energy when boat enters</li>
+        <li><strong>Wind:</strong> Active state, direction vector, strength, timer — periodic events that push the boat</li>
+        <li><strong>Finish Line:</strong> X position on right edge of map</li>
+      </ul>
+
+      <h3 style="font-size:1.1rem;margin-top:1rem;">Player-Controlled Data</h3>
+      <ul>
+        <li><strong>Boat position &amp; velocity:</strong> X/Y coordinates, heading angle</li>
+        <li><strong>Health:</strong> 0–100 HP, reduced by collisions, shark bites, pirate attacks, wind blow-away</li>
+        <li><strong>Energy:</strong> 0–100, consumed by attacks, slowly regenerates</li>
+        <li><strong>Repair stones:</strong> Consumable items that restore 25 HP each</li>
+        <li><strong>Input actions:</strong> Sail direction (WASD), attack (Space), repair (R), pause (P)</li>
+      </ul>
+
+      <h3 style="font-size:1.1rem;margin-top:1rem;">System-Calculated Results</h3>
+      <ul>
+        <li><strong>Shark aggro behavior:</strong> Sharks within range chase the player; fin becomes visible when close</li>
+        <li><strong>Pirate flag visibility:</strong> Flag appears at ~900px distance, gets clearer as pirate approaches (alpha increases)</li>
+        <li><strong>Pink zone healing:</strong> Continuous HP/energy restoration when inside zone</li>
+        <li><strong>Wind force application:</strong> Pushes boat in wind direction during active events</li>
+        <li><strong>Collision responses:</strong> Rock bounce + damage, enemy knockback, invulnerability frames</li>
+      </ul>
+
+      <h3 style="font-size:1.1rem;margin-top:1rem;">Feedback Translation</h3>
+      <ul>
+        <li><strong>Pirate flag:</strong> Appears at ~900px, alpha scales with proximity; skull symbol appears when very close</li>
+        <li><strong>Shark fin:</strong> Only surfaces when shark is within 350px of player (hidden danger revealed late)</li>
+        <li><strong>Wind sound:</strong> Web Audio-generated noise plays before/during wind event; visual streaks appear</li>
+        <li><strong>Pink river angels:</strong> Glowing pink area with angel symbols (✡); visual indicator of safety/rest</li>
+        <li><strong>Flash messages:</strong> Contextual text feedback for damage, pickups, warnings</li>
+      </ul>
+    </div>
+
+    <!-- Rules & Outcomes -->
+    <div class="card">
+      <h2>Rules, Boundaries &amp; Outcomes</h2>
+
+      <p><strong>Important states:</strong></p>
+      <ul>
+        <li><em>Living / Dead</em> — Health > 0 or Health <= 0</li>
+        <li><em>Safe / Dangerous</em> — Near rocks vs. in open water (invisible shark risk)</li>
+        <li><em>Tired / Alert</em> — Energy level affects attack capability</li>
+        <li><em>Limited time / Sufficient time</em> — Countdown timer per preset</li>
+      </ul>
+
+      <p><strong>Success condition:</strong> Reach the finish line on the right side of the map.</p>
+
+      <p><strong>Failure conditions:</strong></p>
+      <ul>
+        <li>Boat sinks (health reaches 0)</li>
+        <li>Blown away by wind off the playable sea area</li>
+        <li>Killed by repeated shark/pirate attacks</li>
+        <li>Time runs out</li>
+      </ul>
+    </div>
+
+    <!-- Challenge Presets -->
+    <div class="card">
+      <h2>Challenge Presets</h2>
+      <p>The three presets change system variables, not just visuals:</p>
+
+      <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+          <tr style="background:#eee;">
+            <th style="padding:8px;text-align:left;">Variable</th>
+            <th style="padding:8px;">Calm Passage</th>
+            <th style="padding:8px;">Shark Waters</th>
+            <th style="padding:8px;">Storm Run</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding:6px;">Sharks</td><td style="text-align:center;">4</td><td style="text-align:center;">8</td><td style="text-align:center;">10</td></tr>
+          <tr><td style="padding:6px;">Pirates</td><td style="text-align:center;">1</td><td style="text-align:center;">2</td><td style="text-align:center;">3</td></tr>
+          <tr><td style="padding:6px;">Rocks</td><td style="text-align:center;">22</td><td style="text-align:center;">28</td><td style="text-align:center;">32</td></tr>
+          <tr><td style="padding:6px;">Wind interval</td><td style="text-align:center;">18s</td><td style="text-align:center;">12s</td><td style="text-align:center;">7s</td></tr>
+          <tr><td style="padding:6px;">Wind strength</td><td style="text-align:center;">40</td><td style="text-align:center;">65</td><td style="text-align:center;">95</td></tr>
+          <tr><td style="padding:6px;">Pink zones</td><td style="text-align:center;">3 (large)</td><td style="text-align:center;">2 (medium)</td><td style="text-align:center;">1 (small)</td></tr>
+          <tr><td style="padding:6px;">Time limit</td><td style="text-align:center;">150s</td><td style="text-align:center;">165s</td><td style="text-align:center;">180s</td></tr>
+          <tr><td style="padding:6px;">Shark speed bonus</td><td style="text-align:center;">0</td><td style="text-align:center;">+25</td><td style="text-align:center;">+35</td></tr>
+          <tr><td style="padding:6px;">Pirate speed bonus</td><td style="text-align:center;">0</td><td style="text-align:center;">+10</td><td style="text-align:center;">+20</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <footer>Hidden Tides &mdash; Domain Knowledge &amp; System Design</footer>
+
+</body>
+</html>

@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INTERSTELLAR / 星际穿越</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: 'Georgia', 'SimSun', serif; user-select: none; -webkit-user-select: none; }
+canvas { display: block; position: absolute; top: 0; left: 0; }
+
+/* HUD overlay */
+#hud { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10; }
+.hud-panel { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 30px; }
+.hud-item { color: #c8d6e5; font-size: 14px; text-shadow: 0 0 8px rgba(100,180,255,0.6); }
+.hud-item .label { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 2px; }
+.hud-item .value { font-size: 20px; font-weight: bold; }
+.hud-center { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); text-align: center; }
+.hud-hint { color: rgba(200,214,229,0.5); font-size: 13px; letter-spacing: 1px; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+
+/* Docking hint */
+#dock-hint { position: absolute; top: 55%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 15; pointer-events: none; }
+#dock-hint .big { color: rgba(150,200,255,0.8); font-size: 22px; letter-spacing: 4px; text-shadow: 0 0 20px rgba(100,180,255,0.5); animation: pulse 2s ease-in-out infinite; }
+#dock-hint .small { color: rgba(150,200,255,0.5); font-size: 14px; letter-spacing: 2px; margin-top: 8px; }
+
+/* Warning flash */
+#warning { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #ff4444; font-size: 28px; font-weight: bold; text-shadow: 0 0 20px rgba(255,0,0,0.8); opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 20; }
+
+/* Menu overlay */
+#menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+#menu-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, rgba(8,18,35,0.65) 0%, rgba(3,8,18,0.85) 40%, rgba(0,0,0,0.95) 100%); }
+#menu-content { position: relative; z-index: 1; text-align: center; }
+#menu-title { color: #e8e8e8; font-size: 72px; letter-spacing: 12px; text-shadow: 0 0 40px rgba(100,160,255,0.5), 0 0 80px rgba(100,160,255,0.2), 0 0 120px rgba(80,140,220,0.1); margin-bottom: 10px; animation: titleShimmer 4s ease-in-out infinite; }
+@keyframes titleShimmer { 0%,100%{text-shadow: 0 0 40px rgba(100,160,255,0.5),0 0 80px rgba(100,160,255,0.2);} 50%{text-shadow: 0 0 55px rgba(130,190,255,0.7),0 0 100px rgba(130,190,255,0.35),0 0 150px rgba(100,160,255,0.15);} }
+#menu-subtitle { color: rgba(200,200,220,0.6); font-size: 18px; letter-spacing: 6px; margin-bottom: 50px; }
+#menu-quote { color: rgba(180,200,230,0.7); font-size: 16px; max-width: 600px; line-height: 1.8; font-style: italic; margin-bottom: 14px; }
+#menu-quote-cn { color: rgba(180,200,230,0.5); font-size: 14px; max-width: 600px; line-height: 1.8; margin-bottom: 60px; }
+#menu-btn { background: transparent; border: 1px solid rgba(150,180,220,0.5); color: #c8d6e5; padding: 14px 50px; font-size: 20px; letter-spacing: 8px; cursor: pointer; transition: all 0.4s; font-family: inherit; }
+#menu-btn:hover { background: rgba(100,160,255,0.15); border-color: rgba(100,160,255,0.8); box-shadow: 0 0 30px rgba(100,160,255,0.3); }
+#menu-version { color: rgba(150,170,200,0.4); font-size: 11px; margin-top: 40px; letter-spacing: 2px; }
+
+/* Result overlay */
+#result { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; background: rgba(0,0,0,0.8); }
+#result.show { display: flex; }
+#result-title { font-size: 48px; letter-spacing: 8px; margin-bottom: 15px; }
+#result-msg { font-size: 16px; color: rgba(200,210,230,0.7); margin-bottom: 40px; max-width: 500px; text-align: center; line-height: 1.8; }
+#result-btns { display: flex; gap: 20px; }
+#result-btn, #menu-btn2 { background: transparent; border: 1px solid rgba(150,180,220,0.5); color: #c8d6e5; padding: 12px 40px; font-size: 16px; letter-spacing: 6px; cursor: pointer; transition: all 0.4s; font-family: inherit; }
+#result-btn:hover, #menu-btn2:hover { background: rgba(100,160,255,0.15); border-color: rgba(100,160,255,0.8); }
+#menu-btn2 { border-color: rgba(180,150,100,0.4); color: rgba(200,180,140,0.8); font-size: 14px; letter-spacing: 4px; padding: 12px 30px; }
+#menu-btn2:hover { background: rgba(200,180,100,0.1); border-color: rgba(200,180,100,0.6); color: rgba(220,200,160,1); }
+
+/* Film grain */
+#grain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; opacity: 0.04; }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+<canvas id="grain"></canvas>
+<audio id="bgm" loop preload="auto" style="display:none">
+  <source src="assets/cornfield_chase.m4a" type="audio/mp4">
+</audio>
+
+<div id="hud" style="display:none">
+  <div class="hud-panel">
+    <div class="hud-item">
+      <div class="label">Fuel / 燃料</div>
+      <div class="value" id="fuel-val">100%</div>
+    </div>
+    <div class="hud-item" style="text-align:right">
+      <div class="label">Distance to Wormhole / 距虫洞</div>
+      <div class="value" id="dist-val">---</div>
+    </div>
+  </div>
+  <div class="hud-center">
+    <div class="hud-hint">Hold LMB to accelerate / 长按鼠标左键加速 | Release to drift / 松开滑行</div>
+  </div>
+</div>
+
+<div id="dock-hint" style="display:none">
+  <div class="big">HOLD LEFT CLICK TO LAUNCH / 长按左键发射</div>
+  <div class="small">Build up thrust to depart the Endurance / 蓄力脱离永恒号</div>
+</div>
+
+<div id="warning">⚠ DANGER ZONE / 危险区域 ⚠</div>
+
+<div id="menu">
+  <div id="menu-bg"></div>
+  <div id="menu-content">
+    <div id="menu-title">INTERSTELLAR</div>
+    <div id="menu-subtitle">星 际 穿 越</div>
+    <div id="menu-quote"></div>
+    <div id="menu-quote-cn"></div>
+    <button id="menu-btn" onclick="startGame()">START / 开 始</button>
+    <div id="menu-version">v2.0 | Yvette | WorkBuddy</div>
+  </div>
+</div>
+
+<div id="result">
+  <div id="result-title"></div>
+  <div id="result-msg"></div>
+  <div id="result-btns">
+    <button id="result-btn" onclick="restartGame()">RETRY / 重 试</button>
+    <button id="menu-btn2" onclick="goToMenu()">MAIN MENU / 主 菜 单</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// INTERSTELLAR v2.0 - Space Navigation Game
+// Based on celestial mechanics & orbital dynamics
+// ── Updates: Endurance mothership, physics-based orbit escape,
+//    enlarged celestial bodies, enhanced sci-fi lighting
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── CANVAS SETUP ─────────────────────────────────────────────────
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const grainCanvas = document.getElementById('grain');
+const grainCtx = grainCanvas.getContext('2d');
+
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  grainCanvas.width = W;
+  grainCanvas.height = H;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ─── GAME STATE ───────────────────────────────────────────────────
+const STATE = { MENU: 0, DOCKED: 1, PLAYING: 2, SUCCESS: 3, FAILURE: 4 };
+let gameState = STATE.MENU;
+let failReason = '';
+
+// ─── INTERSTELLAR QUOTES ──────────────────────────────────────────
+const quotes = [
+  { en: '"We used to look up at the sky and wonder at our place in the stars. Now we just look down, and worry about our place in the dirt."', cn: '"我们曾经仰望星空，思索我们在宇宙中的位置。而现在我们只是低头，忧心我们在泥土中的位置。" —— Cooper' },
+  { en: '"Do not go gentle into that good night. Rage, rage against the dying of the light."', cn: '"不要温和地走进那个良夜。怒斥，怒斥光明的消逝。" —— Professor Brand' },
+  { en: '"Love is the one thing we\'re capable of perceiving that transcends dimensions of time and space."', cn: '"爱是我们能够感知的超越时空维度的唯一事物。" —— Brand' },
+  { en: '"Mankind was born on Earth. It was never meant to die here."', cn: '"人类生于地球，但绝不注定葬身于此。" —— Cooper' },
+  { en: '"We\'ve always defined ourselves by the ability to overcome the impossible."', cn: '"我们一直以克服不可能的能力定义自己。" —— Cooper' },
+  { en: '"Once you\'re a parent, you\'re the ghost of your children\'s future."', cn: '"一旦为人父母，你就成了孩子未来的幽灵。" —— Cooper' },
+  { en: '"Time is relative, okay? It can stretch and it can squeeze, but it can\'t run backwards."', cn: '"时间是相对的，它可以拉伸，可以压缩，但不能倒流。" —— Cooper' },
+  { en: '"Murphy\'s law doesn\'t mean that something bad will happen. It means that whatever can happen, will happen."', cn: '"墨菲定律不是说坏事一定会发生，而是说可能发生的事，终将发生。" —— Cooper' },
+];
+
+function randomQuote() {
+  const q = quotes[Math.floor(Math.random() * quotes.length)];
+  document.getElementById('menu-quote').textContent = q.en;
+  document.getElementById('menu-quote-cn').textContent = q.cn;
+}
+randomQuote();
+
+// ─── WORLD CONFIG (enlarged for bigger planets/orbits) ───────────
+const WORLD_W = 6800;
+const WORLD_H = 4600;
+
+// ─── CAMERA ───────────────────────────────────────────────────────
+let camera = { x: 0, y: 0 };
+
+// ─── STARFIELD (enhanced brightness) ──────────────────────────────
+class Star {
+  constructor(depth) {
+    this.x = Math.random() * WORLD_W;
+    this.y = Math.random() * WORLD_H;
+    this.depth = depth;
+    this.size = 0.5 + Math.random() * (2.0 - depth * 0.5);
+    this.brightness = 0.4 + Math.random() * 0.6;
+    this.twinkleSpeed = 0.005 + Math.random() * 0.025;
+    this.twinkleOffset = Math.random() * Math.PI * 2;
+    this.hue = Math.random() < 0.2 ? (Math.random() < 0.5 ? 210 : 30) : 0;
+    this.crossGlow = Math.random() < 0.08; // 8% stars have cross-shaped glow
+  }
+}
+
+const stars = [];
+for (let i = 0; i < 1200; i++) stars.push(new Star(0));
+for (let i = 0; i < 700; i++) stars.push(new Star(1));
+for (let i = 0; i < 350; i++) stars.push(new Star(2));
+
+// ─── SHOOTING STARS (enhanced flash) ──────────────────────────────
+class ShootingStar {
+  constructor() { this.reset(); this.life = Math.random() * this.maxLife; }
+  reset() {
+    this.x = Math.random() * WORLD_W;
+    this.y = Math.random() * WORLD_H * 0.5;
+    this.len = 80 + Math.random() * 200;
+    this.speed = 10 + Math.random() * 18;
+    this.angle = Math.PI / 4 + Math.random() * Math.PI / 4;
+    this.maxLife = 40 + Math.random() * 60;
+    this.life = 0;
+    this.alpha = 1;
+    this.thickness = 1.5 + Math.random() * 2.5;
+    this.flash = 0; // bright flash at head
+  }
+  update() {
+    this.life++;
+    if (this.life > this.maxLife) this.reset();
+    const t = this.life / this.maxLife;
+    this.alpha = t < 0.15 ? t / 0.15 : (1 - (t - 0.15) / 0.85);
+    this.flash = t < 0.1 ? 1 - t / 0.1 : 0;
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+  }
+  draw(ctx, cam) {
+    const sx = this.x - cam.x, sy = this.y - cam.y;
+    const ex = sx - Math.cos(this.angle) * this.len * (1 - this.life / this.maxLife);
+    const ey = sy - Math.sin(this.angle) * this.len * (1 - this.life / this.maxLife);
+    const grad = ctx.createLinearGradient(sx, sy, ex, ey);
+    grad.addColorStop(0, `rgba(255,255,255,${this.alpha})`);
+    grad.addColorStop(0.3, `rgba(180,220,255,${this.alpha * 0.6})`);
+    grad.addColorStop(1, 'rgba(100,150,255,0)');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = this.thickness;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+    // Flash head
+    if (this.flash > 0) {
+      const fgrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 12);
+      fgrad.addColorStop(0, `rgba(255,255,255,${this.flash})`);
+      fgrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = fgrad;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+const shootingStars = [];
+for (let i = 0; i < 24; i++) shootingStars.push(new ShootingStar());
+
+// ─── NEBULA (enhanced vibrancy) ──────────────────────────────────
+class NebulaParticle {
+  constructor() {
+    this.x = Math.random() * WORLD_W;
+    this.y = Math.random() * WORLD_H;
+    this.radius = 80 + Math.random() * 280;
+    this.alpha = 0.008 + Math.random() * 0.022;
+    this.hue = [200, 220, 240, 260, 280, 30, 340][Math.floor(Math.random() * 7)];
+    this.drift = (Math.random() - 0.5) * 0.2;
+  }
+}
+
+const nebulae = [];
+for (let i = 0; i < 60; i++) nebulae.push(new NebulaParticle());
+
+// ─── COSMIC DUST (floating shimmer particles) ───────────────────
+class CosmicDust {
+  constructor() {
+    this.x = Math.random() * WORLD_W;
+    this.y = Math.random() * WORLD_H;
+    this.size = 0.4 + Math.random() * 2.5;
+    this.brightness = 0.15 + Math.random() * 0.6;
+    this.speed = 0.1 + Math.random() * 0.5;
+    this.angle = Math.random() * Math.PI * 2;
+    this.wobbleAmp = 0.3 + Math.random() * 2;
+    this.wobbleSpeed = 0.003 + Math.random() * 0.015;
+    this.wobbleOffset = Math.random() * Math.PI * 2;
+    this.hue = [30, 200, 220, 260, 330, 40, 180][Math.floor(Math.random() * 7)];
+    this.flickerSpeed = 0.01 + Math.random() * 0.05;
+    this.flickerOffset = Math.random() * Math.PI * 2;
+  }
+  update() {
+    this.x += Math.cos(this.angle) * this.speed * 0.3;
+    this.y += Math.sin(this.angle) * this.speed * 0.3;
+    // Wrap around world
+    if (this.x < -50) this.x = WORLD_W + 50;
+    if (this.x > WORLD_W + 50) this.x = -50;
+    if (this.y < -50) this.y = WORLD_H + 50;
+    if (this.y > WORLD_H + 50) this.y = -50;
+    // Gradual angle drift
+    this.angle += (Math.random() - 0.5) * 0.002;
+  }
+}
+const cosmicDust = [];
+for (let i = 0; i < 300; i++) cosmicDust.push(new CosmicDust());
+
+// ─── PARTICLE SYSTEM ──────────────────────────────────────────────
+class Particle {
+  constructor(x, y, vx, vy, life, color, size) {
+    this.x = x; this.y = y;
+    this.vx = vx; this.vy = vy;
+    this.life = life; this.maxLife = life;
+    this.color = color;
+    this.size = size || 2;
+  }
+  update() { this.x += this.vx; this.y += this.vy; this.life--; return this.life > 0; }
+  draw(ctx, cam) {
+    const a = this.life / this.maxLife;
+    ctx.fillStyle = this.color.replace('1)', `${a})`);
+    ctx.beginPath();
+    ctx.arc(this.x - cam.x, this.y - cam.y, this.size * a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+let particles = [];
+
+// ─── MOTHERSHIP (Endurance-style) ─────────────────────────────────
+// The Endurance from Interstellar: a rotating ring space station
+// with a central hub and modular pods on the outer ring.
+class Mothership {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.radius = 140;           // outer ring radius
+    this.ringWidth = 18;         // thickness of the ring
+    this.hubRadius = 35;         // central command hub
+    this.rotationSpeed = 0.006;  // slow rotation
+    this.angle = 0;
+    this.glowPulse = 0;
+    // Module pods on the ring (like Endurance's cargo pods)
+    this.pods = [];
+    const podCount = 12;
+    for (let i = 0; i < podCount; i++) {
+      this.pods.push({
+        angle: (i / podCount) * Math.PI * 2,
+        size: 12 + Math.random() * 4,
+        lit: Math.random() < 0.7
+      });
+    }
+    // Spokes connecting hub to ring
+    this.spokeCount = 6;
+    // Docking position for the ship (on outer ring)
+    this.dockAngle = 0; // will be updated each frame
+  }
+
+  getDockPoint() {
+    return {
+      x: this.x + Math.cos(this.dockAngle) * this.radius,
+      y: this.y + Math.sin(this.dockAngle) * this.radius
+    };
+  }
+
+  // Tangent direction at dock point (direction of rotation)
+  getDockTangent() {
+    // If rotation is counter-clockwise (positive angle), tangent is perpendicular
+    const tx = -Math.sin(this.dockAngle);
+    const ty = Math.cos(this.dockAngle);
+    return { tx, ty };
+  }
+
+  update() {
+    this.angle += this.rotationSpeed;
+    this.dockAngle = this.angle; // ship docks at current rotation angle
+    this.glowPulse += 0.03;
+  }
+}
+
+// ─── SPACESHIP ────────────────────────────────────────────────────
+class Spaceship {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.vx = 0; this.vy = 0;
+    this.angle = 0;
+    this.fuel = 100;
+    this.orbiting = null;
+    this.orbitAngle = 0;
+    this.trail = [];
+    this.alive = true;
+    this.engineGlow = 0;
+    this.docked = true;        // starts docked on mothership
+    this.launchCharge = 0;    // charge built up while holding to launch
+    this.orbitEscapeCharge = 0; // charge built up while in orbit to escape
+    this.orbitEscapeThreshold = 1.0; // when charge reaches this, escape
+  }
+
+  reset(x, y) {
+    this.x = x; this.y = y;
+    this.vx = 0; this.vy = 0;
+    this.angle = 0;
+    this.fuel = 100;
+    this.orbiting = null;
+    this.orbitAngle = 0;
+    this.trail = [];
+    this.alive = true;
+    this.engineGlow = 0;
+    this.docked = true;
+    this.launchCharge = 0;
+    this.orbitEscapeCharge = 0;
+  }
+}
+
+// ─── PLANET (enlarged) ─────────────────────────────────────────────
+class Planet {
+  constructor(x, y, orbitR, planetR, speed, dir) {
+    this.x = x; this.y = y;
+    this.orbitRadius = orbitR;
+    this.planetRadius = planetR;
+    this.rotationSpeed = speed;
+    this.rotationDir = dir;
+    this.angle = Math.random() * Math.PI * 2;
+    this.color = randomPlanetColor();
+    this.craters = [];
+    const craterCount = 12 + Math.floor(Math.random() * 16);
+    for (let i = 0; i < craterCount; i++) {
+      this.craters.push({
+        angle: Math.random() * Math.PI * 2,
+        dist: 0.15 + Math.random() * 0.75,
+        r: 0.04 + Math.random() * 0.22,
+        depth: 0.3 + Math.random() * 0.7
+      });
+    }
+    // Surface bands (gas-giant style for some planets)
+    this.hasBands = Math.random() < 0.35;
+    this.bandCount = 3 + Math.floor(Math.random() * 4);
+    // Glow
+    this.glowPulse = Math.random() * Math.PI * 2;
+    this.glowSpeed = 0.01 + Math.random() * 0.03;
+
+    // ── Enhanced lighting data ──
+    const baseMatch = this.color.match(/\d+/g);
+    this.baseR = parseInt(baseMatch[0]);
+    this.baseG = parseInt(baseMatch[1]);
+    this.baseB = parseInt(baseMatch[2]);
+    // Each planet lit from a different direction for visual variety
+    this.lightAngle = Math.random() * Math.PI * 2;
+    // Specular shininess varies per planet
+    this.specularIntensity = 0.35 + Math.random() * 0.5;
+    // Derived bright glow color (for outer bloom)
+    this.glowR = Math.min(255, this.baseR + 90);
+    this.glowG = Math.min(255, this.baseG + 90);
+    this.glowB = Math.min(255, this.baseB + 90);
+    // Derived atmosphere color (tinted by planet color)
+    this.atmoR = Math.min(255, this.baseR + 70);
+    this.atmoG = Math.min(255, this.baseG + 70);
+    this.atmoB = Math.min(255, this.baseB + 70);
+    // Atmosphere color string (kept for compatibility)
+    this.atmoColor = this.hasBands
+      ? `rgba(255,200,120,0.12)`
+      : `rgba(150,200,255,0.1)`;
+  }
+
+  getOrbitPoint(angle) {
+    return {
+      x: this.x + Math.cos(angle) * this.orbitRadius,
+      y: this.y + Math.sin(angle) * this.orbitRadius
+    };
+  }
+}
+
+// ─── BLACK HOLE (enhanced) ────────────────────────────────────────
+class BlackHole {
+  constructor(x, y, mass, eventHorizon) {
+    this.x = x; this.y = y;
+    this.mass = mass;
+    this.eventHorizon = eventHorizon;
+    this.gravityRadius = eventHorizon * 9;
+    this.accretionAngle = 0;
+    this.accretionParticles = [];
+    for (let i = 0; i < 80; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = eventHorizon * (1.2 + Math.random() * 2.2);
+      this.accretionParticles.push({ angle: a, radius: r, speed: 0.025 / (r / eventHorizon), life: 1, maxLife: 60 + Math.random() * 120 });
+    }
+    // Photon ring
+    this.photonRingAngle = 0;
+  }
+
+  gravityAt(px, py) {
+    const dx = this.x - px;
+    const dy = this.y - py;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < this.eventHorizon * 0.8) return { ax: 0, ay: 0, dist, inside: true };
+    if (dist > this.gravityRadius) return { ax: 0, ay: 0, dist, inside: false };
+    const force = this.mass / (dist * dist);
+    const ax = (dx / dist) * force;
+    const ay = (dy / dist) * force;
+    return { ax, ay, dist, inside: dist < this.eventHorizon };
+  }
+}
+
+// ─── OBSTACLE ─────────────────────────────────────────────────────
+class Obstacle {
+  constructor(x, y, radius) {
+    this.x = x; this.y = y;
+    this.radius = radius;
+    this.angle = Math.random() * Math.PI * 2;
+    this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+    this.vertices = [];
+    const n = 7 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const r = radius * (0.7 + Math.random() * 0.3);
+      this.vertices.push({ angle: a, r });
+    }
+    this.craters = [];
+    for (let i = 0; i < 3 + Math.floor(Math.random() * 5); i++) {
+      this.craters.push({
+        angle: Math.random() * Math.PI * 2,
+        dist: 0.1 + Math.random() * 0.6,
+        r: 0.05 + Math.random() * 0.15
+      });
+    }
+  }
+}
+
+// ─── WORMHOLE (enhanced) ──────────────────────────────────────────
+class Wormhole {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.radius = 300;
+    this.angle = 0;
+    this.pulse = 0;
+  }
+}
+
+// ─── COLOR UTILS ──────────────────────────────────────────────────
+function randomPlanetColor() {
+  const palettes = [
+    { r: 60, g: 80, b: 140 },    // Ice blue
+    { r: 180, g: 120, b: 70 },   // Sandy orange
+    { r: 70, g: 130, b: 90 },    // Teal
+    { r: 160, g: 90, b: 70 },    // Rust red
+    { r: 100, g: 100, b: 150 },  // Purple-blue
+    { r: 80, g: 140, b: 160 },   // Cyan
+    { r: 190, g: 150, b: 100 },  // Gold-brown
+    { r: 50, g: 100, b: 100 },   // Dark teal
+    { r: 140, g: 80, b: 130 },   // Magenta
+    { r: 210, g: 170, b: 80 },   // Amber
+    { r: 90, g: 110, b: 170 },   // Deep blue
+  ];
+  const p = palettes[Math.floor(Math.random() * palettes.length)];
+  return `rgb(${p.r + Math.floor(Math.random()*30-15)},${p.g + Math.floor(Math.random()*30-15)},${p.b + Math.floor(Math.random()*30-15)})`;
+}
+
+// ─── LEVEL GENERATOR (enlarged planets/orbits) ────────────────────
+let ship, mothership, planets, blackHoles, obstacles, wormhole;
+
+function generateLevel() {
+  // Wormhole at far right
+  const whX = WORLD_W - 350 + Math.random() * 100;
+  const whY = WORLD_H / 2 + (Math.random() - 0.5) * 1000;
+  wormhole = new Wormhole(whX, whY);
+
+  // Mothership at left (Endurance)
+  const msX = 280;
+  const msY = WORLD_H / 2 + (Math.random() - 0.5) * 400;
+  mothership = new Mothership(msX, msY);
+
+  // Ship starts docked on mothership
+  ship = new Spaceship(msX, msY);
+  ship.docked = true;
+
+  // Generate planets (5-7) — ENLARGED & BEAUTIFIED
+  const numPlanets = 5 + Math.floor(Math.random() * 3);
+  planets = [];
+  const occupiedAreas = [
+    { x: msX, y: msY, r: 350 },
+    { x: whX, y: whY, r: 300 }
+  ];
+
+    for (let i = 0; i < numPlanets; i++) {
+    let px, py, orbitR, planetR;
+    let attempts = 0;
+    do {
+      // ENLARGED: orbit 200-520, planet radius 55-140
+      orbitR = 450 + Math.random() * 250;
+      planetR = 150 + Math.random() * 90;
+      // Ensure orbit stays well within world bounds (with safety margin)
+      px = orbitR + 120 + Math.random() * (WORLD_W - 2 * orbitR - 240);
+      py = orbitR + 120 + Math.random() * (WORLD_H - 2 * orbitR - 240);
+      attempts++;
+    } while (attempts < 80 && occupiedAreas.some(a => {
+      const d = Math.hypot(px - a.x, py - a.y);
+      return d < orbitR + a.r + 80;
+    }));
+
+    const speed = 0.002 + Math.random() * 0.012;
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    planets.push(new Planet(px, py, orbitR, planetR, speed, dir));
+    occupiedAreas.push({ x: px, y: py, r: orbitR + planetR + 50 });
+  }
+
+  // Generate black holes (1-2, guaranteed)
+  const numBH = 1 + Math.floor(Math.random() * 2);
+  blackHoles = [];
+  let bhPlacedCount = 0;
+  for (let i = 0; i < numBH; i++) {
+    let bx, by, eventH;
+    let attempts = 0;
+    do {
+      bx = 800 + Math.random() * (WORLD_W - 1600);
+      by = 400 + Math.random() * (WORLD_H - 800);
+      eventH = 300;
+      attempts++;
+    } while (attempts < 200 && occupiedAreas.some(a => {
+      const d = Math.hypot(bx - a.x, by - a.y);
+      return d < eventH * 9 + a.r + 120;
+    }));
+    const overlaps = occupiedAreas.some(a => {
+      const d = Math.hypot(bx - a.x, by - a.y);
+      return d < eventH * 9 + a.r + 120;
+    });
+    if (!overlaps) {
+      blackHoles.push(new BlackHole(bx, by, 10000 + Math.random() * 5000, eventH));
+      occupiedAreas.push({ x: bx, y: by, r: eventH * 9 });
+      bhPlacedCount++;
+    }
+  }
+  // Guarantee: if none placed, force-place one with extended search
+  while (bhPlacedCount === 0) {
+    let bx, by, eventH = 300;
+    let attempts = 0;
+    do {
+      bx = 400 + Math.random() * (WORLD_W - 800);
+      by = 200 + Math.random() * (WORLD_H - 400);
+      attempts++;
+    } while (attempts < 500 && occupiedAreas.some(a => {
+      const d = Math.hypot(bx - a.x, by - a.y);
+      return d < eventH * 9 + a.r + 120;
+    }));
+    const overlaps = occupiedAreas.some(a => {
+      const d = Math.hypot(bx - a.x, by - a.y);
+      return d < eventH * 9 + a.r + 120;
+    });
+    if (!overlaps) {
+      blackHoles.push(new BlackHole(bx, by, 10000 + Math.random() * 5000, eventH));
+      occupiedAreas.push({ x: bx, y: by, r: eventH * 9 });
+      bhPlacedCount++;
+    } else {
+      // Last resort: place it anyway at a corner-ish safe zone
+      const sx = WORLD_W * 0.15, sy = WORLD_H * 0.15;
+      blackHoles.push(new BlackHole(sx, sy, 10000, eventH));
+      occupiedAreas.push({ x: sx, y: sy, r: eventH * 9 });
+      bhPlacedCount++;
+    }
+  }
+
+  // Generate obstacles (3-7)
+  const numObs = 3 + Math.floor(Math.random() * 5);
+  obstacles = [];
+  for (let i = 0; i < numObs; i++) {
+    let ox, oy, or;
+    let attempts = 0;
+    do {
+      ox = 350 + Math.random() * (WORLD_W - 700);
+      oy = 180 + Math.random() * (WORLD_H - 360);
+      or = 22 + Math.random() * 50;
+      attempts++;
+    } while (attempts < 60 && (
+      occupiedAreas.some(a => Math.hypot(ox - a.x, oy - a.y) < or + a.r + 40) ||
+      Math.hypot(ox - msX, oy - msY) < or + 120 ||
+      Math.hypot(ox - whX, oy - whY) < or + 180
+    ));
+    obstacles.push(new Obstacle(ox, oy, or));
+  }
+
+  // Reset ship to docked state
+  ship.reset(msX, msY);
+  ship.docked = true;
+  particles = [];
+}
+
+// ─── INPUT ────────────────────────────────────────────────────────
+let mouseDown = false;
+let mouseRightDown = false;
+let mouseX = 0, mouseY = 0;
+
+canvas.addEventListener('mousedown', (e) => { if (e.button === 0) mouseDown = true; if (e.button === 2) mouseRightDown = true; });
+canvas.addEventListener('mouseup', (e) => { if (e.button === 0) mouseDown = false; if (e.button === 2) mouseRightDown = false; });
+canvas.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+// ─── PHYSICS CONSTANTS ────────────────────────────────────────────
+const SHIP_ACCEL = 0.18;
+const SHIP_DECEL = 0.985;
+const FUEL_ACCEL_COST = 0.08;
+const ORBIT_CAPTURE_THRESHOLD = 150;
+const LAUNCH_CHARGE_RATE = 0.018;     // charge rate for mothership launch
+const LAUNCH_THRESHOLD = 1.0;          // threshold to launch from mothership
+const ORBIT_ESCAPE_CHARGE_RATE = 0.012; // charge rate for orbit escape
+const ORBIT_ESCAPE_THRESHOLD = 1.0;     // threshold to escape orbit
+
+// ─── PHYSICS UPDATE ───────────────────────────────────────────────
+function updatePhysics() {
+  if (gameState !== STATE.PLAYING && gameState !== STATE.DOCKED) return;
+  if (!ship.alive) return;
+
+  // ═══ DOCKED STATE: on mothership ═══
+  if (ship.docked) {
+    mothership.update();
+
+    // Ship follows dock point
+    const dp = mothership.getDockPoint();
+    ship.x = dp.x;
+    ship.y = dp.y;
+
+    // Ship faces tangent direction
+    const tangent = mothership.getDockTangent();
+    ship.angle = Math.atan2(tangent.ty, tangent.tx);
+
+    // Build launch charge
+    if (mouseDown && ship.fuel > 0) {
+      ship.launchCharge = Math.min(LAUNCH_THRESHOLD, ship.launchCharge + LAUNCH_CHARGE_RATE);
+      ship.engineGlow = ship.launchCharge;
+
+      // Engine particle effects while charging
+      if (Math.random() < ship.launchCharge * 0.8) {
+        const ex = ship.x - Math.cos(ship.angle) * 25 + (Math.random() - 0.5) * 10;
+        const ey = ship.y - Math.sin(ship.angle) * 25 + (Math.random() - 0.5) * 10;
+        particles.push(new Particle(ex, ey, -Math.cos(ship.angle) * 1.5, -Math.sin(ship.angle) * 1.5, 15 + Math.random() * 10, 'rgba(100,200,255,1)', 1.5 + ship.launchCharge * 2));
+      }
+
+      // Launch when threshold reached
+      if (ship.launchCharge >= LAUNCH_THRESHOLD) {
+        // Eject tangentially with built-up speed
+        const launchSpeed = 6 + ship.launchCharge * 4;
+        ship.vx = tangent.tx * launchSpeed;
+        ship.vy = tangent.ty * launchSpeed;
+        ship.docked = false;
+        ship.fuel -= 5;
+        ship.engineGlow = 1;
+        gameState = STATE.PLAYING;
+        document.getElementById('dock-hint').style.display = 'none';
+
+        // Launch burst particles
+        for (let i = 0; i < 25; i++) {
+          const a = ship.angle + Math.PI + (Math.random() - 0.5) * 1.8;
+          particles.push(new Particle(ship.x, ship.y, Math.cos(a) * (3 + Math.random() * 4), Math.sin(a) * (3 + Math.random() * 4), 25 + Math.random() * 20, 'rgba(120,200,255,1)', 2.5));
+        }
+        // Forward burst
+        for (let i = 0; i < 8; i++) {
+          const a = ship.angle + (Math.random() - 0.5) * 0.5;
+          particles.push(new Particle(ship.x, ship.y, Math.cos(a) * 2, Math.sin(a) * 2, 15 + Math.random() * 10, 'rgba(200,230,255,1)', 1.5));
+        }
+      }
+    } else {
+      ship.launchCharge = Math.max(0, ship.launchCharge - 0.008);
+      ship.engineGlow = ship.launchCharge * 0.5;
+    }
+
+    // Camera follows ship
+    updateCamera();
+    return;
+  }
+
+  // ═══ PLAYING STATE ═══
+
+  // Apply black hole gravity
+  let totalGravAx = 0, totalGravAy = 0;
+  for (const bh of blackHoles) {
+    const g = bh.gravityAt(ship.x, ship.y);
+    totalGravAx += g.ax;
+    totalGravAy += g.ay;
+    if (g.inside) {
+      ship.alive = false;
+      gameState = STATE.FAILURE;
+      failReason = 'blackhole';
+      for (let i = 0; i < 50; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = 2 + Math.random() * 5;
+        particles.push(new Particle(ship.x, ship.y, Math.cos(a) * sp, Math.sin(a) * sp, 40 + Math.random() * 30, 'rgba(200,100,255,1)', 3));
+      }
+      return;
+    }
+  }
+
+  // ─── Orbit escape with charge buildup (physics-based) ───
+  if (ship.orbiting && mouseDown && ship.fuel > 0) {
+    // Build up escape charge
+    ship.orbitEscapeCharge = Math.min(ORBIT_ESCAPE_THRESHOLD, ship.orbitEscapeCharge + ORBIT_ESCAPE_CHARGE_RATE);
+    ship.fuel -= FUEL_ACCEL_COST * 1.5;
+    ship.engineGlow = ship.orbitEscapeCharge;
+
+    // Engine particles while charging in orbit
+    if (Math.random() < 0.6) {
+      const p = ship.orbiting;
+      const tangentAngle = ship.orbitAngle + Math.PI / 2 * p.rotationDir;
+      const ex = ship.x + Math.cos(tangentAngle + Math.PI) * 15 + (Math.random() - 0.5) * 8;
+      const ey = ship.y + Math.sin(tangentAngle + Math.PI) * 15 + (Math.random() - 0.5) * 8;
+      particles.push(new Particle(ex, ey, Math.cos(tangentAngle + Math.PI) * 1.5, Math.sin(tangentAngle + Math.PI) * 1.5, 12 + Math.random() * 10, 'rgba(100,200,255,1)', 1.5 + ship.orbitEscapeCharge * 1.5));
+    }
+
+    // Escape when threshold reached — physics: tangential velocity must exceed escape velocity
+    if (ship.orbitEscapeCharge >= ORBIT_ESCAPE_THRESHOLD) {
+      const p = ship.orbiting;
+      // Tangent direction at current orbit position
+      const tx = -Math.sin(ship.orbitAngle) * p.rotationDir;
+      const ty = Math.cos(ship.orbitAngle) * p.rotationDir;
+      // Escape velocity = orbital speed + boost from accumulated thrust
+      const orbitalSpeed = p.rotationSpeed * p.orbitRadius;
+      const escapeBoost = 4 + ship.orbitEscapeCharge * 6;
+      ship.vx = tx * (orbitalSpeed + escapeBoost);
+      ship.vy = ty * (orbitalSpeed + escapeBoost);
+      ship.orbiting = null;
+      ship.orbitEscapeCharge = 0;
+      ship.engineGlow = 1;
+
+      // Escape burst particles
+      for (let i = 0; i < 15; i++) {
+        const a = Math.atan2(-ty, -tx) + (Math.random() - 0.5) * 1.5;
+        particles.push(new Particle(ship.x, ship.y, Math.cos(a) * (3 + Math.random() * 4), Math.sin(a) * (3 + Math.random() * 4), 20 + Math.random() * 15, 'rgba(120,200,255,1)', 2));
+      }
+    }
+  } else if (!ship.orbiting && mouseDown && ship.fuel > 0) {
+    // ─── Free flight acceleration ───
+    ship.vx += Math.cos(ship.angle) * SHIP_ACCEL;
+    ship.vy += Math.sin(ship.angle) * SHIP_ACCEL;
+    ship.fuel -= FUEL_ACCEL_COST;
+    ship.engineGlow = Math.min(1, ship.engineGlow + 0.15);
+
+    for (let i = 0; i < 3; i++) {
+      const ex = ship.x - Math.cos(ship.angle) * 20 + (Math.random() - 0.5) * 8;
+      const ey = ship.y - Math.sin(ship.angle) * 20 + (Math.random() - 0.5) * 8;
+      particles.push(new Particle(ex, ey, -Math.cos(ship.angle) * 2 + (Math.random()-0.5)*1, -Math.sin(ship.angle) * 2 + (Math.random()-0.5)*1, 15 + Math.random() * 15, 'rgba(100,200,255,1)', 2));
+    }
+  } else {
+    ship.engineGlow = Math.max(0, ship.engineGlow - 0.05);
+    // Decay orbit escape charge if released while orbiting
+    if (ship.orbiting) {
+      ship.orbitEscapeCharge = Math.max(0, ship.orbitEscapeCharge - 0.006);
+    }
+  }
+
+  // Apply black hole gravity
+  ship.vx += totalGravAx;
+  ship.vy += totalGravAy;
+
+  // Reverse thrust: hold RMB to push away from black hole when in gravity range
+  if (mouseRightDown && (totalGravAx !== 0 || totalGravAy !== 0)) {
+    const grMag = Math.sqrt(totalGravAx * totalGravAx + totalGravAy * totalGravAy);
+    if (grMag > 0) {
+      const thrustForce = 0.25;
+      ship.vx -= (totalGravAx / grMag) * thrustForce;
+      ship.vy -= (totalGravAy / grMag) * thrustForce;
+      // Engine glow particles in reverse direction
+      if (Math.random() < 0.5 && ship.fuel > 0) {
+        const a = Math.atan2(totalGravAy, totalGravAx);
+        particles.push(new Particle(ship.x, ship.y, Math.cos(a) * 3, Math.sin(a) * 3, 10 + Math.random() * 8, 'rgba(255,150,80,1)', 1.2));
+      }
+    }
+  }
+
+  // Friction when not orbiting and not accelerating
+  if (!ship.orbiting && !mouseDown) {
+    ship.vx *= SHIP_DECEL;
+    ship.vy *= SHIP_DECEL;
+  }
+
+  // Update position
+  ship.x += ship.vx;
+  ship.y += ship.vy;
+
+  const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+  if (speed > 0.3) {
+    ship.angle = Math.atan2(ship.vy, ship.vx);
+  }
+
+  // ── Boundary collision: touching the edge of space = failure ──
+  // A small margin so the ship visually reaches the border before failing
+  const BOUNDARY_MARGIN = 15;
+  if (!ship.docked && (
+    ship.x <= BOUNDARY_MARGIN || ship.x >= WORLD_W - BOUNDARY_MARGIN ||
+    ship.y <= BOUNDARY_MARGIN || ship.y >= WORLD_H - BOUNDARY_MARGIN
+  )) {
+    // Snap exactly to the edge for visual clarity
+    ship.x = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_W - BOUNDARY_MARGIN, ship.x));
+    ship.y = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_H - BOUNDARY_MARGIN, ship.y));
+    ship.alive = false;
+    gameState = STATE.FAILURE;
+    failReason = 'boundary';
+    for (let i = 0; i < 40; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 2 + Math.random() * 5;
+      particles.push(new Particle(ship.x, ship.y, Math.cos(a) * sp, Math.sin(a) * sp, 35 + Math.random() * 25, 'rgba(255,100,100,1)', 3));
+    }
+    return;
+  }
+  // Safety clamp (should never trigger now, but keeps ship in-bounds during edge approach)
+  ship.x = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_W - BOUNDARY_MARGIN, ship.x));
+  ship.y = Math.max(BOUNDARY_MARGIN, Math.min(WORLD_H - BOUNDARY_MARGIN, ship.y));
+
+  // Check orbital capture (only if not already orbiting)
+  if (!ship.orbiting) {
+    for (const p of planets) {
+      const dx = ship.x - p.x;
+      const dy = ship.y - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const targetDist = p.orbitRadius;
+
+      if (Math.abs(dist - targetDist) < ORBIT_CAPTURE_THRESHOLD && speed < 6) {
+        ship.orbiting = p;
+        ship.orbitAngle = Math.atan2(dy, dx);
+        ship.vx = 0;
+        ship.vy = 0;
+        ship.orbitEscapeCharge = 0;
+        ship.engineGlow = 0;
+
+        for (let i = 0; i < 25; i++) {
+          const a = Math.random() * Math.PI * 2;
+          particles.push(new Particle(ship.x, ship.y, Math.cos(a) * 2, Math.sin(a) * 2, 25 + Math.random() * 20, 'rgba(255,255,200,1)', 1.5));
+        }
+        break;
+      }
+    }
+  }
+
+  // Update orbital position
+  if (ship.orbiting) {
+    ship.orbitAngle += ship.orbiting.rotationSpeed * ship.orbiting.rotationDir;
+    if (ship.orbitAngle > Math.PI * 2) ship.orbitAngle -= Math.PI * 2;
+    if (ship.orbitAngle < 0) ship.orbitAngle += Math.PI * 2;
+
+    const op = ship.orbiting.getOrbitPoint(ship.orbitAngle);
+    ship.x = op.x;
+    ship.y = op.y;
+    ship.angle = ship.orbitAngle + Math.PI / 2 * ship.orbiting.rotationDir;
+  }
+
+  // Check obstacle collision
+  for (const obs of obstacles) {
+    if (Math.hypot(ship.x - obs.x, ship.y - obs.y) < obs.radius + 12) {
+      ship.alive = false;
+      gameState = STATE.FAILURE;
+      failReason = 'obstacle';
+      for (let i = 0; i < 35; i++) {
+        const a = Math.random() * Math.PI * 2;
+        particles.push(new Particle(ship.x, ship.y, Math.cos(a) * 4, Math.sin(a) * 4, 30 + Math.random() * 20, 'rgba(255,150,50,1)', 2.5));
+      }
+      return;
+    }
+  }
+
+  // Check wormhole arrival
+  if (Math.hypot(ship.x - wormhole.x, ship.y - wormhole.y) < wormhole.radius + 10) {
+    gameState = STATE.SUCCESS;
+    return;
+  }
+
+  // Out of fuel
+  if (ship.fuel <= 0 && !ship.orbiting && !ship.docked) {
+    ship.fuel = 0;
+    if (speed < 0.1) {
+      gameState = STATE.FAILURE;
+      failReason = 'fuel';
+    }
+  }
+
+  // Trail
+  ship.trail.push({ x: ship.x, y: ship.y, life: 30 });
+  if (ship.trail.length > 30) ship.trail.shift();
+  for (const t of ship.trail) t.life--;
+
+  updateCamera();
+
+  // Update planets
+  for (const p of planets) {
+    p.angle += p.rotationSpeed * p.rotationDir;
+    p.glowPulse += p.glowSpeed;
+  }
+
+  // Update wormhole
+  wormhole.angle += 0.02;
+  wormhole.pulse += 0.05;
+
+  // Update black hole
+  for (const bh of blackHoles) {
+    bh.accretionAngle += 0.015;
+    bh.photonRingAngle += 0.03;
+    for (const ap of bh.accretionParticles) {
+      ap.angle += ap.speed;
+      ap.life--;
+      if (ap.life <= 0) { ap.angle = Math.random() * Math.PI * 2; ap.life = ap.maxLife; }
+    }
+  }
+
+  for (const obs of obstacles) obs.angle += obs.rotationSpeed;
+  particles = particles.filter(p => p.update());
+
+  // Update UI
+  document.getElementById('fuel-val').textContent = Math.max(0, Math.round(ship.fuel)) + '%';
+  const distToWH = Math.hypot(ship.x - wormhole.x, ship.y - wormhole.y);
+  document.getElementById('dist-val').textContent = Math.round(distToWH) + ' px';
+
+  // Warning near black holes
+  let nearBH = false;
+  for (const bh of blackHoles) {
+    if (Math.hypot(ship.x - bh.x, ship.y - bh.y) < bh.eventHorizon * 3) { nearBH = true; break; }
+  }
+  document.getElementById('warning').style.opacity = nearBH ? '0.8' : '0';
+}
+
+function updateCamera() {
+  const targetCamX = ship.x - W / 2;
+  const targetCamY = ship.y - H / 2;
+  camera.x += (targetCamX - camera.x) * 0.08;
+  camera.y += (targetCamY - camera.y) * 0.08;
+  camera.x = Math.max(0, Math.min(WORLD_W - W, camera.x));
+  camera.y = Math.max(0, Math.min(WORLD_H - H, camera.y));
+}
+
+// ═══ RENDERING ════════════════════════════════════════════════════
+
+// ── Bloom helper: draw a glowing layer ──
+function drawGlow(x, y, radius, color, alpha) {
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  grad.addColorStop(0, color.replace('ALPHA', alpha));
+  grad.addColorStop(1, color.replace('ALPHA', '0'));
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawStarfield() {
+  for (const s of stars) {
+    const twinkle = Math.sin(Date.now() * s.twinkleSpeed + s.twinkleOffset) * 0.3 + 0.7;
+    const alpha = s.brightness * twinkle;
+    const sx = s.x - camera.x * (1 - s.depth * 0.5);
+    const sy = s.y - camera.y * (1 - s.depth * 0.5);
+    if (sx < -10 || sx > W + 10 || sy < -10 || sy > H + 10) continue;
+
+    // Star glow halo for brighter stars
+    if (s.brightness > 0.7 && alpha > 0.5) {
+      const glowRad = s.size * 4;
+      const ggrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, glowRad);
+      if (s.hue === 210) ggrad.addColorStop(0, `rgba(150,190,255,${alpha * 0.3})`);
+      else if (s.hue === 30) ggrad.addColorStop(0, `rgba(255,220,150,${alpha * 0.3})`);
+      else ggrad.addColorStop(0, `rgba(255,255,255,${alpha * 0.3})`);
+      ggrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = ggrad;
+      ctx.beginPath();
+      ctx.arc(sx, sy, glowRad, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (s.hue > 0) {
+      ctx.fillStyle = s.hue === 210 ? `rgba(150,190,255,${alpha})` : `rgba(255,220,150,${alpha})`;
+    } else {
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    }
+    ctx.beginPath();
+    ctx.arc(sx, sy, s.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Cross-shaped glow for special stars (enhanced for menu shimmer)
+    if (s.crossGlow && alpha > 0.5) {
+      const crossAlpha = alpha * 0.25;
+      const crossLen = s.size * 8;
+      ctx.strokeStyle = `rgba(255,255,255,${crossAlpha})`;
+      ctx.lineWidth = 0.6;
+      // Cross lines
+      ctx.beginPath();
+      ctx.moveTo(sx - crossLen, sy);
+      ctx.lineTo(sx + crossLen, sy);
+      ctx.moveTo(sx, sy - crossLen);
+      ctx.lineTo(sx, sy + crossLen);
+      ctx.stroke();
+      // Diagonal shimmer
+      ctx.strokeStyle = `rgba(255,255,255,${crossAlpha * 0.5})`;
+      ctx.lineWidth = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(sx - crossLen * 0.6, sy - crossLen * 0.6);
+      ctx.lineTo(sx + crossLen * 0.6, sy + crossLen * 0.6);
+      ctx.moveTo(sx + crossLen * 0.6, sy - crossLen * 0.6);
+      ctx.lineTo(sx - crossLen * 0.6, sy + crossLen * 0.6);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawNebulae() {
+  for (const n of nebulae) {
+    const nx = n.x - camera.x * 0.3;
+    const ny = n.y - camera.y * 0.3;
+    if (nx < -400 || nx > W + 400 || ny < -400 || ny > H + 400) continue;
+    const grad = ctx.createRadialGradient(nx, ny, 0, nx, ny, n.radius);
+    grad.addColorStop(0, `hsla(${n.hue},70%,50%,${n.alpha * 2.5})`);
+    grad.addColorStop(0.5, `hsla(${n.hue},60%,35%,${n.alpha * 1.5})`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(nx, ny, n.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawCosmicDust(darkMode) {
+  for (const d of cosmicDust) {
+    const dx = d.x - (darkMode ? camera.x : camera.x * 0.2);
+    const dy = d.y - (darkMode ? camera.y : camera.y * 0.2);
+    if (dx < -30 || dx > W + 30 || dy < -30 || dy > H + 30) continue;
+    const flicker = 0.5 + Math.sin(Date.now() * d.flickerSpeed + d.flickerOffset) * 0.5;
+    const wobble = Math.sin(Date.now() * d.wobbleSpeed + d.wobbleOffset) * d.wobbleAmp;
+    const alpha = d.brightness * flicker * (darkMode ? 1 : 1.3);
+    const r = d.size;
+
+    // Main particle
+    const hue = d.hue;
+    const glowRad = r * 3;
+    const ggrad = ctx.createRadialGradient(dx + wobble, dy + wobble * 0.5, 0, dx, dy, glowRad);
+    ggrad.addColorStop(0, `hsla(${hue},80%,70%,${alpha * 0.5})`);
+    ggrad.addColorStop(0.5, `hsla(${hue},60%,50%,${alpha * 0.2})`);
+    ggrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = ggrad;
+    ctx.beginPath();
+    ctx.arc(dx, dy, glowRad, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Core
+    ctx.fillStyle = `hsla(${hue},40%,90%,${alpha})`;
+    ctx.beginPath();
+    ctx.arc(dx, dy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Occasional sparkle burst
+    if (flicker > 0.85 && Math.random() < 0.3) {
+      ctx.fillStyle = `rgba(255,255,255,${alpha * 0.6})`;
+      ctx.beginPath();
+      ctx.arc(dx, dy, r * 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+function drawShootingStars() {
+  for (const ss of shootingStars) ss.draw(ctx, camera);
+}
+
+// ── Mothership (Endurance) rendering ──
+function drawMothership() {
+  const cx = mothership.x - camera.x, cy = mothership.y - camera.y;
+  const a = mothership.angle;
+
+  // Outer glow
+  drawGlow(cx, cy, mothership.radius * 1.8, 'rgba(100,180,255,ALPHA)', '0.08');
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(a);
+
+  // ── Outer ring ──
+  // Ring glow
+  ctx.shadowColor = 'rgba(120,180,255,0.6)';
+  ctx.shadowBlur = 12;
+
+  // Main ring structure
+  ctx.strokeStyle = '#5a6a7a';
+  ctx.lineWidth = mothership.ringWidth;
+  ctx.beginPath();
+  ctx.arc(0, 0, mothership.radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  // Inner ring detail
+  ctx.strokeStyle = '#8a9aaa';
+  ctx.lineWidth = mothership.ringWidth * 0.4;
+  ctx.beginPath();
+  ctx.arc(0, 0, mothership.radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Ring edge highlights
+  ctx.strokeStyle = 'rgba(180,210,240,0.5)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(0, 0, mothership.radius + mothership.ringWidth / 2, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, mothership.radius - mothership.ringWidth / 2, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // ── Module pods on ring ──
+  for (const pod of mothership.pods) {
+    const px = Math.cos(pod.angle) * mothership.radius;
+    const py = Math.sin(pod.angle) * mothership.radius;
+
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(pod.angle + Math.PI / 2);
+
+    // Pod body
+    ctx.fillStyle = '#6a7a8a';
+    ctx.fillRect(-pod.size, -pod.size * 0.7, pod.size * 2, pod.size * 1.4);
+
+    // Pod detail
+    ctx.fillStyle = '#4a5a6a';
+    ctx.fillRect(-pod.size, -pod.size * 0.7, pod.size * 0.4, pod.size * 1.4);
+
+    // Pod lights
+    if (pod.lit) {
+      const lightPulse = 0.5 + Math.sin(Date.now() * 0.003 + pod.angle * 5) * 0.3;
+      ctx.fillStyle = `rgba(150,200,255,${lightPulse})`;
+      ctx.fillRect(-pod.size * 0.5, -pod.size * 0.4, pod.size * 0.3, pod.size * 0.8);
+
+      // Glow
+      drawGlow(0, 0, pod.size * 2, 'rgba(150,200,255,ALPHA)', lightPulse * 0.3);
+    }
+
+    ctx.restore();
+  }
+
+  // ── Spokes connecting hub to ring ──
+  for (let i = 0; i < mothership.spokeCount; i++) {
+    const sa = (i / mothership.spokeCount) * Math.PI * 2;
+    ctx.strokeStyle = '#5a6a7a';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(sa) * mothership.hubRadius, Math.sin(sa) * mothership.hubRadius);
+    ctx.lineTo(Math.cos(sa) * (mothership.radius - mothership.ringWidth / 2), Math.sin(sa) * (mothership.radius - mothership.ringWidth / 2));
+    ctx.stroke();
+
+    // Spoke highlight
+    ctx.strokeStyle = 'rgba(160,180,200,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(sa) * mothership.hubRadius, Math.sin(sa) * mothership.hubRadius);
+    ctx.lineTo(Math.cos(sa) * (mothership.radius - mothership.ringWidth / 2), Math.sin(sa) * (mothership.radius - mothership.ringWidth / 2));
+    ctx.stroke();
+  }
+
+  // ── Central hub ──
+  const hubGlow = 0.15 + Math.sin(mothership.glowPulse) * 0.08;
+  drawGlow(0, 0, mothership.hubRadius * 2.5, 'rgba(120,180,255,ALPHA)', hubGlow);
+
+  // Hub body
+  const hubGrad = ctx.createRadialGradient(-mothership.hubRadius * 0.3, -mothership.hubRadius * 0.3, 0, 0, 0, mothership.hubRadius);
+  hubGrad.addColorStop(0, '#b0c0d0');
+  hubGrad.addColorStop(0.5, '#7a8a9a');
+  hubGrad.addColorStop(1, '#3a4a5a');
+  ctx.fillStyle = hubGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, mothership.hubRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hub detail panels
+  ctx.strokeStyle = 'rgba(180,200,230,0.3)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 4; i++) {
+    const pa = i * Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(pa) * mothership.hubRadius, Math.sin(pa) * mothership.hubRadius);
+    ctx.stroke();
+  }
+
+  // Hub center light
+  ctx.fillStyle = `rgba(180,220,255,${0.6 + Math.sin(mothership.glowPulse * 2) * 0.2})`;
+  ctx.beginPath();
+  ctx.arc(0, 0, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hub rim
+  ctx.strokeStyle = 'rgba(160,190,220,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(0, 0, mothership.hubRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Docking indicator (when ship is docked)
+  if (ship.docked) {
+    const dp = mothership.getDockPoint();
+    // Convert to local coords (already rotated)
+    const dlx = Math.cos(mothership.dockAngle) * mothership.radius;
+    const dly = Math.sin(mothership.dockAngle) * mothership.radius;
+    const dockPulse = 0.3 + Math.sin(Date.now() * 0.005) * 0.2;
+    ctx.strokeStyle = `rgba(150,220,255,${dockPulse})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.arc(dlx, dly, 25, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.restore();
+
+  // Label
+  ctx.fillStyle = 'rgba(150,180,210,0.4)';
+  ctx.font = '10px Georgia, SimSun, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('ENDURANCE / 永恒号', cx, cy + mothership.radius + 25);
+}
+
+// ── Ship with acceleration halo ──
+function drawShip() {
+  if (!ship.alive) return;
+  const sx = ship.x - camera.x, sy = ship.y - camera.y;
+
+  // Trail
+  for (let i = 1; i < ship.trail.length; i++) {
+    if (ship.trail[i].life <= 0) continue;
+    const a = ship.trail[i].life / 30;
+    const color = ship.orbiting ? `rgba(150,200,255,${a*0.3})` : `rgba(100,180,255,${a*0.4})`;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(ship.trail[i-1].x - camera.x, ship.trail[i-1].y - camera.y);
+    ctx.lineTo(ship.trail[i].x - camera.x, ship.trail[i].y - camera.y);
+    ctx.stroke();
+  }
+
+  ctx.save();
+  ctx.translate(sx, sy);
+  ctx.rotate(ship.angle);
+
+  // ═══ ACCELERATION HALO / 光环 ═══
+  // Shows charge level when docked or in orbit
+  let chargeLevel = 0;
+  if (ship.docked) chargeLevel = ship.launchCharge;
+  else if (ship.orbiting) chargeLevel = ship.orbitEscapeCharge;
+
+  if (chargeLevel > 0.02) {
+    // Color shifts: blue → cyan → white → gold as charge increases
+    let r, g, b;
+    if (chargeLevel < 0.33) {
+      const t = chargeLevel / 0.33;
+      r = Math.floor(60 + t * 80);   // 60→140
+      g = Math.floor(120 + t * 80);  // 120→200
+      b = Math.floor(200 + t * 55);  // 200→255
+    } else if (chargeLevel < 0.66) {
+      const t = (chargeLevel - 0.33) / 0.33;
+      r = Math.floor(140 + t * 115);  // 140→255
+      g = Math.floor(200 + t * 55);   // 200→255
+      b = 255;
+    } else {
+      const t = (chargeLevel - 0.66) / 0.34;
+      r = 255;
+      g = Math.floor(255 - t * 55);  // 255→200
+      b = Math.floor(255 - t * 155); // 255→100
+    }
+
+    // Main halo ring
+    const haloRadius = 22 + chargeLevel * 18;
+    const haloAlpha = 0.3 + chargeLevel * 0.5;
+
+    // Outer glow
+    const haloGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, haloRadius * 1.5);
+    haloGrad.addColorStop(0, `rgba(${r},${g},${b},0)`);
+    haloGrad.addColorStop(0.5, `rgba(${r},${g},${b},${haloAlpha * 0.3})`);
+    haloGrad.addColorStop(0.8, `rgba(${r},${g},${b},${haloAlpha * 0.6})`);
+    haloGrad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = haloGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, haloRadius * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bright ring
+    ctx.strokeStyle = `rgba(${r},${g},${b},${haloAlpha})`;
+    ctx.lineWidth = 2 + chargeLevel * 2;
+    ctx.shadowColor = `rgba(${r},${g},${b},0.8)`;
+    ctx.shadowBlur = 15 + chargeLevel * 10;
+    ctx.beginPath();
+    ctx.arc(0, 0, haloRadius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Pulsing inner ring
+    const pulseR = haloRadius * 0.7 + Math.sin(Date.now() * 0.01) * 3;
+    ctx.strokeStyle = `rgba(${r},${g},${b},${haloAlpha * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Charge particles spiraling
+    if (chargeLevel > 0.1) {
+      for (let i = 0; i < 3; i++) {
+        const pa = Date.now() * 0.008 + i * Math.PI * 2 / 3;
+        const pr = haloRadius * (0.6 + Math.sin(pa * 3) * 0.2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${haloAlpha * 0.8})`;
+        ctx.beginPath();
+        ctx.arc(Math.cos(pa) * pr, Math.sin(pa) * pr, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Direction indicator (tangent arrow when charged)
+    if (chargeLevel > 0.3) {
+      const arrowAlpha = (chargeLevel - 0.3) / 0.7 * 0.6;
+      ctx.strokeStyle = `rgba(${r},${g},${b},${arrowAlpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(haloRadius + 5, 0);
+      ctx.lineTo(haloRadius + 15, 0);
+      ctx.moveTo(haloRadius + 12, -4);
+      ctx.lineTo(haloRadius + 15, 0);
+      ctx.lineTo(haloRadius + 12, 4);
+      ctx.stroke();
+    }
+  }
+
+  // ═══ SHIP BODY (enhanced design) ═══
+  // Engine glow
+  if (ship.engineGlow > 0.05) {
+    const egGrad = ctx.createRadialGradient(-20, 0, 2, -20, 0, 20 + ship.engineGlow * 15);
+    egGrad.addColorStop(0, `rgba(220,245,255,${ship.engineGlow * 0.9})`);
+    egGrad.addColorStop(0.5, `rgba(100,180,255,${ship.engineGlow * 0.5})`);
+    egGrad.addColorStop(1, 'rgba(50,100,255,0)');
+    ctx.fillStyle = egGrad;
+    ctx.beginPath();
+    ctx.arc(-18, 0, 20 + ship.engineGlow * 15, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Main hull
+  ctx.fillStyle = '#d0d8e0';
+  ctx.beginPath();
+  ctx.moveTo(28, 0);
+  ctx.lineTo(8, 11);
+  ctx.lineTo(-10, 13);
+  ctx.lineTo(-25, 9);
+  ctx.lineTo(-30, 5);
+  ctx.lineTo(-30, -5);
+  ctx.lineTo(-25, -9);
+  ctx.lineTo(-10, -13);
+  ctx.lineTo(8, -11);
+  ctx.closePath();
+  ctx.fill();
+
+  // Hull edge glow
+  ctx.strokeStyle = 'rgba(200,220,240,0.4)';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+
+  // Darker hull panel
+  ctx.fillStyle = '#8898a8';
+  ctx.beginPath();
+  ctx.moveTo(18, 0);
+  ctx.lineTo(2, 8);
+  ctx.lineTo(-10, 9);
+  ctx.lineTo(-20, 6);
+  ctx.lineTo(-25, 4);
+  ctx.lineTo(-25, -4);
+  ctx.lineTo(-20, -6);
+  ctx.lineTo(-10, -9);
+  ctx.lineTo(2, -8);
+  ctx.closePath();
+  ctx.fill();
+
+  // Cockpit
+  const cockpitGrad = ctx.createLinearGradient(0, -5, 20, 5);
+  cockpitGrad.addColorStop(0, '#88c8f8');
+  cockpitGrad.addColorStop(0.5, '#b8d8f8');
+  cockpitGrad.addColorStop(1, '#5898c8');
+  ctx.fillStyle = cockpitGrad;
+  ctx.beginPath();
+  ctx.moveTo(22, 0);
+  ctx.quadraticCurveTo(10, -5, 0, -4);
+  ctx.lineTo(0, 4);
+  ctx.quadraticCurveTo(10, 5, 22, 0);
+  ctx.fill();
+
+  // Cockpit highlight
+  ctx.fillStyle = 'rgba(240,250,255,0.7)';
+  ctx.beginPath();
+  ctx.ellipse(15, -1, 4, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Wings
+  ctx.fillStyle = '#b0bcc8';
+  ctx.beginPath();
+  ctx.moveTo(5, 8);
+  ctx.lineTo(-5, 20);
+  ctx.lineTo(-12, 22);
+  ctx.lineTo(-15, 15);
+  ctx.lineTo(-3, 6);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(5, -8);
+  ctx.lineTo(-5, -20);
+  ctx.lineTo(-12, -22);
+  ctx.lineTo(-15, -15);
+  ctx.lineTo(-3, -6);
+  ctx.closePath();
+  ctx.fill();
+
+  // Wing highlights
+  ctx.strokeStyle = 'rgba(200,220,240,0.5)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(5, 8); ctx.lineTo(-5, 20);
+  ctx.moveTo(5, -8); ctx.lineTo(-5, -20);
+  ctx.stroke();
+
+  // Engine nozzles
+  ctx.fillStyle = '#404850';
+  ctx.fillRect(-30, -4, 5, 8);
+  ctx.fillStyle = '#606870';
+  ctx.fillRect(-28, -3, 3, 6);
+
+  // Running lights (pulsing)
+  const lightPulse = 0.5 + Math.sin(Date.now() * 0.005) * 0.3;
+  ctx.fillStyle = `rgba(255,100,80,${lightPulse})`;
+  ctx.beginPath(); ctx.arc(-28, 3, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = `rgba(80,255,120,${lightPulse})`;
+  ctx.beginPath(); ctx.arc(-28, -3, 2, 0, Math.PI * 2); ctx.fill();
+
+  // Nose light
+  ctx.fillStyle = 'rgba(255,255,200,0.9)';
+  ctx.shadowColor = 'rgba(255,255,200,0.6)';
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.arc(26, 0, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.restore();
+}
+
+// ── Planet orbit visualization ──
+function drawPlanetOrbit(p) {
+  const cx = p.x - camera.x, cy = p.y - camera.y;
+  if (cx < -p.orbitRadius - 100 || cx > W + p.orbitRadius + 100 || cy < -p.orbitRadius - 100 || cy > H + p.orbitRadius + 100) return;
+  ctx.strokeStyle = 'rgba(100,140,200,0.12)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([8, 12]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, p.orbitRadius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Direction indicator arrows on orbit
+  const arrowAngle1 = p.angle;
+  const ax1 = cx + Math.cos(arrowAngle1) * p.orbitRadius;
+  const ay1 = cy + Math.sin(arrowAngle1) * p.orbitRadius;
+  ctx.fillStyle = 'rgba(100,140,200,0.2)';
+  ctx.save();
+  ctx.translate(ax1, ay1);
+  ctx.rotate(arrowAngle1 + Math.PI / 2 * p.rotationDir);
+  ctx.beginPath();
+  ctx.moveTo(4, 0); ctx.lineTo(-3, -3); ctx.lineTo(-3, 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── Planet rendering (enhanced glow & lighting) ──
+function drawPlanet(p) {
+  const cx = p.x - camera.x, cy = p.y - camera.y;
+  if (cx < -p.planetRadius * 4 || cx > W + p.planetRadius * 4 || cy < -p.planetRadius * 4 || cy > H + p.planetRadius * 4) return;
+
+  const pr = p.planetRadius;
+  const pulse = Math.sin(p.glowPulse);
+  const la = p.lightAngle;
+  const lx = Math.cos(la);
+  const ly = Math.sin(la);
+  // Light source position offset (upper-left style, but per-planet)
+  const lox = -lx * pr * 0.3;
+  const loy = -ly * pr * 0.3;
+
+  // ═══ 1. OUTER BLOOM — large soft radiance ═══
+  const bloomA = 0.10 + pulse * 0.04;
+  const bloomGrad = ctx.createRadialGradient(cx, cy, pr * 0.85, cx, cy, pr * 3.2);
+  bloomGrad.addColorStop(0, `rgba(${p.glowR},${p.glowG},${p.glowB},${bloomA * 0.4})`);
+  bloomGrad.addColorStop(0.15, `rgba(${p.glowR},${p.glowG},${p.glowB},${bloomA})`);
+  bloomGrad.addColorStop(0.4, `rgba(${p.baseR},${p.baseG},${p.baseB},${bloomA * 0.4})`);
+  bloomGrad.addColorStop(0.7, `rgba(${p.baseR},${p.baseG},${p.baseB},${bloomA * 0.12})`);
+  bloomGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = bloomGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr * 3.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ═══ 2. ATMOSPHERE GLOW — mid-layer halo ═══
+  const atmoA = 0.22 + pulse * 0.08;
+  const atmoGrad = ctx.createRadialGradient(cx, cy, pr * 0.88, cx, cy, pr * 1.55);
+  atmoGrad.addColorStop(0, `rgba(${p.atmoR},${p.atmoG},${p.atmoB},0)`);
+  atmoGrad.addColorStop(0.3, `rgba(${p.atmoR},${p.atmoG},${p.atmoB},${atmoA * 0.25})`);
+  atmoGrad.addColorStop(0.6, `rgba(${p.atmoR},${p.atmoG},${p.atmoB},${atmoA * 0.5})`);
+  atmoGrad.addColorStop(0.9, `rgba(${p.atmoR},${p.atmoG},${p.atmoB},${atmoA * 0.2})`);
+  atmoGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = atmoGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr * 1.55, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ═══ 3. PLANET BODY — directional 3D shading ═══
+  const bodyGrad = ctx.createRadialGradient(
+    cx + lox, cy + loy, pr * 0.05,
+    cx, cy, pr
+  );
+  bodyGrad.addColorStop(0, `rgb(${Math.min(255, p.baseR + 75)},${Math.min(255, p.baseG + 75)},${Math.min(255, p.baseB + 75)})`);
+  bodyGrad.addColorStop(0.25, `rgb(${Math.min(255, p.baseR + 35)},${Math.min(255, p.baseG + 35)},${Math.min(255, p.baseB + 35)})`);
+  bodyGrad.addColorStop(0.55, p.color);
+  bodyGrad.addColorStop(0.82, `rgba(${Math.floor(p.baseR * 0.4)},${Math.floor(p.baseG * 0.4)},${Math.floor(p.baseB * 0.4)},0.92)`);
+  bodyGrad.addColorStop(1, 'rgba(0,0,0,0.8)');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ═══ 4. SURFACE DETAILS (clipped to planet body) ═══
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+  ctx.clip();
+
+  if (p.hasBands) {
+    // Gas giant bands with subtle highlights
+    for (let i = 0; i < p.bandCount; i++) {
+      const bandY = cy - pr + (i + 0.5) / p.bandCount * pr * 2;
+      const bandH = pr * 2 / p.bandCount;
+      const bandAlpha = 0.15 + (i % 2) * 0.18;
+      ctx.fillStyle = `rgba(${Math.floor(p.baseR * 0.55)},${Math.floor(p.baseG * 0.55)},${Math.floor(p.baseB * 0.55)},${bandAlpha})`;
+      ctx.fillRect(cx - pr, bandY - bandH * 0.3, pr * 2, bandH * 0.6);
+      // Band highlight stripe
+      ctx.fillStyle = `rgba(${Math.min(255, p.baseR + 55)},${Math.min(255, p.baseG + 55)},${Math.min(255, p.baseB + 55)},${bandAlpha * 0.25})`;
+      ctx.fillRect(cx - pr, bandY - bandH * 0.38, pr * 2, bandH * 0.08);
+    }
+  }
+
+  for (const crater of p.craters) {
+    const ca = crater.angle + p.angle * 0.3;
+    const cdist = crater.dist * pr;
+    const cpx = cx + Math.cos(ca) * cdist;
+    const cpy = cy + Math.sin(ca) * cdist;
+    const cr = crater.r * pr;
+
+    // Crater shadow
+    const cgrad = ctx.createRadialGradient(cpx + cr * 0.2, cpy + cr * 0.2, 0, cpx, cpy, cr);
+    cgrad.addColorStop(0, `rgba(0,0,0,${crater.depth * 0.5})`);
+    cgrad.addColorStop(0.7, `rgba(0,0,0,${crater.depth * 0.2})`);
+    cgrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = cgrad;
+    ctx.beginPath();
+    ctx.arc(cpx, cpy, cr, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Crater rim highlight on lit side
+    const craterLit = (Math.cos(ca - la) + 1) * 0.5;
+    if (craterLit > 0.5) {
+      ctx.strokeStyle = `rgba(${Math.min(255, p.baseR + 70)},${Math.min(255, p.baseG + 70)},${Math.min(255, p.baseB + 70)},${(craterLit - 0.5) * 2 * crater.depth * 0.35})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cpx, cpy, cr * 0.92, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  // Directional terminator shadow (day/night based on light angle)
+  const termGrad = ctx.createLinearGradient(
+    cx + lx * pr, cy + ly * pr,
+    cx - lx * pr, cy - ly * pr
+  );
+  termGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  termGrad.addColorStop(0.35, 'rgba(0,0,0,0)');
+  termGrad.addColorStop(0.7, 'rgba(0,0,0,0.38)');
+  termGrad.addColorStop(1, 'rgba(0,0,0,0.68)');
+  ctx.fillStyle = termGrad;
+  ctx.fillRect(cx - pr, cy - pr, pr * 2, pr * 2);
+
+  ctx.restore(); // end clip
+
+  // ═══ 5. SPECULAR HIGHLIGHT — bright reflective spot ═══
+  const specX = cx + lox * 1.6;
+  const specY = cy + loy * 1.6;
+  const specR = pr * 0.35 * p.specularIntensity;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+  ctx.clip();
+  const specGrad = ctx.createRadialGradient(specX, specY, 0, specX, specY, specR);
+  specGrad.addColorStop(0, `rgba(255,255,255,${p.specularIntensity * 0.45})`);
+  specGrad.addColorStop(0.3, `rgba(${Math.min(255, p.baseR + 100)},${Math.min(255, p.baseG + 100)},${Math.min(255, p.baseB + 100)},${p.specularIntensity * 0.2})`);
+  specGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = specGrad;
+  ctx.beginPath();
+  ctx.arc(specX, specY, specR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // ═══ 6. ATMOSPHERIC RIM — bright backlight on lit edge ═══
+  const rimGrad = ctx.createRadialGradient(cx, cy, pr * 0.93, cx, cy, pr * 1.14);
+  rimGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  rimGrad.addColorStop(0.35, `rgba(${p.atmoR},${p.atmoG},${p.atmoB},0.06)`);
+  rimGrad.addColorStop(0.65, `rgba(${p.atmoR},${p.atmoG},${p.atmoB},${0.32 + pulse * 0.1})`);
+  rimGrad.addColorStop(0.85, `rgba(${p.atmoR},${p.atmoG},${p.atmoB},${0.18})`);
+  rimGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = rimGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr * 1.14, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ═══ 7. INNER CORONA — subtle bright ring inside edge ═══
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+  ctx.clip();
+  const coronaGrad = ctx.createRadialGradient(cx, cy, pr * 0.85, cx, cy, pr);
+  coronaGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  coronaGrad.addColorStop(0.5, `rgba(${Math.min(255, p.baseR + 55)},${Math.min(255, p.baseG + 55)},${Math.min(255, p.baseB + 55)},${0.06 + pulse * 0.03})`);
+  coronaGrad.addColorStop(1, `rgba(${Math.min(255, p.baseR + 85)},${Math.min(255, p.baseG + 85)},${Math.min(255, p.baseB + 85)},${0.10 + pulse * 0.04})`);
+  ctx.fillStyle = coronaGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // ═══ Highlighted orbit ring when ship orbits this planet ═══
+  if (ship.orbiting === p) {
+    ctx.strokeStyle = `rgba(150,200,255,${0.4 + ship.orbitEscapeCharge * 0.4})`;
+    ctx.lineWidth = 2.5 + ship.orbitEscapeCharge * 2;
+    ctx.shadowColor = 'rgba(100,180,255,0.8)';
+    ctx.shadowBlur = 15 + ship.orbitEscapeCharge * 10;
+    ctx.beginPath();
+    ctx.arc(cx, cy, p.orbitRadius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Ship position indicator
+    const op = p.getOrbitPoint(ship.orbitAngle);
+    const opx = op.x - camera.x, opy = op.y - camera.y;
+    ctx.fillStyle = 'rgba(200,230,255,0.8)';
+    ctx.beginPath();
+    ctx.arc(opx, opy, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    const pulseAlpha = 0.3 + Math.sin(Date.now() * 0.005) * 0.2;
+    const pGrad = ctx.createRadialGradient(opx, opy, 3, opx, opy, 25);
+    pGrad.addColorStop(0, `rgba(200,230,255,${pulseAlpha})`);
+    pGrad.addColorStop(1, 'rgba(200,230,255,0)');
+    ctx.fillStyle = pGrad;
+    ctx.beginPath();
+    ctx.arc(opx, opy, 25, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ── Black hole rendering (enhanced) ──
+function drawBlackHole(bh) {
+  const cx = bh.x - camera.x, cy = bh.y - camera.y;
+  if (cx < -bh.gravityRadius || cx > W + bh.gravityRadius || cy < -bh.gravityRadius || cy > H + bh.gravityRadius) return;
+
+  // Outer gravitational lensing
+  const lensGrad = ctx.createRadialGradient(cx, cy, bh.eventHorizon * 0.9, cx, cy, bh.eventHorizon * 3);
+  lensGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  lensGrad.addColorStop(0.2, 'rgba(80,40,120,0.35)');
+  lensGrad.addColorStop(0.4, 'rgba(130,60,200,0.3)');
+  lensGrad.addColorStop(0.6, 'rgba(100,40,180,0.15)');
+  lensGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = lensGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, bh.eventHorizon * 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Accretion disk
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, bh.eventHorizon * 2.5, 0, Math.PI * 2);
+  ctx.clip();
+
+  for (const ap of bh.accretionParticles) {
+    const ax = cx + Math.cos(ap.angle) * ap.radius;
+    const ay = cy + Math.sin(ap.angle) * ap.radius * 0.3;
+    const lifeRatio = ap.life / ap.maxLife;
+    const alpha = lifeRatio < 0.2 ? lifeRatio / 0.2 : (1 - (lifeRatio - 0.2) / 0.8);
+    // Color shift: hot inner = white/blue, outer = purple/orange
+    const distRatio = ap.radius / bh.eventHorizon;
+    let r, g, b;
+    if (distRatio < 1.8) { r = 220; g = 180; b = 255; }
+    else if (distRatio < 2.5) { r = 180; g = 120; b = 255; }
+    else { r = 140; g = 80; b = 220; }
+    ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.7})`;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Photon ring (bright ring at event horizon edge)
+  ctx.strokeStyle = `rgba(255,200,150,${0.6 + Math.sin(bh.photonRingAngle) * 0.2})`;
+  ctx.lineWidth = 3;
+  ctx.shadowColor = 'rgba(255,180,100,0.8)';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(cx, cy, bh.eventHorizon * 1.08, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Event horizon (pure black)
+  const ehGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, bh.eventHorizon);
+  ehGrad.addColorStop(0, 'rgba(0,0,0,1)');
+  ehGrad.addColorStop(0.85, 'rgba(0,0,0,1)');
+  ehGrad.addColorStop(1, 'rgba(20,0,40,0.5)');
+  ctx.fillStyle = ehGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, bh.eventHorizon, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Gravity zone indicator
+  ctx.strokeStyle = 'rgba(100,50,150,0.08)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([10, 20]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, bh.gravityRadius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawObstacle(obs) {
+  const cx = obs.x - camera.x, cy = obs.y - camera.y;
+  if (cx < -obs.radius - 50 || cx > W + obs.radius + 50 || cy < -obs.radius - 50 || cy > H + obs.radius + 50) return;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  for (let i = 0; i <= obs.vertices.length; i++) {
+    const v = obs.vertices[i % obs.vertices.length];
+    const a = v.angle + obs.angle;
+    const px = cx + Math.cos(a) * v.r + 3;
+    const py = cy + Math.sin(a) * v.r + 3;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.fill();
+
+  // Body
+  const grad = ctx.createLinearGradient(cx - obs.radius, cy - obs.radius, cx + obs.radius, cy + obs.radius);
+  grad.addColorStop(0, '#6b5b4f');
+  grad.addColorStop(0.5, '#8a7a6a');
+  grad.addColorStop(1, '#4a3a2f');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  for (let i = 0; i <= obs.vertices.length; i++) {
+    const v = obs.vertices[i % obs.vertices.length];
+    const a = v.angle + obs.angle;
+    const px = cx + Math.cos(a) * v.r;
+    const py = cy + Math.sin(a) * v.r;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.fill();
+
+  // Craters
+  ctx.save();
+  ctx.beginPath();
+  for (let i = 0; i <= obs.vertices.length; i++) {
+    const v = obs.vertices[i % obs.vertices.length];
+    const a = v.angle + obs.angle;
+    const px = cx + Math.cos(a) * v.r;
+    const py = cy + Math.sin(a) * v.r;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.clip();
+  for (const cr of obs.craters) {
+    const crx = cx + Math.cos(cr.angle + obs.angle) * cr.dist * obs.radius;
+    const cry = cy + Math.sin(cr.angle + obs.angle) * cr.dist * obs.radius;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    ctx.arc(crx, cry, cr.r * obs.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 0; i <= obs.vertices.length; i++) {
+    const v = obs.vertices[i % obs.vertices.length];
+    const a = v.angle + obs.angle;
+    const px = cx + Math.cos(a) * v.r;
+    const py = cy + Math.sin(a) * v.r;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+
+function drawWormhole() {
+  const cx = wormhole.x - camera.x, cy = wormhole.y - camera.y;
+  const pulse = 1 + Math.sin(wormhole.pulse) * 0.2;
+  const r = wormhole.radius;
+
+  // ── Victory aura: massive outer glow ──
+  const auraGrad = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 5 * pulse);
+  auraGrad.addColorStop(0, 'rgba(180,210,255,0.25)');
+  auraGrad.addColorStop(0.2, 'rgba(140,180,255,0.15)');
+  auraGrad.addColorStop(0.5, 'rgba(100,140,255,0.06)');
+  auraGrad.addColorStop(0.8, 'rgba(60,80,200,0.02)');
+  auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = auraGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 5 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── Light rays radiating outward ──
+  ctx.save();
+  ctx.globalAlpha = 0.25 * (0.5 + pulse * 0.5);
+  for (let i = 0; i < 16; i++) {
+    const angle = wormhole.angle * 0.3 + i * Math.PI * 2 / 16;
+    const len1 = r * (2.5 + Math.sin(wormhole.pulse * 2 + i) * 1.2);
+    const len2 = r * (2.8 + Math.cos(wormhole.pulse * 2 + i) * 1.5);
+    const grad = ctx.createLinearGradient(
+      cx + Math.cos(angle) * r, cy + Math.sin(angle) * r,
+      cx + Math.cos(angle) * len2, cy + Math.sin(angle) * len2
+    );
+    grad.addColorStop(0, 'rgba(200,230,255,0.7)');
+    grad.addColorStop(1, 'rgba(200,230,255,0)');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2 + Math.random() * 3;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle) * r * 0.8, cy + Math.sin(angle) * r * 0.8);
+    ctx.lineTo(cx + Math.cos(angle) * len1, cy + Math.sin(angle) * len1);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Particle sparkles around wormhole ──
+  for (let i = 0; i < 30; i++) {
+    const a = wormhole.angle * 1.5 + i * Math.PI * 2 / 30;
+    const dr = r * (1.3 + Math.sin(wormhole.pulse * 3 + i * 0.7) * 0.8);
+    const sx = cx + Math.cos(a) * dr;
+    const sy = cy + Math.sin(a) * dr;
+    const alpha = 0.3 + Math.sin(wormhole.pulse * 4 + i) * 0.3;
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1.5 + Math.random(), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── Main ring glow ──
+  const ringGrad = ctx.createRadialGradient(cx, cy, r * 0.75, cx, cy, r * 1.6);
+  ringGrad.addColorStop(0, 'rgba(255,255,255,0.1)');
+  ringGrad.addColorStop(0.4, 'rgba(200,230,255,0.55)');
+  ringGrad.addColorStop(0.7, 'rgba(120,180,255,0.3)');
+  ringGrad.addColorStop(1, 'rgba(80,120,220,0.05)');
+  ctx.fillStyle = ringGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 1.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── Spinning light arcs ──
+  ctx.strokeStyle = 'rgba(200,230,255,0.7)';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = 'rgba(180,220,255,0.7)';
+  ctx.shadowBlur = 18;
+  for (let i = 0; i < 4; i++) {
+    const sa = wormhole.angle + i * Math.PI * 2 / 4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.9, sa, sa + Math.PI * 0.35);
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
+
+  // ── Inner portal: brilliant white core ──
+  const innerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.85);
+  innerGrad.addColorStop(0, 'rgba(255,255,255,1)');
+  innerGrad.addColorStop(0.15, 'rgba(240,245,255,0.85)');
+  innerGrad.addColorStop(0.4, 'rgba(180,210,255,0.55)');
+  innerGrad.addColorStop(0.7, 'rgba(100,150,255,0.2)');
+  innerGrad.addColorStop(1, 'rgba(40,60,180,0.05)');
+  ctx.fillStyle = innerGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.85, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── Central flare ──
+  const flareGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.3);
+  flareGrad.addColorStop(0, 'rgba(255,255,255,1)');
+  flareGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = flareGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.3 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── Label ──
+  ctx.fillStyle = 'rgba(220,235,255,0.75)';
+  ctx.font = 'bold 13px Georgia, SimSun, serif';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(150,200,255,0.5)';
+  ctx.shadowBlur = 6;
+  ctx.fillText('WORMHOLE / 虫洞', cx, cy - r - 20);
+  ctx.shadowBlur = 0;
+}
+
+function drawParticles() {
+  for (const p of particles) p.draw(ctx, camera);
+}
+
+function drawWorldBorder() {
+  // Calculate proximity to nearest edge (0 = at edge, 1 = far away)
+  const edgeDist = Math.min(ship.x, ship.y, WORLD_W - ship.x, WORLD_H - ship.y);
+  const warnRange = 250;
+  const proximity = Math.max(0, 1 - edgeDist / warnRange); // 0..1
+  const isDocked = ship.docked;
+
+  // Base border
+  const baseAlpha = isDocked ? 0.2 : 0.2;
+  const warnAlpha = isDocked ? 0 : proximity * 0.7;
+  const pulse = 0.5 + Math.sin(Date.now() * 0.008) * 0.5;
+  const r = Math.floor(100 + proximity * 155);
+  const g = Math.floor(130 - proximity * 80);
+  const b = Math.floor(180 - proximity * 80);
+
+  ctx.strokeStyle = `rgba(${r},${g},${b},${baseAlpha + warnAlpha * pulse})`;
+  ctx.lineWidth = 2 + proximity * 4;
+  ctx.setLineDash([15, 25]);
+  ctx.strokeRect(-camera.x, -camera.y, WORLD_W, WORLD_H);
+  ctx.setLineDash([]);
+
+  // Red warning glow when very close to edge
+  if (proximity > 0.4 && !isDocked) {
+    ctx.save();
+    const glowAlpha = (proximity - 0.4) / 0.6 * 0.5 * pulse;
+    ctx.strokeStyle = `rgba(255,60,60,${glowAlpha})`;
+    ctx.lineWidth = 8;
+    ctx.shadowColor = 'rgba(255,40,40,0.8)';
+    ctx.shadowBlur = 30;
+    ctx.strokeRect(-camera.x, -camera.y, WORLD_W, WORLD_H);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+}
+
+function drawHUDArrows() {
+  const whx = wormhole.x - camera.x;
+  const why = wormhole.y - camera.y;
+  if (whx < 0 || whx > W || why < 0 || why > H) {
+    const angle = Math.atan2(why - H/2, whx - W/2);
+    const ax = W/2 + Math.cos(angle) * Math.min(W, H) * 0.4;
+    const ay = H/2 + Math.sin(angle) * Math.min(W, H) * 0.4;
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(angle);
+    ctx.fillStyle = 'rgba(200,220,255,0.6)';
+    ctx.beginPath();
+    ctx.moveTo(12, 0); ctx.lineTo(-8, -8); ctx.lineTo(-8, 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  for (const bh of blackHoles) {
+    const bhx = bh.x - camera.x, bhy = bh.y - camera.y;
+    const dist = Math.hypot(ship.x - bh.x, ship.y - bh.y);
+    if (dist < bh.gravityRadius && dist > bh.eventHorizon * 2) {
+      ctx.strokeStyle = 'rgba(200,100,255,0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(ship.x - camera.x, ship.y - camera.y);
+      ctx.lineTo(bhx, bhy);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawMinimap() {
+  const mmW = 180, mmH = WORLD_H / WORLD_W * 180;
+  const mmX = W - mmW - 20, mmY = H - mmH - 50;
+
+  ctx.fillStyle = 'rgba(0,5,15,0.7)';
+  ctx.strokeStyle = 'rgba(100,140,200,0.4)';
+  ctx.lineWidth = 1;
+  ctx.fillRect(mmX, mmY, mmW, mmH);
+  ctx.strokeRect(mmX, mmY, mmW, mmH);
+
+  for (const p of planets) {
+    const px = mmX + (p.x / WORLD_W) * mmW;
+    const py = mmY + (p.y / WORLD_H) * mmH;
+    ctx.fillStyle = 'rgba(150,200,255,0.5)';
+    ctx.beginPath();
+    ctx.arc(px, py, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  for (const bh of blackHoles) {
+    const bx = mmX + (bh.x / WORLD_W) * mmW;
+    const by = mmY + (bh.y / WORLD_H) * mmH;
+    ctx.fillStyle = 'rgba(200,100,255,0.7)';
+    ctx.beginPath();
+    ctx.arc(bx, by, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Mothership on minimap
+  if (mothership) {
+    const mx = mmX + (mothership.x / WORLD_W) * mmW;
+    const my = mmY + (mothership.y / WORLD_H) * mmH;
+    ctx.fillStyle = 'rgba(150,180,210,0.6)';
+    ctx.beginPath();
+    ctx.arc(mx, my, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const wx = mmX + (wormhole.x / WORLD_W) * mmW;
+  const wy = mmY + (wormhole.y / WORLD_H) * mmH;
+  ctx.fillStyle = 'rgba(200,255,255,0.8)';
+  ctx.beginPath();
+  ctx.arc(wx, wy, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (ship && ship.alive) {
+    const sx = mmX + (ship.x / WORLD_W) * mmW;
+    const sy = mmY + (ship.y / WORLD_H) * mmH;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  const vx1 = mmX + (camera.x / WORLD_W) * mmW;
+  const vy1 = mmY + (camera.y / WORLD_H) * mmH;
+  const vw = (W / WORLD_W) * mmW;
+  const vh = (H / WORLD_H) * mmH;
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(vx1, vy1, vw, vh);
+}
+
+// ─── FILM GRAIN ───────────────────────────────────────────────────
+function generateGrain() {
+  const imageData = grainCtx.createImageData(W, H);
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    const v = Math.random() * 255;
+    imageData.data[i] = v;
+    imageData.data[i+1] = v;
+    imageData.data[i+2] = v;
+    imageData.data[i+3] = 30;
+  }
+  grainCtx.putImageData(imageData, 0, 0);
+}
+
+// ─── MAIN RENDER ──────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  if (gameState === STATE.MENU) {
+    drawStarfield();
+    drawNebulae();
+    drawCosmicDust(false);
+    drawShootingStars();
+    return;
+  }
+
+  drawStarfield();
+  drawNebulae();
+  drawCosmicDust(true);
+  drawShootingStars();
+  drawWorldBorder();
+  drawWormhole();
+
+  for (const p of planets) drawPlanetOrbit(p);
+  for (const p of planets) drawPlanet(p);
+  for (const bh of blackHoles) drawBlackHole(bh);
+  for (const obs of obstacles) drawObstacle(obs);
+
+  // Draw mothership (always visible when docked, fades after launch)
+  if (ship.docked || (mothership && Math.hypot(ship.x - mothership.x, ship.y - mothership.y) < 600)) {
+    drawMothership();
+  }
+
+  drawHUDArrows();
+  drawShip();
+  drawParticles();
+  drawMinimap();
+}
+
+// ─── GAME LOOP ────────────────────────────────────────────────────
+let animFrame;
+
+function gameLoop() {
+  updatePhysics();
+  render();
+
+  for (const ss of shootingStars) ss.update();
+  for (const d of cosmicDust) d.update();
+  if (Math.random() < 0.1 || gameState === STATE.PLAYING || gameState === STATE.DOCKED) generateGrain();
+
+  if (gameState === STATE.SUCCESS) {
+    document.getElementById('hud').style.display = 'none';
+    document.getElementById('dock-hint').style.display = 'none';
+    document.getElementById('result').classList.add('show');
+    document.getElementById('result-title').textContent = 'MISSION COMPLETE / 任务完成';
+    document.getElementById('result-title').style.color = '#80d0ff';
+    document.getElementById('result-title').style.textShadow = '0 0 30px rgba(100,180,255,0.6)';
+    document.getElementById('result-msg').innerHTML = `You navigated the cosmos and reached the wormhole.<br>你穿越了星辰大海，抵达了虫洞。<br><br>Fuel remaining: ${Math.round(ship.fuel)}% / 剩余燃料: ${Math.round(ship.fuel)}%`;
+    document.getElementById('result-btn').textContent = 'PLAY AGAIN / 再来一次';
+    return;
+  }
+
+  if (gameState === STATE.FAILURE) {
+    document.getElementById('hud').style.display = 'none';
+    document.getElementById('dock-hint').style.display = 'none';
+    document.getElementById('result').classList.add('show');
+    document.getElementById('result-title').style.textShadow = '0 0 30px rgba(255,80,80,0.6)';
+
+    if (failReason === 'blackhole') {
+      document.getElementById('result-title').textContent = 'CONSUMED BY DARKNESS / 被黑暗吞噬';
+      document.getElementById('result-title').style.color = '#8040ff';
+      document.getElementById('result-msg').innerHTML = 'The black hole\'s gravity was too strong.<br>黑洞的引力太过强大。<br><br>"Do not go gentle into that good night."<br>"不要温和地走进那个良夜。"';
+    } else if (failReason === 'obstacle') {
+      document.getElementById('result-title').textContent = 'SHIP DESTROYED / 飞船损毁';
+      document.getElementById('result-title').style.color = '#ff6040';
+      document.getElementById('result-msg').innerHTML = 'Collision with space debris.<br>与太空碎片发生碰撞。<br><br>Navigate more carefully next time.<br>下次请更谨慎地导航。';
+    } else if (failReason === 'fuel') {
+      document.getElementById('result-title').textContent = 'FUEL DEPLETED / 燃料耗尽';
+      document.getElementById('result-title').style.color = '#ffaa40';
+      document.getElementById('result-msg').innerHTML = 'Stranded in the void of space.<br>漂流在虚空之中。<br><br>Use orbital mechanics to conserve fuel.<br>利用轨道力学节省燃料。';
+    } else if (failReason === 'boundary') {
+      document.getElementById('result-title').textContent = 'LOST IN THE VOID / 迷失虚空';
+      document.getElementById('result-title').style.color = '#ff5050';
+      document.getElementById('result-msg').innerHTML = 'You drifted beyond the edge of known space.<br>你飘出了已知宇宙的边界。<br><br>"We used to look up at the sky and wonder..."<br>"我们曾经仰望星空……"';
+    }
+    document.getElementById('result-btn').textContent = 'RETRY / 重试';
+    return;
+  }
+
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+// ─── GAME CONTROL ─────────────────────────────────────────────────
+function startGame() {
+  mouseDown = false; mouseRightDown = false; // prevent stuck-input bug
+  playMusic();
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('dock-hint').style.display = 'block';
+  document.getElementById('warning').style.opacity = '0';
+  generateLevel();
+  gameState = STATE.DOCKED;
+  if (!animFrame) animFrame = requestAnimationFrame(gameLoop);
+}
+
+function restartGame() {
+  cancelAnimationFrame(animFrame);
+  animFrame = null;
+  mouseDown = false; mouseRightDown = false; // prevent stuck-input bug
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('dock-hint').style.display = 'block';
+  document.getElementById('warning').style.opacity = '0';
+  generateLevel();
+  gameState = STATE.DOCKED;
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+function goToMenu() {
+  cancelAnimationFrame(animFrame);
+  animFrame = null;
+  mouseDown = false; mouseRightDown = false; // prevent stuck-input bug
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('dock-hint').style.display = 'none';
+  document.getElementById('warning').style.opacity = '0';
+  document.getElementById('menu').style.display = 'flex';
+  randomQuote();
+  generateLevel();
+  gameState = STATE.MENU;
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+// ─── MUSIC: "Cornfield Chase" - Hans Zimmer, Interstellar ───────
+const bgm = document.getElementById('bgm');
+bgm.volume = 0.25; // moderate-low volume
+
+function playMusic() {
+  if (bgm.paused) {
+    bgm.play().catch(() => {}); // ignore autoplay errors
+  }
+}
+
+function stopMusic() {
+  bgm.pause();
+  bgm.currentTime = 0;
+}
+
+// ─── STARTUP ──────────────────────────────────────────────────────
+// Music starts on first user click (browser autoplay policy)
+canvas.addEventListener('click', () => playMusic(), { once: true });
+document.getElementById('menu-btn').addEventListener('click', () => playMusic());
+generateLevel();
+randomQuote();
+animFrame = requestAnimationFrame(gameLoop);
+
+console.log('INTERSTELLAR v3.0 / 星际穿越 - Cornfield Chase BGM');
+console.log('Hold LMB on mothership to launch / 在母舰上长按左键发射');
+console.log('Approach planet orbits to sync / 靠近星球轨道同步旋转');
+console.log('Hold LMB in orbit to build escape velocity / 轨道中长按左键蓄力脱离');
+console.log('Avoid black holes and obstacles / 躲避黑洞和障碍物');
+console.log('Reach the wormhole / 抵达虫洞');
+</script>
+</body>
+</html>

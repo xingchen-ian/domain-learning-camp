@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Development — First Diagnosis</title>
+  <link rel="stylesheet" href="assets/css/site.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <span class="logo">F</span>
+        <span>First Diagnosis</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="domain.html">Domain &amp; System</a>
+        <a href="process.html" class="active">Development</a>
+        <a href="game.html" class="cta">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <span class="eyebrow">Development Process</span>
+        <h1>How this was built, honestly.</h1>
+        <p class="lead">
+          The brief asks for a chronological log of what was decided,
+          what was tested, what failed, and what was accepted without
+          full understanding. This page mirrors the
+          <code>agent-development-log.md</code> file in the project root,
+          condensed for a website audience.
+        </p>
+        <p>
+          <a class="btn btn-primary" href="game.html">Skip to the game →</a>
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Timeline</p>
+        <h2>From brief to first playable, through a playtest</h2>
+
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-time">2026-07-21 · Planning</div>
+            <h3>Read the brief, lock identity</h3>
+            <p>
+              Read the full development brief (sections 1–13) and confirmed
+              two things with the student: the project is called
+              <strong>First Diagnosis</strong>, and there is no system
+              graph — the brief is the sole primary reference. This decision
+              is documented in the agent log so the website is honest
+              about what the project was and was not.
+            </p>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-time">2026-07-21 · Tech decision</div>
+            <h3>Picked the lowest necessary dependency track</h3>
+            <p>
+              The brief gives three tracks. Track A (HTML + CSS + plain
+              JS + Canvas 2D) was chosen because the design is 2D,
+              the audience is high-school students, and the iMac
+              exhibition is simpler without a build step. No npm, no
+              Vite, no Three.js. The chosen track is documented in the
+              README.
+            </p>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-time">2026-07-21 · Data model</div>
+            <h3>Designed the smallest complete loop</h3>
+            <p>
+              The agent proposed: one patient, one cut, one hidden
+              variable (cleanliness), four actions (examine, clean,
+              stitch, bandage), one visible body signal (bleeding),
+              one delayed signal (stitch pops if not cleaned). This is
+              the smallest loop that exercises the "evaluate before
+              treating" learning shift.
+            </p>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-time">2026-07-21 · Build (v1)</div>
+            <h3>Three challenge presets, four-page website, audit pass</h3>
+            <p>
+              The first playable shipped with three challenges — The
+              First Cut (dirty cut, basic loop), The Deep Gash (depth
+              is hidden, basic stitch is not enough), The Limp Arm (no
+              x-ray, conservative care on a broken bone). Each one
+              changes which variables matter and which equipment is
+              available. The four pages (Home, Domain &amp; System,
+              Development, Play) link with relative paths. Audit pass:
+              no <code>node_modules</code>, no external assets,
+              1920×1080 capture saved to <code>preview.png</code>.
+            </p>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-time">2026-07-21 · Refinements</div>
+            <h3>Three small decisions locked</h3>
+            <p>
+              The student locked three open items: no team name in the
+              footer, audio on by default, and the deep-cut tool is
+              called <em>Advanced suture</em>. All three applied across
+              the codebase and the dev log.
+            </p>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-time">2026-07-21 · Self Play Test 01</div>
+            <h3>The single biggest design change so far</h3>
+            <p>
+              The student played the v1 build and surfaced the core
+              gap: the treatment view is a single screen, but a real
+              disaster has <em>multiple</em> patients, scattered
+              equipment, and a per-patient clock that the world keeps
+              running while the player focuses on one of them. The v1
+              design didn't have anywhere for that to live.
+            </p>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-time">2026-07-21 · Build (v2)</div>
+            <h3>Rewrote the game as exploration + treatment</h3>
+            <p>
+              The whole game was rewritten around the new design: a
+              top-down world (forest clearing, crashed jet, fire), a
+              moveable medic (WASD/arrows), seven patients per
+              mission (4 visible, 3 hidden), per-patient 170 s timers
+              that start on find and keep ticking during treatment,
+              sidebar equipment (saline, small bandage, suture,
+              medicine) and environment equipment (cast, big bandage,
+              cleaning cloth, water — water required to take
+              medicine). The click-to-select-injury bug was fixed
+              (50 px hit radius, dedicated treatment-mode click
+              handler, injury IDs auto-assigned at level start). The
+              world pauses its per-patient stability drain only while
+              the action bar is mid-action; the world and other
+              patients' clocks keep running. The website shell was
+              rebuilt to match.
+            </p>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-time">Pending · Audit</div>
+            <h3>Submission audit before packaging</h3>
+            <p>
+              The brief's §11 audit will run before packaging:
+              no <code>node_modules</code>, relative paths only, all
+              links work from <code>gallery/projects/group-XX/</code>,
+              the game runs at 1920×1080, the manifest is filled in
+              honestly, and the public-display consent is confirmed
+              with the student.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Decisions and where they came from</p>
+        <h2>What the AI suggested vs. what was decided</h2>
+        <p>
+          Per the brief, the development log records who decided what.
+          A short version of that record is below.
+        </p>
+
+        <div class="grid" style="margin-top: 18px;">
+          <div class="card">
+            <h3>Project title</h3>
+            <p>
+              The student chose <strong>First Diagnosis</strong>. The AI
+              did not propose alternatives.
+            </p>
+          </div>
+          <div class="card">
+            <h3>System graph</h3>
+            <p>
+              The student said there is no graph and to ignore that part.
+              The AI is working from the brief only.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Tech track</h3>
+            <p>
+              Track A was recommended by the AI following the brief's
+              "lowest necessary dependency" rule. No npm, no Three.js.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Mission structure (v2)</h3>
+            <p>
+              The student requested a single-mission design with 5–7
+              patients, an explorable environment, and equipment that
+              has to be found. The AI implemented this as one mission
+              (Jet Crash — Forest Clearing) with 7 patients and 7 env
+              equipment spawns.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Per-patient timer</h3>
+            <p>
+              The student requested 160–180 s per patient, clock starts
+              on find. The AI used 170 s (mid-point), keeps ticking
+              during treatment so the world pressure is real.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Equipment split</h3>
+            <p>
+              The student split equipment into "always in the sidebar"
+              (saline, small bandage, suture, medicine) and "must be
+              found" (cast, big bandage, cleaning cloth, water). The AI
+              implemented this exactly; water is required to take
+              medicine.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Movement</h3>
+            <p>
+              The student requested a moveable character. The AI added
+              WASD/arrow movement with circle-vs-rect collision against
+              the jet, trees, and fire patches.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Audio</h3>
+            <p>
+              Light Web Audio synth for find chime, stitch pop, success
+              / fail chord, pickup, warn. On by default per the
+              student. No external audio assets.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Visual style</h3>
+            <p>
+              Soft clinical palette for the website (blue / white / red
+              accents). A darker, more atmospheric palette for the
+              in-game world (forest green, jet gray, fire orange). The
+              brief explicitly asks for readability over polish, so this
+              is intentional.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Open questions for the student</p>
+        <h2>What's still TBD</h2>
+        <ul>
+          <li>Student name(s) for the submission manifest.</li>
+          <li>Public-display consent for the submission manifest.</li>
+          <li>Second playtest (Self Play Test 02) to verify the v2 design — especially the 170 s timer, hidden patients, equipment split, and water-medicine dependency.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div><strong>First Diagnosis</strong> · Development process page</div>
+      <div><a href="game.html">Play the Game →</a></div>
+    </div>
+  </footer>
+</body>
+</html>

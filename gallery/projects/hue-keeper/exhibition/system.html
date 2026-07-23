@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hue Keeper — System Design</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">
+            <span class="logo-dot"></span>
+            Hue Keeper
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="domain.html">Domain Knowledge</a></li>
+            <li><a href="system.html" class="active">System Design</a></li>
+            <li><a href="process.html">Development Process</a></li>
+            <li><a href="game.html" class="nav-cta">Play Game</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <section class="section">
+            <h2 class="section-title">System Design</h2>
+            <p class="section-subtitle">How data flows through the game: environment, player actions, calculated results, and feedback.</p>
+
+            <!-- System Graph SVG -->
+            <div class="graph-container">
+                <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Segoe UI', Arial, sans-serif;">
+                    <!-- Background -->
+                    <rect width="900" height="520" fill="#fdf6e3" rx="12"/>
+
+                    <!-- Title -->
+                    <text x="450" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#264653">Hue Keeper — System Graph</text>
+
+                    <!-- Environment Data (top-left) -->
+                    <rect x="30" y="60" width="240" height="130" rx="10" fill="#fce4de" stroke="#e76f51" stroke-width="2"/>
+                    <text x="150" y="82" text-anchor="middle" font-size="13" font-weight="bold" fill="#c44d33">Environment Data</text>
+                    <text x="45" y="102" font-size="11" fill="#5a6c7d">&#8226; Fresco missing colors</text>
+                    <text x="45" y="118" font-size="11" fill="#5a6c7d">&#8226; Flower colors &amp; positions</text>
+                    <text x="45" y="134" font-size="11" fill="#5a6c7d">&#8226; Monster colors (L3)</text>
+                    <text x="45" y="150" font-size="11" fill="#5a6c7d">&#8226; Color fade rate &amp; timer</text>
+                    <text x="45" y="166" font-size="11" fill="#5a6c7d">&#8226; Flower recharge state</text>
+                    <text x="45" y="182" font-size="11" fill="#5a6c7d">&#8226; Monster spawn interval</text>
+
+                    <!-- Player-Controlled Data (top-right) -->
+                    <rect x="630" y="60" width="240" height="130" rx="10" fill="#d5f0ec" stroke="#2a9d8f" stroke-width="2"/>
+                    <text x="750" y="82" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a7a6e">Player-Controlled Data</text>
+                    <text x="645" y="102" font-size="11" fill="#5a6c7d">&#8226; Pixie position (x, y)</text>
+                    <text x="645" y="118" font-size="11" fill="#5a6c7d">&#8226; Palette slots [0, 1]</text>
+                    <text x="645" y="134" font-size="11" fill="#5a6c7d">&#8226; Active slot selection</text>
+                    <text x="645" y="150" font-size="11" fill="#5a6c7d">&#8226; Collect from flowers</text>
+                    <text x="645" y="166" font-size="11" fill="#5a6c7d">&#8226; Mix at fountain</text>
+                    <text x="645" y="182" font-size="11" fill="#5a6c7d">&#8226; Splatter on fresco/monster</text>
+
+                    <!-- System-Calculated Results (middle) -->
+                    <rect x="330" y="220" width="240" height="130" rx="10" fill="#fdf2d5" stroke="#e9c46a" stroke-width="2"/>
+                    <text x="450" y="242" text-anchor="middle" font-size="13" font-weight="bold" fill="#b8941e">System-Calculated Results</text>
+                    <text x="345" y="262" font-size="11" fill="#5a6c7d">&#8226; Fresco fill level (0-100%)</text>
+                    <text x="345" y="278" font-size="11" fill="#5a6c7d">&#8226; Fresco completion %</text>
+                    <text x="345" y="294" font-size="11" fill="#5a6c7d">&#8226; Monster state (unharmed/</text>
+                    <text x="390" y="310" font-size="11" fill="#5a6c7d">stronger/defeated)</text>
+                    <text x="345" y="326" font-size="11" fill="#5a6c7d">&#8226; Color match result</text>
+                    <text x="345" y="342" font-size="11" fill="#5a6c7d">&#8226; Win/lose condition check</text>
+
+                    <!-- Feedback (bottom) -->
+                    <rect x="30" y="380" width="840" height="120" rx="10" fill="#dce8f1" stroke="#457b9d" stroke-width="2"/>
+                    <text x="450" y="402" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e6080">Feedback (Visual, Audio, State-Based)</text>
+                    <text x="45" y="424" font-size="11" fill="#5a6c7d">&#8226; Grey fresco piece = needs color</text>
+                    <text x="45" y="442" font-size="11" fill="#5a6c7d">&#8226; White glow = correct color applied</text>
+                    <text x="45" y="460" font-size="11" fill="#5a6c7d">&#8226; Red flash + buzz = wrong color</text>
+                    <text x="45" y="478" font-size="11" fill="#5a6c7d">&#8226; Color fading over time</text>
+                    <text x="465" y="424" font-size="11" fill="#5a6c7d">&#8226; Monster falls = defeated (complement)</text>
+                    <text x="465" y="442" font-size="11" fill="#5a6c7d">&#8226; Monster grows = same color (wrong)</text>
+                    <text x="465" y="460" font-size="11" fill="#5a6c7d">&#8226; Monster unharmed = non-complement</text>
+                    <text x="465" y="478" font-size="11" fill="#5a6c7d">&#8226; Sound effects for each event</text>
+
+                    <!-- Arrows: Environment -> System -->
+                    <line x1="270" y1="150" x2="330" y2="240" stroke="#e76f51" stroke-width="2" marker-end="url(#arrow1)"/>
+                    <!-- Arrows: Player -> System -->
+                    <line x1="630" y1="150" x2="570" y2="240" stroke="#2a9d8f" stroke-width="2" marker-end="url(#arrow2)"/>
+                    <!-- Arrows: System -> Feedback -->
+                    <line x1="450" y1="350" x2="450" y2="380" stroke="#e9c46a" stroke-width="2" marker-end="url(#arrow3)"/>
+                    <!-- Arrows: Feedback -> Player (loop back) -->
+                    <path d="M 870 440 Q 900 440 900 125 Q 900 125 870 125" fill="none" stroke="#457b9d" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow4)"/>
+                    <text x="895" y="280" font-size="10" fill="#457b9d" transform="rotate(90 895 280)">Player adjusts based on feedback</text>
+
+                    <!-- Arrow markers -->
+                    <defs>
+                        <marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><polygon points="0,0 8,4 0,8" fill="#e76f51"/></marker>
+                        <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><polygon points="0,0 8,4 0,8" fill="#2a9d8f"/></marker>
+                        <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><polygon points="0,0 8,4 0,8" fill="#e9c46a"/></marker>
+                        <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><polygon points="0,0 8,4 0,8" fill="#457b9d"/></marker>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Data Breakdown</h2>
+            <div class="info-block">
+                <h2>Environment Data (System-Owned)</h2>
+                <table class="data-table">
+                    <thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>frescoPieces[].requiredColor</code></td><td>String</td><td>The exact color each fresco piece needs</td></tr>
+                        <tr><td><code>flowers[].color</code></td><td>String</td><td>The color each flower provides</td></tr>
+                        <tr><td><code>flowers[].charge</code></td><td>0&ndash;1</td><td>Flower recharge state; depleted after collection</td></tr>
+                        <tr><td><code>monsters[].color</code></td><td>String</td><td>The monster's color (determines its weakness)</td></tr>
+                        <tr><td><code>fadeRate</code></td><td>Number</td><td>How fast fresco fill levels decrease per second</td></tr>
+                        <tr><td><code>monsterSpawnInterval</code></td><td>Seconds</td><td>Time between monster spawns (Level 3)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-block">
+                <h2>Player-Controlled Data</h2>
+                <table class="data-table">
+                    <thead><tr><th>Variable</th><th>Type</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>player.x, player.y</code></td><td>Number</td><td>Pixie's position on the canvas</td></tr>
+                        <tr><td><code>player.palette[0..1]</code></td><td>String|null</td><td>Two color slots; filled by collecting flowers</td></tr>
+                        <tr><td><code>player.activeSlot</code></td><td>0 or 1</td><td>Which palette slot is currently selected</td></tr>
+                        <tr><td><em>Action: Collect</em></td><td>Trigger</td><td>Walk over a charged flower to fill a palette slot</td></tr>
+                        <tr><td><em>Action: Mix</em></td><td>Trigger</td><td>Walk over fountain with 2 colors to mix them</td></tr>
+                        <tr><td><em>Action: Splatter</em></td><td>Trigger</td><td>Press SPACE near fresco or monster</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-block">
+                <h2>System-Calculated Results</h2>
+                <table class="data-table">
+                    <thead><tr><th>Result</th><th>Trigger</th><th>Effect</th></tr></thead>
+                    <tbody>
+                        <tr><td>Fresco fill level increases</td><td>Correct color splattered</td><td>Piece glows; counts toward win</td></tr>
+                        <tr><td>Fresco rejects color</td><td>Wrong color splattered</td><td>Red flash + buzz sound</td></tr>
+                        <tr><td>Fresco fades</td><td>60s after each piece is splattered</td><td>That piece's fill level decreases over time</td></tr>
+                        <tr><td>Monster defeated</td><td>Complementary color splattered</td><td>Monster falls; fade-out animation</td></tr>
+                        <tr><td>Monster stronger</td><td>Same color splattered</td><td>Monster grows larger and faster</td></tr>
+                        <tr><td>Monster unharmed</td><td>Non-complementary, non-same color</td><td>No effect; color wasted</td></tr>
+                        <tr><td>Win</td><td>All fresco pieces filled</td><td>Level complete screen</td></tr>
+                        <tr><td>Lose (L3)</td><td>Monster touches Pixie</td><td>Game over screen</td></tr>
+                        <tr><td>Lose (L2&ndash;3)</td><td>All pieces fade to zero after filling at least one</td><td>Game over screen</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Challenge Presets</h2>
+            <p class="section-subtitle">Each level changes system variables and relationships, not just visual decoration.</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <span class="tag tag-terra">Level 1</span>
+                    <h3 style="margin-top:12px;">Matching Only</h3>
+                    <table class="data-table" style="margin-top:8px;">
+                        <tbody>
+                            <tr><td>Fresco needs</td><td>Red, Blue, Yellow</td></tr>
+                            <tr><td>Flowers provide</td><td>Red, Blue, Yellow</td></tr>
+                            <tr><td>Fade rate</td><td>0 (no fading)</td></tr>
+                            <tr><td>Monsters</td><td>None</td></tr>
+                            <tr><td>Mixing required</td><td>No</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <span class="tag tag-gold">Level 2</span>
+                    <h3 style="margin-top:12px;">Mixing + Fading</h3>
+                    <table class="data-table" style="margin-top:8px;">
+                        <tbody>
+                            <tr><td>Fresco needs</td><td>Green, Orange, Purple, Green, Orange (5 pieces)</td></tr>
+                            <tr><td>Flowers provide</td><td>Red, Blue, Yellow, Red</td></tr>
+                            <tr><td>Fade rate</td><td>1.67%/sec (60s to fully fade, per piece)</td></tr>
+                            <tr><td>Monsters</td><td>None</td></tr>
+                            <tr><td>Mixing required</td><td>Yes (at fountain)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <span class="tag tag-teal">Level 3</span>
+                    <h3 style="margin-top:12px;">Conflict + Survival</h3>
+                    <table class="data-table" style="margin-top:8px;">
+                        <tbody>
+                            <tr><td>Fresco needs</td><td>Green, Red, Orange, Blue, Purple, Yellow (6 pieces)</td></tr>
+                            <tr><td>Flowers provide</td><td>Red, Blue, Yellow, Green, Orange (5 — Purple must be mixed!)</td></tr>
+                            <tr><td>Fade rate</td><td>1.67%/sec (60s to fully fade, per piece)</td></tr>
+                            <tr><td>Monsters</td><td>Pool of 3, spawn every 5s from any edge (cap shrinks as you defeat them)</td></tr>
+                            <tr><td>Monster speed</td><td>Fast &mdash; must attack to clear paths</td></tr>
+                            <tr><td>Monster weakness</td><td>Complementary color</td></tr>
+                            <tr><td>Win requirement</td><td>Defeat &ge;2 monsters AND fill all fresco pieces</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Success &amp; Failure Conditions</h2>
+            <div class="card-grid">
+                <div class="card" style="border-left:4px solid var(--accent-teal);">
+                    <h3>&#9989; Success</h3>
+                    <p>All broken areas on the fresco are filled with matching colors <strong>and</strong> at least 2 monsters have been defeated using complementary colors (Level 3).</p>
+                </div>
+                <div class="card" style="border-left:4px solid var(--accent-terra);">
+                    <h3>&#10060; Failure (Level 3)</h3>
+                    <p>Pixie is hit by a monster. The game ends immediately with a "Game Over" screen.</p>
+                </div>
+                <div class="card" style="border-left:4px solid var(--accent-gold);">
+                    <h3>&#10060; Failure (Levels 2&ndash;3)</h3>
+                    <p>Each splattered color fades individually over 60 seconds. If all fresco pieces fade back to zero after the player has filled at least one, the level fails and must be restarted.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>Hue Keeper &mdash; System Design &mdash; Amy Fang</p>
+    </footer>
+</body>
+</html>

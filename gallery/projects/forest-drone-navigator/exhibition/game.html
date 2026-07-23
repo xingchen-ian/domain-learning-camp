@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forest Drone Navigator · 3D</title>
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+<div id="game-root">
+  <div id="lang-switch">
+    <button type="button" data-setlang="zh">中文</button>
+    <span class="sep">/</span>
+    <button type="button" data-setlang="en">English</button>
+  </div>
+
+  <a id="home-link" href="index.html" data-i18n="home_link">← Home</a>
+  <canvas id="scene"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="hud-alt">
+      <div class="hud-label" data-i18n="hud_alt_label">ALTITUDE</div>
+      <div id="alt-val">70</div>
+      <div class="alt-bar"><div id="alt-fill"></div><div id="alt-pad-mark"></div></div>
+      <div class="hud-sub" data-i18n="hud_alt_sub">Goal: reach 0 on the LAND pad</div>
+    </div>
+    <div id="hud-wind">
+      <div class="hud-label" data-i18n="hud_wind_label">WIND</div>
+      <svg id="wind-arrow" viewBox="0 0 80 80" width="70" height="70">
+        <line x1="40" y1="40" x2="78" y2="40" stroke="#1565c0" stroke-width="6" marker-end="url(#ah)"/>
+        <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1565c0"/></marker></defs>
+      </svg>
+      <div id="wind-val">0 m/s</div>
+      <div class="hud-sub" id="wind-hint" data-i18n="hud_wind_hint">Watch the wind—compensate early</div>
+    </div>
+      <div id="hud-right">
+        <div id="hud-time" data-i18n="hud_time">⏱ 0 s</div>
+        <div id="hud-level" data-i18n="hud_level">Level: —</div>
+        <div id="hud-speed" data-i18n="hud_speed">Speed 0</div>
+        <div id="hud-progress" data-i18n="hud_progress">To LAND 0 m</div>
+      </div>
+  </div>
+
+  <!-- Menu -->
+  <div id="menu" class="overlay">
+    <div class="panel">
+      <h1 data-i18n="menu_h1">Forest Drone Navigator · 3D</h1>
+      <p class="lead" data-i18n="menu_lead">Fly your drone through the forest and <b>reach the LAND pad with altitude at 0</b> to win.<br/>Watch out for building-tall trees (fly over) and overhead cables (dip under), and always compensate for the wind.</p>
+      <div class="levels">
+        <button class="lv-btn" data-lv="0">
+          <span class="lv-name" data-i18n="menu_lv1_name">P1 · Beginner</span>
+          <span class="lv-desc" data-i18n="menu_lv1_desc">Short trees · light wind · no cables</span>
+        </button>
+        <button class="lv-btn" data-lv="1">
+          <span class="lv-name" data-i18n="menu_lv2_name">P2 · Intermediate</span>
+          <span class="lv-desc" data-i18n="menu_lv2_desc">Tall trees (some above start) · moderate wind · 3 cables</span>
+        </button>
+        <button class="lv-btn" data-lv="2">
+          <span class="lv-name" data-i18n="menu_lv3_name">P3 · Challenge</span>
+          <span class="lv-desc" data-i18n="menu_lv3_desc">Tallest trees · strong wind · 4 cables</span>
+        </button>
+      </div>
+      <p class="hint" data-i18n="menu_hint">Tip: Inside a level, press <b>Space</b> to see the controls and start.</p>
+    </div>
+  </div>
+
+  <!-- Help / Tutorial -->
+  <div id="help" class="overlay hidden">
+    <div class="panel help-panel">
+      <h2 data-i18n="help_h2">Controls (press <b>Space</b> to start / pause)</h2>
+      <div class="help-grid">
+        <div class="keys">
+          <div class="key-row" data-i18n="help_k1"><span class="key">W</span> Throttle forward</div>
+          <div class="key-row" data-i18n="help_k2"><span class="key">S</span> Brake / reverse</div>
+          <div class="key-row" data-i18n="help_k3"><span class="key">A</span> Strafe left</div>
+          <div class="key-row" data-i18n="help_k4"><span class="key">D</span> Strafe right</div>
+          <div class="key-row" data-i18n="help_k5"><span class="key">U</span> Ascend</div>
+          <div class="key-row" data-i18n="help_k6"><span class="key">H</span> Descend</div>
+          <div class="key-row" data-i18n="help_k7"><span class="key">Ctrl</span> Boost: hold Control for extra thrust (faster, but more inertia—ease off early)</div>
+          <div class="key-row" data-i18n="help_k8"><span class="key">Space</span> Pause / resume (shows this guide)</div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 180 230" width="180" height="230" role="img" aria-label="Control layout">
+            <!-- central drone -->
+            <rect x="73" y="92" width="34" height="26" rx="7" fill="#39d353" stroke="#1f9d3a" stroke-width="1.5"/>
+            <circle cx="80" cy="105" r="5.5" fill="#1f9d3a"/><circle cx="100" cy="105" r="5.5" fill="#1f9d3a"/>
+            <circle cx="80" cy="105" r="2" fill="#c8f7d4"/><circle cx="100" cy="105" r="2" fill="#c8f7d4"/>
+            <!-- U ascend -->
+            <rect x="64" y="6" width="52" height="22" rx="6" fill="#0e2a1c" stroke="#2e6b40"/>
+            <text x="78" y="21" text-anchor="middle" font-size="13" font-weight="bold" fill="#7ed957">U</text>
+            <path d="M100,20 L106,12 L112,20 Z" fill="#5fd17a"/>
+            <!-- W forward -->
+            <rect x="64" y="40" width="52" height="22" rx="6" fill="#0e2a1c" stroke="#2e6b40"/>
+            <text x="80" y="55" text-anchor="middle" font-size="13" font-weight="bold" fill="#7ed957">W</text>
+            <path d="M100,54 L106,46 L112,54 Z" fill="#5fd17a"/>
+            <!-- A left -->
+            <rect x="6" y="94" width="52" height="22" rx="6" fill="#0e2a1c" stroke="#2e6b40"/>
+            <text x="22" y="109" text-anchor="middle" font-size="13" font-weight="bold" fill="#7ed957">A</text>
+            <path d="M38,99 L30,105 L38,111 Z" fill="#5fd17a"/>
+            <!-- D right -->
+            <rect x="122" y="94" width="52" height="22" rx="6" fill="#0e2a1c" stroke="#2e6b40"/>
+            <text x="138" y="109" text-anchor="middle" font-size="13" font-weight="bold" fill="#7ed957">D</text>
+            <path d="M142,99 L150,105 L142,111 Z" fill="#5fd17a"/>
+            <!-- S back -->
+            <rect x="64" y="150" width="52" height="22" rx="6" fill="#0e2a1c" stroke="#2e6b40"/>
+            <text x="80" y="165" text-anchor="middle" font-size="13" font-weight="bold" fill="#7ed957">S</text>
+            <path d="M100,158 L106,166 L112,158 Z" fill="#5fd17a"/>
+            <!-- H descend -->
+            <rect x="64" y="184" width="52" height="22" rx="6" fill="#0e2a1c" stroke="#2e6b40"/>
+            <text x="80" y="199" text-anchor="middle" font-size="13" font-weight="bold" fill="#7ed957">H</text>
+            <path d="M100,192 L106,200 L112,192 Z" fill="#5fd17a"/>
+            <!-- Ctrl boost -->
+            <rect x="120" y="196" width="54" height="22" rx="6" fill="#163d24" stroke="#5fd17a"/>
+            <text x="147" y="211" text-anchor="middle" font-size="12" font-weight="bold" fill="#c8f7d4">Ctrl</text>
+          </svg>
+        </div>
+      </div>
+      <div class="notice">
+        <p data-i18n="help_n1">🎯 <b>Win:</b> Fly to the <b>LAND</b> pad at the end and hold <b>H</b> to bring altitude down to <b>0</b>. Touch down off the pad and you crash.</p>
+        <p data-i18n="help_n2">🌬️ The <b>WIND</b> readout shows speed and direction; the wind keeps pushing you off course—compensate against it early.</p>
+        <p data-i18n="help_n3">🌲 Fly <b>over</b> tall trees; ⌁ stay <b>below the marked height</b> to pass under overhead cables.</p>
+        <p data-i18n="help_n4">⏱ The <b>timer</b> in the top-right counts down; <b>harder tiers have less time</b> (P1 60s / P2 40s / P3 30s). Hit zero and the mission fails.</p>
+      </div>
+      <div id="help-adv" class="advanced hidden">
+        <p data-i18n="help_adv">⚠️ <b>Advanced (P2 / P3):</b> Stronger wind here, and some trees rise above your 70 m start height—you must actively <b>climb over</b> them. Cables force you to <b>drop low</b> and slip beneath. Read the wind first, then weave an S-shaped path switching between 'climb over trees / dive under cables'.</p>
+      </div>
+      <p class="hint" data-i18n="help_hint">Press <b>Space</b> to start.</p>
+    </div>
+  </div>
+
+  <!-- Win -->
+  <div id="win" class="overlay hidden">
+    <div class="panel result win-panel">
+      <h1 data-i18n="win_h1">🏆 Landing Successful!</h1>
+      <p id="win-msg">You successfully compensated for the wind and landed.</p>
+      <div class="result-btns">
+        <button id="win-again" data-i18n="win_again">Play Again</button>
+        <button id="win-menu" data-i18n="win_menu">Choose Level</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lose -->
+  <div id="lose" class="overlay hidden">
+    <div class="panel result lose-panel">
+      <h1 data-i18n="lose_h1">💥 Mission Failed</h1>
+      <p id="lose-msg">Drone destroyed.</p>
+      <div class="result-btns">
+        <button id="lose-again" data-i18n="lose_again">Try Again</button>
+        <button id="lose-menu" data-i18n="lose_menu">Choose Level</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="assets/js/lang.js"></script>
+<script src="assets/js/game.js"></script>
+</body>
+</html>

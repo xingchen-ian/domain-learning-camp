@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>小猪佩奇泥坑大冒险</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;font-family:'PingFang SC','Helvetica Neue','Arial',sans-serif;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;background:#5BA8D8}
+canvas{display:block;position:fixed;top:0;left:0;z-index:1}
+#hud{position:fixed;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:20}
+#scoreBoard{background:rgba(255,255,255,0.92);padding:6px 16px;border-radius:14px;font-size:17px;font-weight:700;color:#d63384;box-shadow:0 2px 8px rgba(0,0,0,0.12);border:2px solid #ffb3d9}
+#bootsHUD{display:none;background:rgba(255,235,59,0.92);padding:6px 16px;border-radius:14px;font-size:17px;font-weight:700;color:#5d4037;box-shadow:0 2px 8px rgba(0,0,0,0.12);border:2px solid #ffb300;min-width:110px;text-align:center}
+#bootsHUD.warning{animation:flash 0.35s infinite alternate}
+@keyframes flash{0%{opacity:1;background:rgba(255,235,59,0.92)}100%{opacity:0.45;background:rgba(255,87,34,0.75);border-color:#ff5722}}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100}
+#startScreen{background:rgba(91,168,216,0.65);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+#gameOverScreen{background:rgba(0,0,0,0.72);display:none}
+#startScreen h1{font-size:32px;color:#fff;text-shadow:2px 2px 0 #d63384,4px 4px 0 rgba(0,0,0,0.1);text-align:center;line-height:1.3;margin:0 12px}
+#startScreen .sub{font-size:14px;color:#fff;margin:4px 0 12px;text-shadow:1px 1px 0 rgba(0,0,0,0.15);opacity:0.85}
+.infoBox{background:rgba(255,255,255,0.88);padding:12px 20px;border-radius:16px;margin-bottom:18px;max-width:380px;box-shadow:0 3px 14px rgba(0,0,0,0.08)}
+.infoBox p{font-size:13px;color:#555;margin:5px 0;display:flex;align-items:center;gap:8px}
+.key{display:inline-block;background:#d63384;color:#fff;padding:2px 8px;border-radius:6px;font-weight:700;font-size:11px;min-width:24px;text-align:center;box-shadow:0 2px 0 #a81e62}
+.btn{padding:12px 48px;font-size:19px;background:#d63384;color:#fff;border:none;border-radius:26px;cursor:pointer;box-shadow:0 4px 14px rgba(214,51,132,0.4);font-weight:700;letter-spacing:1px;pointer-events:all;transition:transform 0.15s,box-shadow 0.15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(214,51,132,0.5)}
+.btn:active{transform:translateY(0)}
+#gameOverScreen h2{font-size:36px;color:#ff6b6b;margin-bottom:2px;text-shadow:2px 2px 0 rgba(0,0,0,0.5)}
+#gameOverScreen .msg{font-size:16px;color:#fff;margin-bottom:6px}
+#finalDist{font-size:26px;color:#ffd700;margin-bottom:2px;font-weight:700}
+#bestDist{font-size:15px;color:#bbb;margin-bottom:16px}
+#bestDist span{color:#ffd700;font-weight:700}
+#ctrlHint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.75);font-size:11px;text-shadow:1px 1px 2px rgba(0,0,0,0.35);z-index:15;pointer-events:none;display:none}
+@media(max-width:768px){#startScreen h1{font-size:24px}.infoBox{max-width:92%;padding:10px 14px}.infoBox p{font-size:12px}#scoreBoard,#bootsHUD{font-size:14px;padding:5px 10px}}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <div id="scoreBoard">距离: 0m</div>
+  <div id="bootsHUD">👢 靴子: 20s</div>
+</div>
+
+<div id="startScreen" class="overlay">
+  <h1>🐷 小猪佩奇泥坑大冒险 🐷</h1>
+  <p class="sub">无尽跑酷 · 跳上天空平台躲避障碍！</p>
+  <div class="infoBox">
+    <p><span class="key">空格</span> 跳跃 — 跳上箱子或天空平台</p>
+    <p>🚧 50m后障碍物陆续出现 · 随距离增加</p>
+    <p>☁️ 200m起天空平台 · 可连续跳跃跑酷</p>
+    <p>🚫 从侧面撞到箱子/岩石/圆木 = 游戏结束</p>
+    <p>💧🪨🪵📦 可踩障碍物顶部！</p>
+    <p>🧁 吃蛋糕！3个→第一关通关，5个→第二关通关</p>
+  </div>
+  <button class="btn" id="btnStart">开始冒险</button>
+  <p style="color:rgba(255,255,255,0.75);margin-top:10px;font-size:13px;text-shadow:1px 1px 0 rgba(0,0,0,0.2)">按 <span style="background:rgba(255,255,255,0.3);padding:2px 10px;border-radius:5px;font-weight:700">空格</span> 开始</p>
+</div>
+
+<div id="gameOverScreen" class="overlay">
+  <h2>游戏结束!</h2>
+  <p class="msg">小猪佩奇撞到障碍物了... 💦</p>
+  <div id="finalDist">距离: 0m</div>
+  <div id="bestDist">最高纪录: <span>0m</span></div>
+  <button class="btn" id="btnRestart">再来一局</button>
+  <p style="color:rgba(255,255,255,0.6);margin-top:8px;font-size:12px">按 空格 重新开始</p>
+</div>
+
+<div id="levelWinScreen" class="overlay" style="display:none;background:rgba(0,0,0,0.65)">
+  <h2 id="levelTitle" style="font-size:40px;color:#ffd700;text-shadow:2px 2px 0 rgba(0,0,0,0.4);margin-bottom:6px">🎉</h2>
+  <p class="msg" id="levelMsg" style="font-size:18px;color:#fff"></p>
+  <button class="btn" id="btnContinue" style="margin-top:12px">继续冒险</button>
+  <p style="color:rgba(255,255,255,0.6);margin-top:8px;font-size:12px">按 空格 继续</p>
+</div>
+
+<div id="ctrlHint">空格 跳跃 &nbsp;|&nbsp; ☁️踩平台 &nbsp;|&nbsp; 🧁吃蛋糕！</div>
+
+<canvas id="c"></canvas>
+
+<script>
+(function(){
+"use strict";
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const elScore  = document.getElementById('scoreBoard');
+const elBoots  = document.getElementById('bootsHUD');
+const elStart  = document.getElementById('startScreen');
+const elOver   = document.getElementById('gameOverScreen');
+const elFinal  = document.getElementById('finalDist');
+const elBest   = document.getElementById('bestDist');
+const elCtrl   = document.getElementById('ctrlHint');
+const elLvlWin = document.getElementById('levelWinScreen');
+const elLvlTit = document.getElementById('levelTitle');
+const elLvlMsg = document.getElementById('levelMsg');
+
+// ─── Constants ──────────────────────────
+const BASE_SPEED   = 3.5;
+const MAX_SPEED    = 15;
+const GRAVITY      = 0.48;
+const JUMP_VEL     = -11.5;
+const BOOTS_DUR    = 20;
+const BOOTS_EVERY  = 200;
+const PEPPA_X      = 300;
+const PEPPA_W      = 34;
+const PEPPA_H      = 60;
+
+// ─── State ─────────────────────────────
+let W, H;
+let groundY;
+let peppaY, velY = 0;
+let jumping = false;
+let standingOnGround = true;
+let standingOnObs = null;
+let dist = 0, spd = BASE_SPEED, frame = 0;
+let bootsOn = false, bootsLeft = 0;
+let nextBoot = BOOTS_EVERY;
+let lastObsSpawn = 0;
+let lastPlatSpawn = 0;
+let lastCakeSpawn = 0;
+let obstacles = [];
+let platforms = [];
+let boots = [];
+let cakes = [];
+let particles = [];
+let worldX = 0;
+let cakeCount = 0;
+let curLevel = 0; // 0=no clear, 1=first clear, 2=second clear
+
+let phase = 'menu'; // menu|playing|levelwin|gameover
+
+// ─── Audio ────────────────────────────
+let ac = null;
+function beep(f,d,t,v){if(!ac)return;try{const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function sfxJump(){beep(540,0.06,'square',0.05)}
+function sfxBoot(){beep(523,0.06,'sine',0.07);setTimeout(()=>beep(659,0.06,'sine',0.07),60);setTimeout(()=>beep(784,0.08,'sine',0.08),120)}
+function sfxDie(){beep(260,0.12,'sawtooth',0.08);setTimeout(()=>beep(180,0.18,'sawtooth',0.06),140)}
+function sfxCake(){beep(880,0.07,'sine',0.06);setTimeout(()=>beep(1100,0.08,'sine',0.06),70);setTimeout(()=>beep(1320,0.1,'sine',0.05),140)}
+
+// ─── Resize ────────────────────────────
+function resize(){
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  groundY = H * 0.78;
+  if(!jumping && standingOnGround) peppaY = groundY;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ─── Drawing helpers ───────────────────
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+// ─── Background elements ───────────────
+let clouds=[], hills=[];
+(function(){
+  for(let i=0;i<12;i++) clouds.push({x:Math.random()*W*3, y:15+Math.random()*H*0.25, w:50+Math.random()*120, h:22+Math.random()*28, v:0.12+Math.random()*0.18});
+  // Hills carry their own trees — trees grow ON the hill surface, not floating
+  for(let i=0;i<18;i++){
+    const hx=Math.random()*W*2, hy=H*0.55+Math.random()*H*0.3, hr=35+Math.random()*80, hh=25+Math.random()*50;
+    const ht=[];
+    const nT=Math.floor(Math.random()*3);
+    for(let j=0;j<nT;j++){
+      const dx=(Math.random()-0.5)*hr*1.3;
+      if(Math.abs(dx)>hr*0.7) continue;
+      const ty=hy-Math.sqrt(hr*hr-dx*dx); // y on the semicircle surface
+      ht.push({dx,ty,th:20+Math.random()*28,tw:5+Math.random()*6});
+    }
+    hills.push({x:hx,y:hy,r:hr,h:hh,trees:ht});
+  }
+})();
+
+function drawBg(){
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#4A9BD4'); g.addColorStop(0.35,'#87CEEB');
+  g.addColorStop(0.65,'#B0E0E6'); g.addColorStop(1,'#D4E8F0');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  // sun
+  ctx.fillStyle='#FFFFF0'; ctx.beginPath(); ctx.arc(W*0.84,H*0.1,38,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,200,0.25)'; ctx.beginPath(); ctx.arc(W*0.84,H*0.1,52,0,Math.PI*2); ctx.fill();
+
+  // clouds
+  ctx.fillStyle='rgba(255,255,255,0.92)';
+  for(const c of clouds){
+    const cx=((c.x-worldX*c.v)%(W*3)+W*3)%(W*3)-W*0.5;
+    if(cx<-c.w||cx>W+c.w)continue;
+    const r=c.h*0.5;
+    ctx.beginPath(); ctx.arc(cx,c.y,r,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx-r*0.7,c.y+r*0.25,r*0.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+r*0.7,c.y+r*0.15,r*0.55,0,Math.PI*2); ctx.fill();
+  }
+  // hills with trees growing on them
+  for(const h of hills){
+    const hx=((h.x-worldX*0.45)%(W*2)+W*2)%(W*2)-W*0.5;
+    if(hx<-h.r||hx>W+h.r)continue;
+    ctx.fillStyle='#7BA87B'; ctx.beginPath(); ctx.arc(hx,h.y,h.r,Math.PI,0); ctx.fill();
+    ctx.fillStyle='#8DB88D'; ctx.beginPath(); ctx.arc(hx-h.r*0.45,h.y+h.h*0.15,h.r*0.55,Math.PI,0); ctx.fill();
+    // trees on hill surface
+    for(const t of h.trees){
+      const tx=hx+t.dx;
+      if(tx<-30||tx>W+30)continue;
+      const trunkH=t.th*0.4;
+      ctx.fillStyle='#8B4513'; ctx.fillRect(tx-t.tw*0.3, t.ty-trunkH, t.tw*0.6, trunkH);
+      ctx.fillStyle='#3A7D2C'; ctx.beginPath(); ctx.arc(tx, t.ty-trunkH-t.th*0.3, t.tw*1.3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#4A8D3C'; ctx.beginPath(); ctx.arc(tx-t.tw*0.3, t.ty-trunkH-t.th*0.15, t.tw*0.95, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+// ─── Ground ────────────────────────────
+function drawGround(){
+  const gy = groundY;
+  // grass layer
+  ctx.fillStyle='#5DA84D'; ctx.fillRect(0,gy,W,H-gy);
+  ctx.fillStyle='#4A9038'; ctx.fillRect(0,gy,W,Math.max(H*0.018,10));
+  ctx.fillStyle='#3A7028'; ctx.fillRect(0,gy+Math.max(H*0.018,10),W,Math.max(H*0.006,4));
+  // grass tufts
+  ctx.fillStyle='#6BBD5B';
+  for(let x=(worldX*0.8)%42-42; x<W+42; x+=42){
+    ctx.fillRect(x,gy-2,3,4);
+    ctx.fillRect(x+15,gy-3,3,5);
+    ctx.fillRect(x+28,gy-1,3,3);
+  }
+}
+
+// ─── Sky Platforms ─────────────────────
+function drawPlatform(p){
+  // Platform shadow
+  ctx.fillStyle='rgba(0,0,0,0.1)';
+  roundRect(p.x-p.w/2+3, p.y+3, p.w, p.h, 6);
+  ctx.fill();
+
+  // Platform body
+  const g2 = ctx.createLinearGradient(0, p.y, 0, p.y+p.h);
+  g2.addColorStop(0, '#9AD88A');
+  g2.addColorStop(0.3, '#7EC850');
+  g2.addColorStop(1, '#5DA830');
+  ctx.fillStyle = g2;
+  roundRect(p.x-p.w/2, p.y, p.w, p.h, 6);
+  ctx.fill();
+
+  // Border
+  ctx.strokeStyle = '#3A7028';
+  ctx.lineWidth = 2;
+  roundRect(p.x-p.w/2, p.y, p.w, p.h, 6);
+  ctx.stroke();
+
+  // Top highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  roundRect(p.x-p.w/2+3, p.y+1, p.w-6, 4, 3);
+  ctx.fill();
+
+  // Grass tufts on top
+  ctx.fillStyle='#A8E890';
+  const gap = Math.floor(p.w/20);
+  for(let x=p.x-p.w/2+8; x<p.x+p.w/2-8; x+=gap){
+    ctx.beginPath();
+    ctx.moveTo(x, p.y); ctx.lineTo(x-3, p.y-5); ctx.lineTo(x+3, p.y-4); ctx.closePath();
+    ctx.fill();
+  }
+}
+
+// ─── DRAW PEPPA — cartoon-accurate ─────
+function drawPeppa(px,py,s,anim,jmp,bootsOn){
+  ctx.save();
+  const b=jmp?0:Math.abs(Math.sin(anim*2))*2;
+  const P='#FFAEC9', PD='#F38FB0', SN='#FCD0DF', R='#E60012', BK='#1A1A1A', WHT='#FFF', BY='#FFD600', BDK='#E6A800';
+
+  // ── legs (thin pink sticks) ──
+  const l1=Math.sin(anim)*0.5, l2=Math.sin(anim+Math.PI)*0.5;
+  ctx.strokeStyle=P; ctx.lineWidth=3*s; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(px-2*s,py-5*s-b); ctx.lineTo(px-2*s+Math.sin(l2)*7*s,py-5*s-b+Math.cos(l2)*7*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px+3*s,py-5*s-b); ctx.lineTo(px+3*s+Math.sin(l1)*7*s,py-5*s-b+Math.cos(l1)*7*s); ctx.stroke();
+
+  // ── feet (black shoes) ──
+  ctx.fillStyle=BK;
+  ctx.beginPath(); ctx.ellipse(px-2*s+Math.sin(l2)*7*s,py-3*s-b+Math.cos(l2)*7*s,4.5*s,2.2*s,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(px+3*s+Math.sin(l1)*7*s,py-3*s-b+Math.cos(l1)*7*s,4.5*s,2.2*s,0,0,Math.PI*2); ctx.fill();
+
+  // ── boots over feet ──
+  if(bootsOn){
+    ctx.fillStyle=BY; ctx.strokeStyle=BDK; ctx.lineWidth=1.3*s;
+    let lx=px-2*s+Math.sin(l2)*7*s, ly=py+b+Math.cos(l2)*7*s;
+    ctx.beginPath(); ctx.ellipse(lx,ly-11*s,4.5*s,6.5*s,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#FFEE58'; ctx.beginPath(); ctx.ellipse(lx,ly-15.5*s,3*s,3.5*s,0,0,Math.PI*2); ctx.fill();
+    lx=px+3*s+Math.sin(l1)*7*s; ly=py+b+Math.cos(l1)*7*s;
+    ctx.fillStyle=BY; ctx.beginPath(); ctx.ellipse(lx,ly-11*s,4.5*s,6.5*s,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#FFEE58'; ctx.beginPath(); ctx.ellipse(lx,ly-15.5*s,3*s,3.5*s,0,0,Math.PI*2); ctx.fill();
+  }
+
+  // ── tail (curly pig tail) ──
+  ctx.strokeStyle=P; ctx.lineWidth=2.5*s; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(px-12*s, py-22*s-b);
+  ctx.quadraticCurveTo(px-19*s, py-27*s-b, px-15*s, py-31*s-b);
+  ctx.quadraticCurveTo(px-11*s, py-28*s-b, px-14*s, py-25*s-b);
+  ctx.stroke();
+
+  // ── dress (red, trapezoid) ──
+  ctx.fillStyle=R;
+  ctx.beginPath();
+  ctx.moveTo(px-10*s, py-19*s-b);
+  ctx.lineTo(px+12*s, py-19*s-b);
+  ctx.lineTo(px+15*s, py-5*s-b);
+  ctx.lineTo(px-13*s, py-5*s-b);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle='#C40010'; ctx.fillRect(px-13*s, py-7*s-b, 28*s, 2.5*s);
+
+  // ── body (pink torso behind dress) ──
+  ctx.fillStyle=P;
+  ctx.beginPath(); ctx.ellipse(px+1*s, py-21*s-b, 9*s, 5*s, 0, 0, Math.PI*2); ctx.fill();
+
+  // ── arms ──
+  const a1=Math.sin(anim)*0.65, a2=Math.sin(anim+Math.PI)*0.65;
+  ctx.strokeStyle=P; ctx.lineWidth=2.8*s; ctx.lineCap='round';
+  if(!jmp){
+    ctx.beginPath(); ctx.moveTo(px-8*s, py-21*s-b); ctx.lineTo(px-8*s+Math.sin(a2)*5*s, py-21*s-b+Math.cos(a2)*7*s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px+10*s, py-21*s-b); ctx.lineTo(px+10*s+Math.sin(a1)*5*s, py-21*s-b+Math.cos(a1)*7*s); ctx.stroke();
+  }
+
+  // ── HEAD — large dome, wider than tall (cartoon Peppa) ──
+  ctx.fillStyle=P;
+  ctx.beginPath();
+  ctx.ellipse(px+2*s, py-40*s-b, 17*s, 15*s, -0.04, 0, Math.PI*2);
+  ctx.fill();
+
+  // ── ear (small triangle on top) ──
+  ctx.fillStyle=P;
+  ctx.beginPath();
+  ctx.moveTo(px-5*s, py-52*s-b);
+  ctx.lineTo(px-8*s, py-60*s-b);
+  ctx.lineTo(px-1*s, py-52*s-b);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle=PD;
+  ctx.beginPath();
+  ctx.moveTo(px-4*s, py-52.5*s-b);
+  ctx.lineTo(px-6*s, py-57*s-b);
+  ctx.lineTo(px-2*s, py-52.5*s-b);
+  ctx.closePath();
+  ctx.fill();
+
+  // ── snout (lighter pink, protruding forward) ──
+  ctx.fillStyle=SN;
+  ctx.beginPath();
+  ctx.ellipse(px+16*s, py-37*s-b, 7*s, 5*s, 0.08, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle=PD; ctx.lineWidth=0.8*s;
+  ctx.beginPath();
+  ctx.ellipse(px+16*s, py-37*s-b, 7*s, 5*s, 0.08, 0, Math.PI*2);
+  ctx.stroke();
+  // nostrils
+  ctx.fillStyle=BK;
+  ctx.beginPath(); ctx.arc(px+14.5*s, py-38.2*s-b, 0.8*s, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(px+18*s, py-38.2*s-b, 0.8*s, 0, Math.PI*2); ctx.fill();
+
+  // ── eye (large, round, cartoon-style with highlight) ──
+  ctx.fillStyle=WHT;
+  ctx.beginPath(); ctx.arc(px+5*s, py-44*s-b, 3.3*s, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle=BK;
+  ctx.beginPath(); ctx.arc(px+4.3*s, py-44*s-b, 1.5*s, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle=WHT;
+  ctx.beginPath(); ctx.arc(px+3.8*s, py-44.6*s-b, 0.6*s, 0, Math.PI*2); ctx.fill();
+
+  // ── cheek blush ──
+  ctx.fillStyle=PD;
+  ctx.beginPath(); ctx.arc(px-4*s, py-37*s-b, 3.5*s, 0, Math.PI*2); ctx.fill();
+
+  // ── smile ──
+  ctx.strokeStyle=BK; ctx.lineWidth=1.2*s; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.arc(px+10*s, py-34*s-b, 3.5*s, 0.2, Math.PI-0.2);
+  ctx.stroke();
+
+  // ── jump pose — arms up ──
+  if(jmp){
+    ctx.strokeStyle=P; ctx.lineWidth=2.8*s; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(px-8*s, py-21*s-b); ctx.lineTo(px-11*s, py-31*s-b); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px+10*s, py-21*s-b); ctx.lineTo(px+13*s, py-31*s-b); ctx.stroke();
+  }
+
+  // ── boots aura ──
+  if(bootsOn){
+    const a=0.2+Math.sin(Date.now()*0.005)*0.12;
+    ctx.fillStyle=`rgba(255,235,59,${a})`;
+    ctx.beginPath(); ctx.arc(px, py-26*s, 20*s, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle=`rgba(255,193,7,${a+0.08})`; ctx.lineWidth=2*s; ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ─── Obstacle drawings ────────────────
+function drawMud(x,gy){
+  ctx.fillStyle='#4A3010';
+  ctx.beginPath(); ctx.ellipse(x,gy+2,26,7,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#3A2005';
+  ctx.beginPath(); ctx.arc(x-7,gy+1,4,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+9,gy+2,3.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.07)';
+  ctx.beginPath(); ctx.ellipse(x-2,gy-1,12,2.5,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#5A4020'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.ellipse(x,gy+2,27,8,0,0,Math.PI*2); ctx.stroke();
+}
+function drawRock(x,gy){
+  ctx.fillStyle='#999';
+  ctx.beginPath(); ctx.moveTo(x-18,gy); ctx.lineTo(x-13,gy-20); ctx.lineTo(x+3,gy-25);
+  ctx.lineTo(x+16,gy-14); ctx.lineTo(x+12,gy); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#777'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#BBB'; ctx.beginPath(); ctx.arc(x-5,gy-12,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#AAA'; ctx.beginPath(); ctx.arc(x+3,gy-16,3.5,0,Math.PI*2); ctx.fill();
+}
+function drawLog(x,gy){
+  ctx.fillStyle='#7B4B2A';
+  ctx.beginPath(); ctx.ellipse(x,gy-7,28,9,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#5A3520'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x-22,gy-9); ctx.lineTo(x-22,gy-5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-10,gy-12); ctx.lineTo(x-10,gy-2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+2,gy-13); ctx.lineTo(x+2,gy-1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+14,gy-11); ctx.lineTo(x+14,gy-3); ctx.stroke();
+  ctx.fillStyle='#D4A76A';
+  ctx.beginPath(); ctx.ellipse(x+27,gy-7,3.5,8,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x-27,gy-7,3.5,8,0,0,Math.PI*2); ctx.fill();
+}
+function drawBox(x,gy){
+  const bw=28,bh=26,bx=x-bw/2,by=gy-bh;
+  ctx.fillStyle='#C4956A'; ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='#A0704A'; ctx.lineWidth=1.5; ctx.strokeRect(bx,by,bw,bh);
+  ctx.strokeStyle='#8B5A3C'; ctx.lineWidth=2.2;
+  ctx.beginPath(); ctx.moveTo(bx,by+bh*0.48); ctx.lineTo(bx+bw,by+bh*0.48); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx+bw*0.48,by); ctx.lineTo(bx+bw*0.48,by+bh); ctx.stroke();
+  ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(bx+3,by+3); ctx.lineTo(bx+bw-3,by+bh-3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx+bw-3,by+3); ctx.lineTo(bx+3,by+bh-3); ctx.stroke();
+  ctx.fillStyle='#6B4226';
+  const pts=[[0.24,0.24],[0.76,0.24],[0.24,0.76],[0.76,0.76],[0.5,0.14],[0.5,0.86]];
+  for(const [rx,ry] of pts){ctx.beginPath(); ctx.arc(bx+bw*rx,by+bh*ry,1.6,0,Math.PI*2); ctx.fill();}
+  ctx.fillStyle='rgba(255,255,255,0.10)'; ctx.fillRect(bx+2,by+2,bw-4,4.5);
+}
+function drawBootItem(x,y,t){
+  ctx.save();
+  const bb=Math.sin(t*0.04)*4;
+  ctx.translate(x,y+bb-20);
+  ctx.fillStyle='#FFD600';
+  roundRect(-9,4,18,5,2); ctx.fill();
+  roundRect(-8,-7,16,12,3); ctx.fill();
+  ctx.fillStyle='#FFEE58';
+  roundRect(-5,-13,10,7,2); ctx.fill();
+  ctx.fillStyle='#FFF59D';
+  ctx.fillRect(-3,-4,3,5);
+  ctx.strokeStyle='rgba(255,255,200,0.7)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(0,-2,11,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
+
+// ─── Cake drawing ─────────────────────
+function drawCake(cx, cy, t){
+  ctx.save();
+  const bob = Math.sin(t*0.03)*3;
+  ctx.translate(cx, cy+bob);
+
+  // Cake base (golden brown cup)
+  ctx.fillStyle='#E8A840';
+  ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0);
+  ctx.lineTo(5, -10); ctx.lineTo(-5, -10); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#C0802A'; ctx.lineWidth=1; ctx.stroke();
+
+  // Cup ridges
+  ctx.strokeStyle='#D09030'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(-6,-3); ctx.lineTo(4.5,-3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-5.5,-6); ctx.lineTo(4,-6); ctx.stroke();
+
+  // Pink frosting
+  ctx.fillStyle='#FF80AB';
+  ctx.beginPath(); ctx.arc(0, -11, 8.5, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#E91E63'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(0, -11, 8.5, 0, Math.PI*2); ctx.stroke();
+
+  // Frosting swirl
+  ctx.fillStyle='#FF4081';
+  ctx.beginPath(); ctx.arc(-3, -13, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(3, -12, 2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -13.5, 2, 0, Math.PI*2); ctx.fill();
+
+  // Cherry on top
+  ctx.fillStyle='#E53935';
+  ctx.beginPath(); ctx.arc(0, -17, 3.5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  ctx.beginPath(); ctx.arc(-1, -18.5, 1.2, 0, Math.PI*2); ctx.fill();
+
+  // Stem
+  ctx.strokeStyle='#2E7D32'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(0, -20.5); ctx.quadraticCurveTo(3, -23, 2, -25); ctx.stroke();
+
+  // Sparkle
+  const spark = Math.sin(t*0.06)*0.5+0.5;
+  ctx.fillStyle=`rgba(255,255,255,${spark})`;
+  ctx.beginPath(); ctx.arc(5, -21, 1.5, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ─── Particles ─────────────────────────
+function spawnGold(x,y){for(let i=0;i<10;i++)particles.push({x,y,vx:(Math.random()-0.5)*3.5,vy:-Math.random()*5-3,life:1,col:'#FFEB3B',sz:2+Math.random()*2.5})}
+function spawnBrown(x,y){for(let i=0;i<6;i++)particles.push({x,y,vx:(Math.random()-0.5)*2.5,vy:-Math.random()*6-2,life:1,col:'#5A4020',sz:1.5+Math.random()*2.5})}
+function spawnPink(x,y){for(let i=0;i<8;i++)particles.push({x,y,vx:(Math.random()-0.5)*3,vy:-Math.random()*5-2,life:1,col:'#FF80AB',sz:1.5+Math.random()*2})}
+function spawnCream(x,y){for(let i=0;i<5;i++)particles.push({x,y,vx:(Math.random()-0.5)*2,vy:-Math.random()*4-1.5,life:1,col:'#FFF9C4',sz:1+Math.random()*2})}
+function updParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx-spd; p.y+=p.vy; p.vy+=0.2; p.life-=0.035;
+    if(p.life<=0) particles.splice(i,1);
+  }
+}
+function drawParticles(){
+  for(const p of particles){
+    ctx.globalAlpha=p.life;
+    ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(p.x,p.y,p.sz,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
+// ─── Spawning ──────────────────────────
+function spawnObstacles(){
+  // No obstacles before 50m — warm-up period
+  if(dist < 50) return;
+  // Density increases with distance
+  const pct = Math.min(dist / 2000, 1);
+  const gap  = Math.floor(80 + Math.random() * 80 - pct * 50);
+  const count = Math.floor(2 + pct * 3 + (Math.random() > 0.4 ? 1 : 0));
+
+  if(dist - lastObsSpawn < gap) return;
+
+  const types = ['mud','mud','rock','rock','log','box','box','box','box','box'];
+
+  for(let c=0; c<count; c++){
+    const type = types[Math.floor(Math.random()*types.length)];
+    obstacles.push({
+      type,
+      x: W + 250 + c*80 + Math.random() * 80,
+      gy: groundY,
+      w: type==='mud'?52:type==='rock'?36:type==='box'?32:56,
+      h: type==='mud'?7:type==='rock'?25:type==='box'?26:14,
+      splashed: false
+    });
+  }
+  lastObsSpawn = dist;
+}
+
+function spawnPlatform(){
+  // Platforms only after 200m
+  if(dist < 200) return;
+
+  const gap = 100 + Math.random() * 80;
+  if(dist - lastPlatSpawn < gap) return;
+
+  // 2-4 platforms in a chain for continuous air parkour
+  const count = 2 + Math.floor(Math.random() * 3);
+
+  // Max jump height ≈ JUMP_VEL² / (2*GRAVITY) ≈ 138px
+  // First platform MUST be reachable from ground: groundY - 70 ~ groundY - 100
+  let prevY = groundY - (70 + Math.random() * 30);
+
+  for(let c = 0; c < count; c++){
+    const pw = 60 + Math.random() * 65;
+    const ph = Math.max(H*0.018, 12);
+
+    if(c > 0){
+      // Each platform within jump range of previous (±50px)
+      const dy = (Math.random() - 0.5) * 90;
+      prevY = Math.max(groundY - 160, Math.min(groundY - 45, prevY + dy));
+    }
+
+    platforms.push({
+      x: W + 280 + c * 135 + Math.random() * 35,
+      y: prevY, w: pw, h: ph, hadCake: false
+    });
+  }
+  lastPlatSpawn = dist;
+
+  // Extra floating platform near the chain for variety (still reachable)
+  if(Math.random() < 0.5){
+    const pw2 = 50 + Math.random() * 55;
+    const lastP = platforms[platforms.length - 1];
+    const offsetH = (Math.random() - 0.5) * 70;
+    const py2 = Math.max(groundY - 160, Math.min(groundY - 45, lastP.y + offsetH));
+    platforms.push({
+      x: lastP.x + 110 + Math.random() * 80,
+      y: py2, w: pw2, h: Math.max(H*0.018, 12), hadCake: false
+    });
+  }
+}
+
+function spawnCakes(){
+  // Spawn cakes on the ground between obstacle clusters, and on platforms
+  const gap = 250 + Math.random() * 200;
+  if(dist - lastCakeSpawn < gap) return;
+
+  // 50% ground, 50% platform
+  if(Math.random() < 0.5){
+    // Ground cake — between obstacles, spawn well off-screen
+    cakes.push({x: W + 250 + Math.random()*100, y: groundY, onPlatform: false});
+  } else if(platforms.length > 0){
+    // Platform cake
+    const p = platforms[Math.floor(Math.random()*platforms.length)];
+    if(p.x > -80 && p.x < W+80 && !p.hadCake){
+      p.hadCake = true;
+      cakes.push({x: p.x, y: p.y, onPlatform: true});
+    } else {
+      cakes.push({x: W + 250 + Math.random()*100, y: groundY, onPlatform: false});
+    }
+  } else {
+    cakes.push({x: W + 250 + Math.random()*100, y: groundY, onPlatform: false});
+  }
+  lastCakeSpawn = dist;
+}
+
+function spawnBoot(){
+  if(dist < nextBoot) return;
+  // Always spawn on ground, well off-screen so it scrolls in naturally
+  boots.push({x: W + 200 + Math.random() * 120, y: groundY, onPlatform: false});
+  nextBoot += BOOTS_EVERY;
+}
+
+// ─── Input ─────────────────────────────
+function doJump(){
+  if(jumping) return; // can't jump while airborne
+  // Can jump from ground, platform, or obstacle top
+  jumping = true;
+  standingOnGround = false;
+  standingOnObs = null;
+  velY = JUMP_VEL;
+  sfxJump();
+}
+
+// ─── Physics & Landing ────────────────
+function checkLandingOnPlatform(){
+  const hw = PEPPA_W/2;
+
+  for(const p of platforms){
+    // Check if peppa's feet are in the landing zone of this platform
+    const pHalfW = p.w/2;
+
+    if(PEPPA_X + hw > p.x - pHalfW + 4 &&
+       PEPPA_X - hw < p.x + pHalfW - 4 &&
+       peppaY >= p.y - 2 &&
+       peppaY <= p.y + 10 &&
+       velY >= 0){
+      peppaY = p.y;
+      velY = 0;
+      jumping = false;
+      standingOnGround = false;
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkOnPlatformStill(){
+  // When standing on a platform, check if we've walked off
+  if(standingOnGround) return true; // on ground, always fine
+  if(jumping) return false;
+
+  const hw = PEPPA_W/2;
+  for(const p of platforms){
+    const pHalfW = p.w/2;
+    if(PEPPA_X + hw > p.x - pHalfW + 4 &&
+       PEPPA_X - hw < p.x + pHalfW - 4 &&
+       Math.abs(peppaY - p.y) < 4){
+      peppaY = p.y; // keep on platform surface
+      return true;
+    }
+  }
+  // not on any platform — start falling
+  standingOnGround = false;
+  standingOnObs = null;
+  jumping = true;
+  velY = 1;
+  return false;
+}
+
+// ─── Obstacle landing (Peppa can stand on top of ALL obstacles!) ──
+function checkObsLanding(){
+  if(!jumping || velY < 0) return false; // only check when falling down
+  const hw = PEPPA_W/2;
+  for(const o of obstacles){
+    const obsTop = o.gy - o.h; // top surface of obstacle
+    const oL = o.x - o.w/2, oR = o.x + o.w/2;
+    if(PEPPA_X + hw > oL + 3 && PEPPA_X - hw < oR - 3 &&
+       peppaY >= obsTop - 3 && peppaY <= obsTop + 14){
+      peppaY = obsTop;
+      velY = 0;
+      jumping = false;
+      standingOnGround = false;
+      standingOnObs = o;
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkOnObsStill(){
+  if(!standingOnObs) return false;
+  const o = standingOnObs;
+  const obsTop = o.gy - o.h;
+  const oL = o.x - o.w/2, oR = o.x + o.w/2;
+  const hw = PEPPA_W/2;
+  if(PEPPA_X + hw > oL + 3 && PEPPA_X - hw < oR - 3 &&
+     Math.abs(peppaY - obsTop) < 5){
+    peppaY = obsTop;
+    return true;
+  }
+  standingOnObs = null;
+  standingOnGround = false;
+  jumping = true;
+  velY = 1;
+  return false;
+}
+
+// ─── Collisions ────────────────────────
+function collide(){
+  const px = PEPPA_X, py = peppaY;
+  const pL = px - PEPPA_W/2, pR = px + PEPPA_W/2;
+  const pT = py - PEPPA_H, pB = py;
+
+  // Only check ground obstacles when peppa is on the ground
+  if(standingOnGround && !standingOnObs){
+    for(const o of obstacles){
+      const oL = o.x - o.w/2, oR = o.x + o.w/2;
+      if(pR < oL+4 || pL > oR-4) continue;
+
+      if(o.type === 'mud'){
+        if(bootsOn){
+          if(!o.splashed){o.splashed=true; spawnBrown(o.x, o.gy);}
+          continue;
+        }
+        return true;
+      }
+      // rock, log, box — die from side collision
+      return true;
+    }
+  }
+  // When on top of a box, check for ground obstacles below (walked off box onto ground)
+  if(!standingOnGround && !jumping && peppaY === groundY){
+    standingOnGround = true;
+    standingOnObs = null;
+  }
+
+  // boots pickup
+  for(let i=boots.length-1; i>=0; i--){
+    const b = boots[i];
+    if(Math.abs(b.x - px) < 34 && Math.abs(b.y - py) < 32){
+      spawnGold(b.x, b.y-16);
+      boots.splice(i,1);
+      if(!bootsOn){
+        bootsOn=true; bootsLeft=BOOTS_DUR;
+        elBoots.style.display='block';
+        elBoots.textContent=`👢 靴子: ${BOOTS_DUR}s`;
+        elBoots.classList.remove('warning');
+        sfxBoot();
+      }
+    }
+  }
+
+  // cake pickup
+  for(let i=cakes.length-1; i>=0; i--){
+    const ck = cakes[i];
+    if(Math.abs(ck.x - px) < 28 && Math.abs(ck.y - py) < 30){
+      spawnPink(ck.x, ck.y-12);
+      spawnCream(ck.x, ck.y-16);
+      cakes.splice(i,1);
+      cakeCount++;
+      dist += 20;
+      sfxCake();
+      // Level up check
+      if(cakeCount === 3 && curLevel === 0){showLevelWin(1)}
+      else if(cakeCount === 5 && curLevel === 1){showLevelWin(2)}
+    }
+  }
+  return false;
+}
+
+// ─── Update ────────────────────────────
+function update(){
+  spd = Math.min(BASE_SPEED + dist*0.0014, MAX_SPEED);
+  dist += spd * 0.055;
+  worldX += spd;
+  frame += spd * 0.2;
+
+  // move everything
+  for(let i=obstacles.length-1;i>=0;i--){obstacles[i].x-=spd;if(obstacles[i].x<-100)obstacles.splice(i,1)}
+  for(let i=platforms.length-1;i>=0;i--){platforms[i].x-=spd;if(platforms[i].x<-platforms[i].w-20)platforms.splice(i,1)}
+  for(let i=boots.length-1;i>=0;i--){boots[i].x-=spd;if(boots[i].x<-100)boots.splice(i,1)}
+  for(let i=cakes.length-1;i>=0;i--){cakes[i].x-=spd;if(cakes[i].x<-100)cakes.splice(i,1)}
+
+  // physics
+  if(jumping){
+    peppaY += velY;
+    velY += GRAVITY;
+
+    // hit ground
+    if(peppaY >= groundY){
+      peppaY = groundY;
+      velY = 0;
+      jumping = false;
+      standingOnGround = true;
+      standingOnObs = null;
+    } else {
+      // check platform & box landing
+      if(!checkLandingOnPlatform() && !checkObsLanding()){
+        // still falling
+      }
+    }
+  } else if(!standingOnGround) {
+    // was on a platform or box, check if still on it
+    const onPlat = checkOnPlatformStill() || checkOnObsStill();
+    if(!onPlat){
+      // started falling from platform/box
+      peppaY += velY;
+      velY += GRAVITY;
+      if(peppaY >= groundY){
+        peppaY = groundY;
+        velY = 0;
+        jumping = false;
+        standingOnGround = true;
+        standingOnObs = null;
+      } else {
+        checkLandingOnPlatform() || checkObsLanding();
+      }
+    }
+  }
+
+  // boots timer
+  if(bootsOn){
+    bootsLeft -= 0.016;
+    const r = Math.ceil(bootsLeft);
+    elBoots.textContent = `👢 靴子: ${r}s`;
+    if(bootsLeft <= 5) elBoots.classList.add('warning');
+    else elBoots.classList.remove('warning');
+    if(bootsLeft <= 0){bootsOn=false;bootsLeft=0;elBoots.style.display='none';elBoots.classList.remove('warning')}
+  }
+
+  updParticles();
+  spawnObstacles();
+  spawnPlatform();
+  spawnCakes();
+  spawnBoot();
+
+  if(collide()){endGame();return}
+
+  elScore.textContent = `距离: ${Math.floor(dist)}m | 🧁 x${cakeCount}`;
+}
+
+// ─── Draw ──────────────────────────────
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  drawBg();
+
+  // draw platforms
+  for(const p of platforms) drawPlatform(p);
+
+  drawGround();
+
+  // obstacles
+  for(const o of obstacles){
+    switch(o.type){
+      case 'mud': drawMud(o.x, o.gy); break;
+      case 'rock': drawRock(o.x, o.gy); break;
+      case 'log': drawLog(o.x, o.gy); break;
+      case 'box': drawBox(o.x, o.gy); break;
+    }
+  }
+
+  // boot items
+  for(const b of boots) drawBootItem(b.x, b.y, Date.now());
+
+  // cake items
+  for(const ck of cakes) drawCake(ck.x, ck.y, Date.now());
+
+  // Peppa
+  const s = Math.min(Math.max(H/520, 0.85), 1.45);
+  drawPeppa(PEPPA_X, peppaY, s, frame, jumping, bootsOn);
+
+  drawParticles();
+}
+
+// ─── Game loop ─────────────────────────
+function loop(){
+  if(phase === 'playing') update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ─── Game state ────────────────────────
+function doStart(){
+  if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)();
+  dist = 0; spd = BASE_SPEED; worldX = 0; frame = 0;
+  peppaY = groundY; velY = 0;
+  jumping = false; standingOnGround = true; standingOnObs = null;
+  bootsOn = false; bootsLeft = 0; nextBoot = BOOTS_EVERY;
+  lastObsSpawn = 0; lastPlatSpawn = 0; lastCakeSpawn = 0;
+  obstacles = []; platforms = []; boots = []; cakes = []; particles = [];
+  cakeCount = 0; curLevel = 0;
+  elBoots.style.display = 'none'; elBoots.classList.remove('warning');
+  elScore.textContent = '距离: 0m | 🧁 x0';
+  elStart.style.display = 'none'; elOver.style.display = 'none'; elCtrl.style.display = 'block';
+  phase = 'playing';
+}
+function endGame(){
+  phase = 'gameover'; sfxDie();
+  const d = Math.floor(dist);
+  elFinal.textContent = `距离: ${d}m | 🧁 x${cakeCount}`;
+  const h = parseInt(localStorage.getItem('peppa2d_best')||'0');
+  if(d > h) localStorage.setItem('peppa2d_best', d);
+  elBest.innerHTML = `最高纪录: <span>${Math.max(d,h)}m</span>`;
+  elOver.style.display = 'flex'; elCtrl.style.display = 'none';
+  elBoots.style.display = 'none';
+}
+
+function showLevelWin(lvl){
+  curLevel = lvl;
+  phase = 'levelwin';
+  elLvlWin.style.display = 'flex'; elCtrl.style.display = 'none';
+  if(lvl === 1){
+    elLvlTit.textContent = '🎉 第一关通关！';
+    elLvlMsg.textContent = '吃了 3 个蛋糕，太棒了！继续收集蛋糕解锁第二关！';
+  } else {
+    elLvlTit.textContent = '🏆 第二关通关！';
+    elLvlMsg.textContent = '吃了 5 个蛋糕！你是蛋糕大师！🎂';
+  }
+}
+
+function continueGame(){
+  elLvlWin.style.display = 'none'; elCtrl.style.display = 'block';
+  phase = 'playing';
+}
+function doRestart(){doStart()}
+
+// ─── Bind ──────────────────────────────
+document.getElementById('btnStart').addEventListener('click', doStart);
+document.getElementById('btnRestart').addEventListener('click', doRestart);
+document.getElementById('btnContinue').addEventListener('click', continueGame);
+
+document.addEventListener('keydown', e => {
+  if(e.key === ' '){
+    if(phase === 'menu'){doStart(); e.preventDefault(); return}
+    if(phase === 'gameover'){doRestart(); e.preventDefault(); return}
+    if(phase === 'levelwin'){continueGame(); e.preventDefault(); return}
+    doJump(); e.preventDefault(); return
+  }
+});
+
+// touch
+canvas.addEventListener('touchstart', e => {
+  if(phase === 'menu'){doStart(); return}
+  if(phase === 'gameover'){doRestart(); return}
+  if(phase === 'levelwin'){continueGame(); return}
+  doJump();
+});
+
+// init best
+(function(){
+  const h = parseInt(localStorage.getItem('peppa2d_best')||'0');
+  elBest.innerHTML = `最高纪录: <span>${h}m</span>`;
+})();
+
+loop();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>keep going - Trail Run</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="nav-bar">
+  <span class="brand">keep going</span>
+  <a href="index.html" class="active">Home</a>
+  <a href="game.html">Play</a>
+  <a href="process.html">Devlog</a>
+</nav>
+
+<div class="content">
+
+  <section class="hero">
+    <h1>keep going</h1>
+    <p class="subtitle">Trail Run — Learn to control your pace, manage your fuel, and find the right path</p>
+    <a href="game.html" class="play-btn">▶ Start Running</a>
+  </section>
+
+  <section class="section">
+    <h2>About</h2>
+    <div class="card">
+      <p>You are a trail runner making your way up a mountain. You need to <strong>control your speed, choose the correct path, and refuel on time</strong>.</p>
+      <p><strong>Core lesson:</strong> The most common beginner mistake is sprinting from the start — real experts know when to push, when to ease off, when to eat a gel, and when to drink water.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Domain Knowledge</h2>
+    <div class="card">
+      <h3>Real trail running challenges</h3>
+      <p>Trail running is nothing like road running: surfaces change between dirt, stone steps, and concrete; gradients shift between uphill, downhill, and flat. Energy drains much faster — you must learn to manage fuel and hydration.</p>
+
+      <h3>Common beginner mistakes</h3>
+      <p>Beginners often think "faster is better" — they exhaust themselves early and crash in the second half.</p>
+
+      <h3>The shift</h3>
+      <p>The runner learns to pace themselves, pick the right forks, and time their intake of energy and water.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>System Design</h2>
+
+    <h3>Environment</h3>
+    <div class="table-grid">
+      <div class="data-card">
+        <h4>Surface</h4>
+        <ul>
+          <li>Dirt — medium friction, high trip risk</li>
+          <li>Stone — good grip, medium trip risk</li>
+          <li>Concrete — low friction (slippery), low trip risk</li>
+        </ul>
+      </div>
+      <div class="data-card">
+        <h4>Gradient</h4>
+        <ul>
+          <li>Uphill — speed -60%, drain x1.8</li>
+          <li>Flat — normal speed, normal drain</li>
+          <li>Downhill — speed +40%, drain x1.3, high trip risk</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Player Stats</h3>
+    <div class="table-grid">
+      <div class="data-card">
+        <h4>Core Values</h4>
+        <ul>
+          <li>Sugar — drains while running, refuel with gel</li>
+          <li>Electrolytes — drains with sweat, refuel with salt pills</li>
+          <li>Water — drains with sweat, refuel by drinking</li>
+          <li>Health — drops from injury/low energy/dehydration</li>
+          <li>Distance — only increases on the correct path</li>
+          <li>Climb — total elevation gained</li>
+        </ul>
+      </div>
+      <div class="data-card">
+        <h4>Controls</h4>
+        <ul>
+          <li>[Up/W] Accelerate / [Down/S] Decelerate</li>
+          <li>[<-/A] [->/D] Steer left/right</li>
+          <li>[1] Salt pill +electrolytes</li>
+          <li>[2] Energy gel +sugar</li>
+          <li>[3] Drink water +hydration</li>
+          <li>[4] Bandage wound +health</li>
+          <li>[M] Toggle GPS map</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Feedback</h3>
+    <div class="card">
+      <p>• <strong>Low energy (sugar/electrolytes) + low speed</strong> — prompts to eat/drink, speed cap reduced</p>
+      <p>• <strong>Low water (dehydrated)</strong> — speed cap reduced, continuous health drain</p>
+      <p>• <strong>Leg injury</strong> — wound marker on screen, press [4] to bandage</p>
+      <p>• <strong>Distance stalled</strong> — wrong fork, press [M] to check GPS</p>
+    </div>
+
+    <h3>Win/Lose</h3>
+    <div class="card">
+      <p><strong>Win:</strong> Reach the finish line after completing all segments.</p>
+      <p><strong>Lose:</strong> Health drops to 0 (injury, exhaustion, dehydration, or falling off a cliff).</p>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

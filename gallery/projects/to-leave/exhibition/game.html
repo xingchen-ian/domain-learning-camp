@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To Leave — A Packing Puzzle Game</title>
+<link rel="stylesheet" href="assets/game.css">
+</head>
+<body>
+<div id="game-wrapper">
+
+  <!-- INTRO SCREEN -->
+  <div id="intro-screen" class="screen active">
+    <div id="intro-content">
+      <h1 id="intro-title">To Leave</h1>
+      <p id="intro-subtitle">A game about packing, leaving, and what we carry with us.</p>
+      <div id="intro-character-card">
+        <div id="intro-character-name"></div>
+        <div id="intro-vignette"></div>
+        <div id="intro-character-desc"></div>
+      </div>
+      <div id="intro-howto">
+        <h3>How to Play</h3>
+        <ol>
+          <li><strong>Read the clues</strong> left in the room — they hint at who this person really is.</li>
+          <li><strong>Click any object</strong> to inspect it. Some objects matter more than they seem.</li>
+          <li><strong>Enter Memory</strong> on an object to feel why it matters to this person.</li>
+          <li><strong>Pack what feels right</strong> — balance what they need with what they love.</li>
+          <li><strong>Finish Packing</strong> when done. You'll see how well you understood them.</li>
+        </ol>
+        <p class="howto-tip">Clues and memories are your real tools. Trust your reading of the person — not numbers.</p>
+      </div>
+      <p id="intro-tip">Understanding the character will help you pack what they truly need.</p>
+      <button id="start-btn" onclick="startGame()">Enter the Room</button>
+      <div id="challenge-selector">
+        <button onclick="selectChallenge(0)">Case 1: The Wealthy Lady</button>
+        <button onclick="selectChallenge(1)">Case 2: The College Student</button>
+        <button onclick="selectChallenge(2)">Case 3: The Elderly Man</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GAME SCREEN -->
+  <div id="game-screen" class="screen">
+    <div id="game-header">
+      <div id="header-left">
+        <span id="header-character-name"></span>
+        <span id="header-case-label"></span>
+      </div>
+      <div id="header-center">
+        <div id="clue-strip"></div>
+      </div>
+      <div id="header-right">
+        <button id="finish-btn" onclick="finishPacking()">Finish Packing</button>
+        <button id="hint-btn" onclick="toggleCluePanel()">Clues</button>
+      </div>
+    </div>
+
+    <div id="game-main">
+      <!-- ROOM AREA -->
+      <div id="room-area">
+        <!-- CLUES BAR — visible by default inside the room -->
+        <div id="clues-bar">
+          <div id="clues-bar-header" onclick="toggleCluesBar()">
+            <h3>Clues About This Person</h3>
+            <span id="clues-bar-toggle">Hide</span>
+          </div>
+          <div id="clues-bar-content"></div>
+        </div>
+        <h2 class="area-title">Room — Items to consider</h2>
+        <div id="room-grid"></div>
+      </div>
+
+      <!-- CONTAINER AREA -->
+      <div id="container-area">
+        <h2 class="area-title" id="container-title">Suitcase</h2>
+        <div id="capacity-bar">
+          <div id="capacity-fill"></div>
+          <span id="capacity-text">0 / 8 slots</span>
+        </div>
+        <div id="container-grid"></div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING TUTORIAL OVERLAY (first visit only) -->
+    <div id="tutorial-overlay" class="hidden">
+      <div id="tutorial-card">
+        <h2>Welcome to the Room</h2>
+        <div class="tutorial-step">
+          <span class="tutorial-num">1</span>
+          <p><strong>Clues are at the top.</strong> Read them — they reveal who this person is and what matters to them.</p>
+        </div>
+        <div class="tutorial-step">
+          <span class="tutorial-num">2</span>
+          <p><strong>Click any object</strong> to inspect it. A panel opens at the bottom.</p>
+        </div>
+        <div class="tutorial-step">
+          <span class="tutorial-num">3</span>
+          <p><strong>Enter Memory</strong> to see the story behind an object. This is how you learn what it truly means.</p>
+        </div>
+        <div class="tutorial-step">
+          <span class="tutorial-num">4</span>
+          <p><strong>Pack</strong> what feels right, then <strong>Finish Packing</strong> to see how well you understood them.</p>
+        </div>
+        <button id="tutorial-close-btn" onclick="closeTutorial()">Start Playing</button>
+      </div>
+    </div>
+
+    <!-- ITEM DETAIL PANEL -->
+    <div id="detail-panel" class="hidden">
+      <div id="detail-content">
+        <h3 id="detail-item-name"></h3>
+        <p id="detail-item-desc"></p>
+        <div id="detail-actions">
+          <button id="memory-btn" onclick="enterMemory()">Enter Memory</button>
+          <span id="memory-hint-text" class="action-hint">See why this matters</span>
+          <button id="pack-btn" onclick="packItem()">Pack This</button>
+          <button id="unpack-btn" onclick="unpackItem()" class="hidden">Remove from Bag</button>
+          <button id="close-detail-btn" onclick="closeDetail()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMORY OVERLAY -->
+    <div id="memory-overlay" class="hidden">
+      <div id="memory-content">
+        <canvas id="memory-canvas" width="800" height="400"></canvas>
+        <h3 id="memory-title"></h3>
+        <p id="memory-text"></p>
+        <button onclick="exitMemory()">Step Back</button>
+      </div>
+    </div>
+
+    <!-- CLUE PANEL (expandable) -->
+    <div id="clue-panel" class="hidden">
+      <div id="clue-panel-content">
+        <h3>Character Clues</h3>
+        <div id="clue-panel-items"></div>
+        <button onclick="toggleCluePanel()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORE SCREEN -->
+  <div id="score-screen" class="screen">
+    <div id="score-content">
+      <h1 id="score-title">Packing Complete</h1>
+      <div id="score-character">
+        <h2 id="score-character-name"></h2>
+        <p id="score-character-reaction"></p>
+      </div>
+      <div id="score-breakdown">
+        <div class="score-big">
+          <span class="score-big-label">Practical Care</span>
+          <span id="score-need-label" class="score-big-num"></span>
+        </div>
+        <div class="score-big">
+          <span class="score-big-label">Emotional Care</span>
+          <span id="score-want-label" class="score-big-num"></span>
+        </div>
+        <div class="score-big">
+          <span class="score-big-label">Satisfaction</span>
+          <span id="score-satisfaction" class="score-big-num"></span>
+        </div>
+      </div>
+      <div id="score-items-list"></div>
+      <div id="score-feedback"></div>
+      <div id="score-actions">
+        <button onclick="retryChallenge()">Try Again</button>
+        <button onclick="nextChallenge()">Next Case</button>
+        <button onclick="backToMenu()">All Cases</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="assets/game-data.js"></script>
+<script src="assets/game-engine.js"></script>
+</body>
+</html>

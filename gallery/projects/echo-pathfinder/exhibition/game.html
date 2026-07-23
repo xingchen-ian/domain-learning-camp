@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echo Pathfinder</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #010102;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  user-select: none;
+}
+
+#gameContainer { position: relative; display: inline-block; }
+
+#hud {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 48px; z-index: 10; pointer-events: none;
+}
+.hud-item {
+  color: rgba(200, 200, 200, 0.35);
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase; text-align: center;
+}
+.hud-item span {
+  font-weight: 600; font-size: 22px; display: block; margin-top: 4px;
+  text-shadow: 0 0 12px rgba(255,255,255,0.3); font-variant-numeric: tabular-nums;
+  transition: color 0.3s;
+}
+.hud-item .hud-normal { color: rgba(255,255,255,0.8); }
+.hud-item .hud-danger { color: #ff5555; text-shadow: 0 0 14px rgba(255,80,80,0.5); }
+
+canvas { display: block; border-radius: 4px; }
+
+#overlay {
+  position: absolute; top:0; left:0; right:0; bottom:0;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  background: rgba(2, 2, 4, 0.94); border-radius: 4px; z-index: 20; text-align: center;
+  backdrop-filter: blur(8px); animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+#overlay h1 {
+  color: rgba(255,255,255,0.85); font-size: 48px; font-weight: 200;
+  letter-spacing: 12px; margin-bottom: 8px; text-shadow: 0 0 30px rgba(255,255,255,0.2);
+}
+#overlay .subtitle {
+  color: rgba(255,255,255,0.25); font-size: 13px; letter-spacing: 8px; margin-bottom: 40px;
+}
+#overlay p {
+  color: rgba(200,200,200,0.45); font-size: 15px; line-height: 2.4; margin-bottom: 36px; max-width: 460px;
+}
+#overlay .controls-box {
+  color: rgba(180,180,180,0.4); font-size: 13px; line-height: 2.0; margin-bottom: 36px; text-align: left;
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 18px 28px;
+  letter-spacing: 1px;
+}
+#overlay .controls-box strong { color: rgba(255,255,255,0.6); }
+#overlay .stats {
+  color: rgba(200,200,200,0.6); font-size: 17px; line-height: 2.2; margin-bottom: 32px;
+}
+#overlay .stats span { color: rgba(255,255,255,0.85); font-weight: 700; font-size: 22px; }
+#overlay button {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.75); padding: 14px 50px; font-size: 15px;
+  letter-spacing: 6px; cursor: pointer; border-radius: 4px; transition: all 0.3s ease;
+  font-family: inherit;
+}
+#overlay button:hover {
+  background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 0 24px rgba(255,255,255,0.1);
+}
+.controls-hint {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  color: rgba(150,150,150,0.2); font-size: 11px; letter-spacing: 2px;
+  z-index: 10; pointer-events: none; white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<div id="gameContainer">
+  <div id="hud">
+    <div class="hud-item">Level<span id="levelDisplay" class="hud-normal">Tutorial</span></div>
+    <div class="hud-item">Time<span id="timeDisplay" class="hud-normal">0.0</span></div>
+    <div class="hud-item">Steps<span id="stepDisplay" class="hud-normal">0</span></div>
+  </div>
+  <canvas id="game" width="800" height="600"></canvas>
+  <div class="controls-hint" id="controlsHint">WASD / Arrows move &middot; SPACE sonar &middot; R restart &middot; ENTER skip</div>
+  <div id="overlay">
+    <h1>ECHO PATHFINDER</h1>
+    <div class="subtitle">NAVIGATE THE DARKNESS WITH SOUND</div>
+    <div class="controls-box">
+      <strong>WASD / Arrow Keys</strong> &mdash; Move<br>
+      <strong>SPACE</strong> &mdash; Sonar pulse (wider range)<br>
+      <strong>F</strong> &mdash; Sonic blast (kills enemies)<br>
+      <strong>R</strong> &mdash; Restart level<br>
+      <strong>ENTER</strong> &mdash; Skip tutorial
+    </div>
+    <button onclick="startGame()">START GAME</button>
+  </div>
+</div>
+
+<script>
+// ==================== Constants ====================
+const CANVAS_W = 800;
+const CANVAS_H = 600;
+const MAX_CELL = 48;
+
+const LEVEL_CONFIGS = [
+  { cols: 9,  rows: 7,  seed: 88,  openRatio: 0.18, gateCount: 1, enemyCount: 0, isTutorial: true  },
+  { cols: 11, rows: 9,  seed: 42,  openRatio: 0.15, gateCount: 1, enemyCount: 0, isTutorial: false },
+  { cols: 15, rows: 11, seed: 137, openRatio: 0.12, gateCount: 2, enemyCount: 1, isTutorial: false },
+  { cols: 19, rows: 13, seed: 256, openRatio: 0.08, gateCount: 2, enemyCount: 2, isTutorial: false },
+  { cols: 23, rows: 15, seed: 314, openRatio: 0.05, gateCount: 2, enemyCount: 2, isTutorial: false },
+  { cols: 27, rows: 17, seed: 512, openRatio: 0.03, gateCount: 3, enemyCount: 3, isTutorial: false },
+];
+
+// ==================== DOM ====================
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// ==================== State ====================
+let cell = MAX_CELL;
+let grid = [];
+let cols = 0, rows = 0;
+let offsetX = 0, offsetY = 0;
+let walls = [];
+let gates = [];
+let switches = [];
+let goal = null;
+let player = null;
+let echoParticles = [];
+let particles = [];
+let goalBurst = [];
+let currentLevel = 0;
+let levelStartTime = 0;
+let timeLimit = 0;
+let totalSteps = 0;
+let gameState = 'menu';
+let keys = {};
+let lastTime = 0;
+let goalPulse = 0;
+let screenShake = 0;
+let loopRunning = false;
+let levelTimes = [];
+let lastPingTime = 0;
+let enemies = [];
+let enemyBursts = [];
+let lastBlastTime = 0;
+
+// ==================== Audio System ====================
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playFootstep() {
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const dur = 0.06;
+  // White noise burst for the step
+  const bufSize = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    const t = i / audioCtx.sampleRate;
+    const env = Math.exp(-t * 55);
+    data[i] = (Math.random() * 2 - 1) * env * 0.18;
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  // Low-pass filter for muffled thud
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 300 + Math.random() * 200;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.08, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+  src.connect(lp);
+  lp.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start(now);
+  src.stop(now + dur);
+}
+
+function playGoalSound() {
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+  notes.forEach(function(freq, i) {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now + i * 0.12);
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0, now + i * 0.12);
+    gain.gain.linearRampToValueAtTime(0.12, now + i * 0.12 + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.35);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now + i * 0.12);
+    osc.stop(now + i * 0.12 + 0.4);
+  });
+}
+
+function playDeathSound() {
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(220, now);
+  osc.frequency.exponentialRampToValueAtTime(55, now + 0.7);
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.15, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.9);
+}
+
+function playEnemyExplodeSound() {
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  // Noise burst
+  const dur = 0.15;
+  const bufSize = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    const t = i / audioCtx.sampleRate;
+    data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 30) * 0.3;
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  // High-pass for sharper crack
+  const hp = audioCtx.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 800;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.2, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+  src.connect(hp);
+  hp.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start(now);
+  src.stop(now + dur);
+  // Sub thud
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(80, now);
+  osc.frequency.exponentialRampToValueAtTime(20, now + 0.15);
+  const g2 = audioCtx.createGain();
+  g2.gain.setValueAtTime(0.2, now);
+  g2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+  osc.connect(g2);
+  g2.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.25);
+}
+
+function playBlastSound() {
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const dur = 0.35;
+  const bufSize = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    const t = i / audioCtx.sampleRate;
+    data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 8) * 0.25;
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const bp = audioCtx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 600;
+  bp.Q.value = 1.5;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.15, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+  src.connect(bp);
+  bp.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start(now);
+  src.stop(now + dur);
+}
+
+// ==================== Tutorial State ====================
+let tutorialStep = 0;
+const TUTORIAL_HINTS = [
+  { text: 'Use WASD or Arrow Keys to move',   cx: CANVAS_W/2, cy: 50  },
+  { text: 'Footsteps shoot echo particles\nthat reveal nearby walls', cx: CANVAS_W/2, cy: 115 },
+  { text: 'Press SPACE for a sonar burst\n&mdash; wider detection range', cx: CANVAS_W/2, cy: 115 },
+  { text: 'Step on the floor switch\nto open the gate', cx: null, cy: null },
+  { text: 'Press F to fire a sonic blast\n&mdash; kills red enemies, reveals walls', cx: CANVAS_W/2, cy: 115 },
+  { text: 'Find the golden exit\nbefore time runs out!', cx: null, cy: null },
+];
+
+// ==================== Seeded Random ====================
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+// ==================== BFS ====================
+function bfsPath(grd, C, R, sc, sr, gc, gr) {
+  const vis = [];
+  const par = [];
+  for (let r = 0; r < R; r++) { vis[r] = new Array(C).fill(false); par[r] = new Array(C).fill(null); }
+  const q = [[sr, sc]];
+  vis[sr][sc] = true;
+  while (q.length) {
+    const [r, c] = q.shift();
+    if (r === gr && c === gc) break;
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+      const nr = r + dr, nc = c + dc;
+      if (nr < 0 || nr >= R || nc < 0 || nc >= C) continue;
+      if (vis[nr][nc] || grd[nr][nc] === 1) continue;
+      vis[nr][nc] = true;
+      par[nr][nc] = [r, c];
+      q.push([nr, nc]);
+    }
+  }
+  if (!vis[gr][gc]) return null;
+  const path = [];
+  let [r, c] = [gr, gc];
+  while (r !== sr || c !== sc) {
+    path.push([r, c]);
+    [r, c] = par[r][c];
+  }
+  path.push([sr, sc]);
+  path.reverse();
+  return path;
+}
+
+function bfsReachable(grd, C, R, sc, sr, blocked) {
+  const vis = [];
+  for (let r = 0; r < R; r++) vis[r] = new Array(C).fill(false);
+  const q = [[sr, sc]];
+  vis[sr][sc] = true;
+  while (q.length) {
+    const [r, c] = q.shift();
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+      const nr = r + dr, nc = c + dc;
+      if (nr < 0 || nr >= R || nc < 0 || nc >= C) continue;
+      if (vis[nr][nc]) continue;
+      if (grd[nr][nc] === 1) continue;
+      if (blocked && nr === blocked.row && nc === blocked.col) continue;
+      vis[nr][nc] = true;
+      q.push([nr, nc]);
+    }
+  }
+  return vis;
+}
+
+// ==================== Maze Generation ====================
+function generateMaze(C, R, seed, openRatio) {
+  const rand = seededRandom(seed);
+  const g = [];
+  for (let i = 0; i < R; i++) g[i] = new Array(C).fill(1);
+  const stack = [[1, 1]];
+  g[1][1] = 0;
+  while (stack.length) {
+    const [cr, cc] = stack[stack.length - 1];
+    const nei = [];
+    if (cr > 1 && g[cr - 2][cc] === 1) nei.push([cr - 2, cc, cr - 1, cc]);
+    if (cr < R - 2 && g[cr + 2][cc] === 1) nei.push([cr + 2, cc, cr + 1, cc]);
+    if (cc > 1 && g[cr][cc - 2] === 1) nei.push([cr, cc - 2, cr, cc - 1]);
+    if (cc < C - 2 && g[cr][cc + 2] === 1) nei.push([cr, cc + 2, cr, cc + 1]);
+    if (nei.length) {
+      const [nr, nc, wr, wc] = nei[Math.floor(rand() * nei.length)];
+      g[wr][wc] = 0; g[nr][nc] = 0;
+      stack.push([nr, nc]);
+    } else { stack.pop(); }
+  }
+  for (let i = 1; i < R - 1; i++)
+    for (let j = 1; j < C - 1; j++)
+      if (g[i][j] === 1 && rand() < openRatio) g[i][j] = 0;
+  return g;
+}
+
+// ==================== Gates & Switches ====================
+function placeGatesSwitches(gr, C, R, rand, cfg) {
+  const gts = []; const sws = [];
+  const pot = [];
+  for (let r = 2; r < R - 2; r++) {
+    for (let c = 2; c < C - 2; c++) {
+      if (gr[r][c] !== 1) continue;
+      const ho = gr[r][c - 1] === 0 && gr[r][c + 1] === 0 && gr[r - 1][c] === 1 && gr[r + 1][c] === 1;
+      const vo = gr[r - 1][c] === 0 && gr[r + 1][c] === 0 && gr[r][c - 1] === 1 && gr[r][c + 1] === 1;
+      if (ho !== vo) pot.push({ col: c, row: r, horizontal: ho });
+    }
+  }
+  if (pot.length === 0) return { gates: [], switches: [] };
+  const count = Math.min(cfg.gateCount, pot.length);
+  for (let g = 0; g < count && pot.length > 0; g++) {
+    const idx = Math.floor(rand() * pot.length);
+    const gate = pot.splice(idx, 1)[0];
+    const reach = bfsReachable(gr, C, R, 1, 1, gate);
+    let bestSw = null, bestDist = Infinity;
+    for (let r = 1; r < R - 1; r++) {
+      for (let c = 1; c < C - 1; c++) {
+        if (!reach[r][c] || gr[r][c] !== 0) continue;
+        const d = Math.abs(r - gate.row) + Math.abs(c - gate.col);
+        if (d >= 3 && d < bestDist) { bestDist = d; bestSw = {row: r, col: c}; }
+      }
+    }
+    if (bestSw) {
+      gate.opened = false; gate.openAmount = 0; gate.illum = 0; gate.memIllum = 0;
+      gate.x_ = 0; gate.y_ = 0;
+      gts.push(gate);
+      gr[gate.row][gate.col] = 2;
+      sws.push({
+        row: bestSw.row, col: bestSw.col,
+        x_: 0, y_: 0,
+        activated: false, gateIndex: g, illum: 0, memIllum: 0,
+      });
+      gr[bestSw.row][bestSw.col] = 3;
+    }
+  }
+  return { gates: gts, switches: sws };
+}
+
+// ==================== Level Loading ====================
+function loadLevel(idx) {
+  const cfg = LEVEL_CONFIGS[idx];
+  cols = cfg.cols; rows = cfg.rows;
+  cell = Math.min(MAX_CELL, Math.floor(Math.min((CANVAS_W - 20) / cols, (CANVAS_H - 20) / rows)));
+  const mw = cols * cell, mh = rows * cell;
+  offsetX = Math.floor((CANVAS_W - mw) / 2);
+  offsetY = Math.floor((CANVAS_H - mh) / 2);
+
+  const rand = seededRandom(cfg.seed);
+  for (let i = 0; i < 3; i++) rand();
+  grid = generateMaze(cols, rows, cfg.seed, cfg.openRatio);
+
+  const result = placeGatesSwitches(grid, cols, rows, rand, cfg);
+  gates = result.gates; switches = result.switches;
+
+  for (let g of gates) {
+    g.x_ = offsetX + g.col * cell; g.y_ = offsetY + g.row * cell;
+    g.cx = g.x_ + cell / 2; g.cy = g.y_ + cell / 2;
+  }
+  for (let s of switches) {
+    s.x_ = offsetX + s.col * cell + cell / 2;
+    s.y_ = offsetY + s.row * cell + cell / 2;
+  }
+
+  walls = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (grid[r][c] === 1) {
+        const x = offsetX + c * cell, y = offsetY + r * cell;
+        walls.push({ col:c, row:r, x, y, w:cell, h:cell, illum:0, memIllum:0, cx:x+cell/2, cy:y+cell/2 });
+      }
+    }
+  }
+
+  player = {
+    x: offsetX + cell + cell / 2,
+    y: offsetY + cell + cell / 2,
+    vx: 0, vy: 0,
+    facing: Math.PI / 2,
+    radius: cell * 0.2,
+    stepDist: 0, stepLength: cell * 0.85, foot: 0,
+    footprints: [],
+    speed: cell * 0.032,
+  };
+
+  goal = {
+    x: offsetX + (cols - 2) * cell + cell / 2,
+    y: offsetY + (rows - 2) * cell + cell / 2,
+    illum: 0, memIllum: 0,
+  };
+
+  // Enemies
+  enemies = [];
+  if (cfg.enemyCount > 0) {
+    const freeCells = [];
+    for (let r = 1; r < rows - 1; r++) {
+      for (let c = 1; c < cols - 1; c++) {
+        if (grid[r][c] !== 0) continue;
+        const ex = offsetX + c * cell + cell / 2;
+        const ey = offsetY + r * cell + cell / 2;
+        const dp = Math.hypot(ex - player.x, ey - player.y);
+        const dg = Math.hypot(ex - goal.x, ey - goal.y);
+        if (dp > cell * 4 && dg > cell * 3) freeCells.push({ r, c, x: ex, y: ey });
+      }
+    }
+    // Shuffle and pick
+    for (let i = freeCells.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [freeCells[i], freeCells[j]] = [freeCells[j], freeCells[i]];
+    }
+    for (let i = 0; i < Math.min(cfg.enemyCount, freeCells.length); i++) {
+      const fc = freeCells[i];
+      enemies.push({
+        x: fc.x, y: fc.y,
+        vx: 0, vy: 0,
+        row: fc.r, col: fc.c,
+        radius: cell * 0.30,   // collision radius (for wall navigation)
+        drawR: cell * 0.50,    // visual radius (big & imposing)
+        speed: player.speed * 0.22,
+        alive: true,
+        pulse: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+  enemyBursts = []; lastBlastTime = 0;
+
+  if (cfg.isTutorial) {
+    timeLimit = 60;
+  } else {
+    const path = bfsPath(grid, cols, rows, 1, 1, cols - 2, rows - 2);
+    const pathLen = path ? path.length : (cols + rows);
+    const minTime = pathLen * cell / (player.speed * 60);
+    timeLimit = Math.ceil(minTime * 3 + 12);
+  }
+
+  echoParticles = []; particles = []; goalBurst = [];
+  levelStartTime = performance.now(); totalSteps = 0;
+
+  if (cfg.isTutorial) {
+    tutorialStep = 0;
+  }
+
+  emitEcho(player.x, player.y, cell * 2.5, cell * 0.08, false);
+
+  const lvlEl = document.getElementById('levelDisplay');
+  if (cfg.isTutorial) {
+    lvlEl.textContent = 'Tutorial';
+  } else {
+    lvlEl.textContent = idx;
+  }
+  lvlEl.className = 'hud-normal';
+  document.getElementById('timeDisplay').textContent = timeLimit.toFixed(0);
+  document.getElementById('timeDisplay').className = 'hud-normal';
+  document.getElementById('stepDisplay').textContent = '0';
+  document.getElementById('stepDisplay').className = 'hud-normal';
+
+  const hintEl = document.getElementById('controlsHint');
+  if (cfg.isTutorial) {
+    hintEl.textContent = 'WASD / Arrows move · SPACE sonar · F blast · R restart · ENTER skip';
+  } else {
+    hintEl.textContent = 'WASD / Arrows move · SPACE sonar · F blast · R restart';
+  }
+}
+
+// ==================== Collision ====================
+function checkCollision(x, y, r) {
+  const mc = Math.floor((x - r - offsetX) / cell);
+  const MxC = Math.floor((x + r - offsetX) / cell);
+  const mr = Math.floor((y - r - offsetY) / cell);
+  const MyR = Math.floor((y + r - offsetY) / cell);
+  for (let row = mr; row <= MyR; row++) {
+    for (let col = mc; col <= MxC; col++) {
+      if (row < 0 || row >= rows || col < 0 || col >= cols) continue;
+      if (grid[row][col] === 1 || grid[row][col] === 2) {
+        if (grid[row][col] === 2) {
+          const gt = gates.find(g => g.col === col && g.row === row);
+          if (gt && gt.opened) continue;
+        }
+        const wx = offsetX + col * cell, wy = offsetY + row * cell;
+        const nx = Math.max(wx, Math.min(x, wx + cell));
+        const ny = Math.max(wy, Math.min(y, wy + cell));
+        if ((x - nx) * (x - nx) + (y - ny) * (y - ny) < r * r) return true;
+      }
+    }
+  }
+  return false;
+}
+
+// ==================== Tutorial Helpers ====================
+function isTutorialLevel() {
+  return currentLevel < LEVEL_CONFIGS.length && LEVEL_CONFIGS[currentLevel].isTutorial;
+}
+
+function playerNearSwitch() {
+  if (!player || switches.length === 0) return false;
+  for (const s of switches) {
+    if (s.activated) continue;
+    const dx = player.x - s.x_, dy = player.y - s.y_;
+    if (Math.sqrt(dx * dx + dy * dy) < cell * 2.5) return true;
+  }
+  return false;
+}
+
+function playerNearGoal() {
+  if (!player || !goal) return false;
+  const dx = player.x - goal.x, dy = player.y - goal.y;
+  return Math.sqrt(dx * dx + dy * dy) < cell * 3;
+}
+
+function anyGateOpened() {
+  return gates.length > 0 && gates.every(g => g.opened);
+}
+
+function advanceTutorialStep() {
+  if (!isTutorialLevel() || gameState !== 'playing') return;
+  const next = tutorialStep + 1;
+  if (next >= TUTORIAL_HINTS.length) return;
+
+  let shouldAdvance = false;
+  switch (next) {
+    case 1: shouldAdvance = totalSteps >= 3; break;
+    case 2: shouldAdvance = totalSteps >= 8; break;
+    case 3: shouldAdvance = switches.length > 0 && (playerNearSwitch() || totalSteps >= 16); break;
+    case 4: shouldAdvance = totalSteps >= 22; break;
+    case 5: shouldAdvance = playerNearGoal() || anyGateOpened() || totalSteps >= 30; break;
+  }
+
+  if (shouldAdvance) tutorialStep = next;
+}
+
+function skipTutorial() {
+  if (!isTutorialLevel()) return;
+  currentLevel = 1;
+  document.getElementById('overlay').style.display = 'none';
+  gameState = 'playing';
+  loadLevel(1);
+  lastTime = performance.now();
+}
+
+// ==================== Player Update ====================
+function updatePlayer(dt) {
+  if (gameState !== 'playing') return;
+  const accel = cell * 0.014;
+  const friction = 0.78;
+  let ax = 0, ay = 0;
+  if (keys['ArrowLeft'] || keys['a'] || keys['A']) ax -= 1;
+  if (keys['ArrowRight'] || keys['d'] || keys['D']) ax += 1;
+  if (keys['ArrowUp'] || keys['w'] || keys['W']) ay -= 1;
+  if (keys['ArrowDown'] || keys['s'] || keys['S']) ay += 1;
+  if (ax !== 0 && ay !== 0) { ax *= 0.707; ay *= 0.707; }
+
+  player.vx += ax * accel * dt;
+  player.vy += ay * accel * dt;
+  if (ax === 0) player.vx *= Math.pow(friction, dt);
+  if (ay === 0) player.vy *= Math.pow(friction, dt);
+
+  const spd = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
+  if (spd > player.speed) {
+    player.vx = (player.vx / spd) * player.speed;
+    player.vy = (player.vy / spd) * player.speed;
+  }
+
+  if (spd > 0.05) {
+    const tf = Math.atan2(player.vy, player.vx);
+    let diff = tf - player.facing;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    player.facing += diff * Math.min(1, 0.15 * dt);
+  }
+
+  const newX = player.x + player.vx * dt;
+  const newY = player.y + player.vy * dt;
+
+  if (!checkCollision(newX, player.y, player.radius)) {
+    player.x = newX;
+  } else {
+    if (Math.abs(player.vx) > 0.4) screenShake = Math.max(screenShake, 0.6);
+    player.vx = 0;
+  }
+  if (!checkCollision(player.x, newY, player.radius)) {
+    player.y = newY;
+  } else {
+    if (Math.abs(player.vy) > 0.4) screenShake = Math.max(screenShake, 0.6);
+    player.vy = 0;
+  }
+
+  // Footstep system
+  const mvSpd = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
+  if (mvSpd > 0.06) {
+    player.stepDist += mvSpd * dt;
+    while (player.stepDist >= player.stepLength) {
+      player.stepDist -= player.stepLength;
+      const px = -Math.sin(player.facing);
+      const py = Math.cos(player.facing);
+      const fOff = (player.foot === 0 ? -1 : 1) * cell * 0.1;
+      player.footprints.push({
+        x: player.x + px * fOff,
+        y: player.y + py * fOff,
+        angle: player.facing,
+        life: 1,
+      });
+      if (player.footprints.length > 40) player.footprints.shift();
+      player.foot = 1 - player.foot;
+      playFootstep();
+      emitEcho(player.x, player.y, cell * 2.0, cell * 0.07, true);
+      totalSteps++;
+      document.getElementById('stepDisplay').textContent = totalSteps;
+    }
+  }
+  for (let i = player.footprints.length - 1; i >= 0; i--) {
+    player.footprints[i].life -= 0.018 * dt;
+    if (player.footprints[i].life <= 0) player.footprints.splice(i, 1);
+  }
+
+  // Switch detection
+  for (let s of switches) {
+    if (s.activated) continue;
+    const dx = player.x - s.x_; const dy = player.y - s.y_;
+    if (Math.sqrt(dx * dx + dy * dy) < cell * 0.4) {
+      s.activated = true;
+      const g = gates[s.gateIndex];
+      g.opening = true;
+      screenShake = 2;
+      emitEcho(s.x_, s.y_, cell * 2.5, cell * 0.12, false);
+      if (g && g.cx) emitEcho(g.cx, g.cy, cell * 2.5, cell * 0.12, false);
+    }
+  }
+
+  // Gate animation
+  for (let g of gates) {
+    if (g.opening && !g.opened) {
+      g.openAmount = (g.openAmount || 0) + 0.04 * dt;
+      if (g.openAmount >= 1) { g.opened = true; g.opening = false; }
+    }
+  }
+
+  advanceTutorialStep();
+
+  const dgx = player.x - goal.x, dgy = player.y - goal.y;
+  if (Math.sqrt(dgx * dgx + dgy * dgy) < cell * 0.45) levelComplete();
+}
+
+// ==================== Enemy System ====================
+function updateEnemies(dt) {
+  if (gameState !== 'playing') return;
+  for (const en of enemies) {
+    if (!en.alive) continue;
+    en.pulse += 0.05 * dt;
+
+    // AI: move toward player with some randomness, avoid walls
+    const dx = player.x - en.x;
+    const dy = player.y - en.y;
+    const dist = Math.hypot(dx, dy);
+    let ax = 0, ay = 0;
+    if (dist > 0.1) {
+      const nx = dx / dist;
+      const ny = dy / dist;
+      ax = nx * cell * 0.006;
+      ay = ny * cell * 0.006;
+    }
+    // Add slight randomness to prevent perfect chasing
+    ax += (Math.sin(en.pulse * 3.7) * cell * 0.001);
+    ay += (Math.cos(en.pulse * 4.1) * cell * 0.001);
+
+    en.vx += ax * dt;
+    en.vy += ay * dt;
+
+    // Friction
+    en.vx *= Math.pow(0.82, dt);
+    en.vy *= Math.pow(0.82, dt);
+
+    const spd = Math.hypot(en.vx, en.vy);
+    if (spd > en.speed) {
+      en.vx = (en.vx / spd) * en.speed;
+      en.vy = (en.vy / spd) * en.speed;
+    }
+
+    const newX = en.x + en.vx * dt;
+    const newY = en.y + en.vy * dt;
+
+    if (!checkCollision(newX, en.y, en.radius)) {
+      en.x = newX;
+    } else { en.vx = 0; }
+    if (!checkCollision(en.x, newY, en.radius)) {
+      en.y = newY;
+    } else { en.vy = 0; }
+  }
+}
+
+function checkEnemyCollision() {
+  if (!player || gameState !== 'playing') return;
+  for (const en of enemies) {
+    if (!en.alive) continue;
+    const d = Math.hypot(player.x - en.x, player.y - en.y);
+    if (d < player.radius + en.drawR) {
+      killPlayer();
+      return;
+    }
+  }
+  // Check enemy burst danger zones
+  for (let i = enemyBursts.length - 1; i >= 0; i--) {
+    const b = enemyBursts[i];
+    const d = Math.hypot(player.x - b.x, player.y - b.y);
+    if (d < b.dangerR) {
+      killPlayer();
+      return;
+    }
+  }
+}
+
+function fireBlast() {
+  if (gameState !== 'playing' || !player) return;
+  const now = performance.now();
+  if (now - lastBlastTime < 1200) return; // 1.2s cooldown
+  lastBlastTime = now;
+  playBlastSound();
+  emitEcho(player.x, player.y, cell * 4, cell * 0.14, false);
+  screenShake = Math.max(screenShake, 2);
+
+  // Kill enemies in range
+  const blastR = cell * 3.5;
+  for (const en of enemies) {
+    if (!en.alive) continue;
+    const d = Math.hypot(player.x - en.x, player.y - en.y);
+    if (d < blastR) {
+      en.alive = false;
+      playEnemyExplodeSound();
+      // Explosion burst
+      const burstCount = 25;
+      for (let i = 0; i < burstCount; i++) {
+        const ang = (i / burstCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+        const spd = 1.5 + Math.random() * 4;
+        enemyBursts.push({
+          x: en.x, y: en.y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd,
+          life: 1, size: 2 + Math.random() * 4,
+          dangerR: cell * 1.5, // player dies if inside this
+          cx: en.x, cy: en.y,
+        });
+      }
+    }
+  }
+}
+
+function updateEnemyBursts(dt) {
+  for (let i = enemyBursts.length - 1; i >= 0; i--) {
+    const b = enemyBursts[i];
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    b.vx *= Math.pow(0.9, dt);
+    b.vy *= Math.pow(0.9, dt);
+    b.life -= 0.025 * dt;
+    b.dangerR *= Math.pow(0.93, dt);
+    if (b.life <= 0) enemyBursts.splice(i, 1);
+  }
+}
+
+function killPlayer() {
+  gameState = 'dead';
+  playDeathSound();
+  screenShake = 8;
+  // Spawn death particles
+  for (let i = 0; i < 40; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const spd = 2 + Math.random() * 5;
+    goalBurst.push({
+      x: player.x, y: player.y,
+      vx: Math.cos(ang) * spd,
+      vy: Math.sin(ang) * spd,
+      life: 1, size: 1.5 + Math.random() * 3,
+    });
+  }
+  const ov = document.getElementById('overlay');
+  setTimeout(function() {
+    ov.innerHTML =
+      '<h1>You Died</h1><div class="subtitle">CAUGHT BY THE DARKNESS</div>' +
+      '<div class="stats">An enemy caught you.<br>Use F to blast them before they get close!</div>' +
+      '<button onclick="retryLevel()">Retry</button>';
+    ov.style.display = 'flex';
+  }, 600);
+}
+
+// ==================== Echo Particle System ====================
+function emitEcho(x, y, maxR, spd, countSteps) {
+  const numParticles = Math.max(8, Math.floor(maxR / cell * 12));
+  for (let i = 0; i < numParticles; i++) {
+    const angle = (i / numParticles) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+    const speed = spd * (0.55 + Math.random() * 0.9);
+    echoParticles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      startX: x, startY: y,
+      dist: 0,
+      maxDist: maxR * (0.65 + Math.random() * 0.7),
+      life: 1,
+      decay: 0.006 + Math.random() * 0.01,
+      size: 1.8 + Math.random() * 2.8,
+      hit: false,
+    });
+  }
+  if (countSteps) totalSteps++;
+}
+
+function updateEchoParticles(dt) {
+  for (let i = echoParticles.length - 1; i >= 0; i--) {
+    const ep = echoParticles[i];
+    ep.x += ep.vx * dt;
+    ep.y += ep.vy * dt;
+    ep.dist = Math.sqrt((ep.x - ep.startX) * (ep.x - ep.startX) + (ep.y - ep.startY) * (ep.y - ep.startY));
+
+    // Wall collision
+    if (!ep.hit) {
+      for (let w of walls) {
+        const cx = Math.max(w.x, Math.min(ep.x, w.x + w.w));
+        const cy = Math.max(w.y, Math.min(ep.y, w.y + w.h));
+        const d = Math.sqrt((ep.x - cx) * (ep.x - cx) + (ep.y - cy) * (ep.y - cy));
+        if (d < cell * 0.26) {
+          w.illum = 1;
+          w.memIllum = Math.max(w.memIllum, 0.05);
+          for (let j = 0; j < 3; j++) {
+            const ang2 = Math.atan2(ep.y - w.cy, ep.x - w.cx) + (Math.random() - 0.5) * 1.2;
+            particles.push({
+              x: cx, y: cy,
+              vx: Math.cos(ang2) * (0.3 + Math.random() * 0.7),
+              vy: Math.sin(ang2) * (0.3 + Math.random() * 0.7),
+              life: 1, size: 0.6 + Math.random() * 1.2,
+            });
+          }
+          ep.hit = true;
+          ep.life *= 0.25;
+          break;
+        }
+      }
+    }
+
+    // Gate detection
+    if (!ep.hit) {
+      for (let g of gates) {
+        if (g.opened) continue;
+        const cx = Math.max(g.x_, Math.min(ep.x, g.x_ + cell));
+        const cy = Math.max(g.y_, Math.min(ep.y, g.y_ + cell));
+        const d = Math.sqrt((ep.x - cx) * (ep.x - cx) + (ep.y - cy) * (ep.y - cy));
+        if (d < cell * 0.26) {
+          g.illum = 1;
+          g.memIllum = Math.max(g.memIllum, 0.06);
+        }
+      }
+    }
+
+    // Switch detection
+    for (let s of switches) {
+      const d = Math.sqrt((ep.x - s.x_) * (ep.x - s.x_) + (ep.y - s.y_) * (ep.y - s.y_));
+      if (d < cell * 0.25) {
+        s.illum = 1;
+        s.memIllum = Math.max(s.memIllum, 0.08);
+      }
+    }
+
+    // Goal detection
+    if (goal) {
+      const dg = Math.sqrt((ep.x - goal.x) * (ep.x - goal.x) + (ep.y - goal.y) * (ep.y - goal.y));
+      if (dg < cell * 0.28) {
+        goal.illum = 1;
+        goal.memIllum = Math.max(goal.memIllum, 0.12);
+      }
+    }
+
+    ep.life -= ep.decay * dt;
+
+    if (ep.life <= 0 || ep.dist > ep.maxDist) {
+      echoParticles.splice(i, 1);
+    }
+  }
+}
+
+// ==================== Particles ====================
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vx *= Math.pow(0.88, dt); p.vy *= Math.pow(0.88, dt);
+    p.life -= 0.04 * dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+  for (let i = goalBurst.length - 1; i >= 0; i--) {
+    const p = goalBurst[i];
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vx *= Math.pow(0.93, dt); p.vy *= Math.pow(0.93, dt);
+    p.life -= 0.018 * dt;
+    if (p.life <= 0) goalBurst.splice(i, 1);
+  }
+}
+
+// ==================== Footprint Drawing (toe points in facing direction) ====================
+function drawFootprint(ctx, x, y, angle, alpha, sz) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle + Math.PI);
+  // Heel points to the right (positive X = facing direction after rotation)
+  ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+  // Main body (shoe sole, elongated vertically)
+  ctx.beginPath();
+  ctx.ellipse(-sz * 0.04, 0, sz * 0.36, sz * 0.20, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Toe (front of the shoe, at positive X)
+  ctx.beginPath();
+  ctx.ellipse(sz * 0.30, 0, sz * 0.15, sz * 0.17, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// ==================== Rounded Rect Helper ====================
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// ==================== Tutorial Hint Rendering ====================
+function renderTutorialHints() {
+  if (!isTutorialLevel() || gameState !== 'playing' || tutorialStep >= TUTORIAL_HINTS.length) return;
+
+  const hint = TUTORIAL_HINTS[tutorialStep];
+  if (!hint) return;
+
+  let hx, hy;
+  if (tutorialStep === 3) {
+    const s = switches.find(s => !s.activated) || switches[0];
+    if (s) { hx = s.x_; hy = s.y_ - cell * 1.3; }
+    else { hx = CANVAS_W / 2; hy = CANVAS_H * 0.35; }
+  } else if (tutorialStep === 5) {
+    if (goal) { hx = goal.x; hy = goal.y - cell * 1.6; }
+    else { hx = CANVAS_W / 2; hy = CANVAS_H * 0.35; }
+  } else {
+    hx = hint.cx;
+    hy = hint.cy;
+  }
+
+  const lines = hint.text.split('\n');
+  const fontSize = 14;
+  const lineH = fontSize + 5;
+  ctx.font = '600 ' + fontSize + 'px "Segoe UI", system-ui, sans-serif';
+
+  let maxW = 0;
+  for (const line of lines) {
+    const m = ctx.measureText(line);
+    if (m.width > maxW) maxW = m.width;
+  }
+
+  const padX = 22, padY = 12;
+  const bw = maxW + padX * 2;
+  const bh = lines.length * lineH + padY * 2;
+  const bx = hx - bw / 2;
+  const by = hy - bh / 2;
+
+  const cBx = Math.max(4, Math.min(bx, CANVAS_W - bw - 4));
+  const cBy = Math.max(4, Math.min(by, CANVAS_H - bh - 4));
+
+  const pulse = 0.7 + Math.sin(goalPulse * 2.5) * 0.3;
+
+  ctx.shadowColor = 'rgba(255,255,255,' + (0.15 * pulse) + ')';
+  ctx.shadowBlur = 14 * pulse;
+
+  ctx.fillStyle = 'rgba(2,2,4,0.88)';
+  roundRect(ctx, cBx - 2, cBy - 2, bw + 4, bh + 4, 10);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+  ctx.strokeStyle = 'rgba(255,255,255,' + (0.25 * pulse) + ')';
+  ctx.lineWidth = 1;
+  roundRect(ctx, cBx, cBy, bw, bh, 8);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const totalTH = lines.length * lineH;
+  for (let i = 0; i < lines.length; i++) {
+    const ty = cBy + bh / 2 - totalTH / 2 + i * lineH + lineH / 2;
+    ctx.fillText(lines[i], cBx + bw / 2, ty);
+  }
+
+  if (tutorialStep === 3 || tutorialStep === 5) {
+    const cx = cBx + bw / 2;
+    const cy = cBy + bh;
+    const tx = hx, ty = hy + bh / 2 + cell * 0.5;
+    ctx.strokeStyle = 'rgba(255,255,255,' + (0.15 * pulse) + ')';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + 4);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    ctx.arc(tx, ty, 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.25 * pulse) + ')';
+    ctx.fill();
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = '10px "Segoe UI", system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText((tutorialStep + 1) + ' / ' + TUTORIAL_HINTS.length, cBx + bw / 2, cBy + bh + 14);
+}
+
+// ==================== Render ====================
+function render() {
+  ctx.fillStyle = '#020203';
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  ctx.save();
+  if (screenShake > 0) {
+    ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+    screenShake *= 0.86;
+    if (screenShake < 0.03) screenShake = 0;
+  }
+
+  // Player ambient light (very weak)
+  if (player && (gameState === 'playing' || gameState === 'levelComplete' || gameState === 'dead')) {
+    const ar = cell * 0.7;
+    const gd = ctx.createRadialGradient(player.x, player.y, 0, player.x, player.y, ar);
+    gd.addColorStop(0, 'rgba(255,255,255,0.08)');
+    gd.addColorStop(0.5, 'rgba(200,200,200,0.02)');
+    gd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gd;
+    ctx.fillRect(player.x - ar, player.y - ar, ar * 2, ar * 2);
+  }
+
+  // Goal
+  if (goal) {
+    goalPulse += 0.04;
+    const ps = 1 + Math.sin(goalPulse) * 0.18;
+    const ba = goal.memIllum + goal.illum;
+    const da = 0.08 + Math.sin(goalPulse) * 0.03;
+    const fa = Math.max(ba * 0.85, da);
+
+    const gg = ctx.createRadialGradient(goal.x, goal.y, 0, goal.x, goal.y, cell * 1.1 * ps);
+    gg.addColorStop(0, 'rgba(255,245,220,' + (fa * 0.7) + ')');
+    gg.addColorStop(0.4, 'rgba(255,240,200,' + (fa * 0.2) + ')');
+    gg.addColorStop(1, 'rgba(255,240,200,0)');
+    ctx.fillStyle = gg;
+    ctx.fillRect(goal.x - cell * 1.3, goal.y - cell * 1.3, cell * 2.6, cell * 2.6);
+
+    ctx.beginPath();
+    ctx.arc(goal.x, goal.y, cell * 0.16 * ps, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,245,220,' + fa + ')';
+    ctx.fill();
+
+    goal.illum *= 0.95;
+    goal.memIllum *= 0.985;
+  }
+
+  // Walls (faster decay for shorter echo duration)
+  if (player) {
+    for (let w of walls) {
+      const wdx = w.cx - player.x, wdy = w.cy - player.y;
+      const wd = Math.sqrt(wdx * wdx + wdy * wdy);
+      const pi = Math.max(0, 1 - wd / (cell * 0.9)) * 0.18;
+      const ti = Math.max(w.illum, w.memIllum, pi);
+      if (ti > 0.01) {
+        ctx.fillStyle = 'rgba(230,230,230,' + (ti * 0.3) + ')';
+        ctx.fillRect(w.x, w.y, w.w, w.h);
+        ctx.strokeStyle = 'rgba(255,255,255,' + (ti * 0.7) + ')';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(w.x + 0.5, w.y + 0.5, w.w - 1, w.h - 1);
+        if (w.illum > 0.3) {
+          ctx.strokeStyle = 'rgba(255,255,255,' + (w.illum * 0.3) + ')';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(w.x + 2.5, w.y + 2.5, w.w - 5, w.h - 5);
+        }
+      }
+      w.illum *= 0.92;
+      w.memIllum *= 0.985;
+    }
+  }
+
+  // Switches (floor)
+  if (player) {
+    for (let s of switches) {
+      const sdx = s.x_ - player.x, sdy = s.y_ - player.y;
+      const sd = Math.sqrt(sdx * sdx + sdy * sdy);
+      const sp = Math.max(0, 1 - sd / (cell * 0.7)) * 0.12;
+      const sti = Math.max(s.illum, s.memIllum, sp);
+
+      if (s.activated) {
+        ctx.beginPath();
+        ctx.arc(s.x_, s.y_, cell * 0.13, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(180,180,180,' + (0.04 + Math.sin(goalPulse * 2) * 0.015) + ')';
+        ctx.fill();
+      } else if (sti > 0.008) {
+        const pu = 0.7 + Math.sin(goalPulse * 3) * 0.3;
+        ctx.beginPath();
+        ctx.arc(s.x_, s.y_, cell * 0.17 * pu, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,' + (sti * 0.5) + ')';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(s.x_, s.y_, cell * 0.07, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + (sti * 0.6) + ')';
+        ctx.fill();
+      }
+      s.illum *= 0.92;
+      s.memIllum *= 0.985;
+    }
+  }
+
+  // Gates
+  if (player) {
+    for (let g of gates) {
+      const gdx = g.cx - player.x, gdy = g.cy - player.y;
+      const gd = Math.sqrt(gdx * gdx + gdy * gdy);
+      const gp = Math.max(0, 1 - gd / (cell * 0.9)) * 0.18;
+      const gti = Math.max(g.illum, g.memIllum, gp);
+
+      if (!g.opened) {
+        const of = 1 - (g.openAmount || 0);
+        const eff = gti * of;
+        if (eff > 0.008) {
+          ctx.fillStyle = 'rgba(255,255,255,' + (eff * 0.18) + ')';
+          ctx.fillRect(g.x_, g.y_, cell, cell);
+          ctx.strokeStyle = 'rgba(255,255,255,' + (eff * 0.55) + ')';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(g.x_ + 1, g.y_ + 1, cell - 2, cell - 2);
+          ctx.setLineDash([]);
+        }
+      } else {
+        if (g.memIllum > 0.01) {
+          ctx.strokeStyle = 'rgba(255,255,255,' + (g.memIllum * 0.15) + ')';
+          ctx.lineWidth = 0.5;
+          ctx.setLineDash([3, 5]);
+          ctx.strokeRect(g.x_ + 2, g.y_ + 2, cell - 4, cell - 4);
+          ctx.setLineDash([]);
+        }
+      }
+      g.illum *= 0.92;
+      g.memIllum *= 0.985;
+    }
+  }
+
+  // Echo particles (small dots with trails and glow)
+  for (let ep of echoParticles) {
+    const alpha = ep.life * 0.7;
+    if (alpha < 0.01) continue;
+
+    // Subtle trail dot behind
+    const trX = ep.x - ep.vx * 0.4;
+    const trY = ep.y - ep.vy * 0.4;
+    ctx.beginPath();
+    ctx.arc(trX, trY, ep.size * 0.45, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.15) + ')';
+    ctx.fill();
+
+    // Main particle dot
+    ctx.beginPath();
+    ctx.arc(ep.x, ep.y, ep.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+    ctx.fill();
+
+    // Soft glow around particle
+    const grad = ctx.createRadialGradient(ep.x, ep.y, ep.size * 0.3, ep.x, ep.y, ep.size * 3);
+    grad.addColorStop(0, 'rgba(255,255,255,' + (alpha * 0.35) + ')');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(ep.x - ep.size * 3, ep.y - ep.size * 3, ep.size * 6, ep.size * 6);
+  }
+
+  // Spark particles
+  for (let p of particles) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (p.life * 0.45) + ')';
+    ctx.fill();
+  }
+  for (let p of goalBurst) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,240,200,' + p.life + ')';
+    ctx.fill();
+  }
+
+  // Footprints
+  if (player) {
+    for (let fp of player.footprints) {
+      drawFootprint(ctx, fp.x, fp.y, fp.angle, fp.life * 0.12, cell * 0.28);
+    }
+    if (gameState === 'playing') {
+      const px = -Math.sin(player.facing), py = Math.cos(player.facing);
+      const fx = Math.cos(player.facing), fy = Math.sin(player.facing);
+      const phase = player.stepDist / player.stepLength;
+      const so = Math.sin(phase * Math.PI) * cell * 0.1;
+
+      const ls = player.foot === 0;
+      const lf = ls ? so : -so * 0.25;
+      const rf = !ls ? so : -so * 0.25;
+
+      const lx = player.x + px * cell * 0.1 + fx * lf;
+      const ly = player.y + py * cell * 0.1 + fy * lf;
+      const rx = player.x - px * cell * 0.1 + fx * rf;
+      const ry = player.y - py * cell * 0.1 + fy * rf;
+
+      drawFootprint(ctx, lx, ly, player.facing, 0.85, cell * 0.3);
+      drawFootprint(ctx, rx, ry, player.facing, 0.85, cell * 0.3);
+    }
+  }
+
+  // Enemies
+  for (const en of enemies) {
+    if (!en.alive) continue;
+    const edx = en.x - player.x, edy = en.y - player.y;
+    const ed = Math.hypot(edx, edy);
+    const ev = Math.max(0, 1 - ed / (cell * 3));
+    if (ev < 0.01) continue;
+    const ep = 0.6 + Math.sin(en.pulse) * 0.4;
+
+    // Outer glow
+    const eg = ctx.createRadialGradient(en.x, en.y, 0, en.x, en.y, en.drawR * 3 * ep);
+    eg.addColorStop(0, 'rgba(255,50,30,' + (ev * 0.25 * ep) + ')');
+    eg.addColorStop(0.5, 'rgba(255,20,10,' + (ev * 0.08 * ep) + ')');
+    eg.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = eg;
+    ctx.fillRect(en.x - en.drawR * 4, en.y - en.drawR * 4, en.drawR * 8, en.drawR * 8);
+
+    // Inner core
+    const ig = ctx.createRadialGradient(en.x, en.y, 0, en.x, en.y, en.drawR * ep);
+    ig.addColorStop(0, 'rgba(255,255,200,' + (ev * 0.9 * ep) + ')');
+    ig.addColorStop(0.4, 'rgba(255,60,20,' + (ev * 0.7 * ep) + ')');
+    ig.addColorStop(1, 'rgba(200,20,0,' + (ev * 0.3 * ep) + ')');
+    ctx.fillStyle = ig;
+    ctx.beginPath();
+    ctx.arc(en.x, en.y, en.drawR * ep, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Enemy burst particles (red)
+  for (const b of enemyBursts) {
+    const alpha = b.life * 0.8;
+    if (alpha < 0.01) continue;
+    // Danger zone ring
+    if (b.life > 0.4) {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.dangerR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,40,20,' + (alpha * 0.3) + ')';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    // Core particle
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,30,10,' + alpha + ')';
+    ctx.fill();
+    // Glow
+    const bg = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.size * 2.5);
+    bg.addColorStop(0, 'rgba(255,100,40,' + (alpha * 0.3) + ')');
+    bg.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(b.x - b.size * 3, b.y - b.size * 3, b.size * 6, b.size * 6);
+  }
+
+  // Vignette
+  const vig = ctx.createRadialGradient(CANVAS_W / 2, CANVAS_H / 2, CANVAS_H * 0.18, CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.65);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.7)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  ctx.restore();
+
+  // Tutorial hints on top of everything
+  if (gameState === 'playing') renderTutorialHints();
+}
+
+// ==================== Game State ====================
+function startGame() {
+  currentLevel = 0; levelTimes = [];
+  document.getElementById('overlay').style.display = 'none';
+  gameState = 'playing';
+  loadLevel(0);
+  lastTime = performance.now();
+  if (!loopRunning) { loopRunning = true; gameLoop(); }
+}
+
+function levelComplete() {
+  playGoalSound();
+  gameState = 'levelComplete';
+  const time = timeLimit - (performance.now() - levelStartTime) / 1000;
+  levelTimes.push({ time: timeLimit, steps: totalSteps, rem: Math.max(0, time) });
+
+  for (let i = 0; i < 60; i++) {
+    const ang = (i / 60) * Math.PI * 2 + Math.random() * 0.3;
+    const spd = 1 + Math.random() * 4;
+    goalBurst.push({ x: goal.x, y: goal.y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, life: 1, size: 1.5 + Math.random() * 2.5 });
+  }
+  screenShake = 4;
+
+  const isTutorial = LEVEL_CONFIGS[currentLevel].isTutorial;
+  const isLast = currentLevel >= LEVEL_CONFIGS.length - 1;
+  const ov = document.getElementById('overlay');
+
+  setTimeout(function() {
+    if (isTutorial) {
+      ov.innerHTML =
+        '<h1>Tutorial Complete</h1><div class="subtitle">YOU\'RE READY</div>' +
+        '<div class="stats">You\'ve mastered echo navigation.<br>Now face the real labyrinths.<br><br>Steps <span>' + totalSteps + '</span></div>' +
+        '<button onclick="nextLevel()">ENTER LEVEL 1</button>';
+    } else if (isLast) {
+      ov.innerHTML =
+        '<h1>All Clear</h1><div class="subtitle">ALL LEVELS CLEARED</div>' +
+        '<div class="stats">You\'ve traversed every echo maze.<br><br>' +
+        'Total Steps <span>' + levelTimes.reduce(function(s,t){return s+t.steps;},0) + '</span></div>' +
+        '<button onclick="startGame()">Play Again</button>';
+    } else {
+      const displayNum = currentLevel;
+      ov.innerHTML =
+        '<h1>Level ' + displayNum + ' Complete</h1><div class="subtitle">LEVEL CLEARED</div>' +
+        '<div class="stats">Steps <span>' + totalSteps + '</span></div>' +
+        '<button onclick="nextLevel()">Next Level</button>';
+    }
+    ov.style.display = 'flex';
+  }, 800);
+}
+
+function timeUp() {
+  gameState = 'timeUp';
+  const ov = document.getElementById('overlay');
+  ov.innerHTML =
+    '<h1>Time\'s Up</h1><div class="subtitle">OUT OF TIME</div>' +
+    '<div class="stats">You ran out of time on this level.</div>' +
+    '<button onclick="retryLevel()">Retry</button>';
+  ov.style.display = 'flex';
+}
+
+function nextLevel() {
+  currentLevel++;
+  document.getElementById('overlay').style.display = 'none';
+  gameState = 'playing';
+  loadLevel(currentLevel);
+}
+
+function retryLevel() {
+  document.getElementById('overlay').style.display = 'none';
+  gameState = 'playing';
+  loadLevel(currentLevel);
+}
+
+function restartLevel() {
+  if (gameState === 'playing') loadLevel(currentLevel);
+}
+
+// ==================== Input ====================
+window.addEventListener('keydown', function(e) {
+  keys[e.key] = true;
+  if (e.key === ' ' && gameState === 'playing') {
+    e.preventDefault();
+    const now = performance.now();
+    if (now - lastPingTime < 800) return;
+    lastPingTime = now;
+    emitEcho(player.x, player.y, cell * 5, cell * 0.18, false);
+    screenShake = Math.max(screenShake, 2.5);
+  }
+  if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    fireBlast();
+  }
+  if (e.key === 'Enter' && gameState === 'playing' && isTutorialLevel()) {
+    e.preventDefault();
+    skipTutorial();
+  }
+  if (e.key === 'r' || e.key === 'R') restartLevel();
+});
+
+window.addEventListener('keyup', function(e) { keys[e.key] = false; });
+
+canvas.addEventListener('click', function(e) {
+  if (gameState !== 'playing') return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (CANVAS_W / rect.width);
+  const my = (e.clientY - rect.top) * (CANVAS_H / rect.height);
+  const now = performance.now();
+  if (now - lastPingTime < 800) return;
+  lastPingTime = now;
+  emitEcho(mx, my, cell * 4, cell * 0.16, false);
+});
+
+// ==================== Game Loop ====================
+function gameLoop() {
+  if (!loopRunning) return;
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 16.67, 2.5);
+  lastTime = now;
+
+  if (gameState === 'playing') {
+    updatePlayer(dt);
+    updateEnemies(dt);
+    updateEchoParticles(dt);
+    updateParticles(dt);
+    updateEnemyBursts(dt);
+    checkEnemyCollision();
+    const rem = Math.max(0, timeLimit - (now - levelStartTime) / 1000);
+    document.getElementById('timeDisplay').textContent = rem.toFixed(1);
+    var td = document.getElementById('timeDisplay');
+    if (rem < 10) { td.className = 'hud-danger'; }
+    else { td.className = 'hud-normal'; }
+    if (rem <= 0) timeUp();
+  } else if (gameState === 'levelComplete' || gameState === 'timeUp' || gameState === 'dead') {
+    updateParticles(dt);
+    updateEnemyBursts(dt);
+  }
+
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+render();
+</script>
+</body>
+</html>

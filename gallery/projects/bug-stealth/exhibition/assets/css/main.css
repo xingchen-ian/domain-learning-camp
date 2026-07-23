@@ -1,0 +1,350 @@
+/* ============================================================
+   Bug Stealth — global stylesheet
+   Art direction: clean, polished, cozy-garden — warm palette,
+   soft gradients, rounded shapes. Like a cute mobile puzzle game.
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #161b15;
+  color: #d8d4c4;
+  font-family: "Georgia", "PingFang SC", "Microsoft YaHei", serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: #9ab87a; text-decoration: none; }
+a:hover { color: #e6d8a1; }
+
+.site-nav {
+  display: flex;
+  gap: 1.2rem;
+  padding: 0.5rem 1.2rem;
+  background: #1c211a;
+  border-bottom: 1px solid #2c3025;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.site-nav .brand {
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  color: #e6d8a1;
+  margin-right: auto;
+}
+.site-nav a { font-size: 0.95rem; }
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+h1, h2, h3 { color: #efe6c8; }
+h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.5rem; margin-top: 2.5rem; border-bottom: 1px solid #2c3025; padding-bottom: 0.3rem; }
+h3 { font-size: 1.15rem; margin-top: 1.6rem; color: #c9d3a8; }
+
+p, li { line-height: 1.65; color: #c4bea6; }
+
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  background: #2c3025;
+  border: 1px solid #3a4133;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: #b9c79b;
+  margin-right: 0.4rem;
+}
+
+.hero {
+  background: linear-gradient(135deg, #1a201a 0%, #232a1f 100%);
+  border: 1px solid #2c3025;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+.hero p { color: #a8a892; max-width: 720px; margin: 0.5rem auto; }
+
+.btn {
+  display: inline-block;
+  padding: 0.7rem 1.4rem;
+  background: #5a6a3e;
+  color: #fff8d6;
+  border: 1px solid #6b7d4b;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+.btn:hover { background: #6b7d4b; }
+.btn-secondary { background: #3a4133; border-color: #4a5340; }
+.btn-secondary:hover { background: #4a5340; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+.card {
+  background: #1c211a;
+  border: 1px solid #2c3025;
+  border-radius: 8px;
+  padding: 1.2rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.card h3 { margin-top: 0; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+th, td {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid #2c3025;
+  font-size: 0.95rem;
+}
+th { color: #b9c79b; font-weight: normal; }
+
+.controls {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1rem;
+  font-size: 0.95rem;
+}
+.controls dt { color: #c9d3a8; font-family: "Consolas", monospace; }
+.controls dd { margin: 0; color: #a8a892; }
+
+.timeline-entry {
+  background: #1c211a;
+  border: 1px solid #2c3025;
+  border-left: 3px solid #6b7d4b;
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.timeline-entry h3 { margin-top: 0; }
+.timeline-entry time { color: #6b7d4b; font-size: 0.85rem; }
+
+.graph-block {
+  background: #1c211a;
+  border: 1px solid #2c3025;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.graph-block img { max-width: 100%; height: auto; }
+
+footer {
+  border-top: 1px solid #2c3025;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  color: #6b7d4b;
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+   game.html specific
+   ============================================================ */
+.game-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Game area fills the viewport — no scroll needed to play */
+.game-viewport {
+  height: calc(100vh - 42px);
+  height: calc(100dvh - 42px);
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0.8rem;
+  gap: 0.3rem;
+  overflow: hidden;
+}
+
+.game-canvas-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.game-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.level-picker { display: flex; gap: 0.3rem; }
+.game-toolbar .btn {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+canvas#game {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  aspect-ratio: 1024 / 640;
+  margin: 0 auto;
+  background: #0e120c;
+  border: 1px solid #2c3025;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.6rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #a8a892;
+}
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend i {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid #2c3025;
+}
+
+/* Collapsible info sections below the game */
+.info-section {
+  padding: 0 1rem;
+  margin-top: 0.6rem;
+}
+.info-section summary {
+  cursor: pointer;
+  font-size: 1rem;
+  color: #efe6c8;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #2c3025;
+  list-style: none;
+  user-select: none;
+}
+.info-section summary::-webkit-details-marker { display: none; }
+.info-section summary::before { content: "\25B8 "; color: #6b7d4b; }
+.info-section[open] summary::before { content: "\25BE "; }
+.info-section .controls,
+.info-section .legend { margin-top: 0.5rem; }
+
+/* ============================================================
+   Touch controls (mobile / tablet)
+   ============================================================ */
+.touch-controls {
+  display: none;               /* hidden on desktop, shown via JS on touch devices */
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 180px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* D-pad layout (bottom-left) */
+.dpad {
+  position: absolute;
+  bottom: 1.5rem; left: 1.2rem;
+  width: 140px; height: 140px;
+  pointer-events: auto;
+}
+.dpad .tbtn {
+  position: absolute;
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: rgba(28,33,26,0.85);
+  border: 2px solid rgba(107,125,75,0.5);
+  color: #e6d8a1;
+  font-size: 1.3rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  transition: background 0.1s, transform 0.1s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.dpad .tbtn:active {
+  background: rgba(50,60,40,0.9);
+  transform: scale(0.92);
+}
+.dpad-up    { top: 0;   left: 46px; }
+.dpad-left  { top: 46px; left: 0;    }
+.dpad-down  { top: 92px; left: 46px; }
+.dpad-right { top: 46px; left: 92px; }
+
+/* Action pad layout (bottom-right) */
+.action-pad {
+  position: absolute;
+  bottom: 1.5rem; right: 1.2rem;
+  width: 124px; height: 124px;
+  pointer-events: auto;
+}
+.action-pad .tbtn {
+  position: absolute;
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: rgba(28,33,26,0.85);
+  border: 2px solid rgba(107,125,75,0.5);
+  color: #e6d8a1;
+  font-size: 1.1rem;
+  font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  transition: background 0.1s, transform 0.1s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.action-pad .tbtn:active {
+  background: rgba(50,60,40,0.9);
+  transform: scale(0.90);
+}
+.act-interact { bottom: 35px; left: 0;   }
+.act-rotate-l { bottom: 70px; left: 70px; }
+.act-rotate-r { bottom: 70px; left: 0;    }
+.act-pause    { bottom: 0;    left: 70px; }
+
+/* Hide button (center, between D-pad and action pad) */
+.hide-btn {
+  position: absolute;
+  bottom: 2.8rem; left: 50%;
+  transform: translateX(-50%);
+  width: 76px; height: 52px;
+  border-radius: 10px;
+  background: rgba(28,33,26,0.85);
+  border: 2px solid rgba(107,125,75,0.5);
+  color: #e6d8a1;
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  transition: background 0.1s, transform 0.1s;
+  pointer-events: auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.hide-btn:active {
+  background: rgba(50,60,40,0.9);
+  transform: translateX(-50%) scale(0.92);
+}

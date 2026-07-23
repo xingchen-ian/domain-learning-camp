@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain &amp; System Design — Shark Bite</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand"><span class="mark">SB</span> Shark Bite</div>
+      <nav class="main">
+        <a href="index.html">Home</a>
+        <a href="domain.html" class="active">Domain &amp; System</a>
+        <a href="process.html">Process</a>
+        <a href="game.html">Play Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>Domain knowledge &amp; system design</h1>
+      <p>Why this knowledge is real, and how the game turns it into a playable system.</p>
+    </div>
+
+    <section class="block">
+      <h2>The real-world domain</h2>
+      <p class="sub">Scuba diving and the ocean ecosystem.</p>
+      <div class="grid two">
+        <div class="card">
+          <h3>Novice misconception</h3>
+          <p>Beginners think there is a fixed set of creatures and that ecosystems work the same close to and far from shore. They assume their reaction is correct because it matches movies, false news, and social media — so "shark" always means "danger."</p>
+        </div>
+        <div class="card">
+          <h3>Expert judgment</h3>
+          <p>The real challenge is depth, oxygen, equipment, and understanding. A diver reads pressure, knows their gear's limit, and identifies a creature before reacting. A large animal on the radar is often a harmless filter feeder, not a threat.</p>
+        </div>
+      </div>
+      <div class="shift" style="margin-top:16px;">
+        <span class="label">Core learning shift</span>
+        <p>The ocean is beautiful, not only fearsome. Knowing true information — not the headline version — changes how people see it. Most sharks avoid divers; the biggest fish in the sea is gentle.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Why this becomes playable</h2>
+      <p class="sub">Each piece of domain knowledge maps to a mechanic.</p>
+      <table class="spec">
+        <thead><tr><th>Domain knowledge</th><th>Game mechanic</th></tr></thead>
+        <tbody>
+          <tr><td class="cat">Coral reef ecology</td><td>Coral formations are the world. Creatures hide inside them — swim close to discover them. Each species has a real reef role (cleaner, grazer, predator, filter feeder).</td></tr>
+          <tr><td class="cat">Ecosystem health</td><td>Pollution drifts through the water and damages coral. Swim through it to clean it. Coral bleaches white when sick; the water turns murky when eco-health drops. Eco-health is a win condition, not just decoration.</td></tr>
+          <tr><td class="cat">Depth &amp; pressure</td><td>Diving deeper raises pressure; past the equipment limit, gear destabilises and the screen edges flash red.</td></tr>
+          <tr><td class="cat">Oxygen management</td><td>Oxygen drains over time, faster when deep or sprinting. Return to the surface to refill.</td></tr>
+          <tr><td class="cat">Species identification</td><td>Scanning a creature adds its true fact and reef role to your catalog — including the misconception it corrects.</td></tr>
+          <tr><td class="cat">Large ≠ dangerous</td><td>The radar beeps red for <em>size</em>, not threat. The whale shark is huge but harmless; panicking startles it and loses a reward.</td></tr>
+          <tr><td class="cat">Predator balance</td><td>Too many predators near the reef lower eco-health. Warding them off or giving them space restores balance — killing is a last resort.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="block">
+      <h2>System graph</h2>
+      <p class="sub">How environment data, player input, the system engine, and feedback connect.</p>
+      <figure class="graph">
+        <img src="assets/system-graph.svg" alt="Shark Bite game system graph showing environment data, player input, system engine, feedback, exposed data, and win/failure conditions.">
+        <figcaption>The system graph. Read left-to-right: environment + player input feed the engine, which produces feedback the player reads, and resolves into win or game-over.</figcaption>
+      </figure>
+    </section>
+
+    <section class="block">
+      <h2>System data, states, and actions</h2>
+      <table class="spec">
+        <thead><tr><th>Layer</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td class="cat">Environment data</td><td>coral formations (type, position, health), pollution particles, species present, depth, water pressure, time of day, water current, temperature, visibility, ecosystem status.</td></tr>
+          <tr><td class="cat">Player-controlled</td><td>swim, speed up / slow, dive / ascend, scan &amp; discover creatures, clean pollution (swim through it), defend yourself.</td></tr>
+          <tr><td class="cat">System-calculated</td><td>oxygen remaining, equipment stability, player health, eco-health (reef ecosystem), coral health, species catalog, safe / dangerous, tired / alert, mission rewards, pollution cleaned.</td></tr>
+          <tr><td class="cat">Feedback signals</td><td>coral glow (hidden creature nearby), coral bleaching (eco-health low), water murk (ecosystem sick), radar beeps red (large creature near), pressure beep + edge mesh (too deep), red screen flash (attacked), catalog toast (new species + reef role).</td></tr>
+          <tr><td class="cat">Success</td><td>Discover the target number of species AND keep eco-health above the challenge threshold.</td></tr>
+          <tr><td class="cat">Failure</td><td>Out of oxygen, equipment failure under pressure, killed by a predator, or reef ecosystem collapses (eco-health near 0).</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="block">
+      <h2>Challenge presets</h2>
+      <p class="sub">Presets change system variables and relationships — not just visuals.</p>
+      <div class="grid three">
+        <div class="card">
+          <h3>1 · Reef Welcome <span style="color:#888780;font-weight:400;">(Tutorial)</span></h3>
+          <p>Shallow, sunny reef. Equipment limit 25 m, low oxygen drain, target 4 species, eco-health target 60%. Mostly harmless reef life. Teaches swimming, scanning creatures in coral, and cleaning pollution.</p>
+        </div>
+        <div class="card">
+          <h3>2 · Stressed Reef <span style="color:#888780;font-weight:400;">(Eco-Health)</span></h3>
+          <p>Pollution is spreading and coral is bleaching. Equipment limit 30 m, target 5 species, eco-health target 65%. Clean debris to restore the reef while discovering stressed creatures.</p>
+        </div>
+        <div class="card">
+          <h3>3 · Predator Balance <span style="color:#888780;font-weight:400;">(Ecosystem)</span></h3>
+          <p>Too many predators threaten the reef. Equipment limit 35 m, target 5 species, eco-health target 55%. The whale shark triggers the radar — but scanning (not panicking) is rewarded. Balance predators while discovering species.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">Shark Bite · Natalia Ma · IMA Summer Program — Game Design</div>
+  </footer>
+</body>
+</html>

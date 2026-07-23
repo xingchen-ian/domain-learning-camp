@@ -1,0 +1,161 @@
+<svg role="img" viewBox="0 0 680 760" width="100%" xmlns="http://www.w3.org/2000/svg">
+<title>Ocean shark diving game system graph</title>
+<desc>Data flow from environment and player input through system calculations to feedback and win or game over conditions.</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#A32D2D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<style>
+  .t { font-family: sans-serif; font-size: 13px; font-weight: 400; fill: #2C2C2A; }
+  .th { font-family: sans-serif; font-size: 13px; font-weight: 500; fill: #2C2C2A; }
+  .ts { font-family: sans-serif; font-size: 11px; font-weight: 400; fill: #5F5E5A; }
+  .box { rx: 8; stroke-width: 0.5; }
+  .c-blue .box { fill: #E6F1FB; stroke: #378ADD; }
+  .c-blue .th { fill: #0C447C; }
+  .c-teal .box { fill: #E1F5EE; stroke: #1D9E75; }
+  .c-teal .th { fill: #085041; }
+  .c-purple .box { fill: #EEEDFE; stroke: #7F77DD; }
+  .c-purple .th { fill: #3C3489; }
+  .c-coral .box { fill: #FAECE7; stroke: #D85A30; }
+  .c-coral .th { fill: #712B13; }
+  .c-green .box { fill: #EAF3DE; stroke: #639922; }
+  .c-green .th { fill: #27500A; }
+  .c-red .box { fill: #FCEBEB; stroke: #E24B4A; }
+  .c-red .th { fill: #791F1F; }
+  .arr { fill: none; stroke: #888780; stroke-width: 1; marker-end: url(#arrow); }
+  .arr-red { fill: none; stroke: #E24B4A; stroke-width: 1; marker-end: url(#arrow-red); }
+  .arr-green { fill: none; stroke: #639922; stroke-width: 1; marker-end: url(#arrow-green); }
+  .label { font-family: sans-serif; font-size: 12px; font-weight: 500; fill: #5F5E5A; }
+  .banner { fill: #F1EFE8; stroke: #B4B2A9; stroke-width: 0.5; }
+</style>
+
+<rect x="20" y="12" width="640" height="52" class="banner" rx="12"/>
+<text class="th" x="340" y="32" text-anchor="middle" font-size="14px">Core learning shift</text>
+<text class="t" x="340" y="52" text-anchor="middle">The ocean is beautiful, not only fearsome — true information changes perception.</text>
+
+<!-- Column labels -->
+<text class="label" x="105" y="90" text-anchor="middle">environment data</text>
+<text class="label" x="250" y="90" text-anchor="middle">player input</text>
+<text class="label" x="420" y="90" text-anchor="middle">system engine</text>
+<text class="label" x="575" y="90" text-anchor="middle">feedback</text>
+
+<!-- Environment column -->
+<g class="c-blue">
+  <rect x="40" y="100" width="130" height="34" class="box"/><text class="th" x="105" y="117" text-anchor="middle">species present</text>
+  <rect x="40" y="140" width="130" height="34" class="box"/><text class="th" x="105" y="157" text-anchor="middle">water pressure</text>
+  <rect x="40" y="180" width="130" height="34" class="box"/><text class="th" x="105" y="197" text-anchor="middle">depth</text>
+  <rect x="40" y="220" width="130" height="34" class="box"/><text class="th" x="105" y="237" text-anchor="middle">time of day</text>
+  <rect x="40" y="260" width="130" height="34" class="box"/><text class="th" x="105" y="277" text-anchor="middle">water current</text>
+  <rect x="40" y="300" width="130" height="34" class="box"/><text class="th" x="105" y="317" text-anchor="middle">temperature</text>
+  <rect x="40" y="340" width="130" height="34" class="box"/><text class="th" x="105" y="357" text-anchor="middle">visibility</text>
+  <rect x="40" y="380" width="130" height="34" class="box"/><text class="th" x="105" y="397" text-anchor="middle">ecosystem status</text>
+</g>
+
+<!-- Player input column -->
+<g class="c-teal">
+  <rect x="185" y="100" width="130" height="34" class="box"/><text class="th" x="250" y="117" text-anchor="middle">swim</text>
+  <rect x="185" y="140" width="130" height="34" class="box"/><text class="th" x="250" y="157" text-anchor="middle">speed up / slow</text>
+  <rect x="185" y="180" width="130" height="34" class="box"/><text class="th" x="250" y="197" text-anchor="middle">dive / ascend</text>
+  <rect x="185" y="220" width="130" height="34" class="box"/><text class="th" x="250" y="237" text-anchor="middle">take photos</text>
+  <rect x="185" y="260" width="130" height="34" class="box"/><text class="th" x="250" y="277" text-anchor="middle">scan animal</text>
+  <rect x="185" y="300" width="130" height="34" class="box"/><text class="th" x="250" y="317" text-anchor="middle">collect sample</text>
+  <rect x="185" y="340" width="130" height="34" class="box"/><text class="th" x="250" y="357" text-anchor="middle">avoid obstacle</text>
+  <rect x="185" y="380" width="130" height="34" class="box"/><text class="th" x="250" y="397" text-anchor="middle">defend yourself</text>
+</g>
+
+<!-- System engine column -->
+<g class="c-purple">
+  <rect x="355" y="100" width="130" height="34" class="box"/><text class="th" x="420" y="117" text-anchor="middle">oxygen remaining</text>
+  <rect x="355" y="140" width="130" height="34" class="box"/><text class="th" x="420" y="157" text-anchor="middle">equipment stability</text>
+  <rect x="355" y="180" width="130" height="34" class="box"/><text class="th" x="420" y="197" text-anchor="middle">player health</text>
+  <rect x="355" y="220" width="130" height="34" class="box"/><text class="th" x="420" y="237" text-anchor="middle">ecosystem health</text>
+  <rect x="355" y="260" width="130" height="34" class="box"/><text class="th" x="420" y="277" text-anchor="middle">species catalog</text>
+  <rect x="355" y="300" width="130" height="34" class="box"/><text class="th" x="420" y="317" text-anchor="middle">safe / dangerous</text>
+  <rect x="355" y="340" width="130" height="34" class="box"/><text class="th" x="420" y="357" text-anchor="middle">tired / alert</text>
+  <rect x="355" y="380" width="130" height="34" class="box"/><text class="th" x="420" y="397" text-anchor="middle">mission rewards</text>
+</g>
+
+<!-- Feedback column -->
+<g class="c-coral">
+  <rect x="510" y="100" width="130" height="34" class="box"/><text class="th" x="575" y="117" text-anchor="middle">radar beeps red</text>
+  <rect x="510" y="140" width="130" height="34" class="box"/><text class="th" x="575" y="157" text-anchor="middle">pressure beeps</text>
+  <rect x="510" y="180" width="130" height="34" class="box"/><text class="th" x="575" y="197" text-anchor="middle">screen red mesh</text>
+  <rect x="510" y="220" width="130" height="34" class="box"/><text class="th" x="575" y="237" text-anchor="middle">behavior mismatch</text>
+  <rect x="510" y="260" width="130" height="34" class="box"/><text class="th" x="575" y="277" text-anchor="middle">catalog update</text>
+  <rect x="510" y="300" width="130" height="34" class="box"/><text class="th" x="575" y="317" text-anchor="middle">testing results</text>
+  <rect x="510" y="340" width="130" height="34" class="box"/><text class="th" x="575" y="357" text-anchor="middle">reward notification</text>
+  <rect x="510" y="380" width="130" height="34" class="box"/><text class="th" x="575" y="397" text-anchor="middle">objective marker</text>
+</g>
+
+<!-- Arrows environment → system -->
+<path class="arr" d="M170 117 L355 117"/>
+<path class="arr" d="M170 157 L355 157"/>
+<path class="arr" d="M170 197 L355 197"/>
+<path class="arr" d="M170 237 L355 237"/>
+<path class="arr" d="M170 277 L355 277"/>
+<path class="arr" d="M170 317 L355 317"/>
+<path class="arr" d="M170 357 L355 357"/>
+<path class="arr" d="M170 397 L355 397"/>
+
+<!-- Arrows player → system -->
+<path class="arr" d="M315 117 L355 117"/>
+<path class="arr" d="M315 157 L355 157"/>
+<path class="arr" d="M315 197 L355 197"/>
+<path class="arr" d="M315 237 L355 277"/>
+<path class="arr" d="M315 277 L355 277"/>
+<path class="arr" d="M315 317 L355 277"/>
+<path class="arr" d="M315 357 L355 357"/>
+<path class="arr" d="M315 397 L355 197"/>
+
+<!-- Arrows system → feedback -->
+<path class="arr" d="M485 117 L510 117"/>
+<path class="arr" d="M485 157 L510 157"/>
+<path class="arr-red" d="M485 197 L510 197"/>
+<path class="arr" d="M485 237 L510 237"/>
+<path class="arr" d="M485 277 L510 277"/>
+<path class="arr" d="M485 317 L510 317"/>
+<path class="arr" d="M485 397 L510 357"/>
+
+<!-- Exposed data banner -->
+<rect x="20" y="430" width="640" height="92" class="banner" rx="12"/>
+<text class="th" x="340" y="450" text-anchor="middle">Exposed data on screen</text>
+<text class="t" x="40" y="472">depth · oxygen remaining · water pressure · temperature · visibility · time remaining</text>
+<text class="t" x="40" y="492">equipment health · player health · species catalog · ecosystem health · current objective</text>
+<text class="ts" x="40" y="512">These are read-only outputs that help the player make informed decisions and spot the just-right range.</text>
+
+<!-- Core challenge box -->
+<rect x="20" y="534" width="640" height="52" class="banner" rx="12"/>
+<text class="th" x="340" y="554" text-anchor="middle">Core challenge</text>
+<text class="t" x="340" y="574" text-anchor="middle">Manage depth, oxygen, equipment, and understanding while correcting movie/media misconceptions.</text>
+
+<!-- Outcomes -->
+<g class="c-green">
+  <rect x="40" y="600" width="280" height="120" class="box"/>
+  <text class="th" x="180" y="625" text-anchor="middle">win conditions</text>
+  <text class="t" x="55" y="648">• new species discovered ≥ target</text>
+  <text class="t" x="55" y="668">• player health &gt; 0</text>
+  <text class="t" x="55" y="688">• oxygen &gt; 0</text>
+  <text class="t" x="55" y="708">• equipment status = stable</text>
+</g>
+
+<g class="c-red">
+  <rect x="360" y="600" width="280" height="120" class="box"/>
+  <text class="th" x="500" y="625" text-anchor="middle">game over conditions</text>
+  <text class="t" x="375" y="648">• player health ≤ 0</text>
+  <text class="t" x="375" y="668">• oxygen ≤ 0</text>
+  <text class="t" x="375" y="688">• equipment failure</text>
+  <text class="t" x="375" y="708">• mission time ≤ 0</text>
+</g>
+
+<!-- Arrows system → outcomes -->
+<path class="arr-green" d="M420 414 L420 470 L180 470 L180 600"/>
+<path class="arr-red" d="M420 414 L420 470 L500 470 L500 600"/>
+</svg>

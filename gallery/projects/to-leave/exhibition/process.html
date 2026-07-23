@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To Leave — Development Process</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div id="site-wrapper">
+
+  <!-- NAVIGATION -->
+  <nav id="site-nav">
+    <div class="nav-brand">To Leave</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="domain.html" class="nav-link">Domain & Design</a>
+      <a href="process.html" class="nav-link active">Development</a>
+      <a href="game.html" class="nav-link">Play Game</a>
+    </div>
+  </nav>
+
+  <!-- DEVELOPMENT TIMELINE -->
+  <section id="dev-process" class="content-section">
+    <h2 class="section-title">Development Process</h2>
+
+    <div class="timeline-intro">
+      <p>This timeline records how "To Leave" developed through human-AI collaboration. It is based on <code>agent-development-log.md</code> and reflects actual events — including failures, partial results, and changes in direction. Nothing has been smoothed or invented.</p>
+    </div>
+
+    <!-- TIMELINE ENTRIES -->
+    <div class="timeline">
+
+      <!-- Entry 01 -->
+      <div class="timeline-entry">
+        <div class="timeline-marker">1</div>
+        <div class="timeline-content">
+          <div class="timeline-date">2026-07-21</div>
+          <h3>Project Initialization & First Playable Build</h3>
+          <div class="timeline-details">
+            <p><strong>Goal:</strong> Set up project structure and implement the smallest complete game loop (Observe → Judge → Act → Feedback → Adjust).</p>
+            <p><strong>What happened:</strong></p>
+            <ul>
+              <li>Student provided the complete development brief.</li>
+              <li>Agent analyzed the brief and identified Track A (HTML/CSS/Canvas 2D, no build step) as the appropriate dependency track for a 2D packing puzzle.</li>
+              <li>Created project directory structure: <code>exhibition/</code>, <code>source/</code>.</li>
+              <li>Initialized <code>agent-development-log.md</code>.</li>
+              <li>Implemented core game engine with 3 challenge presets:</li>
+              <ul>
+                <li>Case 1: The Wealthy Lady (talkative, 8-slot suitcase, 10 objects)</li>
+                <li>Case 2: The College Student (quiet, 6-slot backpack, 9 objects)</li>
+                <li>Case 3: The Elderly Man (silent, 7-slot travel bag, 10 objects)</li>
+              </ul>
+              <li>Each challenge differs through variables: container size, character voice style, clue formats, object sets, and Need/Want distributions.</li>
+              <li>Implemented full interaction: examine objects, enter memories (Canvas-rendered scenes), pack/unpack, container capacity tracking, voice feedback, scoring.</li>
+              <li>Created project website with Home, Domain & Design, and Development Process pages.</li>
+            </ul>
+            <p><strong>AI influence:</strong> Agent designed the 3 challenge presets based on the brief's description. The memory visualization system (Canvas-drawn scenes) was an agent suggestion to make emotional weight experiential rather than just numerical.</p>
+            <p><strong>Student decision:</strong> Student has not yet reviewed the first playable version. Feedback on character design, object selection, and gameplay feel is pending.</p>
+            <p><strong>Open questions:</strong></p>
+            <ul>
+              <li>Does the scoring formula correctly reward the intended learning shift?</li>
+              <li>Are the 3 cases sufficiently different in challenge difficulty?</li>
+              <li>Is the memory viewing experience engaging enough to make players care about Want scores?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- More entries will be added as development continues -->
+
+    </div>
+
+    <!-- NOTE ABOUT HONESTY -->
+    <div class="honesty-note">
+      <p><strong>Note:</strong> This timeline will be updated after each meaningful development milestone. It will record failures and abandoned directions as honestly as successes. No events have been fabricated or smoothed.</p>
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="site-footer">
+    <p>To Leave — A packing puzzle game by Tianle Zhao · Built with WorkBuddy (CodeBuddy)</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

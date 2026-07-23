@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Racing — IMA Summer Program</title>
+  <link rel="stylesheet" crossorigin href="./assets/style-CAqbcE1U.css">
+</head>
+<body>
+
+<nav>
+  <span class="logo">RACING</span>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="game.html">Play Game</a></li>
+    <li><a href="process.html">Process</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <h1>Racing</h1>
+  <p style="font-size:1.1rem;color:#aaa;">A top-down police chase racing game — outrun the cops, manage your fuel, and survive the road.</p>
+
+  <div style="margin-top:24px;">
+    <a href="game.html" class="btn-play">Play the Game</a>
+  </div>
+
+  <!-- GAME IDEA -->
+  <h2>Game Idea</h2>
+  <div class="section-card">
+    <h3>Goal</h3>
+    <p>Reach the destination before time runs out — while being chased by police, managing your fuel, avoiding traffic damage, and learning when to speed up <em>and</em> slow down.</p>
+
+    <h3>Core Learning Shift</h3>
+    <p><strong>Beginners think they can just speed away and drive recklessly, but experts know sometimes you have to slow down and have control.</strong> This game teaches resource management under pressure: speed drains gas, damage slows you down, and accelerating blindly makes you an easy target for traffic and the cops.</p>
+  </div>
+
+  <!-- DOMAIN KNOWLEDGE -->
+  <h2>Domain Knowledge</h2>
+  <div class="section-card">
+    <h3>The Real-World Domain</h3>
+    <p>Car racing (and getaway driving) is about more than just speed. Real drivers must balance acceleration with control, monitor vehicle health, and manage fuel consumption — especially under pursuit.</p>
+
+    <h3>Novice Misconception</h3>
+    <p>Beginners assume the car won't get damaged when it crashes, that fuel is unlimited, and that constant acceleration is the answer. They don't use the brake and think faster always means better.</p>
+
+    <h3>Expert Judgment</h3>
+    <p>Experts understand that sometimes you need to slow down to find the right gap, that fuel must be optimized, that damage compounds, and that a controlled escape is better than a reckless one. They read the road, the sirens, and the dashboard.</p>
+
+    <h3>Why This Becomes Playable</h3>
+    <p>By making gas, health, police distance, and boost energy visible and interactive, the game forces players to experience the tradeoffs experts face — and learn through repeated play that control beats chaos.</p>
+  </div>
+
+  <!-- SYSTEM DESIGN -->
+  <h2>System Design</h2>
+  <div class="section-card">
+    <h3>Player Learning Loop</h3>
+    <p><strong>Observe</strong> surrounding traffic, car speed, health, boost energy, police distance</p>
+    <p><strong>Judge</strong> whether you can fit through gaps, whether police are too close, whether gas is low</p>
+    <p><strong>Act</strong> accelerate, brake, steer, boost, collect gas tokens</p>
+    <p><strong>Read Feedback</strong> sirens get louder, dashboard lights flash, damage slows the car</p>
+    <p><strong>Adjust</strong> speed up when sirens are loud, slow down to navigate gaps, refuel when gas is low</p>
+
+    <h3>Environment Data</h3>
+    <p>
+      <span class="tag">Road & lanes</span>
+      <span class="tag">Traffic cars</span>
+      <span class="tag">Police car</span>
+      <span class="tag">Gas tokens</span>
+      <span class="tag">Time limit</span>
+      <span class="tag">Distance to destination</span>
+      <span class="tag">Car health</span>
+      <span class="tag">Boost energy</span>
+      <span class="tag">Siren proximity</span>
+    </p>
+
+    <h3>Player-Controlled Data</h3>
+    <p>
+      <span class="tag blue">Accelerate / Brake</span>
+      <span class="tag blue">Steer left / right</span>
+      <span class="tag blue">Boost (space)</span>
+      <span class="tag blue">Collect gas tokens</span>
+    </p>
+
+    <h3>System-Calculated Results</h3>
+    <p>
+      <span class="tag green">Police distance → siren volume</span>
+      <span class="tag green">Damage → slower speed + faster gas drain</span>
+      <span class="tag green">Speed + boost → gas drain rate</span>
+    </p>
+
+    <h3>Feedback Translation</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+      <div style="flex:1;min-width:200px;background:var(--surface-2);border-radius:8px;padding:14px;border-left:3px solid #ff4444;">
+        <strong>Siren gets louder</strong><br>
+        <span style="font-size:0.85rem;color:#888;">Police is getting closer. Background flashes red and blue.</span>
+      </div>
+      <div style="flex:1;min-width:200px;background:var(--surface-2);border-radius:8px;padding:14px;border-left:3px solid #ffaa00;">
+        <strong>Gas is low</strong><br>
+        <span style="font-size:0.85rem;color:#888;">Alert sound plays. Collect gas tokens on the road.</span>
+      </div>
+      <div style="flex:1;min-width:200px;background:var(--surface-2);border-radius:8px;padding:14px;border-left:3px solid #888;">
+        <strong>Car is damaged</strong><br>
+        <span style="font-size:0.85rem;color:#888;">Slower top speed, faster gas drain, smoke from engine.</span>
+      </div>
+    </div>
+
+    <h3>Success &amp; Failure</h3>
+    <p>
+      <span class="tag green">Win: Reach the destination in time</span>
+    </p>
+    <p>
+      <span class="tag red">Lose: Time runs out</span>
+      <span class="tag red">Lose: Police catches you</span>
+      <span class="tag red">Lose: Run out of fuel</span>
+      <span class="tag red">Lose: Car destroyed</span>
+    </p>
+
+    <h3>Challenge Presets</h3>
+    <p>Three difficulty levels that change system variables, not just decoration:</p>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.9rem;margin-top:8px;">
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:8px;color:var(--text-dim);">Setting</th>
+          <th style="padding:8px;color:#44cc66;">Novice</th>
+          <th style="padding:8px;color:#ffaa00;">Driver</th>
+          <th style="padding:8px;color:#ff4444;">Expert</th>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:8px;">Traffic density</td>
+          <td style="padding:8px;">Light (5 max)</td>
+          <td style="padding:8px;">Medium (8 max)</td>
+          <td style="padding:8px;">Heavy (12 max)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:8px;">Cop chase duration</td>
+          <td style="padding:8px;">10s per crash</td>
+          <td style="padding:8px;">10s per crash</td>
+          <td style="padding:8px;">10s per crash</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:8px;">Cop catch-up speed</td>
+          <td style="padding:8px;">Slow</td>
+          <td style="padding:8px;">Medium</td>
+          <td style="padding:8px;">Fast</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:8px;">Gas drain rate</td>
+          <td style="padding:8px;">Low</td>
+          <td style="padding:8px;">Medium</td>
+          <td style="padding:8px;">High</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:8px;">Track length</td>
+          <td style="padding:8px;">40,000m</td>
+          <td style="padding:8px;">60,000m</td>
+          <td style="padding:8px;">80,000m</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:8px;">Time limit</td>
+          <td style="padding:8px;">240s</td>
+          <td style="padding:8px;">300s</td>
+          <td style="padding:8px;">360s</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- DEVELOPMENT PROCESS -->
+  <h2>Development Process</h2>
+  <div class="section-card">
+    <p style="color:var(--text-dim);">This project is built through human-AI collaboration. The complete timeline is documented in <a href="process.html" style="color:var(--accent-2);">process.html</a> and <code>agent-development-log.md</code>.</p>
+    <div style="margin-top:16px;">
+      <a href="process.html" style="color:var(--accent-2);text-decoration:none;">View Development Timeline →</a>
+    </div>
+  </div>
+
+  <!-- PLAY -->
+  <h2>Play the Game</h2>
+  <div class="section-card" style="text-align:center;padding:40px;">
+    <p style="font-size:1.1rem;margin-bottom:20px;">Ready to test your driving skills?</p>
+    <a href="game.html" class="btn-play">Start Racing</a>
+    <p style="margin-top:16px;color:var(--text-dim);font-size:0.9rem;">
+      <strong>Controls:</strong> WASD to drive · Space to boost · R to restart
+    </p>
+  </div>
+
+  <footer style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:0.8rem;">
+    <p>Racing — IMA Summer Program Game Design · Group 4 · Sungmo</p>
+    <p>Built with Canvas 2D + Web Audio API. Zero external dependencies. Track A.</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,187 @@
+/* ============================================================
+   Hidden Tides — Shared Styles
+   Track A: Pure HTML + CSS, no build step, no dependencies.
+   ============================================================ */
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  color: #2c3e50;
+  background: #f4f6f8;
+  line-height: 1.6;
+}
+
+/* ---- Navigation ---- */
+.top-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.7rem 1.5rem;
+  background: #0a1628;   /* deep navy pirate-nav bar */
+  flex-wrap: wrap;
+}
+.top-nav a {
+  color: #c8d8e8;
+  text-decoration: none;
+  padding: 0.35rem 0.85rem;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  transition: background 0.15s, color 0.15s;
+}
+.top-nav a:hover, .top-nav a.active {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+/* ---- Content area for info pages ---- */
+.content {
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+.content h1 {
+  font-size: 2rem; margin-bottom: 0.5rem; color: #1a3a5c;
+}
+.content h2 {
+  font-size: 1.4rem; margin-top: 2rem; margin-bottom: 0.6rem; color: #244b70;
+}
+.content p { margin-bottom: 0.75rem; }
+.content ul { margin-left: 1.5rem; margin-bottom: 0.75rem; }
+.content li { margin-bottom: 0.3rem; }
+.content strong { color: #1a3a5c; }
+.content em { color: #555; }
+
+/* ---- Cards ---- */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,08);
+  margin-bottom: 1.2rem;
+}
+
+/* ---- Game page specific — Caribbean Pirate theme ---- */
+.game-body {
+  background: #050d1a;   /* near-black navy (deep sea night) */
+  overflow: hidden;
+}
+#game-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+#gameCanvas {
+  display: block;
+  width: 100%;
+  max-width: 1280px;
+  height: auto;
+  border-radius: 4px;
+  cursor: crosshair;
+  outline: none;
+}
+
+/* ---- Overlay (menu / pause / win / lose) ---- */
+.overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: auto;
+}
+.overlay .panel {
+  background: rgba(8, 15, 30, 0.95);   /* deep navy pirate panel */
+  color: #f0e6d2;                         /* warm parchment text */
+  padding: 2.2rem 2.8rem;
+  border-radius: 14px;
+  text-align: center;
+  max-width: 520px;
+  box-shadow:
+    0 12px 48px rgba(0,0,0,0.6),
+    0 0 40px rgba(255, 180, 0, 0.08),
+    inset 0 1px 0 rgba(255,200,50,0.1);
+  border: 1px solid rgba(255, 190, 50, 0.2);   /* gold trim */
+}
+.overlay .panel h1 {
+  font-size: 2.4rem;
+  margin-bottom: 0.25rem;
+  color: #ffd966;                         /* gold title (POTC style) */
+  text-shadow: 0 2px 8px rgba(255,180,0,0.3);
+  letter-spacing: 2px;
+}
+.overlay .panel h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+.overlay .panel .subtitle {
+  color: #c9a84c;                         /* antique gold subtitle */
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+.overlay .panel .goal {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #b8c8d8;                         /* pale blue-grey text */
+  margin-bottom: 1.5rem;
+}
+.overlay .panel .reason {
+  color: #e88;
+  margin-bottom: 1rem;
+}
+.overlay .panel .stats {
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.8;
+  margin: 1rem 0;
+  padding: 0.8rem 1rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+}
+.overlay .panel .controls-info {
+  font-size: 0.85rem;
+  color: #7895ac;
+  margin-top: 1.2rem;
+}
+
+/* Preset buttons */
+.preset-row {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 1.3rem 0;
+}
+.btn {
+  border: 1px solid rgba(255, 200, 50, 0.4);   /* gold trim */
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  color: #ffd966;                              /* gold text */
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.15s, box-shadow 0.15s;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.btn:hover { transform: scale(1.06); filter: brightness(1.2); box-shadow: 0 0 12px rgba(255,200,50,0.3); }
+.btn:active { transform: scale(0.97); }
+.btn-restart { background: #1a3a5c; min-width: 110px; border-color: rgba(255,200,50,0.5); }
+
+/* ---- Footer ---- */
+footer {
+  text-align: center;
+  padding: 1.2rem;
+  color: #888;
+  font-size: 0.82rem;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 700px) {
+  .top-nav { justify-content: center; }
+  .content { padding: 1rem; }
+  .overlay .panel { margin: 1rem; padding: 1.5rem; }
+}

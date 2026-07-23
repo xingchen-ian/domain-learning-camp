@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Development Process — The Sea</title>
+    <link rel="stylesheet" href="./assets/style-ntZ2yPed.css">
+  </head>
+  <body class="page-process">
+    <!-- Deep-sea decoration -->
+    <div class="page-particles">
+      <div class="page-particle" style="left:5%;bottom:8%;width:3px;height:3px;animation-duration:20s;animation-delay:0s"></div>
+      <div class="page-particle" style="left:30%;bottom:5%;width:2px;height:2px;animation-duration:24s;animation-delay:4s"></div>
+      <div class="page-particle" style="left:50%;bottom:15%;width:4px;height:4px;animation-duration:18s;animation-delay:2s;background:rgba(246,193,119,0.1)"></div>
+      <div class="page-particle" style="left:72%;bottom:10%;width:2px;height:2px;animation-duration:22s;animation-delay:6s"></div>
+      <div class="page-particle" style="left:88%;bottom:18%;width:3px;height:3px;animation-duration:19s;animation-delay:1s"></div>
+    </div>
+    <div class="god-rays">
+      <div class="god-ray" style="left:20%;animation-delay:1s"></div>
+      <div class="god-ray" style="left:48%;animation-delay:3s;width:3px"></div>
+      <div class="god-ray" style="left:75%;animation-delay:5s;opacity:0.5;width:1.5px"></div>
+    </div>
+
+    <header class="site-header">
+      <h1>Development Process</h1>
+      <p class="tagline">A truthful, chronological log of how <em>The Sea</em> was built by Jason Hu with WorkBuddy.</p>
+      <nav class="site-nav">
+        <a class="nav-link" href="./index.html">Home</a>
+        <a class="nav-link" href="./game.html">Play</a>
+        <a class="nav-link is-active" href="./process.html">Development Process</a>
+      </nav>
+    </header>
+
+    <main class="page">
+      <section class="card">
+        <h2>What this page is</h2>
+        <p>This page mirrors <code>agent-development-log.md</code> at the project root. Every meaningful development interaction is logged there with factual fields. At the end of a stage, a reflection entry is added and the student is asked to write the reflection in their own words. This page only shows the timeline of decisions and changes — it does not invent smoother or more complete work than actually happened.</p>
+      </section>
+
+      <section class="card">
+        <h2>Timeline</h2>
+        <ol class="timeline">
+          <li>
+            <h3>2026-07-15 — Project bootstrap</h3>
+            <p>Read the development brief and the system graph. Confirmed the four blocking decisions: Track C (Three.js + Vite), 3D first-person perspective, 150 × 150 unit sea, all three levels in v1. Created the project skeleton, pinned dependency versions, and initialized the development log. See <code>agent-development-log.md → Interaction 01</code>.</p>
+          </li>
+          <li>
+            <h3>2026-07-15 — First playable version</h3>
+            <p>Built a runnable Three.js + Vite first-person diving game. All three levels are wired to the system graph (L1: no current / safe species; L2: weak current + dangerous species + reefs; L3: strong current + attackers + many reefs + low oxygen + low temperature). Win condition matches the system graph exactly: <code>HP &gt; 0 &amp;&amp; oxygen &gt; 0 &amp;&amp; distanceToTarget &lt;= 0.5 &amp;&amp; caught &gt;= 3</code>. Game-over conditions match the brief and graph. Three website pages (home, game, process) are built and linked. See <code>agent-development-log.md → Interaction 02</code> and the stage reflection at <code>Reflection 01</code>.</p>
+          </li>
+          <li>
+            <h3>2026-07-15 — Map re-shaped into a narrow canyon</h3>
+            <p>Replaced the 150 × 150 open sea with a 36 × 220 canyon (walls rising 24 units, sea floor −48). Obstacles re-modelled as swaying seaweed clusters and irregular boulder rocks. Safe species re-shaped into proper fish / crab / jellyfish / starfish / sea urchin / octopus meshes; dangerous species become eel / shark / sea snake. Each level now spawns 8–10 creatures across more kinds, not just 3 of a kind. See <code>agent-development-log.md → Interaction 02 (later additions)</code>.</p>
+          </li>
+          <li>
+            <h3>2026-07-20 — Dark, oppressive atmosphere</h3>
+            <p>Re-tuned the entire environment to a deep-sea mood: fog density up, ambient / sun / fill light intensity way down, every material color shifted darker, the player's flashlight made colder and shorter-ranged. The player now starts facing the target so the dark canyon is visible from the first frame. Jellyfish and the goal orb glow as soft beacons in the dark; deep-zone tint is stronger. See <code>agent-development-log.md → Interaction 03</code>.</p>
+          </li>
+          <li>
+            <h3>2026-07-20 — Scene brightness &amp; creature animations</h3>
+            <p>Brightened the scene slightly so players can see the path underfoot (fog 0.016, ambient 0.38, sun 0.50, flashlight range 40). All creatures now patrol and swim within zones around their home positions — fish circle, crabs walk sideways, jellyfish pulse and drift, octopus tentacles wave. Added three event feedback animations: red radial flash on creature attack, white shockwave + hull shadow on boat collision, green glow ring + floating text on successful catch.</p>
+          </li>
+          <li>
+            <h3>2026-07-20 — Realistic water &amp; depth lighting</h3>
+            <p>Replaced the flat water with 300 marine-snow particles, 6 God-Ray light columns, and a caustic shimmer layer on the floor. Depth-based atmosphere now continuously adjusts fog density, ambient/sun intensity, flashlight power, and CSS color tint — bright and open near the surface, oppressive darkness at the trench bottom. Canyon walls split into upper (lighter) and lower (darker) sections so players can visually gauge depth.</p>
+          </li>
+          <li>
+            <h3>2026-07-20 — Ascent animation &amp; boat-attack mechanic</h3>
+            <p>Winning no longer triggers instantly at the target. Instead the player enters an automatic ascent animation (fog overlay, camera tilts up). Level 1 ends with a safe surface arrival. Levels 2/3 check whether the player dropped a surface signal (O key) — if not, a cruise ship hull descends and kills the player. New win condition: reach target + have signal + complete ascent animation.</p>
+          </li>
+          <li>
+            <h3>2026-07-20 — Water current redesign</h3>
+            <p>Replaced arrow-and-ring visuals with rectangular current zones containing 24 flowing LineSegments that stream along the direction. No border or outline is drawn — only the internal streaks. Force calculation now uses rectangular bounds (width/length/height) with smooth quadratic edge falloff instead of circular radius.</p>
+          </li>
+        </ol>
+        <p>Further entries will be appended as development continues. The full log, including the <em>Reflection 01</em> entry with the Required Student Reflection block, is at <code>agent-development-log.md</code>.</p>
+      </section>
+
+      <section class="card">
+        <h2>Open questions / next steps</h2>
+        <ul>
+          <li>Catch interaction default: approach + W to catch (open to student feedback at the first playable milestone).</li>
+          <li>Public-display consent and submission date (asked at packaging time).</li>
+          <li>Whether to add audio feedback in a later version (currently visual / state-based only).</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>First Playable Web Game — The Sea — built with Three.js + Vite by Jason Hu with WorkBuddy.</p>
+    </footer>
+  </body>
+</html>

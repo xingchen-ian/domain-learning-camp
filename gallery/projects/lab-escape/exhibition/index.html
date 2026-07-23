@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Escape — Home</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="brand">LAB ESCAPE</span>
+    <a href="index.html" class="active">Home</a>
+    <a href="system.html">Domain &amp; System</a>
+    <a href="process.html">Development</a>
+    <span class="spacer"></span>
+    <a href="game.html" class="play-cta">Play</a>
+  </nav>
+
+  <header class="hero">
+    <h1>LAB ESCAPE</h1>
+    <p class="tag">Top-down stealth shooter · escape the lab</p>
+    <p class="tag">Student: Weiru Xu &nbsp;|&nbsp; Domain: Third-person shooter escaping a lab</p>
+    <div class="btn-row">
+      <a href="game.html" class="btn primary">Play the game</a>
+      <a href="system.html" class="btn">See the system design</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="card">
+      <h2>Game Idea</h2>
+      <p>
+        You are trapped inside a research lab and must reach the exit without being killed.
+        Enemies patrol the rooms, doors can block sight, and glass walls let you see through
+        but cannot be walked through. The game is inspired by <strong>Hotline Miami</strong>:
+        quick, readable action where <strong>how</strong> you move matters as much as
+        <strong>how</strong> you fight.
+      </p>
+      <p class="muted">
+        <strong>Player goal:</strong> reach the green EXIT door of each level alive.<br />
+        <strong>Core learning shift:</strong> beginners realise that different weapon choices
+        allow for different gameplay — a knife keeps you silent, a shotgun clears rooms fast
+        but alerts everyone, and a silenced pistol sits in between.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Why this domain matters</h2>
+      <p>
+        New players often treat shooters as pure aiming challenges. The domain challenge here is
+        <strong>understanding enemy movement and perception</strong>. Every guard or dog has a
+        vision cone, speed, and alert state. The player must observe these, decide whether to
+        sneak past, open a door, or fight, and then read the feedback (detection bar, health,
+        red vignette) to improve the next attempt.
+      </p>
+      <p>
+        The novice misconception is that the only thing that matters is clicking on enemies.
+        Through repetition, players learn that the environment and weapon choice are tools just
+        as important as aim.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Three challenge presets</h2>
+      <div class="grid-3">
+        <div>
+          <h3>Level 1 — Containment Wing</h3>
+          <p class="small muted">One guard, one assistant, low awareness. Learn to move, aim, sneak, and reach the exit.</p>
+          <span class="pill">vision ×0.75</span><span class="pill">speed ×0.8</span><span class="pill">doors introduced</span>
+        </div>
+        <div>
+          <h3>Level 2 — Security Checkpoint</h3>
+          <p class="small muted">More guards, glass walls, wider vision. Weapon choice becomes important.</p>
+          <span class="pill">silenced + shotgun</span><span class="pill">glass walls</span><span class="pill">vision ×1.0</span>
+        </div>
+        <div>
+          <h3>Level 3 — Kennels &amp; Exit</h3>
+          <p class="small muted">Fast dogs, more guards, highest awareness. Mix stealth and offense to survive.</p>
+          <span class="pill">dogs</span><span class="pill">vision ×1.15</span><span class="pill">speed ×1.2</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Controls</h2>
+      <p class="muted">
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move ·
+        <kbd>Mouse</kbd> aim ·
+        <kbd>Click</kbd> shoot / stab ·
+        <kbd>Shift</kbd> sneak (quiet) ·
+        <kbd>E</kbd> open / close door ·
+        <kbd>1</kbd>-<kbd>4</kbd> switch weapon ·
+        <kbd>P</kbd> pause
+      </p>
+    </section>
+  </main>
+
+  <footer class="site">Built for the First Playable Game exhibition · plain HTML/CSS/Canvas (Track A)</footer>
+</body>
+</html>

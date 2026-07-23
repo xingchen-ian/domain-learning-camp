@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bike Rider - Play | Cycling Safety Game</title>
+  <link rel="stylesheet" href="assets/css/style.css?v=4">
+</head>
+<body class="game-page">
+
+<div class="navbar">
+  <div class="logo"><span>Cycling Safety</span></div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#domain">Domain</a>
+    <a href="index.html#system">System</a>
+    <a href="process.html">Process</a>
+    <a href="game.html" class="active">Play</a>
+  </nav>
+</div>
+
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Fullscreen toggle -->
+  <button id="fullscreen-btn" style="position:absolute;top:10px;right:10px;z-index:50;background:rgba(0,0,0,0.6);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;">Fullscreen</button>
+
+  <!-- Level info bar -->
+  <div id="level-bar">
+    <span id="level-name">Level 1</span>
+    <span id="level-desc"></span>
+  </div>
+
+  <!-- HUD overlay -->
+  <div id="hud">
+    <!-- Top left: Speed + Stability + Health -->
+    <div class="hud-corner" id="hud-top-left">
+      <div class="hud-label">Speed</div>
+      <div class="hud-value" id="hud-speed-num">0</div>
+      <div id="hud-speed-label">Slow</div>
+      <div class="hud-label" style="margin-top:8px;">Stability</div>
+      <div class="stability-bar-container">
+        <div id="hud-stability-fill"></div>
+      </div>
+      <div id="hud-stability-label">Stable (100%)</div>
+      <div class="hud-label" style="margin-top:8px;">Health</div>
+      <div class="health-bar-container">
+        <div id="hud-health-fill"></div>
+      </div>
+      <div id="hud-health-label">100%</div>
+    </div>
+
+    <!-- Top center: Time + Coins -->
+    <div class="hud-corner" id="hud-top-center">
+      <div class="hud-label">Time Remaining</div>
+      <div id="hud-time">60s</div>
+      <div class="hud-label" style="margin-top:8px;">Coins</div>
+      <div id="hud-coin-display"><span id="hud-coins">0</span> <span style="font-size:14px;">collected</span></div>
+    </div>
+
+    <!-- Top right: Terrain + Distance -->
+    <div class="hud-corner" id="hud-top-right">
+      <div class="hud-label">Terrain</div>
+      <div id="hud-terrain">Pavement</div>
+      <div class="hud-label" style="margin-top:8px;">Distance to Goal</div>
+      <div class="hud-value" id="hud-distance">0 m</div>
+      <div class="progress-bar-container">
+        <div id="hud-progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Obstacle alert -->
+    <div id="hud-obstacle-alert">OBSTACLE AHEAD</div>
+
+    <!-- Lean indicator -->
+    <div id="hud-lean">Leaning</div>
+  </div>
+
+  <!-- Menu overlay -->
+  <div class="overlay" id="menu-overlay">
+    <div class="menu-title">Cycling Safety <span style="font-size:0.5em;vertical-align:super;color:#f4c20d;">3D</span></div>
+    <div class="menu-subtitle">3D riding experience. Collect coins to restore health. Control your speed. Reach the goal safely.</div>
+    <div class="level-grid">
+      <button class="level-btn" id="menu-level-1">
+        <div class="level-num">Level 1</div>
+        <div class="level-name">Park Path</div>
+        <div class="level-desc">Flat pavement, gentle curves, sticks & cones.</div>
+      </button>
+      <button class="level-btn" id="menu-level-2">
+        <div class="level-num">Level 2</div>
+        <div class="level-name">Mixed Trail</div>
+        <div class="level-desc">Pavement meets gravel. Rocks, branches & cones.</div>
+      </button>
+      <button class="level-btn" id="menu-level-3">
+        <div class="level-num">Level 3</div>
+        <div class="level-name">Hilly Gravel</div>
+        <div class="level-desc">Sharp turns, potholes & rocks on hills.</div>
+      </button>
+      <button class="level-btn" id="menu-level-4">
+        <div class="level-num">Level 4</div>
+        <div class="level-name">Mountain Pass</div>
+        <div class="level-desc">Slippery puddles, barriers, dense obstacles.</div>
+      </button>
+    </div>
+    <div class="controls-help">
+      <div style="margin-bottom:8px; font-weight:600; color:#fff;">Controls</div>
+      <div class="controls-grid">
+        <div><span class="key">W</span> / <span class="key">Up</span> Pedal (accelerate)</div>
+        <div><span class="key">S</span> / <span class="key">Down</span> Brake</div>
+        <div><span class="key">A</span> / <span class="key">Left</span> Steer left</div>
+        <div><span class="key">D</span> / <span class="key">Right</span> Steer right</div>
+        <div><span class="key">Q</span> Lean body left</div>
+        <div><span class="key">E</span> Lean body right</div>
+        <div><span class="key">P</span> / <span class="key">Esc</span> Pause</div>
+        <div><span class="key">R</span> Restart after crash/win</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause overlay -->
+  <div class="overlay" id="pause-overlay">
+    <h2>Paused</h2>
+    <p>Press P or Esc to resume</p>
+    <button id="pause-resume">Resume</button>
+    <button class="secondary" id="pause-menu">Back to Menu</button>
+  </div>
+
+  <!-- Game over overlay -->
+  <div class="overlay" id="gameover-overlay">
+    <h2>Game Over</h2>
+    <div id="gameover-reason"></div>
+    <div id="gameover-tip"></div>
+    <button id="gameover-retry">Try Again (R)</button>
+    <button class="secondary" id="gameover-menu">Back to Menu</button>
+  </div>
+
+  <!-- Win overlay -->
+  <div class="overlay" id="win-overlay">
+    <h2 id="win-title">Level Complete!</h2>
+    <div id="win-stats"></div>
+    <button id="win-next-btn">Next Level</button>
+    <button class="secondary" id="win-menu-btn">Back to Menu</button>
+  </div>
+</div>
+
+<!-- Controls legend -->
+<div class="controls-legend">
+  <span><span class="key">W</span> Pedal</span>
+  <span><span class="key">S</span> Brake</span>
+  <span><span class="key">A/D</span> Steer</span>
+  <span><span class="key">Q/E</span> Lean</span>
+  <span><span class="key">P</span> Pause</span>
+  <span><span class="key">R</span> Restart</span>
+</div>
+
+<script src="assets/js/three.min.js"></script>
+<script src="assets/js/game.js?v=11"></script>
+</body>
+</html>

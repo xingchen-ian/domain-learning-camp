@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play the Game — First Diagnosis</title>
+  <link rel="stylesheet" href="assets/css/site.css" />
+  <link rel="stylesheet" href="assets/css/game.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <span class="logo">F</span>
+        <span>First Diagnosis</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="domain.html">Domain &amp; System</a>
+        <a href="process.html">Development</a>
+        <a href="game.html" class="active cta">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="game-page">
+    <div class="game-wrap">
+      <div class="game-header">
+        <div>
+          <h1>Jet Crash — Forest Clearing</h1>
+          <p class="help">
+            Find the survivors, find the right equipment, and treat them
+            before their clock runs out. Move with <kbd>WASD</kbd> or the
+            arrow keys. Press <kbd>E</kbd> (or click) to interact.
+            Press <kbd>Esc</kbd> to leave a patient.
+          </p>
+        </div>
+      </div>
+
+      <div class="game-stage" id="stage">
+        <div class="canvas-area">
+          <div class="canvas-wrap">
+            <canvas id="game-canvas" width="1200" height="900" aria-label="First-aid mission world"></canvas>
+            <div class="toast" id="toast"></div>
+          </div>
+
+          <div class="treat-bar" id="treat-bar" style="display: none;">
+            <span class="treat-badge">Treatment Mode</span>
+            <span class="treat-hint">
+              Click an injury, then choose equipment on the right. Press <kbd>Esc</kbd> to return to the world.
+            </span>
+          </div>
+
+          <div class="overlay" id="menu-overlay" style="display: flex;">
+            <div class="overlay-card">
+              <h2>First Diagnosis</h2>
+              <p>
+                A passenger jet has crashed in a forest clearing. Find the
+                survivors, find the right equipment, and treat them before it
+                is too late.
+              </p>
+              <div class="challenge-grid" id="challenge-grid"></div>
+            </div>
+          </div>
+
+          <div class="overlay" id="result-overlay" style="display: none;">
+            <div class="overlay-card">
+              <h2 id="result-title">Mission result</h2>
+              <p id="result-text">All patients stabilized.</p>
+              <div class="stats" id="result-stats"></div>
+              <div class="cta-row" style="justify-content: center;">
+                <button class="btn btn-primary" id="result-retry">Replay mission</button>
+                <button class="btn btn-ghost" id="result-menu">Back to menu</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side">
+          <div class="side-block" id="side-explore">
+            <div class="panel">
+              <h3>Mission</h3>
+              <div class="row"><span class="label">Found</span><span class="value" id="ex-found">0 / 0</span></div>
+              <div class="row"><span class="label">Lost</span><span class="value" id="ex-dead">0</span></div>
+              <div class="row"><span class="label">Time per patient</span><span class="value">170 s</span></div>
+            </div>
+
+            <div class="panel">
+              <h3>Patients</h3>
+              <div class="patient-list" id="ex-patient-list">
+                <p class="muted" style="font-size: 13px; margin: 0;">No patients found yet.</p>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Inventory <span class="muted" style="font-weight: 500;">(from the world)</span></h3>
+              <div class="inventory-grid">
+                <div class="inv-row"><span class="inv-icon">🦾</span><span class="inv-name">Cast</span><span class="inv-count" id="inv-cast">0</span></div>
+                <div class="inv-row"><span class="inv-icon">🩹</span><span class="inv-name">Big bandage</span><span class="inv-count" id="inv-bigBandage">0</span></div>
+                <div class="inv-row"><span class="inv-icon">🧻</span><span class="inv-name">Cleaning cloth</span><span class="inv-count" id="inv-cloth">0</span></div>
+                <div class="inv-row"><span class="inv-icon">🥛</span><span class="inv-name">Water</span><span class="inv-count" id="inv-water">0</span></div>
+              </div>
+              <p class="muted" style="font-size: 12px; margin: 10px 0 0; line-height: 1.4;">
+                Water is required to take medicine.
+              </p>
+            </div>
+
+            <div class="panel hint-panel">
+              <span class="hint-icon" aria-hidden="true">⌨</span>
+              <span class="hint-text" id="ex-hint">WASD / arrows: move</span>
+            </div>
+          </div>
+
+          <div class="side-block" id="side-treat" style="display: none;">
+            <div class="panel">
+              <h3>Patient</h3>
+              <div class="row"><span class="label">Name</span><span class="value" id="tr-name">—</span></div>
+              <div class="row"><span class="label">Time left</span><span class="value" id="tr-timer">—</span></div>
+              <div class="row"><span class="label">Stability</span><span class="value" id="tr-stab">—</span></div>
+              <div class="bar info" id="tr-stab-bar"><div class="fill" id="tr-stab-fill" style="width: 100%"></div></div>
+            </div>
+
+            <div class="panel">
+              <h3>Injuries</h3>
+              <p class="muted" style="font-size: 12px; margin: 0 0 8px;">Click an injury to select it.</p>
+              <div class="injury-list" id="tr-injuries"></div>
+            </div>
+
+            <div class="panel">
+              <h3>Equipment</h3>
+              <div id="tr-equip"></div>
+            </div>
+
+            <div class="panel" style="padding: 0; overflow: hidden;">
+              <button class="back-btn" id="tr-close">
+                <span aria-hidden="true">←</span> Back to world
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-instructions">
+        <div class="step">
+          <span class="num">1</span>
+          <h4>Move</h4>
+          <p>WASD or arrow keys to walk through the clearing. Trees, the jet, and fire block your path.</p>
+        </div>
+        <div class="step">
+          <span class="num">2</span>
+          <h4>Find</h4>
+          <p>Some patients are obvious; others are hidden behind the jet or in the trees. Walk close to reveal them.</p>
+        </div>
+        <div class="step">
+          <span class="num">3</span>
+          <h4>Search</h4>
+          <p>Equipment is inside and around the jet. Casts, big bandages, cloths, and water must be picked up before they can be used.</p>
+        </div>
+        <div class="step">
+          <span class="num">4</span>
+          <h4>Treat</h4>
+          <p>Walk up to a found patient and press <kbd>E</kbd> (or click). The world keeps running — act fast, but think first.</p>
+        </div>
+        <div class="step">
+          <span class="num">5</span>
+          <h4>Stabilize</h4>
+          <p>Match the right tool to the right injury. Clean before stitch. Use a cast for a fracture. Don't over-treat.</p>
+        </div>
+        <div class="step">
+          <span class="num">6</span>
+          <h4>Adjust</h4>
+          <p>If a patient loses three others, the mission ends. Read the body — bleeding, popping stitches, swelling — and try a different plan.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div><strong>First Diagnosis</strong> · Playable build</div>
+      <div>Canvas 2D · Track A (no build) · runs in any modern browser</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/game.js"></script>
+</body>
+</html>

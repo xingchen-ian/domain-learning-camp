@@ -1,0 +1,293 @@
+/* 弦境回响 — Cello Resonance — Shared Styles */
+:root {
+  --bg: #1a1520;
+  --bg-card: #2a2535;
+  --text: #d0d0e0;
+  --text-muted: #7a7a9a;
+  --accent: #d4a855;
+  --accent-hover: #e0b860;
+  --cello-wood: #7a5a30;
+  --cello-dark: #5a4020;
+  --forest: #3a5a3a;
+  --forest-dark: #2a3a2a;
+  --glow: #b89840;
+  --success: #5aaa6a;
+  --danger: #aa4a4a;
+  --border: #404060;
+  --radius: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Georgia', serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Navigation */
+nav {
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--accent);
+  padding: 0.8rem 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius);
+  transition: all 0.2s;
+}
+
+nav a:hover, nav a.active {
+  color: var(--accent);
+  background: rgba(212, 168, 85, 0.1);
+}
+
+/* Main Content */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1 {
+  color: var(--accent);
+  font-size: 2.4rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+h2 {
+  color: var(--accent);
+  font-size: 1.6rem;
+  margin: 1.5rem 0 0.8rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+}
+
+h3 {
+  color: var(--cello-wood);
+  font-size: 1.2rem;
+  margin: 1rem 0 0.5rem;
+}
+
+p {
+  margin: 0.5rem 0;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1rem 0;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+/* Highlight Box */
+.highlight {
+  background: rgba(212, 168, 85, 0.08);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  margin: 1rem 0;
+}
+
+.highlight strong {
+  color: var(--accent);
+}
+
+/* Chapter cards */
+.chapter-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.chapter-card h3 {
+  color: var(--accent);
+}
+
+.chapter-card .desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* Play button */
+.play-btn {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 0.8rem 2rem;
+  border-radius: var(--radius);
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.2s;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.play-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+/* Game page */
+#gameCanvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg);
+  cursor: crosshair;
+}
+
+.game-page nav {
+  position: fixed;
+  top: 0;
+  z-index: 100;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.8rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+}
+
+.timeline-item {
+  position: relative;
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -1.6rem;
+  top: 1rem;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.timeline-item .time {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.timeline-item .event {
+  color: var(--text);
+  margin-top: 0.3rem;
+}
+
+/* Data table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.data-table th, .data-table td {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.data-table th {
+  background: var(--bg-card);
+  color: var(--accent);
+}
+
+.data-table td {
+  background: rgba(42, 37, 53, 0.5);
+}
+
+/* Feedback mapping list */
+.feedback-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feedback-list li {
+  padding: 0.8rem 1rem;
+  margin: 0.5rem 0;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent);
+}
+
+.feedback-list li .signal {
+  color: var(--danger);
+  font-weight: bold;
+}
+
+.feedback-list li .meaning {
+  color: var(--text-muted);
+}
+
+.feedback-list li .display {
+  color: var(--success);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 1rem; }
+  h1 { font-size: 1.8rem; }
+  nav { gap: 0.5rem; padding: 0.5rem 1rem; }
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+}

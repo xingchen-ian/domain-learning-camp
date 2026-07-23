@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Escape — Domain &amp; System</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="brand">LAB ESCAPE</span>
+    <a href="index.html">Home</a>
+    <a href="system.html" class="active">Domain &amp; System</a>
+    <a href="process.html">Development</a>
+    <span class="spacer"></span>
+    <a href="game.html" class="play-cta">Play</a>
+  </nav>
+
+  <header class="hero">
+    <h1>DOMAIN &amp; SYSTEM</h1>
+    <p class="tag">How the game is built and how its parts relate</p>
+  </header>
+
+  <main class="page">
+    <section class="card">
+      <h2>Core loop</h2>
+      <p>
+        The player moves through tile-based lab rooms, avoids or eliminates enemies, and reaches
+        the green EXIT. The game is a single HTML/Canvas file (<code>assets/game.js</code>) with no
+        build step and no external dependencies.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Systems</h2>
+      <ul>
+        <li><strong>Movement &amp; collision</strong> — tile grid, solid walls, doors, and cover.</li>
+        <li><strong>Enemy AI</strong> — wander patrol, vision cone, line-of-sight blocked by walls/doors/cover, chase on sight.</li>
+        <li><strong>Combat</strong> — melee (fists/knife/bat) and ranged weapons; contact-only death for the player.</li>
+        <li><strong>Feedback</strong> — detection bar, health/danger HUD, blood on death.</li>
+        <li><strong>Levels</strong> — three hand-authored grid layouts with a safe spawn room.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Design intent</h2>
+      <p>
+        The challenge for a new player is learning to <em>read</em> enemy perception and use the
+        environment (doors, cover, sight-blocking furniture) rather than only clicking. Different
+        weapons trade noise for speed, teaching weapon-choice strategy.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site">Built for the First Playable Game exhibition · plain HTML/CSS/Canvas (Track A)</footer>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain & Systems — PASSWORD</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8fab'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%F0%9F%A7%AA%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-mark">🧪</span>
+      PASSWORD
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="domain.html" class="active">Domain & Systems</a>
+      <a href="process.html">Process</a>
+      <a href="game.html">Play</a>
+      <a href="../domain.html" style="font-size: 0.75em; opacity: 0.5; margin-left: 8px;">中文</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">Section One</div>
+        <h1 class="section-title">Domain Knowledge</h1>
+        <p class="section-lead">
+          Chemistry and escape rooms seem unrelated, but both reward the same habit:
+          <strong>read the situation first, then solve it with minimal tools.</strong>
+          This page explains the real-world domain, common beginner traps, and the expert judgment the game aims to cultivate.
+        </p>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="grid-2">
+          <div class="card">
+            <h3>🔬 Real Domain: Chemistry</h3>
+            <p>
+              Chemistry is the science of what happens when substances meet. A reaction is not just
+              "two things in a beaker" — it depends on order, temperature, and whether the mixture
+              is filtered or evaporated. Pouring the wrong thing first creates side reactions.
+              Skipping filtration leaves solid waste in the product. Forgetting evaporation lets the
+              solvent dilute the result.
+            </p>
+            <p style="margin-top: 12px;">
+              In a school lab, the answer is on the procedure sheet. In this game, the procedure sheet
+              is hidden in the room — you must find it, read it, and follow it under time pressure
+              while spirits roam nearby.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🚪 Real Domain: Escape Rooms</h3>
+            <p>
+              An escape room is a compact puzzle space. The exit is rarely the hardest part — the
+              hardest part is gathering the right information fragments in time. Clues are scattered
+              across the room: graffiti on the desk, mirror-written messages, chemical labels on bottles.
+              The room is designed so that beginners panic, confuse clues, and waste the first ten minutes.
+              Experts slow down, inventory what they have, and only act when they know what they're looking for.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">Common Pitfalls</div>
+        <h2 class="section-title">What Beginners Get Wrong</h2>
+        <p class="section-lead">
+          The most common trap is a mental shortcut: <em>the goal is to escape, so head for the exit.</em>
+          In a chemistry escape room, that instinct is exactly backwards. The exit won't open until you
+          complete the formula, and the formula is hidden in clues that beginners skip.
+        </p>
+        <div class="grid-3">
+          <div class="card">
+            <h3>🏃 Running for the Exit</h3>
+            <p>
+              <strong>Beginner:</strong> "I see the portal. I'm going there."
+              <br><br>
+              <strong>Reality:</strong> The portal is locked. It won't open until the reagent mixing is complete.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🧪 Dumping Everything In</h3>
+            <p>
+              <strong>Beginner:</strong> "I'll just pour everything in and heat it."
+              <br><br>
+              <strong>Reality:</strong> Wrong order = purple smoke, health loss, wasted reagents.
+            </p>
+          </div>
+          <div class="card">
+            <h3>👀 Ignoring the Room</h3>
+            <p>
+              <strong>Beginner:</strong> "I just need to collect the colorful bottles."
+              <br><br>
+              <strong>Reality:</strong> Three of them are decoys. The formula only requires two.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="section-eyebrow">Section Two</div>
+        <h1 class="section-title">System Design</h1>
+        <p class="section-lead">
+          The game is built as an explicit system with <em>environment data</em>, <em>player-controlled data</em>,
+          and <em>computed results</em> — with clear feedback transformations between them. The mapping below
+          reflects the original design whiteboard.
+        </p>
+        <div class="system-graph">
+          <table>
+            <thead>
+              <tr>
+                <th>Environment Data</th>
+                <th>Player-Controlled Data</th>
+                <th>Computed Results</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <ul>
+                    <li>Lighting (visibility & atmosphere)</li>
+                    <li>Spirits — appear/disappear, speed, count</li>
+                    <li>Items — chemical reagents, tools (clues & instruments)</li>
+                    <li>Zone status: <span class="accent">Safe / Dangerous</span>, easy / hard to escape</li>
+                    <li>Direct space / spirit spawn space</li>
+                  </ul>
+                </td>
+                <td>
+                  <ul>
+                    <li><strong>Physical actions:</strong> move forward/back, jump/climb, crouch/crawl</li>
+                    <li><strong>Chemical actions (lab bench):</strong> select correct chemicals & equipment, mix reagents, filter mixture, heat, evaporate solvent</li>
+                  </ul>
+                </td>
+                <td>
+                  <ul>
+                    <li>Health lost — number of character injuries</li>
+                    <li>Total completion time</li>
+                    <li>Types/amounts of chemicals used</li>
+                    <li>Win / lose state</li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grid-2" style="margin-top: 32px;">
+          <div class="card">
+            <h3>✅ Success Conditions</h3>
+            <p>
+              Find the exit portal and escape within the time limit using the correct sequence of
+              chemicals and tools — and finish before health reaches zero.
+            </p>
+          </div>
+          <div class="card">
+            <h3>❌ Failure Conditions</h3>
+            <p>
+              Time runs out, caught by spirits too many times, or health hits zero. A failed attempt
+              is not the end — it's data for the next plan.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">Feedback Transformations</div>
+        <h2 class="section-title">How the Dream Talks to You</h2>
+        <p class="section-lead">
+          Invisible states are converted into visible, readable feedback. Players always know
+          why they lost and what to try next.
+        </p>
+        <div class="grid-3">
+          <div class="card">
+            <h3>💔 Health Bar</h3>
+            <p>
+              Any damage — purple smoke, spirit contact, wrong tool order — deducts from the health bar. Health depleted = dream ends.
+            </p>
+          </div>
+          <div class="card">
+            <h3>⏱ Countdown Timer</h3>
+            <p>
+              Time is the second resource. Below 20 seconds the timer turns orange; below 10 it flashes. Time runs out and the round ends.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🧪 Chemical Counter</h3>
+            <p>
+              Shows in real time how many reagents you've picked up vs. what the formula requires. The formula is the goal — extra reagents waste time.
+            </p>
+          </div>
+          <div class="card">
+            <h3>💨 Purple Smoke</h3>
+            <p>
+              Wrong lab bench operations produce purple/pink smoke rising from the beaker. Health deducted.
+            </p>
+          </div>
+          <div class="card">
+            <h3>✨ Sparkle Particles</h3>
+            <p>
+              Successful chemical operations release sparkle, heart, and star particles drifting across the screen. A visual cue telling you you did it right!
+            </p>
+          </div>
+          <div class="card">
+            <h3>📳 Damage Flash</h3>
+            <p>
+              Any damage to the player triggers a full-screen coral flash and screen shake — instant "I did something wrong" feedback.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="section-eyebrow">Challenge Presets</div>
+        <h2 class="section-title">How Difficulty Is Encoded</h2>
+        <p class="section-lead">
+          The three levels aren't just reskins. They change real system variables,
+          so players experience different puzzles, not just different wallpaper.
+        </p>
+        <div class="level-grid">
+          <div class="level-card">
+            <div class="level-num">Level 01</div>
+            <div class="level-name">First-Aid Neutralization</div>
+            <div class="level-desc">
+              <strong>Changed variables:</strong> time 60s, 2 spirits, 2 reagents, 1-step tool.
+              Players learn the game loop under zero pressure, at a friendly pace.
+            </div>
+          </div>
+          <div class="level-card">
+            <div class="level-num">Level 02</div>
+            <div class="level-name">Wastewater Treatment</div>
+            <div class="level-desc">
+              <strong>Changed variables:</strong> time 50s, 3 spirits, 2 reagents,
+              3-step tools (mix → filter → heat). Adds multi-step reasoning.
+            </div>
+          </div>
+          <div class="level-card">
+            <div class="level-num">Level 03</div>
+            <div class="level-name">Darkroom Silver Recovery</div>
+            <div class="level-desc">
+              <strong>Changed variables:</strong> time 60s, 4 fast spirits, 3 reagents,
+              4-step tools. Only those who read the room carefully will escape.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      IMA Summer Program · Group 1 · ELSA ZHANGYIQING · 2026
+    </footer>
+  </main>
+</body>
+</html>

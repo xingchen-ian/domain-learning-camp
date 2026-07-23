@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Escape — Play</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="brand">LAB ESCAPE</span>
+    <a href="index.html">Home</a>
+    <a href="system.html">Domain &amp; System</a>
+    <a href="process.html">Development</a>
+    <span class="spacer"></span>
+    <a href="game.html" class="active play-cta">Play</a>
+  </nav>
+
+  <div class="game-wrap">
+    <div class="game-frame">
+      <canvas id="game" width="800" height="280"></canvas>
+
+      <!-- HUD: translates invisible system data into readable feedback -->
+      <div id="hud">
+        <div class="hud-top">
+          <div class="hud-block">
+            <div class="hud-label">LIFE (1-HIT)</div>
+            <div class="bar-outer"><div id="hp-bar" class="bar-inner" style="width:100%"></div></div>
+            <div class="hud-val"><span id="hp-text">ALIVE (1-HIT)</span></div>
+          </div>
+          <div class="hud-block">
+            <div class="hud-label">DANGER</div>
+            <div class="bar-outer"><div id="alert-bar" class="bar-inner" style="width:0%"></div></div>
+            <div class="hud-val" id="alert-label" style="color:#7CFFA1">Hidden</div>
+          </div>
+          <div class="hud-block">
+            <div class="hud-label">SCORE</div>
+            <div class="hud-val" id="score-text">0</div>
+          </div>
+          <div class="hud-block">
+            <div class="hud-label">COMBO</div>
+            <div class="hud-val" id="combo-text">-</div>
+          </div>
+          <div class="hud-block weapon-hud">
+            <div class="hud-label">WEAPON</div>
+            <div id="weapon-name">Fists</div>
+          </div>
+        </div>
+
+        <div id="toast"></div>
+
+        <div class="hud-bottom">
+          <div id="stat-line">Reach the EXIT</div>
+          <div id="inventory"></div>
+        </div>
+      </div>
+
+      <!-- menu / end screen overlay -->
+      <div id="overlay"></div>
+    </div>
+
+    <div class="controls-help">
+      <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</span>
+      <span><kbd>L-Click</kbd> Punch / Shoot</span>
+      <span><kbd>R-Click</kbd> Grab / Throw / Door</span>
+      <span><kbd>Space</kbd> Execute downed</span>
+      <span><kbd>Shift</kbd> Look ahead</span>
+      <span><kbd>M-Click</kbd> Lock-on</span>
+      <span><kbd>1</kbd>-<kbd>5</kbd> Weapon</span>
+      <span><kbd>R</kbd> Restart</span>
+    </div>
+  </div>
+
+  <script src="assets/game.js"></script>
+</body>
+</html>

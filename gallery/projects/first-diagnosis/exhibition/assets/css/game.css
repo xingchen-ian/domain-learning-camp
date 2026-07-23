@@ -1,0 +1,516 @@
+/* First Diagnosis — game styles */
+
+.game-page {
+  background: linear-gradient(180deg, #eaf2f7 0%, #f4f7fa 240px);
+  min-height: calc(100vh - 64px);
+}
+
+.game-wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.game-header h1 {
+  font-size: 24px;
+  margin: 0;
+}
+.game-header .help {
+  color: var(--text-muted);
+  font-size: 14px;
+  max-width: 640px;
+}
+.game-header kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* Stage: canvas area + side panel */
+.game-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.canvas-area {
+  position: relative;
+  min-width: 0;
+}
+
+.canvas-wrap {
+  background: #1d2733;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  max-height: 640px;
+}
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+/* Treatment-mode floating header (sits at the top of the canvas area) */
+.treat-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(20, 30, 45, 0.96) 0%, rgba(20, 30, 45, 0.86) 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius) var(--radius) 0 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.treat-bar .treat-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--accent);
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.treat-bar .treat-hint {
+  text-align: right;
+  opacity: 0.95;
+}
+.treat-bar kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  margin: 0 2px;
+}
+
+/* Side panel blocks (one is shown at a time) */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.side-block { display: flex; flex-direction: column; gap: 14px; }
+
+/* Panels */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.panel h3 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-soft);
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+.panel .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.panel .row .label { color: var(--text-muted); }
+.panel .row .value { font-weight: 600; color: var(--text); }
+.panel .row .value.danger { color: var(--accent); }
+.panel .row .value.ok { color: var(--success); }
+
+/* Hint panel inside the side */
+.hint-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--bg-alt);
+  border-color: transparent;
+}
+.hint-panel .hint-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.hint-panel .hint-text { line-height: 1.4; }
+
+/* Status bars */
+.bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-alt);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.bar .fill {
+  height: 100%;
+  transition: width 0.2s, background 0.2s;
+  background: var(--success);
+}
+.bar.warn .fill { background: var(--warning); }
+.bar.danger .fill { background: var(--accent); }
+.bar.info .fill { background: var(--primary); }
+
+/* Injury list */
+.injury-list { display: flex; flex-direction: column; gap: 8px; }
+.injury {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 14px;
+}
+.injury:hover { border-color: var(--primary); }
+.injury.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.injury .title {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.injury .type {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--bg-alt);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.injury .type.cut { background: var(--accent-soft); color: var(--accent); }
+.injury .type.broken { background: #fff1d6; color: #b07b1a; }
+.injury .type.bruise { background: #ece1f5; color: #7748a3; }
+.injury .type.internal { background: #fce8d4; color: #b56b1a; }
+.injury.fixed { opacity: 0.6; }
+.injury .meta { font-size: 12px; color: var(--text-muted); }
+.injury .meta .danger { color: var(--accent); font-weight: 600; }
+.injury .meta .ok { color: var(--success); font-weight: 600; }
+
+/* Equipment */
+.equip-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-soft);
+  font-weight: 700;
+  margin: 4px 0 6px;
+}
+.equip-section-title:not(:first-child) { margin-top: 14px; }
+.equip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.equip-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 8px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.equip-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+.equip-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.equip-btn .icon {
+  display: block;
+  font-size: 22px;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.equip-btn .meta {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.equip-btn small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+/* Back button in the treatment side panel */
+.back-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-alt);
+  border: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.back-btn:hover { background: var(--border); }
+
+/* Patient list (explore side panel) */
+.patient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.patient-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+}
+.patient-row .name { font-weight: 600; color: var(--text); }
+.patient-row .status { color: var(--text-muted); font-size: 12px; }
+.patient-row.urgent { border-color: var(--accent); background: var(--accent-soft); }
+.patient-row.urgent .status { color: var(--accent); font-weight: 600; }
+.patient-row.dead { opacity: 0.55; text-decoration: line-through; }
+.patient-row.dead .status { color: var(--accent); }
+
+/* Inventory grid (explore side panel) */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.inv-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  font-size: 13px;
+}
+.inv-row .inv-icon { font-size: 16px; line-height: 1; }
+.inv-row .inv-name { flex: 1; color: var(--text-muted); }
+.inv-row .inv-count {
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-alt);
+  border-radius: 10px;
+  padding: 1px 8px;
+  min-width: 24px;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Challenge selector (one card now, but kept for flexibility) */
+.challenge-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.challenge {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--surface-2);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: all 0.15s;
+}
+.challenge:hover { border-color: var(--primary); background: var(--primary-soft); }
+.challenge h4 { font-size: 15px; margin-bottom: 4px; color: var(--text); }
+.challenge p { font-size: 13px; color: var(--text-muted); margin: 0 0 6px; line-height: 1.4; }
+.challenge .diff {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: var(--bg-alt);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.challenge .diff.hard { background: var(--accent-soft); color: var(--accent); }
+
+/* Toast / result overlay */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 30, 45, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  z-index: 5;
+  padding: 24px;
+}
+.overlay-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  text-align: center;
+  max-width: 480px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+.overlay-card h2 { font-size: 26px; margin-bottom: 8px; }
+.overlay-card h2.win { color: var(--success); }
+.overlay-card h2.lose { color: var(--accent); }
+.overlay-card p { color: var(--text-muted); margin-bottom: 18px; }
+.overlay-card .stats {
+  display: flex;
+  justify-content: space-around;
+  background: var(--surface-2);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 18px;
+}
+.overlay-card .stat .v {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  display: block;
+}
+.overlay-card .stat .l {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Toast */
+.toast {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 30, 45, 0.92);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 6;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.toast.bad { background: rgba(214, 90, 90, 0.95); }
+.toast.good { background: rgba(76, 175, 125, 0.95); }
+
+/* Game instructions (below the stage) */
+.game-instructions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+  font-size: 14px;
+}
+.game-instructions .step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.game-instructions .step .num {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 22px;
+  margin-right: 6px;
+}
+.game-instructions .step h4 {
+  font-size: 14px;
+  margin: 4px 0 6px;
+  color: var(--text);
+}
+.game-instructions .step p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+.game-instructions .step kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  margin: 0 1px;
+}
+
+@media (max-width: 1000px) {
+  .game-stage { grid-template-columns: 1fr; }
+}

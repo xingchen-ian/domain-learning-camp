@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Design - An Adventure on Horseback</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="page">
+    <div class="page-inner">
+      <header class="site-header">
+        <div class="site-title">An Adventure on Horseback</div>
+        <nav class="site-nav">
+          <a href="index.html">Home</a>
+          <a href="system.html" class="active">System Design</a>
+          <a href="process.html">Development</a>
+          <a href="game.html">Play</a>
+        </nav>
+      </header>
+
+      <h1>System Design</h1>
+      <p class="lead">
+        How a real riding lesson is mapped to game variables, feedback and
+        challenge presets.
+      </p>
+
+      <h2>System Graph</h2>
+      <div class="system-graph-wrap">
+        <p>
+          <em>The original Ziqi Xu design document. Click to view full size.</em>
+        </p>
+        <img src="../references/system-graph.jpg" alt="System graph" class="system-graph" onerror="this.style.display='none'; document.getElementById('fallback').style.display='block';" />
+        <div id="fallback" style="display:none; padding:40px; text-align:center;">
+          <p>System graph image not found. The design is summarized below.</p>
+        </div>
+      </div>
+
+      <h2>Win / Lose Conditions</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3><span class="legend-color" style="background:#7bd389"></span>Win</h3>
+          <ul>
+            <li>Time remaining &gt; 0</li>
+            <li>Reach the finish flag</li>
+            <li>No bars dropped (or accept dropped bars in early levels)</li>
+            <li>Horse still willing to keep going</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="legend-color" style="background:#e0524a"></span>Lose</h3>
+          <ul>
+            <li>Time runs out</li>
+            <li>Too many bars dropped</li>
+            <li>Horse becomes too angry and refuses to jump</li>
+            <li>Player gives up</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Player Input</h2>
+      <table>
+        <tr>
+          <th>Input</th>
+          <th>Mapping</th>
+          <th>Riding meaning</th>
+        </tr>
+        <tr>
+          <td>W / &uarr;</td>
+          <td>Accelerate</td>
+          <td>Ask the horse to move up a gear</td>
+        </tr>
+        <tr>
+          <td>S / &darr;</td>
+          <td>Decelerate</td>
+          <td>Ask the horse to slow down</td>
+        </tr>
+        <tr>
+          <td>A / &larr;</td>
+          <td>Steer left</td>
+          <td>Reins left - the horse turns left (<em>only if she is willing</em>)</td>
+        </tr>
+        <tr>
+          <td>D / &rarr;</td>
+          <td>Steer right</td>
+          <td>Reins right - the horse turns right (<em>only if she is willing</em>)</td>
+        </tr>
+        <tr>
+          <td>Space</td>
+          <td>Jump</td>
+          <td>Ask for a takeoff - timing window matters</td>
+        </tr>
+        <tr>
+          <td>E</td>
+          <td>Soothe</td>
+          <td>Voice + hand, calm the horse, raise its mood</td>
+        </tr>
+        <tr>
+          <td>F</td>
+          <td>Whip</td>
+          <td>Force the horse to go faster - lowers mood</td>
+        </tr>
+        <tr>
+          <td>P</td>
+          <td>Pause</td>
+          <td>Take a breath</td>
+        </tr>
+        <tr>
+          <td>R</td>
+          <td>Restart</td>
+          <td>Reset the current course</td>
+        </tr>
+        <tr>
+          <td>V</td>
+          <td>Cycle camera view</td>
+          <td>Behind &rarr; Top-down &rarr; Side. Behind view aligns the horse head-on to each fence (realistic approach); Side shows stride and arc; Top-down reads the line.</td>
+        </tr>
+      </table>
+
+      <h2>Game Environment Variables</h2>
+      <table>
+        <tr>
+          <th>Variable</th>
+          <th>What it represents in real riding</th>
+        </tr>
+        <tr><td>Obstacle position</td><td>Where the jump is on the course</td></tr>
+        <tr><td>Route length</td><td>Total distance to the finish</td></tr>
+        <tr><td>Time limit</td><td>Course time limit for that level</td></tr>
+        <tr><td>Target position</td><td>The finish flag</td></tr>
+        <tr><td>Obstacle shape</td><td>Vertical, oxer, wall - each needs a different line</td></tr>
+        <tr><td>Obstacle height scale</td><td>Real show-jumping scale: top rail at roughly the horse's withers (0.85&ndash;1.10&times; horse scale); wall stands a little taller than a rail</td></tr>
+        <tr><td>Obstacle spacing</td><td>Generous gaps (~85&ndash;115 world units between fences) so the rider can reset speed and line before each jump</td></tr>
+        <tr><td>Different horses</td><td>Whisper, Dapple, Storm - three temperaments</td></tr>
+        <tr><td>Horse emotions</td><td>Happy / calm / tired / angry - live system</td></tr>
+        <tr><td>Obedience factor</td><td>0&ndash;1: how much the horse actually listens to your reins (derived from emotion)</td></tr>
+      </table>
+
+      <h2>Challenge Presets</h2>
+      <div class="card">
+        <h3>Level 1 - First Canter</h3>
+        <table>
+          <tr><th>Target</th><td>Pass all obstacles and reach the destination</td></tr>
+          <tr><th>Challenge</th><td>Build workable judgments for speed, line and take-off point</td></tr>
+          <tr><th>Route</th><td>Straight line across open meadow</td></tr>
+          <tr><th>Fences</th><td>8 verticals / oxers</td></tr>
+          <tr><th>Time</th><td>No time limit</td></tr>
+          <tr><th>Horse</th><td>Whisper - gentle, willing, slow to anger</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Level 2 - Winding Path</h3>
+        <table>
+          <tr><th>Target</th><td>Pass all obstacles within a time limit</td></tr>
+          <tr><th>Challenge</th><td>Adjust your judgments as the situation changes; manage mood on a longer course</td></tr>
+          <tr><th>Route</th><td>S-curve across wide grassland with mixed obstacle types</td></tr>
+          <tr><th>Fences</th><td>10 mixed (verticals, oxers, walls)</td></tr>
+          <tr><th>Time</th><td>90-second limit</td></tr>
+          <tr><th>Horse</th><td>Dapple - gentle, but the route and clock will test you</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Level 3 - Trust the Bond</h3>
+        <table>
+          <tr><th>Target</th><td>Pass all 14 fences within tight time without dropping bars</td></tr>
+          <tr><th>Challenge</th><td>Build trust: Storm will ignore your reins when angry, refuse jumps, and bolt. Soothe her or fail.</td></tr>
+          <tr><th>Route</th><td>Long roundabout across grassland, many turns</td></tr>
+          <tr><th>Fences</th><td>14 mixed (verticals, oxers, walls)</td></tr>
+          <tr><th>Time</th><td>80-second limit</td></tr>
+          <tr><th>Horse</th><td>Storm - strong but bad-tempered; high angerRate means she gets upset fast</td></tr>
+        </table>
+      </div>
+
+      <h2>Feedback Translation</h2>
+      <table>
+        <tr>
+          <th>What the player does wrong</th>
+          <th>What the system shows</th>
+          <th>Why it matters</th>
+        </tr>
+        <tr>
+          <td>Speed too slow or too fast</td>
+          <td>Bar falls, jump is missed, horse loses balance</td>
+          <td>Speed has a sweet spot for each obstacle</td>
+        </tr>
+        <tr>
+          <td>Wrong line / wrong take-off point</td>
+          <td>Bar falls, horse has to refuse</td>
+          <td>A jump needs a workable approach</td>
+        </tr>
+        <tr>
+          <td>Whipping a tired horse</td>
+          <td>Horse mood drops, horse eventually refuses</td>
+          <td>Force breaks the relationship</td>
+        </tr>
+        <tr>
+          <td>Ignoring the horse's mood</td>
+          <td>Horse stops listening, course fails</td>
+          <td>A horse is a partner, not a tool</td>
+        </tr>
+        <tr>
+          <td>Horse angry: you steer but she drifts her own way</td>
+          <td><strong>"!! YOUR HORSE IS NOT LISTENING !!"</strong> warning banner; steering input ignored or reduced to ~20%</td>
+          <td>A frightened horse pulls against your hands. Soothe (E) before she bolts.</td>
+        </tr>
+        <tr>
+          <td>Horse angry: you ask to jump but she refuses</td>
+          <td><strong>"Won't jump!"</strong> feedback; obstacle remains un-cleared</td>
+          <td>Below emotion 40, refusal probability rises sharply. Keep her above 50.</td>
+        </tr>
+        <tr>
+          <td>Horse very angry (emotion &lt;12): she bolts</td>
+          <td><strong>"Bolting!"</strong> - horse runs off on her own at full speed, ignoring your throttle</td>
+          <td>The most dangerous state. Only soothe can bring her back.</td>
+        </tr>
+        <tr>
+          <td>Good plan and good ride</td>
+          <td>Clean jump, "Beautiful!" feedback, mood +</td>
+          <td>Reward for correct judgment and respect</td>
+        </tr>
+      </table>
+
+      <h2>The Core Learning Loop</h2>
+      <div class="card">
+        <p>
+          <strong>Observe</strong> the speed, the destination, the route,
+          the take-off point, the obstacle, the horse's mood.<br/>
+          <strong>Judge</strong> whether the speed is right, whether the
+          line is workable, whether the take-off point is in the window,
+          whether the horse is willing.<br/>
+          <strong>Act</strong>: adjust the speed, steer the line, ask for
+          a jump, soothe when needed, whip only as a last resort.<br/>
+          <strong>Read feedback</strong>: did the horse clear it, did the
+          bar fall, what is the horse's mood now?<br/>
+          <strong>Adjust</strong> for the next obstacle and the next run.
+        </p>
+      </div>
+
+      <a class="cta" href="game.html">Play the Game</a>
+
+      <footer>
+        An Adventure on Horseback &middot; A learning game by Ziqi Xu
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

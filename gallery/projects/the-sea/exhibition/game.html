@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play — The Sea</title>
+    <script type="module" src="./assets/game-CHnTByQc.js"></script>
+    <link rel="stylesheet" href="./assets/style-ntZ2yPed.css">
+  </head>
+  <body class="page-game">
+    <nav class="game-nav">
+      <a class="nav-link" href="./index.html">Home</a>
+      <a class="nav-link is-active" href="./game.html">Play</a>
+      <a class="nav-link" href="./process.html">Development Process</a>
+    </nav>
+
+    <div id="game-root">
+      <div id="hud">
+        <div class="hud-row">
+          <span class="hud-label">Oxygen</span>
+          <div class="hud-bar"><div id="oxygen-bar" class="hud-bar-fill oxygen"></div></div>
+          <span id="oxygen-text" class="hud-text">100</span>
+        </div>
+        <div class="hud-row">
+          <span class="hud-label">HP</span>
+          <div class="hud-bar"><div id="hp-bar" class="hud-bar-fill hp"></div></div>
+          <span id="hp-text" class="hud-text">100</span>
+        </div>
+        <div class="hud-row hud-info">
+          <span class="hud-label">Level</span>
+          <span id="level-text" class="hud-text">1 / 3</span>
+          <span class="hud-label">Depth</span>
+          <span id="depth-text" class="hud-text">middle</span>
+          <span class="hud-label">Distance</span>
+          <span id="distance-text" class="hud-text">--</span>
+        </div>
+        <div class="hud-row hud-info">
+          <span class="hud-label">Caught</span>
+          <span id="caught-text" class="hud-text">0 / 3</span>
+          <span class="hud-label">Signal</span>
+          <span id="signal-text" class="hud-text hud-status">OFF</span>
+          <span class="hud-label">BCD</span>
+          <span id="bcd-text" class="hud-text hud-status">Empty</span>
+        </div>
+      </div>
+
+      <div id="feedback-layer">
+        <div id="damage-vignette"></div>
+        <div id="current-shake"></div>
+        <div id="bubbles"></div>
+        <div id="attack-overlay"></div>
+        <div id="boat-overlay"></div>
+        <div id="catch-overlay"></div>
+        <div id="catch-banner"></div>
+        <div id="ascend-overlay"></div>
+        <div id="boat-attack-overlay"></div>
+        <div id="surface-fog-overlay"></div>
+      </div>
+
+      <div id="level-banner" class="overlay hidden">
+        <h2 id="banner-title">Level 1 — Open water</h2>
+        <p id="banner-body">No current, only safe species. Learn to move, breathe, and reach the target.</p>
+        <p style="color:#4fd1c5;margin:8px 0">Tip: click Begin or press any movement key to start.</p>
+        <button id="banner-start" class="button">Begin</button>
+      </div>
+
+      <div id="result-screen" class="overlay hidden">
+        <h2 id="result-title">Win</h2>
+        <p id="result-body">You reached the target.</p>
+        <div class="result-actions">
+          <button id="result-restart" class="button">Restart level</button>
+          <button id="result-next" class="button hidden">Next level</button>
+          <a class="button button-secondary" href="./index.html">Back home</a>
+        </div>
+      </div>
+
+      <div id="controls-hint">
+        <span><kbd>W</kbd><kbd>S</kbd> move / stop</span>
+        <span><kbd>A</kbd><kbd>D</kbd> turn</span>
+        <span><kbd>H</kbd><kbd>L</kbd> surface / dive</span>
+        <span><kbd>O</kbd> signal</span>
+        <span><kbd>I</kbd> inflate BCD</span>
+        <span><kbd>R</kbd> restart</span>
+      </div>
+
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+  </body>
+</html>

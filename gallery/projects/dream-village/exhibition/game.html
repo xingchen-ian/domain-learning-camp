@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dream Village ~ Plant Your Own Zombie</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+  :root {
+    --sky-top: #87CEEB;
+    --sky-bot: #E0F7FA;
+    --grass: #5DB075;
+    --grass-dark: #4A9A63;
+    --soil: #C8A96E;
+    --soil-dark: #9B7B4F;
+    --wood: #DEB887;
+    --wood-dark: #A0825C;
+    --panel-bg: rgba(255,255,255,0.92);
+    --panel-border: #E8D5B7;
+    --card-bg: rgba(255,255,255,0.95);
+    --accent: #FF6B6B;
+    --green: #5DB075;
+    --gold: #FFD93D;
+    --text: #3D3D3D;
+    --text-dim: #999;
+    --seed-color: #A67C52;
+    --growing-color: #5DB075;
+    --mature-color: #4ECDC4;
+    --angry-color: #FF6B6B;
+    --energy-bar: #4ECDC4;
+    --btn-bg: #FFD93D;
+    --btn-text: #3D3D3D;
+    --btn-end: #FF6B6B;
+    --reputation-good: #FFD93D;
+    --reputation-bad: #FF6B6B;
+  }
+
+  body {
+    background: var(--sky-top);
+    color: var(--text);
+    font-family: 'Fredoka One', 'Comic Sans MS', 'PingFang SC', sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== CARTOON BACKGROUND ===== */
+  #bg-scene {
+    position: fixed; inset: 0; z-index: -1;
+  }
+
+  /* ===== START SCREEN ===== */
+  #start-screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100;
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  #start-screen.hidden { opacity: 0; pointer-events: none; transform: scale(1.1); }
+
+  .start-title {
+    font-size: 52px; font-weight: 900;
+    color: var(--gold);
+    text-shadow: 3px 3px 0 #C8A96E, 6px 6px 0 rgba(0,0,0,0.1);
+    margin-bottom: 5px;
+    letter-spacing: 3px;
+    animation: titleBounce 3s ease-in-out infinite;
+  }
+  @keyframes titleBounce {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-8px) rotate(-1deg); }
+    75% { transform: translateY(-4px) rotate(1deg); }
+  }
+  .start-subtitle {
+    font-size: 20px; color: var(--text);
+    margin-bottom: 40px;
+    opacity: 0.7;
+  }
+  .start-zombie-art {
+    margin-bottom: 30px;
+    animation: zombieFloat 2s ease-in-out infinite;
+  }
+  @keyframes zombieFloat {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+  .start-zombie-art canvas { display: block; }
+
+  .level-select {
+    display: flex; gap: 20px; margin-bottom: 30px;
+  }
+  .level-btn {
+    background: var(--card-bg);
+    border: 3px solid var(--gold);
+    color: var(--text);
+    padding: 18px 28px;
+    font-family: 'Fredoka One', 'PingFang SC', sans-serif;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.3s;
+    min-width: 200px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+  }
+  .level-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.2);
+    background: var(--gold);
+    color: var(--text);
+  }
+  .level-btn:active { transform: translateY(-2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+  .level-btn .level-name { font-size: 22px; }
+  .level-btn .level-desc { font-size: 13px; color: var(--text-dim); margin-top: 6px; }
+  .level-btn .level-goal { font-size: 12px; color: var(--green); margin-top: 4px; font-weight: 600; }
+
+  .start-controls {
+    font-size: 14px; color: var(--text-dim);
+    margin-top: 20px; text-align: center;
+  }
+  .start-controls kbd {
+    background: var(--gold); padding: 3px 10px;
+    border-radius: 8px; font-size: 13px; color: var(--text);
+    border: 2px solid rgba(0,0,0,0.15);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  }
+
+  /* ===== GAME LAYOUT ===== */
+  #game-container {
+    display: none;
+    height: 100vh;
+    grid-template-columns: 240px 1fr 240px;
+    grid-template-rows: 55px 1fr 90px;
+    gap: 8px;
+    padding: 8px;
+  }
+  #game-container.active { display: grid; }
+
+  /* ===== TOP BAR ===== */
+  #top-bar {
+    grid-column: 1 / 4;
+    background: var(--panel-bg);
+    border-radius: 16px;
+    border: 3px solid var(--panel-border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  }
+  .game-title-bar {
+    font-size: 22px; font-weight: 800; color: var(--gold);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  }
+  .day-display {
+    font-size: 20px; color: var(--accent);
+    font-weight: 700;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  }
+  .objective-display {
+    font-size: 13px; color: var(--text-dim);
+  }
+  .objective-display span { color: var(--gold); font-weight: 600; }
+  .objective-display .obj-check { color: var(--green); }
+  .objective-display .obj-uncheck { color: var(--text-dim); }
+
+  /* ===== LEFT PANEL ===== */
+  #stats-panel {
+    background: var(--panel-bg);
+    border-radius: 16px;
+    border: 3px solid var(--panel-border);
+    padding: 12px;
+    display: flex; flex-direction: column; gap: 6px;
+    overflow-y: auto;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  }
+  .stat-section-title {
+    font-size: 14px; color: var(--accent);
+    border-bottom: 2px dashed var(--panel-border);
+    padding-bottom: 4px; margin-top: 6px;
+  }
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0;
+  }
+  .stat-label { font-size: 13px; color: var(--text-dim); }
+  .stat-value { font-size: 16px; font-weight: 700; }
+  .stat-value.money { color: var(--gold); }
+  .stat-value.energy { color: var(--energy-bar); }
+  .stat-value.level { color: var(--green); }
+  .stat-value.reputation { color: var(--reputation-good); }
+
+  .energy-bar-container {
+    width: 100%; height: 14px;
+    background: var(--soil); border-radius: 8px;
+    margin-top: 3px;
+    border: 2px solid var(--soil-dark);
+  }
+  .energy-bar-fill {
+    height: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, #4ECDC4, #5DB075);
+    transition: width 0.3s;
+  }
+  .reputation-bar-container {
+    width: 100%; height: 14px;
+    background: var(--soil); border-radius: 8px;
+    margin-top: 3px;
+    border: 2px solid var(--soil-dark);
+  }
+  .reputation-bar-fill {
+    height: 100%; border-radius: 6px;
+    transition: width 0.3s, background 0.3s;
+  }
+
+  /* ===== FARM AREA ===== */
+  #farm-area {
+    background: var(--panel-bg);
+    border-radius: 16px;
+    border: 3px solid var(--panel-border);
+    padding: 12px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .farm-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .farm-header-title { font-size: 18px; font-weight: 700; color: var(--green); }
+  .seed-inventory { font-size: 14px; color: var(--text-dim); }
+  .seed-inventory span { color: var(--gold); font-weight: 600; }
+
+  #farm-canvas-wrap {
+    flex: 1;
+    position: relative;
+    border-radius: 12px;
+    border: 3px solid var(--wood-dark);
+    background: var(--grass);
+    overflow: hidden;
+  }
+  #farm-canvas {
+    width: 100%; height: 100%;
+    cursor: pointer;
+  }
+
+  /* ===== RIGHT PANEL ===== */
+  #upgrade-panel {
+    background: var(--panel-bg);
+    border-radius: 16px;
+    border: 3px solid var(--panel-border);
+    padding: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    overflow-y: auto;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  }
+  .upgrade-section-title {
+    font-size: 16px; font-weight: 700; color: var(--gold);
+    margin-bottom: 6px;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  }
+
+  .upgrade-card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 3px solid var(--panel-border);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  }
+  .upgrade-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 3px 3px 0 rgba(0,0,0,0.15); }
+  .upgrade-card.disabled { opacity: 0.4; cursor: not-allowed; }
+  .upgrade-card.maxed { border-color: var(--green); opacity: 0.7; }
+
+  .upgrade-name { font-size: 15px; font-weight: 700; }
+  .upgrade-desc { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+  .upgrade-cost { font-size: 14px; color: var(--gold); margin-top: 4px; font-weight: 600; }
+  .upgrade-current { font-size: 12px; color: var(--green); margin-top: 2px; }
+
+  /* Goal progress card */
+  .goal-card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 10px;
+    border: 3px solid var(--gold);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  }
+  .goal-title { font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+  .goal-item { font-size: 12px; padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+  .goal-item .goal-check { font-size: 14px; }
+  .goal-item .goal-text { color: var(--text); }
+  .goal-item.done .goal-text { color: var(--green); font-weight: 600; }
+  .goal-item.done .goal-check { color: var(--green); }
+
+  /* ===== BOTTOM BAR ===== */
+  #controls-bar {
+    grid-column: 1 / 4;
+    background: var(--panel-bg);
+    border-radius: 16px;
+    border: 3px solid var(--panel-border);
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    padding: 8px 15px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  }
+
+  .control-btn {
+    background: var(--btn-bg);
+    border: 3px solid rgba(0,0,0,0.15);
+    color: var(--btn-text);
+    padding: 6px 14px;
+    font-family: 'Fredoka One', 'PingFang SC', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    border-radius: 14px;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  }
+  .control-btn:hover { transform: translateY(-3px); box-shadow: 3px 3px 0 rgba(0,0,0,0.15); }
+  .control-btn:active { transform: translateY(-1px); box-shadow: 1px 1px 0 rgba(0,0,0,0.1); }
+  .control-btn kbd {
+    background: rgba(255,255,255,0.4); padding: 2px 6px;
+    border-radius: 6px; font-size: 12px; color: var(--text);
+    border: 2px solid rgba(0,0,0,0.1);
+  }
+
+  .end-day-btn {
+    background: var(--btn-end);
+    border: 3px solid rgba(0,0,0,0.15);
+    color: white;
+    padding: 8px 22px;
+    font-family: 'Fredoka One', 'PingFang SC', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    border-radius: 14px;
+    transition: all 0.2s;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  }
+  .end-day-btn:hover { transform: translateY(-3px); box-shadow: 3px 3px 0 rgba(0,0,0,0.15); }
+
+  /* ===== NOTIFICATION ===== */
+  #notification {
+    position: fixed; top: 70px; left: 50%;
+    transform: translateX(-50%) translateY(-30px);
+    background: var(--card-bg);
+    border: 3px solid var(--gold);
+    color: var(--text);
+    padding: 10px 22px;
+    border-radius: 20px;
+    font-family: 'Fredoka One', 'PingFang SC', sans-serif;
+    font-size: 15px; font-weight: 600;
+    z-index: 50;
+    opacity: 0;
+    transition: all 0.4s;
+    pointer-events: none;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  }
+  #notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  #notification.error { border-color: var(--accent); background: #FFF0F0; }
+  #notification.success { border-color: var(--green); background: #F0FFF4; }
+  #notification.reputation-up { border-color: var(--gold); background: #FFF8DC; }
+  #notification.reputation-down { border-color: var(--accent); background: #FFF0F0; }
+
+  /* ===== OVERLAY ===== */
+  #overlay-screen {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 60;
+  }
+  #overlay-screen.active { display: flex; }
+  .overlay-title {
+    font-size: 52px; font-weight: 900; margin-bottom: 20px;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  }
+  .overlay-title.win { color: var(--gold); }
+  .overlay-title.lose { color: var(--accent); }
+  .overlay-stats { font-size: 16px; color: var(--text-dim); margin-bottom: 30px; text-align: center; line-height: 1.6; }
+  .overlay-stats span { color: var(--gold); }
+  .overlay-stats .stat-rep { color: var(--reputation-good); }
+  .overlay-btn {
+    background: var(--card-bg); border: 3px solid var(--gold);
+    color: var(--text); padding: 15px 40px;
+    font-family: 'Fredoka One', 'PingFang SC', sans-serif;
+    font-size: 18px; font-weight: 700;
+    cursor: pointer; border-radius: 18px;
+    transition: all 0.3s; margin: 8px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  }
+  .overlay-btn:hover { background: var(--gold); transform: translateY(-3px); }
+  .overlay-btn.next-level { border-color: var(--green); }
+  .overlay-btn.next-level:hover { background: var(--green); color: white; }
+
+  /* ===== ACTION LOG ===== */
+  #action-log {
+    position: fixed; bottom: 110px; right: 15px;
+    width: 220px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    border: 2px solid var(--panel-border);
+    padding: 8px;
+    font-size: 12px; color: var(--text-dim);
+    z-index: 40;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  .log-entry { padding: 2px 0; border-bottom: 1px dashed var(--panel-border); }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry .log-day { color: var(--accent); font-weight: 600; }
+  .log-entry .log-rep-up { color: var(--gold); font-weight: 600; }
+  .log-entry .log-rep-down { color: var(--accent); font-weight: 600; }
+
+  /* ===== HELP MODAL ===== */
+  #help-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center;
+    z-index: 70;
+  }
+  #help-modal.active { display: flex; }
+  .help-content {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 25px;
+    max-width: 600px; width: 90%;
+    border: 3px solid var(--gold);
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.2);
+  }
+  .help-title { font-size: 24px; font-weight: 800; color: var(--gold); margin-bottom: 12px; text-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
+  .help-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .help-text kbd { background: var(--gold); padding: 2px 8px; border-radius: 6px; color: var(--text); border: 2px solid rgba(0,0,0,0.1); }
+  .help-text .help-section { margin-top: 10px; font-weight: 700; color: var(--green); }
+  .help-close {
+    background: var(--accent); color: white; border: 3px solid rgba(0,0,0,0.1);
+    padding: 8px 20px; border-radius: 12px;
+    cursor: pointer; font-family: 'Fredoka One', sans-serif; font-size: 14px; margin-top: 12px;
+  }
+
+  @media (max-width: 1100px) {
+    #game-container {
+      grid-template-columns: 1fr;
+      grid-template-rows: 50px auto 1fr auto 80px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-scene"></canvas>
+
+<!-- ===== START SCREEN ===== -->
+<div id="start-screen">
+  <div class="start-zombie-art"><canvas id="start-zombie-canvas" width="120" height="120"></canvas></div>
+  <div class="start-title">Dream Village</div>
+  <div class="start-subtitle">~ Plant Your Own Zombie ~</div>
+  <div style="font-size:14px;color:var(--text);margin-bottom:20px;opacity:0.8;text-align:center;max-width:500px;">
+    ⭐ 核心挑战：学会平衡资源——何时买种子？何时升级？何时扩建？一味种更多僵尸并不总是最佳策略！
+  </div>
+  <div class="level-select">
+    <button class="level-btn" onclick="startGame(1)">
+      <div class="level-name">🌱 Level 1</div>
+      <div class="level-desc">新手农场主 · 学习基本种植</div>
+      <div class="level-goal">目标: 收获 10 个僵尸</div>
+    </button>
+    <button class="level-btn" onclick="startGame(2)">
+      <div class="level-name">🌿 Level 2</div>
+      <div class="level-desc">熟练农场主 · 限时策略抉择</div>
+      <div class="level-goal">目标: 25天内累计收入 ¥1500</div>
+    </button>
+    <button class="level-btn" onclick="startGame(3)">
+      <div class="level-name">🌳 Level 3</div>
+      <div class="level-desc">大师农场主 · 全面平衡经营</div>
+      <div class="level-goal">目标: 满级+累计¥2000+无暴走</div>
+    </button>
+  </div>
+  <div class="start-controls">
+    <kbd>W</kbd> 购买种子 · <kbd>A</kbd> 种植 · <kbd>S</kbd> 照顾 · <kbd>D</kbd> 收获 · 点击升级<br>
+    按 <kbd>H</kbd> 查看帮助 · <kbd>E</kbd> 结束当天 · 选择关卡开始游戏
+  </div>
+</div>
+
+<!-- ===== GAME CONTAINER ===== -->
+<div id="game-container">
+  <div id="top-bar">
+    <div class="game-title-bar">🧟 Dream Village</div>
+    <div class="objective-display">目标: <span id="objective-text"></span></div>
+    <div class="day-display">Day <span id="day-num">1</span> / <span id="day-limit">30</span></div>
+  </div>
+
+  <div id="stats-panel">
+    <div class="stat-section-title">💰 经济</div>
+    <div class="stat-row"><span class="stat-label">金钱</span><span class="stat-value money" id="stat-money">50</span></div>
+    <div class="stat-row"><span class="stat-label">累计收入</span><span class="stat-value" id="stat-total-earned" style="color:#FFD93D;font-weight:bold">0</span></div>
+    <div class="stat-row"><span class="stat-label">种子库存</span><span class="stat-value" id="stat-seeds" style="color:#A67C52">0</span></div>
+    <div class="stat-row"><span class="stat-label">种子成本</span><span class="stat-value" id="stat-seed-cost" style="color:var(--gold)">10</span></div>
+    <div class="stat-row"><span class="stat-label">出售价格</span><span class="stat-value" id="stat-sell-price" style="color:var(--green)">25</span></div>
+    <div class="stat-section-title">⚡ 能量</div>
+    <div class="stat-row"><span class="stat-label">当前能量</span><span class="stat-value energy" id="stat-energy">10</span></div>
+    <div class="energy-bar-container"><div class="energy-bar-fill" id="energy-bar" style="width:100%"></div></div>
+    <div class="stat-section-title">⭐ 声望</div>
+    <div class="stat-row"><span class="stat-label">农场声望</span><span class="stat-value reputation" id="stat-reputation">50</span></div>
+    <div class="reputation-bar-container"><div class="reputation-bar-fill" id="reputation-bar" style="width:50%"></div></div>
+    <div class="stat-section-title">🏡 等级</div>
+    <div class="stat-row"><span class="stat-label">农场</span><span class="stat-value level" id="stat-farm-level">1</span></div>
+    <div class="stat-row"><span class="stat-label">房屋</span><span class="stat-value level" id="stat-house-level">1</span></div>
+    <div class="stat-row"><span class="stat-label">工具</span><span class="stat-value level" id="stat-tool-level">1</span></div>
+    <div class="stat-section-title">📊 农场</div>
+    <div class="stat-row"><span class="stat-label">地块数</span><span class="stat-value" id="stat-farm-size" style="color:var(--green)">4</span></div>
+    <div class="stat-row"><span class="stat-label">已收获</span><span class="stat-value" id="stat-harvested" style="color:var(--gold)">0</span></div>
+    <div class="stat-row"><span class="stat-label">成熟</span><span class="stat-value" id="stat-mature" style="color:var(--mature-color)">0</span></div>
+    <div class="stat-row"><span class="stat-label">暴走</span><span class="stat-value" id="stat-angry" style="color:var(--angry-color)">0</span></div>
+  </div>
+
+  <div id="farm-area">
+    <div class="farm-header">
+      <div class="farm-header-title">🌱 僵尸农场</div>
+      <div class="seed-inventory">种子: <span id="farm-seeds">0</span></div>
+    </div>
+    <div id="farm-canvas-wrap">
+      <canvas id="farm-canvas"></canvas>
+    </div>
+  </div>
+
+  <div id="upgrade-panel">
+    <div class="upgrade-section-title">🔧 升级商店</div>
+    <div class="upgrade-card" id="upgrade-tool" onclick="upgradeTool()">
+      <div class="upgrade-name">🔨 升级工具</div>
+      <div class="upgrade-desc">减少操作能量消耗</div>
+      <div class="upgrade-current" id="tool-current">Lv.1</div>
+      <div class="upgrade-cost" id="tool-cost">¥40</div>
+    </div>
+    <div class="upgrade-card" id="upgrade-farm" onclick="upgradeFarm()">
+      <div class="upgrade-name">🌾 扩建农场</div>
+      <div class="upgrade-desc">增加可种植地块</div>
+      <div class="upgrade-current" id="farm-current">4块地</div>
+      <div class="upgrade-cost" id="farm-cost">¥60</div>
+    </div>
+    <div class="upgrade-card" id="upgrade-house" onclick="upgradeHouse()">
+      <div class="upgrade-name">🏠 升级房屋</div>
+      <div class="upgrade-desc">增加每日能量上限</div>
+      <div class="upgrade-current" id="house-current">Lv.1</div>
+      <div class="upgrade-cost" id="house-cost">¥80</div>
+    </div>
+
+    <!-- Goal progress card -->
+    <div class="goal-card" id="goal-card">
+      <div class="goal-title">📋 通关目标</div>
+      <div id="goal-items"></div>
+    </div>
+
+    <div class="upgrade-section-title" style="margin-top:6px">ℹ️ 关卡信息</div>
+    <div style="font-size:12px;color:var(--text-dim);line-height:1.4" id="level-info"></div>
+  </div>
+
+  <div id="controls-bar">
+    <button class="control-btn" onclick="buySeeds()"><kbd>W</kbd><span class="btn-label">买种子</span></button>
+    <button class="control-btn" onclick="plantSeed()"><kbd>A</kbd><span class="btn-label">种植</span></button>
+    <button class="control-btn" onclick="takeCare()"><kbd>S</kbd><span class="btn-label">照顾</span></button>
+    <button class="control-btn" onclick="harvestZombie()"><kbd>D</kbd><span class="btn-label">收获</span></button>
+    <button class="control-btn" onclick="showHelp()"><kbd>H</kbd><span class="btn-label">帮助</span></button>
+    <button class="end-day-btn" onclick="endDay()">☀️ 结束今天</button>
+  </div>
+</div>
+
+<div id="notification"></div>
+<div id="action-log"></div>
+
+<div id="overlay-screen">
+  <div class="overlay-title" id="overlay-title"></div>
+  <div class="overlay-stats" id="overlay-stats"></div>
+  <button class="overlay-btn" onclick="restartLevel()">🔄 重试本关</button>
+  <button class="overlay-btn next-level" id="next-level-btn" onclick="nextLevel()" style="display:none">⏩ 下一关</button>
+  <button class="overlay-btn" onclick="backToMenu()">🏠 返回主页</button>
+</div>
+
+<div id="help-modal">
+  <div class="help-content">
+    <div class="help-title">🧟 Dream Village 帮助</div>
+    <div class="help-text">
+      <div class="help-section">🎮 游戏核心</div>
+      <p>这个游戏的重点不是"种僵尸"，而是<strong>资源管理</strong>——学会平衡金钱、能量、工具和农场扩建。</p>
+      <p>一味种更多僵尸并不总是最佳策略！</p><br>
+
+      <div class="help-section">⌨️ 操作</div>
+      <p><kbd>W</kbd> 购买种子(消耗金钱) · <kbd>A</kbd> 种植(免费!)</p>
+      <p><kbd>S</kbd> 照顾僵尸(消耗能量) · <kbd>D</kbd> 收获卖钱(消耗能量)</p>
+      <p><kbd>E</kbd> 结束当天 · 点击右侧升级卡片</p><br>
+
+      <div class="help-section">🧟 僵尸生长</div>
+      <p>种子→发芽→生长→成熟→暴走</p>
+      <p>照顾僵尸加速成长，不照顾则生长缓慢!</p>
+      <p><strong>⚠️ 暴走:</strong> 成熟僵尸不及时收获会暴走，摧毁旁边幼小僵尸!</p><br>
+
+      <div class="help-section">⭐ 声望系统</div>
+      <p>农场声望 (0~100) 反映你的经营水平：</p>
+      <p>✅ 及时收获 → <strong>+5声望</strong></p>
+      <p>✅ 每天照顾所有僵尸 → <strong>+3声望</strong></p>
+      <p>❌ 僵尸暴走 → <strong>-10声望</strong></p>
+      <p>❌ 破产 → <strong>-20声望</strong></p><br>
+
+      <div class="help-section">🏆 通关条件</div>
+      <p><strong>Level 1:</strong> 收获 10 个僵尸（教学关）</p>
+      <p><strong>Level 2:</strong> 25天内累计收入 ¥1500（策略关）</p>
+      <p><strong>Level 3:</strong> Farm满级 + House满级 + 累计收入≥¥2000 + 无暴走僵尸</p>
+      <p><strong>最终通关:</strong> Farm满级 + House满级 + 累计收入≥¥2000 + Day≤30</p><br>
+
+      <div class="help-section">💀 失败条件</div>
+      <p>破产 / 暴走毁农场 / 连续无力务农 / 超过天数限制</p>
+    </div>
+    <button class="help-close" onclick="hideHelp()">关闭</button>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// DREAM VILLAGE - RESOURCE MANAGEMENT EDITION
+// ==========================================
+
+// ===== LEVEL CONFIGS =====
+const LEVEL_CONFIGS = {
+  1: {
+    name:'新手农场主', description:'学习基本种植 · 无暴走',
+    startMoney:80, startEnergy:20, startFarmPlots:4,
+    // Level 1 goal: harvest 10 zombies (tutorial)
+    winType: 'harvest', winHarvestCount: 10,
+    maxFarmLevel:2, maxHouseLevel:2, maxToolLevel:2,
+    zombieGrowthDays:2, zombieSeedCost:10, zombieSellPrice:25,
+    angryEnabled:false, angryDaysThreshold:999,
+    energyCostPlant:0, energyCostCare:2, energyCostHarvest:1,
+    naturalGrowthPerDay:40, careGrowthBoost:30, daysWithoutEnergyLimit:5, maxDays:30,
+    farmUpgradeCost:[60,100], houseUpgradeCost:[80,120], toolUpgradeCost:[40,70],
+    farmUpgradePlots:[6,8], energyPerHouseLevel:[20,28,36],
+  },
+  2: {
+    name:'熟练农场主', description:'限时策略抉择 · 管理金钱与能量',
+    startMoney:60, startEnergy:18, startFarmPlots:8,
+    // Level 2 goal: earn total $1500 before Day 25
+    winType: 'money_time', winTargetMoney: 1500, winMaxDays: 25,
+    maxFarmLevel:3, maxHouseLevel:3, maxToolLevel:3,
+    zombieGrowthDays:3, zombieSeedCost:12, zombieSellPrice:40,
+    angryEnabled:true, angryDaysThreshold:3,
+    energyCostPlant:0, energyCostCare:2, energyCostHarvest:1,
+    naturalGrowthPerDay:35, careGrowthBoost:30, daysWithoutEnergyLimit:4, maxDays:25,
+    farmUpgradeCost:[60,100,150], houseUpgradeCost:[80,120,170], toolUpgradeCost:[40,70,110],
+    farmUpgradePlots:[10,12,16], energyPerHouseLevel:[18,24,30,36],
+  },
+  3: {
+    name:'大师农场主', description:'全面平衡经营 · 僵尸暴走摧毁邻近',
+    startMoney:50, startEnergy:16, startFarmPlots:4,
+    // Level 3 goal: Farm=Max + House=Max + TotalEarned>=2000 + No Angry Zombie
+    winType: 'full_balance', winTargetMoney: 2000,
+    maxFarmLevel:4, maxHouseLevel:4, maxToolLevel:4,
+    zombieGrowthDays:0, zombieSeedCost:20, zombieSellPrice:50,
+    angryEnabled:true, angryDaysThreshold:2,
+    energyCostPlant:0, energyCostCare:2, energyCostHarvest:1,
+    naturalGrowthPerDay:25, careGrowthBoost:20, daysWithoutEnergyLimit:3, maxDays:30,
+    farmUpgradeCost:[80,130,200,300], houseUpgradeCost:[100,150,220,300], toolUpgradeCost:[50,80,130,180],
+    farmUpgradePlots:[6,8,12,16], energyPerHouseLevel:[16,22,28,34,40],
+    zombieTypes:[
+      {name:'快生僵尸',growthDays:2,seedCost:15,sellPrice:40,color:'#4ECDC4'},
+      {name:'普通僵尸',growthDays:4,seedCost:20,sellPrice:65,color:'#45B7D1'},
+      {name:'巨型僵尸',growthDays:6,seedCost:30,sellPrice:110,color:'#9B59B6'},
+    ]
+  }
+};
+
+// ===== GAME STATE =====
+let game = null;
+let farmCanvas, farmCtx;
+let bgCanvas, bgCtx;
+let animFrame = 0;
+let floatingCoins = [];
+
+function createGameState(levelNum) {
+  const config = LEVEL_CONFIGS[levelNum];
+  const plots = [];
+  for (let i = 0; i < config.startFarmPlots; i++) plots.push(createEmptyPlot());
+  return {
+    level:levelNum, config:config,
+    money:config.startMoney, energy:config.startEnergy,
+    maxEnergy:config.energyPerHouseLevel[0],
+    currentDay:1, farmLevel:1, houseLevel:1, toolLevel:1,
+    farmPlots:config.startFarmPlots, seeds:0,
+    plots:plots, selectedPlot:-1,
+    daysWithoutEnergy:0, gameOver:false, gameWon:false,
+    log:[], zombieTypeIndex:0,
+    // Reputation system (0-100)
+    reputation: 50,
+    // Harvest counter for Level 1
+    totalHarvested: 0,
+    // Total money earned (for Level 2/3 win condition)
+    totalEarned: 0,
+    // Track if any zombie went angry today (for Level 3 win condition)
+    hasAngryZombieToday: false,
+    hasAnyAngryEver: false,
+  };
+}
+function createEmptyPlot() {
+  return { hasZombie:false, status:'empty', growthProgress:0, growthDaysNeeded:0, daysAsMature:0, caredForToday:false, zombieType:null };
+}
+
+// ===== GAME START =====
+function startGame(levelNum) {
+  game = createGameState(levelNum);
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('game-container').classList.add('active');
+  initFarmCanvas();
+  updateAllUI();
+  addLog('开始关卡 ' + levelNum + ': ' + game.config.name);
+  addLog('⭐ 初始声望: 50');
+}
+
+function initFarmCanvas() {
+  farmCanvas = document.getElementById('farm-canvas');
+  farmCtx = farmCanvas.getContext('2d');
+  resizeFarmCanvas();
+}
+
+function resizeFarmCanvas() {
+  if (!farmCanvas) return;
+  const wrap = document.getElementById('farm-canvas-wrap');
+  farmCanvas.width = wrap.clientWidth;
+  farmCanvas.height = wrap.clientHeight;
+}
+
+window.addEventListener('resize', () => { resizeFarmCanvas(); resizeBgCanvas(); });
+
+// ===== REPUTATION SYSTEM =====
+function changeReputation(amount, reason) {
+  const oldRep = game.reputation;
+  game.reputation = Math.max(0, Math.min(100, game.reputation + amount));
+  if (amount > 0) {
+    addLog('⭐ 声望 +' + amount + ' (' + reason + ') → ' + game.reputation);
+    showNotification('⭐ 声望 +' + amount + '! (' + reason + ')', 'reputation-up');
+  } else if (amount < 0) {
+    addLog('⭐ 声望 ' + amount + ' (' + reason + ') → ' + game.reputation);
+    showNotification('⭐ 声望 ' + amount + '! (' + reason + ')', 'reputation-down');
+  }
+}
+
+// ===== CORE GAME ACTIONS =====
+function buySeeds() {
+  if (game.gameOver || game.gameWon) return;
+  const cost = getCurrentSeedCost();
+  if (game.money < cost) { showNotification('💰 金钱不足! 需要 ¥' + cost, 'error'); return; }
+  game.money -= cost;
+  game.seeds += 1;
+  addLog('购买种子 ¥' + cost);
+  showNotification('🫘 买种子成功! 库存: ' + game.seeds, 'success');
+  updateAllUI();
+}
+
+function plantSeed() {
+  if (game.gameOver || game.gameWon) return;
+  if (game.seeds <= 0) { showNotification('没有种子! 先按W购买', 'error'); return; }
+  const energyCost = getEnergyCost('plant');
+  if (game.energy < energyCost) { showNotification('⚡ 能量不足!', 'error'); return; }
+  let targetPlot = -1;
+  if (game.selectedPlot >= 0 && game.plots[game.selectedPlot].status === 'empty') targetPlot = game.selectedPlot;
+  else { for (let i = 0; i < game.plots.length; i++) { if (game.plots[i].status === 'empty') { targetPlot = i; break; } } }
+  if (targetPlot === -1) { showNotification('没空地! 升级农场', 'error'); return; }
+  game.energy -= energyCost;
+  game.seeds -= 1;
+  const plot = game.plots[targetPlot];
+  plot.hasZombie = true; plot.status = 'seed'; plot.growthProgress = 0; plot.caredForToday = false; plot.daysAsMature = 0;
+  if (game.level === 3 && game.config.zombieTypes) {
+    const zType = game.config.zombieTypes[game.zombieTypeIndex % game.config.zombieTypes.length];
+    plot.zombieType = zType; plot.growthDaysNeeded = zType.growthDays;
+    game.zombieTypeIndex++;
+  } else { plot.growthDaysNeeded = game.config.zombieGrowthDays; plot.zombieType = null; }
+  addLog('在第' + (targetPlot+1) + '块地种植');
+  showNotification('🌱 种植成功!', 'success');
+  game.selectedPlot = targetPlot;
+  updateAllUI();
+}
+
+function takeCare() {
+  if (game.gameOver || game.gameWon) return;
+  const energyCost = getEnergyCost('care');
+  if (game.energy < energyCost) { showNotification('⚡ 能量不足!', 'error'); return; }
+  let targetPlots = [];
+  if (game.selectedPlot >= 0 && game.plots[game.selectedPlot].hasZombie &&
+      (game.plots[game.selectedPlot].status === 'seed' || game.plots[game.selectedPlot].status === 'growing') &&
+      !game.plots[game.selectedPlot].caredForToday) {
+    targetPlots = [game.selectedPlot];
+  } else {
+    for (let i = 0; i < game.plots.length; i++) {
+      const p = game.plots[i];
+      if (p.hasZombie && (p.status === 'seed' || p.status === 'growing') && !p.caredForToday) targetPlots.push(i);
+    }
+  }
+  if (targetPlots.length === 0) { showNotification('没有需要照顾的僵尸', 'error'); return; }
+  const canCare = Math.min(targetPlots.length, Math.floor(game.energy / energyCost));
+  if (canCare === 0) { showNotification('⚡ 能量不足!', 'error'); return; }
+  targetPlots = targetPlots.slice(0, canCare);
+  game.energy -= energyCost * canCare;
+  for (const idx of targetPlots) {
+    const plot = game.plots[idx];
+    plot.caredForToday = true;
+    plot.growthProgress += game.config.careGrowthBoost;
+    if (plot.growthProgress >= 100) { plot.growthProgress = 100; plot.status = 'mature'; plot.daysAsMature = 0; }
+    else if (plot.status === 'seed') plot.status = 'growing';
+  }
+  addLog('照顾 ' + canCare + ' 个僵尸');
+  showNotification('💚 照顾了 ' + canCare + ' 个!', 'success');
+  updateAllUI();
+}
+
+function harvestZombie() {
+  if (game.gameOver || game.gameWon) return;
+  const energyCost = getEnergyCost('harvest');
+  if (game.energy < energyCost) { showNotification('⚡ 能量不足!', 'error'); return; }
+  let targetPlot = -1;
+  if (game.selectedPlot >= 0 && game.plots[game.selectedPlot].status === 'mature') targetPlot = game.selectedPlot;
+  else { for (let i = 0; i < game.plots.length; i++) { if (game.plots[i].status === 'mature') { targetPlot = i; break; } } }
+  if (targetPlot === -1) { showNotification('没有成熟僵尸可收获', 'error'); return; }
+  game.energy -= energyCost;
+  const plot = game.plots[targetPlot];
+  const sellPrice = plot.zombieType ? plot.zombieType.sellPrice : getCurrentSellPrice();
+  game.money += sellPrice;
+  game.totalEarned += sellPrice;
+  game.totalHarvested++;
+
+  // Reputation: timely harvest +5
+  changeReputation(5, '及时收获');
+
+  // Spawn coin animation at plot location
+  const W = farmCanvas.width, H = farmCanvas.height;
+  const plotCount = game.plots.length;
+  const cols = Math.min(plotCount, 4);
+  const plotW = Math.min((W - 40) / cols, 110);
+  const plotH = Math.min((H - 80) / Math.ceil(plotCount / cols), 110);
+  const startX = (W - cols * plotW) / 2;
+  const col = targetPlot % cols;
+  const row = Math.floor(targetPlot / cols);
+  const coinX = startX + col * plotW + plotW/2;
+  const coinY = 55 + row * plotH + plotH/2;
+  spawnCoinAt(coinX, coinY);
+
+  game.plots[targetPlot] = createEmptyPlot();
+  if (game.selectedPlot === targetPlot) game.selectedPlot = -1;
+  addLog('收获僵尸! +¥' + sellPrice + ' (累计: ' + game.totalHarvested + ')');
+  showNotification('💰 +¥' + sellPrice + '! ⭐声望+5', 'success');
+
+  // Check win after harvest (for Level 1 harvest goal)
+  if (checkWinCondition()) { game.gameWon = true; showOverlay('win'); updateAllUI(); return; }
+  updateAllUI();
+}
+
+function upgradeTool() {
+  if (game.gameOver || game.gameWon) return;
+  if (game.toolLevel >= game.config.maxToolLevel) { showNotification('工具已满级!', 'error'); return; }
+  const cost = game.config.toolUpgradeCost[game.toolLevel - 1];
+  if (game.money < cost) { showNotification('金钱不足! ¥' + cost, 'error'); return; }
+  game.money -= cost; game.toolLevel++;
+  addLog('工具升级 Lv.' + game.toolLevel);
+  showNotification('🔨 工具 Lv.' + game.toolLevel + '!', 'success');
+  updateAllUI();
+}
+
+function upgradeFarm() {
+  if (game.gameOver || game.gameWon) return;
+  if (game.farmLevel >= game.config.maxFarmLevel) { showNotification('农场已满级!', 'error'); return; }
+  const cost = game.config.farmUpgradeCost[game.farmLevel - 1];
+  if (game.money < cost) { showNotification('金钱不足! ¥' + cost, 'error'); return; }
+  game.money -= cost; game.farmLevel++;
+  const newPlots = game.config.farmUpgradePlots[game.farmLevel - 2];
+  while (game.plots.length < newPlots) game.plots.push(createEmptyPlot());
+  game.farmPlots = newPlots;
+  addLog('农场扩建 ' + newPlots + '块地');
+  showNotification('🌾 ' + newPlots + ' 块地!', 'success');
+  // Check win after upgrade
+  if (checkWinCondition()) { game.gameWon = true; showOverlay('win'); updateAllUI(); return; }
+  updateAllUI();
+}
+
+function upgradeHouse() {
+  if (game.gameOver || game.gameWon) return;
+  if (game.houseLevel >= game.config.maxHouseLevel) { showNotification('房屋已满级!', 'error'); return; }
+  const cost = game.config.houseUpgradeCost[game.houseLevel - 1];
+  if (game.money < cost) { showNotification('金钱不足! ¥' + cost, 'error'); return; }
+  game.money -= cost; game.houseLevel++;
+  game.maxEnergy = game.config.energyPerHouseLevel[game.houseLevel - 1];
+  addLog('房屋升级 Lv.' + game.houseLevel);
+  showNotification('🏠 能量上限 ' + game.maxEnergy + '!', 'success');
+  // Check win after upgrade
+  if (checkWinCondition()) { game.gameWon = true; showOverlay('win'); updateAllUI(); return; }
+  updateAllUI();
+}
+
+function endDay() {
+  if (game.gameOver || game.gameWon) return;
+  addLog('--- Day ' + game.currentDay + ' 结束 ---');
+
+  // Reputation: +3 if all non-mature/non-angry zombies were cared for today
+  let uncaredCount = 0;
+  for (const p of game.plots) {
+    if (p.hasZombie && (p.status === 'seed' || p.status === 'growing') && !p.caredForToday) uncaredCount++;
+  }
+  if (uncaredCount === 0 && game.plots.some(p => p.hasZombie && (p.status === 'seed' || p.status === 'growing'))) {
+    changeReputation(3, '照顾了所有僵尸');
+  }
+
+  game.hasAngryZombieToday = false;
+  processEndOfDay();
+
+  // Check if any zombie went angry today
+  for (const p of game.plots) {
+    if (p.status === 'angry') game.hasAngryZombieToday = true;
+  }
+  if (game.hasAngryZombieToday) {
+    game.hasAnyAngryEver = true;
+  }
+
+  game.currentDay++;
+  game.energy = game.maxEnergy;
+  for (const p of game.plots) p.caredForToday = false;
+  game.daysWithoutEnergy = game.energy <= 0 ? game.daysWithoutEnergy + 1 : 0;
+
+  // Check bankruptcy at end of day
+  if (game.money <= 0 && game.seeds <= 0) {
+    let hasPotential = false;
+    for (const p of game.plots) if (p.hasZombie) hasPotential = true;
+    if (!hasPotential) {
+      changeReputation(-20, '破产');
+      game.gameOver = true; showOverlay('lose'); updateAllUI(); return;
+    }
+  }
+
+  if (checkLoseCondition()) { game.gameOver = true; showOverlay('lose'); updateAllUI(); return; }
+  if (checkWinCondition()) { game.gameWon = true; showOverlay('win'); updateAllUI(); return; }
+  addLog('--- Day ' + game.currentDay + ' 开始 ---');
+  updateAllUI();
+}
+
+function processEndOfDay() {
+  for (let i = 0; i < game.plots.length; i++) {
+    const plot = game.plots[i];
+    if (!plot.hasZombie) continue;
+    if (plot.status === 'seed' || plot.status === 'growing') {
+      plot.growthProgress += game.config.naturalGrowthPerDay;
+      if (!plot.caredForToday) plot.growthProgress -= 5;
+      if (plot.growthProgress < 0) plot.growthProgress = 0;
+      if (plot.growthProgress >= 100) { plot.growthProgress = 100; plot.status = 'mature'; plot.daysAsMature = 0; addLog('第' + (i+1) + '块地僵尸成熟了!'); }
+      else if (plot.status === 'seed') plot.status = 'growing';
+    }
+    if (plot.status === 'mature' && game.config.angryEnabled) {
+      plot.daysAsMature++;
+      if (plot.daysAsMature >= game.config.angryDaysThreshold) {
+        plot.status = 'angry';
+        addLog('⚠️ 第' + (i+1) + '块地暴走!');
+        // Reputation: -10 for angry zombie
+        changeReputation(-10, '僵尸暴走!');
+        showNotification('😈 僵尸暴走! 声望-10', 'error');
+      }
+    }
+  }
+  if (game.config.angryEnabled) {
+    const destroyed = [];
+    for (let i = 0; i < game.plots.length; i++) {
+      if (game.plots[i].status === 'angry') {
+        for (const adj of [i-1, i+1]) {
+          if (adj >= 0 && adj < game.plots.length && game.plots[adj].hasZombie && (game.plots[adj].status === 'seed' || game.plots[adj].status === 'growing'))
+            destroyed.push(adj);
+        }
+      }
+    }
+    for (const idx of destroyed) { addLog('暴走摧毁第' + (idx+1) + '块地!'); game.plots[idx] = createEmptyPlot(); }
+  }
+}
+
+function checkWinCondition() {
+  const cfg = game.config;
+
+  // Level 1: Harvest 10 zombies
+  if (cfg.winType === 'harvest') {
+    return game.totalHarvested >= cfg.winHarvestCount;
+  }
+
+  // Level 2: Earn target total money before time limit
+  if (cfg.winType === 'money_time') {
+    return game.totalEarned >= cfg.winTargetMoney && game.currentDay <= cfg.winMaxDays;
+  }
+
+  // Level 3: Full balance - Farm=Max + House=Max + TotalEarned>=target + No Angry Zombie currently
+  if (cfg.winType === 'full_balance') {
+    const noAngryNow = !game.plots.some(p => p.status === 'angry');
+    return game.farmLevel >= cfg.maxFarmLevel
+        && game.houseLevel >= cfg.maxHouseLevel
+        && game.totalEarned >= cfg.winTargetMoney
+        && noAngryNow;
+  }
+
+  return false;
+}
+
+function checkLoseCondition() {
+  // Bankrupt with no potential
+  if (game.money <= 0 && game.seeds <= 0) {
+    let has = false;
+    for (const p of game.plots) if (p.hasZombie) has = true;
+    if (!has) return true;
+  }
+  // All plots angry or empty, can't afford seeds
+  if (game.plots.every(p => p.status === 'angry' || p.status === 'empty') && game.money < getCurrentSeedCost() && game.seeds <= 0) return true;
+  // No energy for consecutive days
+  if (game.daysWithoutEnergy >= game.config.daysWithoutEnergyLimit) return true;
+  // Exceeded day limit
+  if (game.currentDay > game.config.maxDays) return true;
+  return false;
+}
+
+function getEnergyCost(action) {
+  const base = {plant:game.config.energyCostPlant, care:game.config.energyCostCare, harvest:game.config.energyCostHarvest}[action] || 0;
+  if (base <= 0) return 0;
+  return Math.max(1, Math.ceil(base / game.toolLevel));
+}
+function getCurrentSeedCost() {
+  if (game.level === 3 && game.config.zombieTypes) return game.config.zombieTypes[game.zombieTypeIndex % game.config.zombieTypes.length].seedCost;
+  return game.config.zombieSeedCost;
+}
+function getCurrentSellPrice() { return game.config.zombieSellPrice; }
+
+// ===== UI UPDATE =====
+function updateAllUI() {
+  if (!game) return;
+  document.getElementById('stat-money').textContent = '¥' + game.money;
+  document.getElementById('stat-total-earned').textContent = '¥' + game.totalEarned;
+  document.getElementById('stat-seeds').textContent = game.seeds;
+  document.getElementById('stat-seed-cost').textContent = '¥' + getCurrentSeedCost();
+  document.getElementById('stat-sell-price').textContent = '¥' + getCurrentSellPrice();
+  document.getElementById('stat-energy').textContent = game.energy + '/' + game.maxEnergy;
+  document.getElementById('energy-bar').style.width = (game.energy / game.maxEnergy * 100) + '%';
+
+  // Reputation display
+  const repColor = game.reputation >= 80 ? '#FFD93D' : game.reputation >= 50 ? '#5DB075' : game.reputation >= 25 ? '#FF9800' : '#FF6B6B';
+  document.getElementById('stat-reputation').textContent = game.reputation + '/100';
+  document.getElementById('stat-reputation').style.color = repColor;
+  document.getElementById('reputation-bar').style.width = game.reputation + '%';
+  const repBarFill = document.getElementById('reputation-bar');
+  if (game.reputation >= 80) repBarFill.style.background = 'linear-gradient(90deg, #FFD93D, #FFC107)';
+  else if (game.reputation >= 50) repBarFill.style.background = 'linear-gradient(90deg, #5DB075, #4ECDC4)';
+  else if (game.reputation >= 25) repBarFill.style.background = 'linear-gradient(90deg, #FF9800, #FFC107)';
+  else repBarFill.style.background = 'linear-gradient(90deg, #FF6B6B, #FF5252)';
+
+  document.getElementById('stat-farm-level').textContent = 'Lv.' + game.farmLevel + '/' + game.config.maxFarmLevel;
+  document.getElementById('stat-house-level').textContent = 'Lv.' + game.houseLevel + '/' + game.config.maxHouseLevel;
+  document.getElementById('stat-tool-level').textContent = 'Lv.' + game.toolLevel + '/' + game.config.maxToolLevel;
+  document.getElementById('stat-farm-size').textContent = game.farmPlots;
+  document.getElementById('stat-harvested').textContent = game.totalHarvested;
+  document.getElementById('day-num').textContent = game.currentDay;
+  document.getElementById('day-limit').textContent = game.config.maxDays;
+  let mature = 0, angry = 0;
+  for (const p of game.plots) { if (p.status === 'mature') mature++; if (p.status === 'angry') angry++; }
+  document.getElementById('stat-mature').textContent = mature;
+  document.getElementById('stat-angry').textContent = angry;
+
+  // Goal progress display
+  const cfg = game.config;
+  let goalHtml = '';
+
+  if (cfg.winType === 'harvest') {
+    goalHtml += makeGoalItem(game.totalHarvested >= cfg.winHarvestCount, '收获 ' + cfg.winHarvestCount + ' 个僵尸', game.totalHarvested + '/' + cfg.winHarvestCount);
+  } else if (cfg.winType === 'money_time') {
+    goalHtml += makeGoalItem(game.totalEarned >= cfg.winTargetMoney, '累计收入 ≥ ¥' + cfg.winTargetMoney, '¥' + game.totalEarned + '/¥' + cfg.winTargetMoney);
+    goalHtml += makeGoalItem(game.currentDay <= cfg.winMaxDays, '天数 ≤ ' + cfg.winMaxDays, 'Day ' + game.currentDay + '/Day ' + cfg.winMaxDays);
+  } else if (cfg.winType === 'full_balance') {
+    goalHtml += makeGoalItem(game.farmLevel >= cfg.maxFarmLevel, '农场满级 Lv.' + cfg.maxFarmLevel, 'Lv.' + game.farmLevel + '/Lv.' + cfg.maxFarmLevel);
+    goalHtml += makeGoalItem(game.houseLevel >= cfg.maxHouseLevel, '房屋满级 Lv.' + cfg.maxHouseLevel, 'Lv.' + game.houseLevel + '/Lv.' + cfg.maxHouseLevel);
+    goalHtml += makeGoalItem(game.totalEarned >= cfg.winTargetMoney, '累计收入 ≥ ¥' + cfg.winTargetMoney, '¥' + game.totalEarned + '/¥' + cfg.winTargetMoney);
+    goalHtml += makeGoalItem(!game.plots.some(p => p.status === 'angry'), '无暴走僵尸', angry > 0 ? '有 ' + angry + ' 个暴走!' : '✅ 无暴走');
+    goalHtml += makeGoalItem(game.currentDay <= cfg.maxDays, '天数 ≤ ' + cfg.maxDays, 'Day ' + game.currentDay + '/Day ' + cfg.maxDays);
+  }
+  document.getElementById('goal-items').innerHTML = goalHtml;
+
+  // Objective text in top bar
+  let objText = '';
+  if (cfg.winType === 'harvest') {
+    objText = '收获' + cfg.winHarvestCount + '个僵尸';
+  } else if (cfg.winType === 'money_time') {
+    objText = '累计¥' + cfg.winTargetMoney + ' | Day≤' + cfg.winMaxDays;
+  } else if (cfg.winType === 'full_balance') {
+    objText = 'Farm满级+House满级+累计¥' + cfg.winTargetMoney + '+无暴走 | Day≤' + cfg.maxDays;
+  }
+  document.getElementById('objective-text').textContent = objText;
+  document.getElementById('farm-seeds').textContent = game.seeds;
+
+  // Upgrade panel
+  const toolCard = document.getElementById('upgrade-tool');
+  if (game.toolLevel >= cfg.maxToolLevel) { toolCard.className = 'upgrade-card maxed'; document.getElementById('tool-current').textContent = 'Lv.' + game.toolLevel + '(满级)'; document.getElementById('tool-cost').textContent = '✅'; }
+  else { const c = cfg.toolUpgradeCost[game.toolLevel-1]; toolCard.className = 'upgrade-card' + (game.money < c ? ' disabled' : ''); document.getElementById('tool-current').textContent = 'Lv.' + game.toolLevel; document.getElementById('tool-cost').textContent = '¥' + c; }
+  const farmCard = document.getElementById('upgrade-farm');
+  if (game.farmLevel >= cfg.maxFarmLevel) { farmCard.className = 'upgrade-card maxed'; document.getElementById('farm-current').textContent = game.farmPlots + '块(满级)'; document.getElementById('farm-cost').textContent = '✅'; }
+  else { const c = cfg.farmUpgradeCost[game.farmLevel-1]; farmCard.className = 'upgrade-card' + (game.money < c ? ' disabled' : ''); document.getElementById('farm-current').textContent = game.farmPlots + '块地'; document.getElementById('farm-cost').textContent = '¥' + c; }
+  const houseCard = document.getElementById('upgrade-house');
+  if (game.houseLevel >= cfg.maxHouseLevel) { houseCard.className = 'upgrade-card maxed'; document.getElementById('house-current').textContent = 'Lv.' + game.houseLevel + '(满级)'; document.getElementById('house-cost').textContent = '✅'; }
+  else { const c = cfg.houseUpgradeCost[game.houseLevel-1]; houseCard.className = 'upgrade-card' + (game.money < c ? ' disabled' : ''); document.getElementById('house-current').textContent = 'Lv.' + game.houseLevel; document.getElementById('house-cost').textContent = '¥' + c; }
+
+  document.getElementById('level-info').innerHTML = '关卡 ' + game.level + ' · ' + cfg.name + '<br>' + cfg.description + '<br>' + (cfg.angryEnabled ? '⚠️ 僵尸可能暴走!' : '✅ 无暴走') + '<br>⭐ 声望: ' + game.reputation + '/100';
+  renderLog();
+}
+
+function makeGoalItem(done, text, detail) {
+  const checkClass = done ? 'goal-check' : 'goal-check';
+  const itemClass = done ? 'goal-item done' : 'goal-item';
+  const icon = done ? '✅' : '⬜';
+  return '<div class="' + itemClass + '"><span class="' + checkClass + '">' + icon + '</span><span class="goal-text">' + text + ' (' + detail + ')</span></div>';
+}
+
+// ===== NOTIFICATION / LOG / OVERLAY =====
+let notifTimeout = null;
+function showNotification(text, type) {
+  const el = document.getElementById('notification');
+  el.textContent = text;
+  el.className = 'show ' + (type || '');
+  if (notifTimeout) clearTimeout(notifTimeout);
+  notifTimeout = setTimeout(() => { el.className = ''; }, 2500);
+}
+function addLog(text) { game.log.push({day:game.currentDay, text:text}); if (game.log.length > 50) game.log = game.log.slice(-50); }
+function renderLog() {
+  const el = document.getElementById('action-log');
+  el.innerHTML = game.log.slice(-12).map(l => {
+    let text = l.text;
+    if (text.includes('声望 +')) text = '<span class="log-rep-up">' + text + '</span>';
+    else if (text.includes('声望 -') || text.includes('暴走')) text = '<span class="log-rep-down">' + text + '</span>';
+    return '<div class="log-entry"><span class="log-day">Day' + l.day + '</span> ' + text + '</div>';
+  }).join('');
+}
+
+function showOverlay(type) {
+  document.getElementById('overlay-screen').classList.add('active');
+  const title = document.getElementById('overlay-title');
+  const stats = document.getElementById('overlay-stats');
+  const nextBtn = document.getElementById('next-level-btn');
+
+  if (type === 'win') {
+    title.className = 'overlay-title win';
+    const cfg = game.config;
+
+    if (cfg.winType === 'harvest') {
+      title.textContent = '🎉 Level 1 完成!';
+      stats.innerHTML = '你学会了基本种植!<br>收获僵尸: <span>' + game.totalHarvested + '</span><br>声望: <span class="stat-rep">' + game.reputation + '</span>/100<br>天数: <span>' + game.currentDay + '</span>';
+    } else if (cfg.winType === 'money_time') {
+      title.textContent = '🎉 Level 2 完成!';
+      stats.innerHTML = '你学会了管理金钱和能量!<br>累计收入: <span>¥' + game.totalEarned + '</span> 当前金钱: <span>¥' + game.money + '</span><br>声望: <span class="stat-rep">' + game.reputation + '</span>/100<br>天数: <span>' + game.currentDay + '</span>/25';
+    } else if (cfg.winType === 'full_balance') {
+      title.textContent = '🎉 Level 3 完成! 大师农场主!';
+      stats.innerHTML = '你真正学会了平衡资源!<br>累计收入: <span>¥' + game.totalEarned + '</span> 当前金钱: <span>¥' + game.money + '</span><br>农场: <span>Lv.' + game.farmLevel + '</span> 房屋: <span>Lv.' + game.houseLevel + '</span><br>声望: <span class="stat-rep">' + game.reputation + '</span>/100<br>天数: <span>' + game.currentDay + '</span>/30';
+    }
+
+    // Show next level button if not last level
+    nextBtn.style.display = game.level < 3 ? 'inline-block' : 'none';
+    if (game.level >= 3) {
+      title.textContent = '🏆 全关通关! 僵尸农场大师!';
+      nextBtn.style.display = 'none';
+    }
+  } else {
+    title.className = 'overlay-title lose';
+    title.textContent = '💀 失败!';
+    let reason = '';
+    if (game.money <= 0) reason = '破产 — 金钱耗尽';
+    else if (game.daysWithoutEnergy >= game.config.daysWithoutEnergyLimit) reason = '无力务农 — 连续' + game.daysWithoutEnergy + '天无能量';
+    else if (game.currentDay > game.config.maxDays) {
+      if (game.config.winType === 'money_time') reason = '超时 — 没在' + game.config.maxDays + '天内赚到¥' + game.config.winTargetMoney;
+      else reason = '超时 — 超过' + game.config.maxDays + '天';
+    }
+    else if (game.plots.every(p => p.status === 'angry' || p.status === 'empty') && game.money < getCurrentSeedCost()) reason = '暴走毁农场 — 无法恢复';
+    else reason = '经营失败';
+
+    stats.innerHTML = '原因: ' + reason + '<br>声望: <span class="stat-rep">' + game.reputation + '</span>/100<br><br>💡 提示: 学会平衡投入——<br>何时买种子？何时升级？何时扩建？';
+    nextBtn.style.display = 'none';
+  }
+}
+
+function restartLevel() { document.getElementById('overlay-screen').classList.remove('active'); startGame(game.level); }
+function nextLevel() {
+  document.getElementById('overlay-screen').classList.remove('active');
+  if (game.level < 3) startGame(game.level + 1);
+}
+function backToMenu() {
+  document.getElementById('overlay-screen').classList.remove('active');
+  document.getElementById('game-container').classList.remove('active');
+  document.getElementById('start-screen').classList.remove('hidden');
+  game = null;
+}
+function showHelp() { document.getElementById('help-modal').classList.add('active'); }
+function hideHelp() { document.getElementById('help-modal').classList.remove('active'); }
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k==='w') buySeeds(); else if (k==='a') plantSeed(); else if (k==='s') takeCare(); else if (k==='d') harvestZombie();
+  else if (k==='h') showHelp(); else if (k==='escape') hideHelp(); else if (k==='e'||k==='enter') endDay();
+  else if (k==='1') { if (!game||game.gameOver||game.gameWon) startGame(1); }
+  else if (k==='2') { if (!game||game.gameOver||game.gameWon) startGame(2); }
+  else if (k==='3') { if (!game||game.gameOver||game.gameWon) startGame(3); }
+});
+document.addEventListener('click', (e) => { if (e.target.id === 'help-modal') hideHelp(); });
+
+// ===== CARTOON DRAWING FUNCTIONS =====
+
+function drawBackgroundScene(ctx, w, h) {
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+  skyGrad.addColorStop(0, '#87CEEB');
+  skyGrad.addColorStop(1, '#E0F7FA');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, w, h * 0.5);
+
+  const sunX = w * 0.85, sunY = h * 0.12, sunR = 30;
+  ctx.fillStyle = '#FFD93D';
+  ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#FFD93D'; ctx.lineWidth = 3;
+  for (let i = 0; i < 8; i++) {
+    const a = (i * Math.PI / 4) + animFrame * 0.02;
+    ctx.beginPath();
+    ctx.moveTo(sunX + Math.cos(a) * (sunR+5), sunY + Math.sin(a) * (sunR+5));
+    ctx.lineTo(sunX + Math.cos(a) * (sunR+18), sunY + Math.sin(a) * (sunR+18));
+    ctx.stroke();
+  }
+
+  drawCloud(ctx, w*0.2 + animFrame*0.15 % w, h*0.08, 50);
+  drawCloud(ctx, w*0.5 + animFrame*0.1 % w, h*0.15, 35);
+  drawCloud(ctx, w*0.7 + animFrame*0.2 % w, h*0.06, 40);
+
+  ctx.fillStyle = '#7BC47F';
+  ctx.beginPath();
+  ctx.moveTo(0, h*0.45);
+  ctx.quadraticCurveTo(w*0.3, h*0.35, w*0.5, h*0.42);
+  ctx.quadraticCurveTo(w*0.8, h*0.38, w, h*0.45);
+  ctx.lineTo(w, h*0.5); ctx.lineTo(0, h*0.5);
+  ctx.fill();
+
+  const grassGrad = ctx.createLinearGradient(0, h*0.45, 0, h);
+  grassGrad.addColorStop(0, '#5DB075');
+  grassGrad.addColorStop(1, '#4A9A63');
+  ctx.fillStyle = grassGrad;
+  ctx.fillRect(0, h*0.45, w, h*0.55);
+
+  for (let i = 0; i < 20; i++) {
+    const gx = (i * w / 20) + 10;
+    const gy = h*0.45 + Math.random()*5 + 3;
+    drawGrassTuft(ctx, gx, gy);
+  }
+
+  if (game) drawHouse(ctx, w*0.88, h*0.42, game.houseLevel);
+  drawFence(ctx, 0, h*0.48, w);
+}
+
+function drawCloud(ctx, x, y, size) {
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath(); ctx.arc(x, y, size*0.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x-size*0.4, y+size*0.1, size*0.35, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+size*0.4, y+size*0.1, size*0.4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x-size*0.2, y+size*0.25, size*0.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+size*0.2, y+size*0.25, size*0.35, 0, Math.PI*2); ctx.fill();
+}
+
+function drawGrassTuft(ctx, x, y) {
+  ctx.strokeStyle = '#3D8B5A'; ctx.lineWidth = 2;
+  for (let i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x + i*3, y - 8 - Math.abs(i)*2, x + i*4, y - 12 - Math.abs(i)*3);
+    ctx.stroke();
+  }
+}
+
+function drawHouse(ctx, x, y, level) {
+  const w = 20 + level * 15;
+  const h = 18 + level * 12;
+  ctx.fillStyle = '#DEB887';
+  ctx.fillRect(x - w/2, y - h, w, h);
+  ctx.strokeStyle = '#A0825C'; ctx.lineWidth = 2;
+  ctx.strokeRect(x - w/2, y - h, w, h);
+  ctx.fillStyle = '#FF6B6B';
+  ctx.beginPath();
+  ctx.moveTo(x - w/2 - 5, y - h);
+  ctx.lineTo(x, y - h - 15);
+  ctx.lineTo(x + w/2 + 5, y - h);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#D44'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#A0825C';
+  ctx.fillRect(x - 4, y - 12, 8, 12);
+  ctx.fillStyle = '#87CEEB';
+  for (let wi = 0; wi < level; wi++) {
+    const wx = x - w/2 + 8 + wi * 12;
+    ctx.fillRect(wx, y - h + 5, 6, 6);
+    ctx.strokeStyle = '#A0825C'; ctx.lineWidth = 1;
+    ctx.strokeRect(wx, y - h + 5, 6, 6);
+  }
+  ctx.fillStyle = '#FFD93D'; ctx.font = '10px Fredoka One'; ctx.textAlign = 'center';
+  ctx.fillText('Lv.' + level, x, y - h - 18);
+}
+
+function drawFence(ctx, x, y, totalW) {
+  ctx.strokeStyle = '#A0825C'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+totalW, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y+8); ctx.lineTo(x+totalW, y+8); ctx.stroke();
+  for (let px = 0; px < totalW; px += 30) {
+    ctx.fillStyle = '#DEB887';
+    ctx.fillRect(x+px, y-5, 4, 18);
+  }
+}
+
+// ===== FARM CANVAS DRAWING =====
+function drawFarmScene() {
+  if (!game || !farmCtx) return;
+  const ctx = farmCtx;
+  const W = farmCanvas.width;
+  const H = farmCanvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  drawBackgroundScene(ctx, W, H);
+
+  const plotCount = game.plots.length;
+  const cols = Math.min(plotCount, 4);
+  const rows = Math.ceil(plotCount / cols);
+  const plotW = Math.min((W - 40) / cols, 110);
+  const plotH = Math.min((H - 80) / rows, 110);
+  const startX = (W - cols * plotW) / 2;
+  const startY = 55;
+
+  for (let i = 0; i < plotCount; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const px = startX + col * plotW + 5;
+    const py = startY + row * plotH + 5;
+    const pw = plotW - 10;
+    const ph = plotH - 10;
+    drawPlot(ctx, px, py, pw, ph, game.plots[i], i === game.selectedPlot);
+  }
+
+  drawFloatingCoins(ctx);
+  animFrame++;
+}
+
+function drawPlot(ctx, x, y, w, h, plot, isSelected) {
+  if (plot.status === 'empty') {
+    ctx.fillStyle = '#C8A96E';
+    roundRect(ctx, x, y, w, h, 10); ctx.fill();
+    ctx.strokeStyle = '#9B7B4F'; ctx.lineWidth = 2;
+    roundRect(ctx, x, y, w, h, 10); ctx.stroke();
+    ctx.fillStyle = '#9B7B4F';
+    for (let dx = 5; dx < w-5; dx += 12) {
+      for (let dy = 8; dy < h-5; dy += 12) {
+        ctx.beginPath(); ctx.arc(x+dx+Math.random()*4, y+dy, 2, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    ctx.fillStyle = '#999'; ctx.font = '12px Fredoka One'; ctx.textAlign = 'center';
+    ctx.fillText('空地', x+w/2, y+h/2+4);
+  } else {
+    ctx.fillStyle = '#C8A96E';
+    roundRect(ctx, x, y, w, h, 10); ctx.fill();
+    ctx.strokeStyle = isSelected ? '#FF6B6B' : '#9B7B4F';
+    ctx.lineWidth = isSelected ? 3 : 2;
+    roundRect(ctx, x, y, w, h, 10); ctx.stroke();
+    if (isSelected) {
+      ctx.shadowColor = '#FF6B6B'; ctx.shadowBlur = 8;
+      roundRect(ctx, x, y, w, h, 10); ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    drawCartoonZombie(ctx, x + w/2, y + h*0.65, w, h, plot);
+  }
+
+  if (plot.status !== 'empty' && plot.growthProgress > 0 && plot.growthProgress < 100) {
+    const barW = w - 20, barH = 8;
+    const barX = x + 10, barY = y + h - 16;
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    roundRect(ctx, barX, barY, barW, barH, 4); ctx.fill();
+    const progColor = plot.status === 'seed' ? '#A67C52' : '#5DB075';
+    ctx.fillStyle = progColor;
+    roundRect(ctx, barX, barY, barW * plot.growthProgress / 100, barH, 4); ctx.fill();
+    ctx.fillStyle = '#FFF'; ctx.font = '9px Fredoka One'; ctx.textAlign = 'center';
+    ctx.fillText(Math.floor(plot.growthProgress) + '%', x+w/2, barY + 7);
+  }
+
+  if (plot.status !== 'empty') {
+    let statusText = '', textColor = '#3D3D3D';
+    if (plot.status === 'seed') { statusText = '种子'; textColor = '#A67C52'; }
+    else if (plot.status === 'growing') { statusText = '生长中'; textColor = '#5DB075'; }
+    else if (plot.status === 'mature') { statusText = '成熟!'; textColor = '#4ECDC4'; }
+    else if (plot.status === 'angry') { statusText = '暴走!'; textColor = '#FF6B6B'; }
+    ctx.fillStyle = textColor; ctx.font = '11px Fredoka One'; ctx.textAlign = 'center';
+    ctx.fillText(statusText, x+w/2, y+12);
+
+    if (plot.status === 'mature' && game.config.angryEnabled && plot.daysAsMature > 0) {
+      const daysLeft = game.config.angryDaysThreshold - plot.daysAsMature;
+      ctx.fillStyle = '#FF6B6B'; ctx.font = '9px Fredoka One';
+      ctx.fillText(daysLeft + '天后暴走!', x+w/2, y+22);
+    }
+
+    if (plot.caredForToday && plot.status !== 'mature' && plot.status !== 'angry') {
+      ctx.fillStyle = '#4ECDC4'; ctx.font = '9px Fredoka One';
+      ctx.fillText('♥ 已照顾', x+w/2, y+h-4);
+    }
+  }
+
+  if (plot.zombieType && plot.status !== 'empty') {
+    ctx.fillStyle = plot.zombieType.color; ctx.font = '9px Fredoka One'; ctx.textAlign = 'center';
+    ctx.fillText(plot.zombieType.name, x+w/2, y+h - 28);
+  }
+}
+
+// ===== CARTOON ZOMBIE DRAWING =====
+function drawCartoonZombie(ctx, cx, cy, plotW, plotH, plot) {
+  const progress = plot.growthProgress;
+  const status = plot.status;
+  ctx.save();
+  if (status === 'seed') drawSeedStage(ctx, cx, cy, progress);
+  else if (status === 'growing') drawGrowingStage(ctx, cx, cy, progress, plot);
+  else if (status === 'mature') drawMatureStage(ctx, cx, cy, plot, animFrame);
+  else if (status === 'angry') drawAngryStage(ctx, cx, cy, plot, animFrame);
+  ctx.restore();
+}
+
+function drawSeedStage(ctx, cx, cy, progress) {
+  const seedSize = 8 + progress * 0.05;
+  ctx.fillStyle = '#B8956A';
+  ctx.beginPath(); ctx.ellipse(cx, cy + 8, 18, 6, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#A67C52';
+  ctx.beginPath(); ctx.ellipse(cx, cy + 2, seedSize, seedSize * 0.7, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#7B5B3A'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(cx, cy + 2, seedSize, seedSize * 0.7, 0, 0, Math.PI*2); ctx.stroke();
+  if (progress > 15) {
+    ctx.strokeStyle = '#5DB075'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy + 2 - seedSize * 0.7); ctx.lineTo(cx, cy + 2 - seedSize * 0.7 - progress * 0.15); ctx.stroke();
+    if (progress > 25) {
+      ctx.fillStyle = '#7BC47F';
+      ctx.beginPath(); ctx.ellipse(cx + 3, cy + 2 - seedSize * 0.7 - progress * 0.12, 4, 2.5, 0.3, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+function drawGrowingStage(ctx, cx, cy, progress, plot) {
+  const emergeScale = Math.min(1, (progress - 10) / 80);
+  const bodyY = cy - emergeScale * 25;
+  const headSize = 8 + emergeScale * 8;
+  const bodyW = 6 + emergeScale * 6;
+  const bodyH = emergeScale * 20;
+  ctx.fillStyle = '#B8956A';
+  ctx.beginPath(); ctx.ellipse(cx, cy + 8, 20, 7, 0, 0, Math.PI*2); ctx.fill();
+  if (emergeScale > 0.1) {
+    const zColor = plot.zombieType ? plot.zombieType.color : '#5DB075';
+    ctx.fillStyle = zColor;
+    roundRect(ctx, cx - bodyW/2, bodyY, bodyW, bodyH, 4); ctx.fill();
+    ctx.strokeStyle = darkenColor(zColor, 30); ctx.lineWidth = 1.5;
+    roundRect(ctx, cx - bodyW/2, bodyY, bodyW, bodyH, 4); ctx.stroke();
+    ctx.fillStyle = zColor;
+    ctx.beginPath(); ctx.arc(cx, bodyY - headSize*0.3, headSize, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = darkenColor(zColor, 30); ctx.lineWidth = 1.5; ctx.stroke();
+    if (emergeScale > 0.3) {
+      const eyeOpenness = Math.min(1, (emergeScale - 0.3) / 0.5);
+      ctx.fillStyle = '#FFF';
+      ctx.beginPath(); ctx.ellipse(cx - headSize*0.3, bodyY - headSize*0.3, 3, 2 + eyeOpenness * 2, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx + headSize*0.3, bodyY - headSize*0.3, 3, 2 + eyeOpenness * 2, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#3D3D3D';
+      ctx.beginPath(); ctx.arc(cx - headSize*0.3, bodyY - headSize*0.3, 1.5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + headSize*0.3, bodyY - headSize*0.3, 1.5, 0, Math.PI*2); ctx.fill();
+    }
+    if (emergeScale > 0.5) {
+      const armLen = emergeScale * 10;
+      ctx.strokeStyle = zColor; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(cx - bodyW/2, bodyY + bodyH*0.3); ctx.lineTo(cx - bodyW/2 - armLen, bodyY + bodyH*0.3 + 5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + bodyW/2, bodyY + bodyH*0.3); ctx.lineTo(cx + bodyW/2 + armLen, bodyY + bodyH*0.3 + 5); ctx.stroke();
+    }
+    if (emergeScale > 0.6) {
+      ctx.strokeStyle = '#3D3D3D'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, bodyY + headSize*0.3, headSize*0.3 * emergeScale, 0, Math.PI); ctx.stroke();
+    }
+  }
+  ctx.fillStyle = '#5DB075'; ctx.font = 'bold 11px Fredoka One'; ctx.textAlign = 'center';
+  ctx.fillText(Math.floor(progress) + '%', cx, cy + 20);
+}
+
+function drawMatureStage(ctx, cx, cy, plot, frame) {
+  const bounce = Math.sin(frame * 0.08) * 3;
+  const headSize = 16, bodyW = 14, bodyH = 22;
+  const zColor = plot.zombieType ? plot.zombieType.color : '#5DB075';
+  const headY = cy - bodyH - headSize + bounce;
+  const bodyTopY = cy - bodyH + bounce;
+
+  ctx.fillStyle = zColor;
+  roundRect(ctx, cx - bodyW/2, bodyTopY, bodyW, bodyH, 5); ctx.fill();
+  ctx.strokeStyle = darkenColor(zColor, 30); ctx.lineWidth = 2;
+  roundRect(ctx, cx - bodyW/2, bodyTopY, bodyW, bodyH, 5); ctx.stroke();
+
+  ctx.fillStyle = zColor;
+  ctx.beginPath(); ctx.arc(cx, headY, headSize, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = darkenColor(zColor, 30); ctx.lineWidth = 2; ctx.stroke();
+
+  ctx.fillStyle = '#FFF';
+  ctx.beginPath(); ctx.ellipse(cx - 5, headY - 2, 4, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx + 5, headY - 2, 4, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#3D3D3D';
+  ctx.beginPath(); ctx.arc(cx - 5 + Math.sin(frame*0.03)*0.5, headY - 2, 2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + 5 + Math.sin(frame*0.03)*0.5, headY - 2, 2, 0, Math.PI*2); ctx.fill();
+
+  ctx.strokeStyle = '#3D3D3D'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, headY + 6, 5, 0.2, Math.PI - 0.2); ctx.stroke();
+  ctx.fillStyle = '#FFF';
+  ctx.fillRect(cx - 3, headY + 7, 2, 3);
+  ctx.fillRect(cx + 1, headY + 7, 2, 3);
+
+  const armWave = Math.sin(frame * 0.1) * 8;
+  ctx.strokeStyle = zColor; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx - bodyW/2, bodyTopY + 8); ctx.lineTo(cx - bodyW/2 - 12, bodyTopY + 8 + armWave); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + bodyW/2, bodyTopY + 8); ctx.lineTo(cx + bodyW/2 + 12, bodyTopY + 8 - armWave); ctx.stroke();
+
+  const glowAlpha = 0.3 + Math.sin(frame * 0.06) * 0.2;
+  ctx.fillStyle = 'rgba(78,205,196,' + glowAlpha + ')';
+  ctx.beginPath(); ctx.arc(cx, headY - headSize + 5, 4 + Math.sin(frame*0.1)*2, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#4ECDC4'; ctx.font = 'bold 12px Fredoka One'; ctx.textAlign = 'center';
+  ctx.fillText('收获! 💰', cx, cy + 8);
+}
+
+function drawAngryStage(ctx, cx, cy, plot, frame) {
+  const shake = Math.sin(frame * 0.5) * 4;
+  const headSize = 18, bodyW = 16, bodyH = 24;
+  const headY = cy - bodyH - headSize + shake;
+  const bodyTopY = cy - bodyH + shake;
+
+  ctx.fillStyle = '#FF6B6B';
+  roundRect(ctx, cx - bodyW/2 + shake*0.5, bodyTopY, bodyW, bodyH, 5); ctx.fill();
+  ctx.strokeStyle = '#D44'; ctx.lineWidth = 2;
+  roundRect(ctx, cx - bodyW/2 + shake*0.5, bodyTopY, bodyW, bodyH, 5); ctx.stroke();
+
+  ctx.fillStyle = '#FF6B6B';
+  ctx.beginPath(); ctx.arc(cx + shake*0.5, headY, headSize, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#D44'; ctx.lineWidth = 2; ctx.stroke();
+
+  ctx.fillStyle = '#FF0000';
+  ctx.beginPath(); ctx.ellipse(cx + shake*0.5 - 6, headY - 3, 4, 3, -0.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx + shake*0.5 + 6, headY - 3, 4, 3, 0.3, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#3D3D3D';
+  ctx.beginPath(); ctx.arc(cx + shake*0.5 - 6, headY - 3, 1.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + shake*0.5 + 6, headY - 3, 1.5, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#3D3D3D';
+  ctx.beginPath(); ctx.arc(cx + shake*0.5, headY + 8, 7, 0, Math.PI); ctx.fill();
+  ctx.fillStyle = '#FFF';
+  for (let t = -5; t <= 5; t += 3) ctx.fillRect(cx + shake*0.5 + t, headY + 8, 2, 4);
+
+  ctx.strokeStyle = '#FF6B6B'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx - bodyW/2 + shake*0.5, bodyTopY + 8); ctx.lineTo(cx - bodyW/2 - 15 + shake, bodyTopY + 5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + bodyW/2 + shake*0.5, bodyTopY + 8); ctx.lineTo(cx + bodyW/2 + 15 + shake, bodyTopY + 5); ctx.stroke();
+
+  ctx.strokeStyle = '#FF6B6B'; ctx.lineWidth = 2;
+  for (let s = 0; s < 3; s++) {
+    const sy = headY - headSize - 8 - s * 6;
+    const sx = cx + shake*0.5 + (s-1) * 5;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx + 3 + Math.sin(frame*0.3)*2, sy - 4, sx, sy - 8); ctx.stroke();
+  }
+
+  ctx.fillStyle = '#FF6B6B'; ctx.font = 'bold 13px Fredoka One'; ctx.textAlign = 'center';
+  ctx.fillText('⚠ 暴走!', cx, cy + 10);
+}
+
+function drawFloatingCoins(ctx) {
+  for (let i = floatingCoins.length - 1; i >= 0; i--) {
+    const coin = floatingCoins[i];
+    coin.y -= 1.5; coin.alpha -= 0.02;
+    if (coin.alpha <= 0) { floatingCoins.splice(i, 1); continue; }
+    ctx.globalAlpha = coin.alpha;
+    ctx.fillStyle = '#FFD93D';
+    ctx.beginPath(); ctx.arc(coin.x, coin.y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#C8A96E'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#3D3D3D'; ctx.font = 'bold 8px Fredoka One'; ctx.textAlign = 'center';
+    ctx.fillText('¥', coin.x, coin.y + 3);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnCoinAt(x, y) {
+  for (let i = 0; i < 5; i++) floatingCoins.push({ x: x + Math.random()*20 - 10, y: y + Math.random()*10, alpha: 1 });
+}
+
+// ===== DRAWING UTILITIES =====
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function darkenColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3), 16) - amount;
+  let g = parseInt(hex.slice(3,5), 16) - amount;
+  let b = parseInt(hex.slice(5,7), 16) - amount;
+  r = Math.max(0, r); g = Math.max(0, g); b = Math.max(0, b);
+  return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
+}
+
+// ===== BACKGROUND CANVAS =====
+function initBgCanvas() {
+  bgCanvas = document.getElementById('bg-scene');
+  bgCtx = bgCanvas.getContext('2d');
+  resizeBgCanvas();
+}
+function resizeBgCanvas() {
+  if (!bgCanvas) return;
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+initBgCanvas();
+
+function drawBgLoop() {
+  if (!bgCtx) return;
+  const W = bgCanvas.width, H = bgCanvas.height;
+  bgCtx.clearRect(0, 0, W, H);
+  if (!game) {
+    const skyGrad = bgCtx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, '#87CEEB');
+    skyGrad.addColorStop(0.5, '#E0F7FA');
+    skyGrad.addColorStop(1, '#5DB075');
+    bgCtx.fillStyle = skyGrad;
+    bgCtx.fillRect(0, 0, W, H);
+    drawCloud(bgCtx, W*0.15 + animFrame*0.3 % W, H*0.1, 60);
+    drawCloud(bgCtx, W*0.45 + animFrame*0.2 % W, H*0.18, 45);
+    drawCloud(bgCtx, W*0.75 + animFrame*0.25 % W, H*0.08, 50);
+  }
+  animFrame++;
+  requestAnimationFrame(drawBgLoop);
+}
+drawBgLoop();
+
+function drawStartZombie() {
+  const c = document.getElementById('start-zombie-canvas');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 120, 120);
+  const cx = 60, cy = 80, frame = animFrame;
+  const bounce = Math.sin(frame * 0.08) * 5;
+
+  ctx.fillStyle = '#5DB075';
+  roundRect(ctx, cx-20, 50+bounce, 40, 40, 8); ctx.fill();
+  ctx.strokeStyle = '#3D8B5A'; ctx.lineWidth = 3;
+  roundRect(ctx, cx-20, 50+bounce, 40, 40, 8); ctx.stroke();
+
+  ctx.fillStyle = '#5DB075';
+  ctx.beginPath(); ctx.arc(cx, 30+bounce, 25, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#3D8B5A'; ctx.lineWidth = 3; ctx.stroke();
+
+  ctx.fillStyle = '#FFF';
+  ctx.beginPath(); ctx.ellipse(cx-8, 28+bounce, 6, 7, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+8, 28+bounce, 6, 7, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#3D3D3D';
+  ctx.beginPath(); ctx.arc(cx-8, 28+bounce, 3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+8, 28+bounce, 3, 0, Math.PI*2); ctx.fill();
+
+  ctx.strokeStyle = '#3D3D3D'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, 38+bounce, 8, 0.2, Math.PI-0.2); ctx.stroke();
+  ctx.fillStyle = '#FFF';
+  ctx.fillRect(cx-5, 39+bounce, 3, 4);
+  ctx.fillRect(cx+2, 39+bounce, 3, 4);
+
+  const armWave = Math.sin(frame * 0.1) * 10;
+  ctx.strokeStyle = '#5DB075'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx-20, 60+bounce); ctx.lineTo(cx-35, 55+bounce+armWave); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+20, 60+bounce); ctx.lineTo(cx+35, 55+bounce-armWave); ctx.stroke();
+
+  ctx.fillStyle = '#FFD93D';
+  ctx.beginPath(); ctx.arc(cx, 10+bounce, 6+Math.sin(frame*0.1)*2, 0, Math.PI*2); ctx.fill();
+
+  requestAnimationFrame(drawStartZombie);
+}
+drawStartZombie();
+
+// ===== ANIMATION LOOP =====
+let lastPlotCount = 0;
+function farmAnimLoop() {
+  if (game && game.plots.length !== lastPlotCount) {
+    resizeFarmCanvas();
+    lastPlotCount = game.plots.length;
+  }
+  if (game) drawFarmScene();
+  requestAnimationFrame(farmAnimLoop);
+}
+farmAnimLoop();
+
+// ===== CANVAS CLICK HANDLING =====
+document.getElementById('farm-canvas').addEventListener('click', (e) => {
+  if (!game) return;
+  const rect = farmCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const W = farmCanvas.width;
+  const H = farmCanvas.height;
+  const plotCount = game.plots.length;
+  const cols = Math.min(plotCount, 4);
+  const rows = Math.ceil(plotCount / cols);
+  const plotW = Math.min((W - 40) / cols, 110);
+  const plotH = Math.min((H - 80) / rows, 110);
+  const startX = (W - cols * plotW) / 2;
+  const startY = 55;
+
+  for (let i = 0; i < plotCount; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const px = startX + col * plotW;
+    const py = startY + row * plotH;
+    if (mx >= px && mx < px + plotW && my >= py && my < py + plotH) {
+      game.selectedPlot = i;
+      updateAllUI();
+      return;
+    }
+  }
+  game.selectedPlot = -1;
+  updateAllUI();
+});
+</script>
+</body>
+</html>

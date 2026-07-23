@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process — PASSWORD</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8fab'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%F0%9F%A7%AA%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-mark">🧪</span>
+      PASSWORD
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="domain.html">Domain &amp; Systems</a>
+      <a href="process.html" class="active">Process</a>
+      <a href="game.html">Play</a>
+      <a href="../process.html" style="font-size: 0.85em; opacity: 0.6;">中文</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">Human × AI Log</div>
+        <h1 class="section-title">Development Process</h1>
+        <p class="section-lead">
+          An honest project build timeline — including mistakes, revisions, and the decisions
+          behind AI suggestions that were accepted, modified, or rejected. This page is a
+          web-summary of <code>agent-development-log.md</code> in the project root.
+        </p>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · Step 1</div>
+            <div class="timeline-title">Establish Project Identity</div>
+            <div class="timeline-body">
+              Student: <strong>ELSA ZHANGYIQING</strong>. Project title: <strong>PASSWORD</strong>.
+              Domain: <em>Chemistry &amp; Escape Room</em>. Tool: AI coding assistant
+              (Track A — no build step, pure HTML/CSS/JS + Canvas 2D).
+              Core learning shift recorded: <em>"Novices think an escape room is about getting
+              out; experts know it's about reading the environment, developing logic, and
+              using tools comprehensively."</em>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · Step 2</div>
+            <div class="timeline-title">Design Brief &amp; System Diagram Locked</div>
+            <div class="timeline-body">
+              Wrote the <em>development brief</em>, covering identity, design summary, the
+              observe→judge→act→read feedback→adjust loop, the environment/player/system data
+              model, rules, three challenge presets, web-game technical dependencies, the
+              integrated project website requirements, and the human–AI log protocol. The
+              system diagram (made in Canva) was exported into the design summary, giving
+              implementation a clear direction.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · Step 3</div>
+            <div class="timeline-title">Scaffold Project Structure</div>
+            <div class="timeline-body">
+              Created the expected file structure per the brief: <code>exhibition/</code> for the
+              final static site (<code>index.html</code>, <code>game.html</code>,
+              <code>domain.html</code>, <code>process.html</code>, and <code>assets/</code>
+              holding CSS, JS, and images), with <code>source/</code> as a mirror for editable
+              source. Initialized <code>agent-development-log.md</code> with the required header
+              and interaction record 01.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · Step 4</div>
+            <div class="timeline-title">Game Engine Implementation (Track A)</div>
+            <div class="timeline-body">
+              Built the playable game in pure HTML + CSS + Canvas 2D + vanilla JS —
+              no build step, no CDN dependencies. The game implements the full
+              observe→judge→act→feedback→adjust loop:
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li>Four-direction movement + circular collision detection</li>
+                <li>3 challenge presets with different time limits, sprite counts, and recipe complexity</li>
+                <li>Lab bench: explicit mix→filter→heat→evaporate steps</li>
+                <li>Sprite AI: patrol (Level 1) and chase (Levels 2 and 3)</li>
+                <li>Health bar, countdown timer, chemical counters, screen shake</li>
+                <li>Purple smoke and flash particle effects on reaction success/failure</li>
+                <li>Win/lose screens with health lost, time used, and chemical stats</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · Step 5</div>
+            <div class="timeline-title">Build the Website Around the Game</div>
+            <div class="timeline-body">
+              Built the four required web pages in the same Track A static style:
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li><strong>Home</strong> — game concept, core learning shift, level overview</li>
+                <li><strong>Domain &amp; Systems</strong> — domain knowledge, novice misconceptions, system diagram, feedback transitions</li>
+                <li><strong>Development Process</strong> — this timeline, a development log summary</li>
+                <li><strong>Play</strong> — direct entry into the playable game, with level selection</li>
+              </ul>
+              All navigation and assets use relative paths so the build output can be dropped
+              straight into an exhibition subfolder.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · Step 6</div>
+            <div class="timeline-title">Visual Restyle — Surreal Cute</div>
+            <div class="timeline-body">
+              Student feedback: the original dark sci-fi style felt off. The entire visual
+              language was redesigned as <strong>surreal cute</strong>: soft lavender/mint/pink
+              palette, rounded candy walls, checkerboard floors, a cat-eared protagonist with
+              blush, big-eyed purple ghost sprites, potion bottles marked with stars, magic
+              portal exits, heart/star/bubble particle effects, and floating background
+              decorations. NPC speed was lowered at the same time, an objective hint bar was
+              added, and the lab-bench popup was rebuilt (with numbered recipe steps and a
+              progress bar). All four website pages were updated in sync.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-20 · Step 7</div>
+            <div class="timeline-title">Audio, Visual Polish &amp; Story Immersion</div>
+            <div class="timeline-body">
+              The student requested several enhancements to boost the game's appeal and
+              readability:
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li><strong>BGM background music:</strong> Web Audio API synthesized 8-bit melody, inspired by Snake. A cheerful C-major pentatonic loop that plays during the game and lab bench, and stops on menus and end screens.</li>
+                <li><strong>Item scale 2.5×:</strong> chemical bottles and notes were enlarged so players can read formula labels even at exhibition resolution (1920×1080).</li>
+                <li><strong>Lab bench cutified:</strong> restyled as a warm wood-table lab bench with floating equipment decorations (🧪⚗️🔬🧫), rounded buttons, gradient background, and hover animations.</li>
+                <li><strong>Celebration system:</strong> a successful experiment triggers a special celebration sound (triangle-wave rising chord) + a full-screen "SUCCEED!" animation (rainbow gradient shimmer), 30 star emojis, and 60 colorful confetti particles.</li>
+                <li><strong>Story opening animation:</strong> before each level a story cutscene plays — featuring a CSS-drawn chemist protagonist (round head, goggles, lab coat, flask, with blink, arm-swing, and float animations). Text is revealed with a typewriter effect. The countdown only starts after the player clicks "Start Mission". Each level has its own themed scene particles (hospital 💊🩺, factory 💧🏭, darkroom 📷🎞️).</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-21 · Step 8</div>
+            <div class="timeline-title">Bug Fix &amp; Final Submission Review</div>
+            <div class="timeline-body">
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li><strong>Critical bug fix:</strong> the <code>addChemical()</code> function had an operator-precedence error — <code>!arr.indexOf(key) >= 0</code> is always <code>true</code> in JavaScript, so every chemical addition was treated as an error. Fixed to <code>indexOf(key) === -1</code>.</li>
+                <li><strong>Data consistency sweep:</strong> unified all level names, times, and descriptions across 4 files (game.html, game.js, README.md, story-opening text). Fixed the Level 3 time inconsistency (some places showed 40s; the actual value is 60s).</li>
+                <li><strong>Documentation updates:</strong> updated the README challenge-preset table, THIRD_PARTY.md (clarified Web Audio API synthesis), submission-manifest.json (removed the outdated "no sound effects" issue, added the bug-fix record and feature summary), and agent-development-log.md (added interaction record 04).</li>
+                <li><strong>Level 3 time:</strong> extended from 40s to 60s to improve playability with 4 NPCs and the complex 4-step reaction.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">Next</div>
+            <div class="timeline-title">Student Reflection &amp; Submission</div>
+            <div class="timeline-body">
+              The student should experience the full game with all enhancements, confirm
+              the public-display authorization, and write a final reflection:
+              does the game in its current form still help players experience the intended
+              domain learning shift? Which AI suggestions did the student accept, reject,
+              or modify — and why?
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="section-eyebrow">Files &amp; Sources</div>
+        <h2 class="section-title">Where the Truth Lives</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>📄 development-brief.md</h3>
+            <p>The full design brief — domain, learning shift, data model, rules, technical dependencies, log protocol, submission review.</p>
+          </div>
+          <div class="card">
+            <h3>📓 agent-development-log.md</h3>
+            <p>A chronological interaction/reflection log. The full version (with original student requests and AI replies) lives in the project root.</p>
+          </div>
+          <div class="card">
+            <h3>📊 system-graph</h3>
+            <p>The original design whiteboard from Canva, presented as a table on the Domain &amp; Systems page.</p>
+          </div>
+          <div class="card">
+            <h3>📦 submission-manifest.json</h3>
+            <p>Group, project title, entry page, game page, known issues, exhibition resolution, public-display authorization.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      IMA Summer Program · Group 1 · ELSA ZHANGYIQING · 2026
+    </footer>
+  </main>
+</body>
+</html>

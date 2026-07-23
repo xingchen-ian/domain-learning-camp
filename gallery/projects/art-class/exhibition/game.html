@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美术课 — 描红练习</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  background:#3a2f28;display:flex;justify-content:center;align-items:center;
+  min-height:100vh;overflow:hidden;user-select:none;-webkit-user-select:none
+}
+#game-wrapper{
+  position:relative;width:900px;height:650px;
+  border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.5)
+}
+canvas{display:block;width:100%;height:100%}
+#hud{
+  position:absolute;top:12px;left:0;right:0;display:flex;
+  justify-content:space-between;align-items:center;padding:0 24px;
+  pointer-events:none;z-index:10
+}
+.hud-item{
+  background:rgba(0,0,0,0.55);color:#fff;padding:6px 16px;
+  border-radius:20px;font-size:15px;font-weight:600;letter-spacing:1px
+}
+#timer.warning{color:#ff6b6b;animation:pulse 0.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+#distraction-overlay{
+  position:absolute;pointer-events:none;z-index:20;display:flex;
+  align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s
+}
+#distraction-overlay.active{opacity:1}
+.distraction-content{
+  background:rgba(0,0,0,0.75);color:#fff;padding:10px 20px;
+  border-radius:12px;font-size:16px;white-space:nowrap;display:flex;
+  align-items:center;gap:10px
+}
+.distraction-icon{font-size:24px}
+#hint-text{
+  position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
+  color:rgba(180,180,180,0.7);font-size:16px;pointer-events:none;
+  z-index:5;transition:opacity 0.5s
+}
+.overlay{
+  position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;transition:opacity 0.5s
+}
+#intro-screen{
+  background:linear-gradient(135deg,#4a3728 0%,#5c4433 50%,#3a2f28 100%);color:#fff
+}
+#intro-screen h1{font-size:48px;margin-bottom:8px;letter-spacing:4px}
+#intro-screen .subtitle{font-size:20px;opacity:0.8;margin-bottom:40px}
+#intro-screen .desc{
+  font-size:14px;opacity:0.6;max-width:500px;text-align:center;
+  line-height:1.8;margin-bottom:40px
+}
+#intro-screen .desc strong{color:#e8a850;opacity:1}
+#btn-start{
+  padding:14px 48px;font-size:20px;border:2px solid #fff;background:transparent;
+  color:#fff;border-radius:30px;cursor:pointer;transition:all 0.3s;
+  font-family:inherit;letter-spacing:2px
+}
+#btn-start:hover{background:#fff;color:#3a2f28}
+#end-screen{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:#2a2520;color:#fff;border-radius:16px;padding:36px 40px;
+  width:440px;max-height:80vh;overflow-y:auto;z-index:70;display:none;
+  flex-direction:column;align-items:center;box-shadow:0 12px 48px rgba(0,0,0,0.6)
+}
+#end-screen h2{font-size:32px;margin-bottom:4px}
+#end-screen .end-subtitle{font-size:13px;opacity:0.5;margin-bottom:20px}
+#results{width:100%;margin-bottom:24px;max-height:50vh;overflow-y:auto}
+.result-row{
+  display:flex;justify-content:space-between;padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,0.1);font-size:15px
+}
+.result-row .label{opacity:0.7}
+.result-row .value{font-weight:700}
+.result-row .value.bad{color:#ff6b6b}
+.result-row .value.good{color:#5bcc5a}
+.char-scores{margin-top:10px}
+.char-scores .result-row{border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px}
+.section-title{padding:8px 0;font-size:13px;opacity:0.5;text-transform:uppercase;letter-spacing:2px}
+.result-summary{
+  margin-top:20px;padding:16px;background:rgba(255,255,255,0.08);
+  border-radius:12px;font-size:15px;line-height:1.8;text-align:center
+}
+.result-summary strong{color:#e8a850}
+.pass-badge{display:inline-block;padding:4px 14px;border-radius:12px;font-size:14px;font-weight:700;margin-bottom:8px}
+.pass-badge.pass{background:#5bcc5a;color:#1a4a1a}
+.pass-badge.fail{background:#cc5a5a;color:#4a1a1a}
+#btn-return-home{
+  padding:12px 36px;font-size:16px;border:2px solid #fff;background:transparent;
+  color:#fff;border-radius:30px;cursor:pointer;transition:all 0.3s;
+  font-family:inherit;letter-spacing:2px
+}
+#btn-return-home:hover{background:#fff;color:#3a2f28}
+#blackout{
+  position:absolute;inset:0;background:rgba(0,0,0,0.92);z-index:65;
+  display:none;pointer-events:all
+}
+#blackout.active{display:block}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+  <canvas id="game-canvas"></canvas>
+  <div id="hud">
+    <div class="hud-item" id="timer">⏱ 25</div>
+    <div class="hud-item" id="accuracy-display">—</div>
+  </div>
+  <div id="distraction-overlay"></div>
+  <div id="hint-text">在纸上描红写字</div>
+  <div class="overlay" id="intro-screen">
+    <h1>🎨 美术课</h1>
+    <div class="subtitle">描红练习</div>
+    <div class="desc">
+      这是一节普通的<strong>描红课</strong>。<br>
+      你需要在田字格中描摹汉字。<br><br>
+      但有些事情，<br>
+      不像看起来那么简单。
+    </div>
+    <button id="btn-start" type="button">开始上课</button>
+  </div>
+  <div class="overlay" id="end-screen">
+    <h2>🔔 下课了</h2>
+    <div class="end-subtitle" id="end-grade"></div>
+    <div id="results"></div>
+    <button id="btn-return-home" type="button">返回首页</button>
+  </div>
+  <div id="blackout"></div>
+</div>
+
+<script>
+// ==================== CONFIGURATION ====================
+const TARGET_CHARS = ["学","习"];
+const CFG = {
+  gameDuration: 25,
+  characters: TARGET_CHARS,
+  paperX:175,paperY:65,paperW:550,paperH:400,
+  // Two grid zones side-by-side
+  leftGridCX: 175+550*0.28, rightGridCX: 175+550*0.72,
+  gridCY: 65+400/2-15, gridSize:170,
+  charFont:'"KaiTi","STKaiti","楷体","SimKai",serif',charFontSize:100,
+  refLineWidth:7,drawLineWidth:5,drawColor:'#2a2a2a',
+  refColor:'rgba(175,170,160,0.5)',
+  // Distractions
+  interruptionMinInterval:6,interruptionMaxInterval:15,
+  distractionMinDuration:1.0,distractionMaxDuration:2.5,
+  // Motor events (shake → lostControl → pencil drop)
+  motorEventMinInterval:7,motorEventMaxInterval:15,
+  motorEventMinDuration:1.5,motorEventMaxDuration:3.0,
+  motorEventCooldown:4,
+  shakeFrequency:14,shakeMaxAmplitude:6,
+  // Pencil slip (independent from motor events — rolls across desk)
+  slipMinInterval:10,slipMaxInterval:20,slipCooldown:6,
+  slipRollDuration:3.0,slipRetrieveRadius:55,
+  // Pencil geometry
+  pencilTotalLen:78,pencilGripOffset:32,
+  defaultPencilAngle:52,
+  // Accuracy
+  accuracySampleRate:3,
+  // Pass threshold
+  passAccuracy:0.70,
+};
+
+// ==================== DOM ====================
+const wrapper=document.getElementById('game-wrapper');
+const canvas=document.getElementById('game-canvas');
+const ctx=canvas.getContext('2d');
+const timerEl=document.getElementById('timer');
+const accuracyEl=document.getElementById('accuracy-display');
+const distractionOverlay=document.getElementById('distraction-overlay');
+const hintText=document.getElementById('hint-text');
+const introScreen=document.getElementById('intro-screen');
+const endScreen=document.getElementById('end-screen');
+const resultsEl=document.getElementById('results');
+const endGrade=document.getElementById('end-grade');
+const btnStart=document.getElementById('btn-start');
+const btnReturnHome=document.getElementById('btn-return-home');
+const blackout=document.getElementById('blackout');
+
+// ==================== AUDIO ====================
+let audioCtx=null;
+function initAudio(){if(audioCtx)return;try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+function playTone(f,d,t='sine',v=0.08){
+  if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+d);
+  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d);
+}
+function playNoise(d,v=0.04){
+  if(!audioCtx)return;const b=audioCtx.createBuffer(1,audioCtx.sampleRate*d,audioCtx.sampleRate);
+  const data=b.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;
+  const s=audioCtx.createBufferSource(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter();
+  f.type='bandpass';f.frequency.value=2000;f.Q.value=0.5;s.buffer=b;
+  g.gain.setValueAtTime(v,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+d);
+  s.connect(f);f.connect(g);g.connect(audioCtx.destination);s.start();s.stop(audioCtx.currentTime+d);
+}
+
+// ==================== GAME STATE ====================
+const game={
+  phase:'intro',
+  timeLeft:CFG.gameDuration,
+  allStrokes:[],allCharAccuracies:[],
+  // Pencil grip (mouse position)
+  pencilX:0,pencilY:0,pencilAngle:CFG.defaultPencilAngle,targetPencilAngle:CFG.defaultPencilAngle,
+  // Motor state
+  motorState:'stable',shakeIntensity:0,shakeOffsetX:0,shakeOffsetY:0,shakeAngleOffset:0,shakePhase:0,
+  nextMotorEventTime:0,motorEventEndTime:0,motorEventStartTime:0,motorEventCooldownEnd:0,
+  lostControlEndTime:0,
+  // Pencil drop (from motor instability)
+  fallenPencilX:0,fallenPencilY:0,isRetrieving:false,retrieveOffsetX:0,retrieveOffsetY:0,
+  dropCooldownTimer:0,
+  // Pencil slip (independent random roll across desk)
+  slipPencilX:0,slipPencilY:0,slipAngle:0,slipVelocityX:0,slipVelocityY:0,
+  slipRollSpeed:0,slipEndTime:0,slipCooldownEnd:0,nextSlipTime:0,
+  slipPendingReplenish:false,slipReplenishEnd:0,
+  // Drawing
+  isDrawing:false,currentStroke:[],
+  // Camera
+  cameraRot:0,cameraTx:0,cameraTy:0,targetCameraRot:0,targetCameraTx:0,targetCameraTy:0,
+  // Interruption
+  nextInterruptionTime:0,distractionEndTime:0,currentDistraction:null,
+  lastTimestamp:0,gameStartTime:0,
+};
+
+const stats={
+  distractedTime:0,pencilRetrievalTime:0,writingTime:0,
+  pencilDropCount:0,distractionCount:0,slipCount:0,slipRetrieveTime:0,
+  distractionStart:0,retrievalStart:0,slipEventStart:0,
+};
+
+let gameActive=false;
+let timerInterval=null;
+
+function resetGame(){
+  game.phase='playing';game.timeLeft=CFG.gameDuration;
+  game.allStrokes=[];game.allCharAccuracies=[];
+  game.pencilAngle=CFG.defaultPencilAngle;game.targetPencilAngle=CFG.defaultPencilAngle;
+  game.motorState='stable';game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;
+  game.shakeAngleOffset=0;game.shakePhase=Math.random()*100;
+  game.isRetrieving=false;game.dropCooldownTimer=0;
+  game.slipPendingReplenish=false;game.slipReplenishEnd=0;
+  game.isDrawing=false;game.currentStroke=[];
+  game.cameraRot=0;game.cameraTx=0;game.cameraTy=0;game.targetCameraRot=0;game.targetCameraTx=0;game.targetCameraTy=0;
+  game.nextInterruptionTime=3+Math.random()*5;game.distractionEndTime=0;game.currentDistraction=null;
+  game.nextMotorEventTime=5+Math.random()*7;game.motorEventEndTime=0;game.motorEventStartTime=0;
+  game.motorEventCooldownEnd=0;game.lostControlEndTime=0;
+  game.slipCooldownEnd=0;game.nextSlipTime=8+Math.random()*8;
+  game.lastTimestamp=0;game.gameStartTime=0;
+  stats.distractedTime=0;stats.pencilRetrievalTime=0;stats.writingTime=0;
+  stats.pencilDropCount=0;stats.distractionCount=0;stats.slipCount=0;stats.slipRetrieveTime=0;
+  stats.distractionStart=0;stats.retrievalStart=0;stats.slipEventStart=0;
+}
+
+// ==================== DISTRACTIONS ====================
+const distractionPool=[
+  {id:'bird',text:'窗外有小鸟在叽叽喳喳',icon:'🐦',dir:'tr'},
+  {id:'footsteps',text:'走廊里传来脚步声',icon:'👣',dir:'l'},
+  {id:'chatter',text:'教室里有人在说话',icon:'💬',dir:'r'},
+  {id:'door',text:'教室门吱呀一声开了',icon:'🚪',dir:'tl'},
+  {id:'object',text:'有东西掉在地上了',icon:'📦',dir:'b'},
+  {id:'sunlight',text:'窗外的阳光忽然好刺眼',icon:'☀️',dir:'center'},
+  {id:'pencilSlip',text:'铅笔在纸上打了个滑',icon:'✏️',dir:'center'},
+];
+function getRandomDistraction(){return distractionPool[Math.floor(Math.random()*distractionPool.length)]}
+
+// ==================== CANVAS ====================
+function resizeCanvas(){
+  const r=wrapper.getBoundingClientRect();
+  canvas.width=r.width*(window.devicePixelRatio||1);
+  canvas.height=r.height*(window.devicePixelRatio||1);
+  ctx.setTransform(1,0,0,1,0,0);ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+
+// ==================== PENCIL GEOMETRY HELPERS ====================
+function getPencilTip(gx,gy,angleDeg){
+  const r=angleDeg*Math.PI/180;
+  const tipLen=CFG.pencilGripOffset+5;
+  return{x:gx+tipLen*Math.cos(r),y:gy+tipLen*Math.sin(r)};
+}
+function getActualTip(){
+  const tip=getPencilTip(game.pencilX,game.pencilY,game.pencilAngle);
+  return{x:tip.x+game.shakeOffsetX,y:tip.y+game.shakeOffsetY};
+}
+function isOnPaper(x,y){
+  const p=CFG;
+  return x>p.paperX+20&&x<p.paperX+p.paperW-20&&y>p.paperY+30&&y<p.paperY+p.paperH-30;
+}
+
+// ==================== RENDER: BACKGROUND ====================
+function drawDesk(){
+  const W=canvas.width/(window.devicePixelRatio||1),H=canvas.height/(window.devicePixelRatio||1);
+  const g=ctx.createLinearGradient(0,0,0,H*0.45);g.addColorStop(0,'#e8dfd5');g.addColorStop(1,'#d5c9b8');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H*0.45);
+  const dg=ctx.createLinearGradient(0,H*0.45,0,H);dg.addColorStop(0,'#b8956a');dg.addColorStop(0.3,'#a07850');dg.addColorStop(1,'#7a5535');
+  ctx.fillStyle=dg;ctx.fillRect(0,H*0.45,W,H*0.55);
+  ctx.fillStyle='#6b4530';ctx.fillRect(0,H*0.45,W,3);
+  ctx.fillStyle='rgba(0,0,0,0.1)';ctx.fillRect(0,H*0.45+3,W,12);
+  ctx.strokeStyle='rgba(0,0,0,0.06)';ctx.lineWidth=1;
+  for(let i=0;i<15;i++){const y=H*0.45+30+i*22;ctx.beginPath();ctx.moveTo(0,y);for(let x=0;x<W;x+=40)ctx.lineTo(x+40,y+Math.sin(x*0.008+i)*4);ctx.stroke()}
+}
+
+function drawPaper(){
+  const p=CFG;
+  ctx.fillStyle='rgba(0,0,0,0.15)';ctx.fillRect(p.paperX+4,p.paperY+4,p.paperW,p.paperH);
+  ctx.fillStyle='#fffef7';ctx.fillRect(p.paperX,p.paperY,p.paperW,p.paperH);
+  ctx.strokeStyle='rgba(0,0,0,0.08)';ctx.lineWidth=1;ctx.strokeRect(p.paperX,p.paperY,p.paperW,p.paperH);
+  // Horizontal ruled lines
+  ctx.strokeStyle='rgba(180,200,220,0.25)';ctx.lineWidth=0.5;
+  for(let y=p.paperY+40;y<p.paperY+p.paperH;y+=32){ctx.beginPath();ctx.moveTo(p.paperX+20,y);ctx.lineTo(p.paperX+p.paperW-20,y);ctx.stroke()}
+  // Draw two grid zones
+  const hs=p.gridSize/2;
+  const centers=[{x:p.leftGridCX,y:p.gridCY},{x:p.rightGridCX,y:p.gridCY}];
+  for(const c of centers){
+    ctx.strokeStyle='rgba(180,150,120,0.4)';ctx.lineWidth=1.2;ctx.strokeRect(c.x-hs,c.y-hs,hs*2,hs*2);
+    ctx.strokeStyle='rgba(180,150,120,0.25)';ctx.lineWidth=0.6;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(c.x-hs,c.y);ctx.lineTo(c.x+hs,c.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(c.x,c.y-hs);ctx.lineTo(c.x,c.y+hs);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(c.x-hs,c.y-hs);ctx.lineTo(c.x+hs,c.y+hs);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(c.x+hs,c.y-hs);ctx.lineTo(c.x-hs,c.y+hs);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+function drawReferenceChar(){
+  ctx.save();ctx.font=`bold ${CFG.charFontSize}px ${CFG.charFont}`;
+  ctx.fillStyle=CFG.refColor;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('学',CFG.leftGridCX,CFG.gridCY);
+  ctx.fillText('习',CFG.rightGridCX,CFG.gridCY);
+  ctx.restore();
+}
+
+function drawPlayerStrokes(){
+  if(game.allStrokes.length===0&&game.currentStroke.length===0)return;
+  ctx.save();
+  ctx.strokeStyle=CFG.drawColor;
+  ctx.lineWidth=CFG.drawLineWidth;ctx.lineCap='round';ctx.lineJoin='round';
+  for(const s of game.allStrokes){if(s.length<2)continue;ctx.beginPath();ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}
+  if(game.currentStroke.length>=2){ctx.beginPath();ctx.moveTo(game.currentStroke[0].x,game.currentStroke[0].y);for(let i=1;i<game.currentStroke.length;i++)ctx.lineTo(game.currentStroke[i].x,game.currentStroke[i].y);ctx.stroke()}
+  ctx.restore();
+}
+
+// ==================== RENDER: LEFT HAND ====================
+function drawLeftHand(){
+  const p=CFG;
+  const cx=p.paperX-18,cy=p.paperY+p.paperH*0.48;
+  ctx.save();
+  const sk='#ebc8a0',skS='#d4a878',skO='#c4956b',skH='#f5dcc0';
+  ctx.fillStyle=sk;ctx.strokeStyle=skO;ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.moveTo(0,cy+35);ctx.lineTo(cx-14,cy+35);ctx.lineTo(cx-14,cy-22);ctx.lineTo(cx-8,cy-22);
+  ctx.quadraticCurveTo(0,cy-10,0,cy+35);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#8bb8d0';ctx.strokeStyle='#6a98b0';
+  ctx.beginPath();ctx.ellipse(cx-2,cy+33,16,5,-0.1,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle=sk;
+  ctx.beginPath();ctx.ellipse(cx-2,cy+22,13,9,-0.15,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.ellipse(cx+4,cy-4,24,32,0.15,0,Math.PI*2);ctx.fill();ctx.stroke();
+  const fingerData=[
+    {dx:42,dy:-16,r:5.5,len:38,ang:0.1},
+    {dx:48,dy:-2,r:5,len:40,ang:0.05},
+    {dx:47,dy:12,r:5,len:38,ang:0},
+    {dx:40,dy:26,r:4.5,len:34,ang:-0.05},
+    {dx:28,dy:35,r:4,len:28,ang:-0.1},
+  ];
+  for(const f of fingerData){
+    const fx=cx+f.dx,fy=cy+f.dy;
+    ctx.fillStyle=sk;ctx.strokeStyle=skO;ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(fx-3,fy-3);
+    ctx.quadraticCurveTo(fx+f.len*Math.cos(f.ang)*0.5,fy+f.len*Math.sin(f.ang)*0.5-5,fx+f.len*Math.cos(f.ang),fy+f.len*Math.sin(f.ang));
+    ctx.quadraticCurveTo(fx+f.len*Math.cos(f.ang)*0.7,fy+f.len*Math.sin(f.ang)*0.7+8,fx+3,fy+3);
+    ctx.quadraticCurveTo(fx,fy+5,fx-3,fy-3);
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle=skH;ctx.beginPath();ctx.arc(fx+f.len*Math.cos(f.ang),fy+f.len*Math.sin(f.ang),f.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.strokeStyle=skS;ctx.lineWidth=0.6;
+    ctx.beginPath();ctx.moveTo(fx+12*Math.cos(f.ang)-2,fy+12*Math.sin(f.ang)-2);ctx.lineTo(fx+12*Math.cos(f.ang)+2,fy+12*Math.sin(f.ang)+2);ctx.stroke();
+  }
+  ctx.fillStyle=sk;ctx.strokeStyle=skO;ctx.lineWidth=1;
+  const tx=cx+18,ty=cy-22;
+  ctx.beginPath();ctx.moveTo(tx-4,ty);ctx.quadraticCurveTo(tx+22,ty-10,tx+30,ty-15);ctx.quadraticCurveTo(tx+25,ty-5,tx+8,ty+4);ctx.quadraticCurveTo(tx-2,ty+6,tx-4,ty);ctx.fill();ctx.stroke();
+  ctx.fillStyle=skH;ctx.beginPath();ctx.arc(tx+30,ty-15,5.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+
+// ==================== RENDER: PENCIL (no right hand) ====================
+function drawPencilBody(gx,gy,angle,bodyColor){
+  ctx.save();ctx.translate(gx,gy);ctx.rotate(angle*Math.PI/180);
+  ctx.fillStyle='rgba(0,0,0,0.12)';ctx.fillRect(-CFG.pencilTotalLen+CFG.pencilGripOffset,1.5,CFG.pencilTotalLen,6);
+  ctx.fillStyle=bodyColor||'#f0cc44';ctx.fillRect(-CFG.pencilTotalLen+CFG.pencilGripOffset,-2.5,CFG.pencilTotalLen,5.5);
+  ctx.fillStyle='#e89898';ctx.fillRect(-CFG.pencilTotalLen+CFG.pencilGripOffset,-2.5,18,5.5);
+  ctx.fillStyle='#bbb';ctx.fillRect(-CFG.pencilTotalLen+CFG.pencilGripOffset+18,-2.5,4,5.5);
+  ctx.fillStyle='#e0c880';
+  ctx.beginPath();ctx.moveTo(CFG.pencilGripOffset-6,-2.5);ctx.lineTo(CFG.pencilGripOffset+5,0.25);ctx.lineTo(CFG.pencilGripOffset-6,3);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#333';
+  ctx.beginPath();ctx.moveTo(CFG.pencilGripOffset, -1);ctx.lineTo(CFG.pencilGripOffset+5,0.25);ctx.lineTo(CFG.pencilGripOffset,1.5);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(-CFG.pencilTotalLen+CFG.pencilGripOffset+22,-1);ctx.lineTo(CFG.pencilGripOffset-8,-1);ctx.stroke();
+  ctx.restore();
+}
+
+function drawPencil(){
+  const writing=game.phase==='playing';
+  const dropping=game.phase==='pencilDropped';
+  const retrieving=game.phase==='pencilRetrieving';
+  const slipping=game.phase==='pencilSlipping';
+  const distracted=game.phase==='distracted';
+  const ended=game.phase==='ended';
+  if(ended||(distracted&&!dropping&&!retrieving&&!slipping))return;
+  if(slipping){
+    const px=game.slipPencilX,py=game.slipPencilY,sa=game.slipAngle;
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,0.15)';ctx.beginPath();
+    ctx.ellipse(px,py+4,CFG.pencilTotalLen/2,3,-0.05,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    drawPencilBody(px,py,sa,'#e8c840');
+    return;
+  }
+  if(dropping||retrieving){drawFallenPencil(game.fallenPencilX,game.fallenPencilY);return;}
+  const gx=game.pencilX+game.shakeOffsetX*0.3;
+  const gy=game.pencilY+game.shakeOffsetY*0.3;
+  const angle=game.pencilAngle+game.shakeAngleOffset;
+  const bodyColor=game.motorState==='shaky'?'#ff8888':'#f0cc44';
+  drawPencilBody(gx,gy,angle,bodyColor);
+}
+
+function drawFallenPencil(px,py){
+  ctx.save();ctx.translate(px,py);ctx.rotate(-0.3);
+  ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(-45,0,90,6);
+  ctx.fillStyle='#e8c840';ctx.fillRect(-42,-2,84,5);
+  ctx.fillStyle='#e89898';ctx.fillRect(-42,-2,18,5);
+  ctx.fillStyle='#bbb';ctx.fillRect(-24,-2,4,5);
+  ctx.fillStyle='#d4b870';ctx.beginPath();ctx.moveTo(42,-2);ctx.lineTo(52,0.5);ctx.lineTo(42,3);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#333';ctx.beginPath();ctx.moveTo(46,0);ctx.lineTo(52,0.5);ctx.lineTo(46,1.5);ctx.closePath();ctx.fill();
+  const d=dist(mouseX,mouseY,px,py);
+  if(d<50){ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('点击捡起',0,20)}
+  ctx.restore();
+}
+
+// ==================== RENDER: EFFECTS & UI ====================
+function drawDistractionVisual(){
+  if(game.phase!=='distracted'||!game.currentDistraction)return;
+  const d=game.currentDistraction,W=canvas.width/(window.devicePixelRatio||1),H=canvas.height/(window.devicePixelRatio||1);
+  let x,y;
+  switch(d.dir){case'tr':x=W-120;y=40;break;case'tl':x=120;y=40;break;case'l':x=60;y=H*0.3;break;case'r':x=W-60;y=H*0.3;break;case'b':x=W/2;y=H-30;break;default:x=W/2;y=H*0.25;break}
+  const pulse=Math.sin(Date.now()*0.005)*0.3+0.7;
+  ctx.save();ctx.globalAlpha=pulse;ctx.fillStyle='rgba(255,200,100,0.5)';ctx.beginPath();ctx.arc(x,y,30,0,Math.PI*2);ctx.fill();
+  ctx.font='28px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(d.icon,x,y);ctx.restore();
+}
+
+function drawUI(){
+  if(game.phase==='intro'||game.phase==='ended')return;
+  const W=canvas.width/(window.devicePixelRatio||1);
+  ctx.save();ctx.font='13px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillStyle='rgba(100,90,80,0.5)';ctx.textAlign='center';ctx.fillText('请在田字格中描摹「学」和「习」',CFG.paperX+CFG.paperW/2,CFG.paperY+28);ctx.restore();
+  if(game.motorState==='shaky'){
+    const a=Math.sin(Date.now()*0.01)*0.3+0.6;ctx.save();ctx.fillStyle=`rgba(255,80,80,${a})`;ctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('⚠ 手在发抖...',W/2,CFG.paperY+CFG.paperH+22);ctx.restore();
+  }
+  if(game.motorState==='lostControl'){
+    ctx.save();ctx.fillStyle='rgba(255,40,40,0.9)';ctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('⚠⚠ 铅笔要掉了！',W/2,CFG.paperY+CFG.paperH+22);ctx.restore();
+  }
+  if(game.phase==='pencilSlipping'){
+    ctx.save();ctx.fillStyle='rgba(255,120,40,0.85)';ctx.font='bold 13px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('✏️ 铅笔滚走了！快捡回来！',W/2,CFG.paperY+CFG.paperH+22);ctx.restore();
+  }
+  if(game.slipPendingReplenish){
+    ctx.save();ctx.fillStyle='rgba(200,200,200,0.8)';ctx.font='13px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('正在拿一支新铅笔...',W/2,CFG.paperY+CFG.paperH+22);ctx.restore();
+  }
+}
+
+// ==================== RENDER: MAIN ====================
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W=canvas.width/(window.devicePixelRatio||1),H=canvas.height/(window.devicePixelRatio||1);
+  ctx.save();
+  ctx.translate(W/2+game.cameraTx,H/2+game.cameraTy);
+  ctx.rotate(game.cameraRot*Math.PI/180);
+  ctx.translate(-W/2,-H/2);
+  drawDesk();
+  drawPaper();
+  drawReferenceChar();
+  drawPlayerStrokes();
+  drawLeftHand();
+  drawDistractionVisual();
+  ctx.restore();
+  drawPencil();
+  drawUI();
+}
+
+// ==================== ACCURACY ====================
+function getComparisonArea(idx){
+  const cx=idx===0?CFG.leftGridCX:CFG.rightGridCX;
+  const cy=CFG.gridCY,hs=CFG.gridSize/2+30;
+  return{x:cx-hs,y:cy-hs,w:hs*2,h:hs*2};
+}
+function calculateAccuracy(idx){
+  if(game.allStrokes.length===0)return 0;
+  const area=getComparisonArea(idx),W=area.w,H=area.h;
+  const rc=document.createElement('canvas');rc.width=W;rc.height=H;const rct=rc.getContext('2d');
+  rct.font=`bold ${CFG.charFontSize}px ${CFG.charFont}`;rct.strokeStyle='#000';rct.lineWidth=CFG.refLineWidth;rct.textAlign='center';rct.textBaseline='middle';
+  rct.strokeText(TARGET_CHARS[idx],W/2,H/2);const rD=rc.getImageData(0,0,W,H).data;
+  const dc=document.createElement('canvas');dc.width=W;dc.height=H;const dct=dc.getContext('2d');
+  dct.strokeStyle='#000';dct.lineWidth=CFG.drawLineWidth;dct.lineCap='round';dct.lineJoin='round';
+  for(const s of game.allStrokes){if(s.length<2)continue;dct.beginPath();dct.moveTo(s[0].x-area.x,s[0].y-area.y);for(let i=1;i<s.length;i++)dct.lineTo(s[i].x-area.x,s[i].y-area.y);dct.stroke()}
+  const dD=dc.getImageData(0,0,W,H).data;
+  const sr=CFG.accuracySampleRate;let rP=0,mP=0;
+  for(let y=0;y<H;y+=sr)for(let x=0;x<W;x+=sr){const i=(y*W+x)*4;if(rD[i+3]>100){rP++;if(dD[i+3]>80)mP++}}
+  return rP>0?mP/rP:0;
+}
+
+// ==================== DISTRACTION SYSTEM ====================
+function triggerDistraction(){
+  const w=game.phase==='playing'||game.phase==='pencilSlipping';
+  if(!w)return;
+  const prevPhase=game.phase;
+  game.phase='distracted';game.currentDistraction=getRandomDistraction();
+  const dur=CFG.distractionMinDuration+Math.random()*(CFG.distractionMaxDuration-CFG.distractionMinDuration);
+  game.distractionEndTime=performance.now()/1000+dur;stats.distractionStart=performance.now()/1000;stats.distractionCount++;
+  game.isDrawing=false;
+  if(game.currentStroke.length>0){game.allStrokes.push([...game.currentStroke]);game.currentStroke=[]}
+  const d=game.currentDistraction;
+  switch(d.dir){case'tr':game.targetCameraRot=-4;game.targetCameraTx=15;game.targetCameraTy=-10;break;case'tl':game.targetCameraRot=4;game.targetCameraTx=-15;game.targetCameraTy=-10;break;case'l':game.targetCameraRot=6;game.targetCameraTx=-25;game.targetCameraTy=0;break;case'r':game.targetCameraRot=-6;game.targetCameraTx=25;game.targetCameraTy=0;break;case'b':game.targetCameraRot=0;game.targetCameraTx=0;game.targetCameraTy=20;break;default:game.targetCameraRot=0;game.targetCameraTx=0;game.targetCameraTy=-5;break}
+  distractionOverlay.innerHTML=`<div class="distraction-content"><span class="distraction-icon">${d.icon}</span><span>${d.text}</span></div>`;distractionOverlay.classList.add('active');
+  const W=wrapper.clientWidth,H=wrapper.clientHeight;let ox='50%',oy='30%';
+  switch(d.dir){case'tr':ox='75%';oy='12%';break;case'tl':ox='25%';oy='12%';break;case'l':ox='10%';oy='40%';break;case'r':ox='85%';oy='40%';break;case'b':ox='50%';oy='82%';break;default:ox='50%';oy='25%';break}
+  distractionOverlay.style.left=ox;distractionOverlay.style.top=oy;distractionOverlay.style.transform='translate(-50%,-50%)';
+  playTone(300+Math.random()*200,0.2,'triangle',0.06);
+  game._preDistractionPhase=prevPhase;
+}
+function endDistraction(){
+  game.phase=game._preDistractionPhase||'playing';
+  game._preDistractionPhase=null;
+  game.currentDistraction=null;game.targetCameraRot=0;game.targetCameraTx=0;game.targetCameraTy=0;
+  distractionOverlay.classList.remove('active');distractionOverlay.innerHTML='';
+  stats.distractedTime+=performance.now()/1000-stats.distractionStart;
+  game.nextInterruptionTime=performance.now()/1000+CFG.interruptionMinInterval+Math.random()*(CFG.interruptionMaxInterval-CFG.interruptionMinInterval);
+}
+
+// ==================== MOTOR EVENT SYSTEM ====================
+function triggerMotorEvent(){
+  if(game.phase!=='playing')return;
+  game.motorState='shaky';
+  game.motorEventStartTime=performance.now()/1000;
+  game.motorEventEndTime=game.motorEventStartTime+CFG.motorEventMinDuration+Math.random()*(CFG.motorEventMaxDuration-CFG.motorEventMinDuration);
+  game.shakePhase=Math.random()*100;
+}
+function triggerPencilDrop(){
+  game.motorState='stable';game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;game.shakeAngleOffset=0;
+  game.phase='pencilDropped';game.isDrawing=false;
+  if(game.currentStroke.length>0){game.allStrokes.push([...game.currentStroke]);game.currentStroke=[]}
+  const p=CFG,side=Math.random()>0.5?'left':'right';
+  game.fallenPencilX=side==='left'?p.paperX-40-Math.random()*40:p.paperX+p.paperW+40+Math.random()*40;
+  game.fallenPencilY=p.paperY+p.paperH*0.3+Math.random()*p.paperH*0.4;
+  stats.pencilDropCount++;stats.retrievalStart=performance.now()/1000;
+  playTone(120,0.3,'triangle',0.1);setTimeout(()=>playTone(80,0.2,'triangle',0.06),200);
+}
+
+// ==================== UPDATE ====================
+function update(dt){
+  if(game.phase==='intro'||game.phase==='ended')return;
+  if(!gameActive)return;
+  game.timeLeft-=dt;
+  if(game.timeLeft<=0){game.timeLeft=0;endGame();return}
+  const now=performance.now()/1000;
+  updateHUD();
+  game.cameraRot+=(game.targetCameraRot-game.cameraRot)*5*dt;game.cameraTx+=(game.targetCameraTx-game.cameraTx)*5*dt;game.cameraTy+=(game.targetCameraTy-game.cameraTy)*5*dt;
+  if(game.phase==='distracted'&&now>=game.distractionEndTime)endDistraction();
+  if(game.dropCooldownTimer>0)game.dropCooldownTimer-=dt;
+  game.pencilAngle+=(game.targetPencilAngle-game.pencilAngle)*4*dt;
+
+  // --- PENCIL SLIP STATE ---
+  if(game.phase==='pencilSlipping'){
+    game.slipPencilX+=game.slipVelocityX*dt;
+    game.slipPencilY+=game.slipVelocityY*dt;
+    game.slipAngle+=game.slipRollSpeed*0.05*dt;
+    const W=canvas.width/(window.devicePixelRatio||1),H=canvas.height/(window.devicePixelRatio||1);
+    if(now>=game.slipEndTime||game.slipPencilX<-60||game.slipPencilX>W+60||game.slipPencilY<-40||game.slipPencilY>H+40){
+      handleSlipFallOff();
+    }
+  }
+  if(game.slipPendingReplenish&&now>=game.slipReplenishEnd){
+    game.slipPendingReplenish=false;game.slipReplenishEnd=0;
+    game.phase='playing';game.motorState='stable';
+    game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;game.shakeAngleOffset=0;
+    game.pencilX=CFG.paperX+CFG.paperW/2;game.pencilY=CFG.paperY+CFG.paperH/2;
+    game.slipCooldownEnd=now+CFG.slipCooldown;
+    game.nextSlipTime=now+CFG.slipCooldown+CFG.slipMinInterval+Math.random()*(CFG.slipMaxInterval-CFG.slipMinInterval);
+    game.nextMotorEventTime=now+3;game.dropCooldownTimer=2;
+    playTone(400,0.15,'sine',0.05);setTimeout(()=>playTone(600,0.1,'sine',0.05),150);
+  }
+
+  // --- MOTOR STATE MACHINE ---
+  if(game.phase==='playing'){
+    if(!game.slipPendingReplenish&&now>=game.slipCooldownEnd&&now>=game.nextSlipTime){triggerPencilSlip();}
+    if(game.motorState==='stable'){
+      if(game.shakeIntensity>0.001){game.shakeIntensity*=Math.pow(0.0001,dt);game.shakeOffsetX*=Math.pow(0.0001,dt);game.shakeOffsetY*=Math.pow(0.0001,dt);game.shakeAngleOffset*=Math.pow(0.0001,dt)}
+      else{game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;game.shakeAngleOffset=0}
+      if(now>=game.motorEventCooldownEnd&&now>=game.nextMotorEventTime)triggerMotorEvent();
+    }
+    if(game.motorState==='shaky'){
+      const elapsed=now-game.motorEventStart,total=game.motorEventEndTime-game.motorEventStart;
+      const progress=Math.min(1,Math.max(0,elapsed/total));
+      if(progress<0.12)game.shakeIntensity=progress/0.12;
+      else if(progress>0.82)game.shakeIntensity=Math.max(0,(1-progress)/0.18);
+      else game.shakeIntensity=1.0;
+      const t=now*CFG.shakeFrequency;
+      game.shakeOffsetX=(Math.sin(t+game.shakePhase)*4.5+Math.sin(t*1.73+game.shakePhase)*3.2+Math.sin(t*2.41+game.shakePhase)*2.0)*game.shakeIntensity;
+      game.shakeOffsetY=(Math.cos(t*0.87+game.shakePhase)*4.2+Math.cos(t*1.59+game.shakePhase)*3.5+Math.cos(t*2.83+game.shakePhase)*1.8)*game.shakeIntensity;
+      game.shakeAngleOffset=Math.sin(t*1.35+game.shakePhase)*5.5*game.shakeIntensity;
+      if(game.shakeIntensity>0.65&&game.dropCooldownTimer<=0&&Math.random()<0.09*dt){game.motorState='lostControl';game.lostControlEndTime=now+0.45}
+      if(now>=game.motorEventEndTime){game.motorState='stable';game.motorEventCooldownEnd=now+CFG.motorEventCooldown;game.nextMotorEventTime=now+CFG.motorEventCooldown+CFG.motorEventMinInterval+Math.random()*(CFG.motorEventMaxInterval-CFG.motorEventMinInterval)}
+    }
+    if(game.motorState==='lostControl'){
+      const t=now*CFG.shakeFrequency*1.6;
+      game.shakeIntensity=1.5;
+      game.shakeOffsetX=(Math.sin(t)*7.5+Math.sin(t*2.3)*5+Math.sin(t*3.1)*3)*game.shakeIntensity;
+      game.shakeOffsetY=(Math.cos(t*1.2)*7+Math.cos(t*2.7)*5+Math.cos(t*3.5)*3)*game.shakeIntensity;
+      game.shakeAngleOffset=Math.sin(t*1.7)*9*game.shakeIntensity;
+      if(now>=game.lostControlEndTime)triggerPencilDrop();
+    }
+    stats.writingTime+=dt;
+  }
+  if((game.phase==='playing'||game.phase==='pencilSlipping')&&now>=game.nextInterruptionTime)triggerDistraction();
+}
+
+function updateHUD(){
+  const t=Math.ceil(game.timeLeft);timerEl.textContent=`⏱ ${t}`;
+  if(t<=8)timerEl.classList.add('warning');else timerEl.classList.remove('warning');
+}
+
+// ==================== END GAME ====================
+function endGame(){
+  gameActive=false;
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+
+  // Save current stroke if player was mid-drawing
+  if(game.isDrawing&&game.currentStroke.length>0){game.allStrokes.push([...game.currentStroke]);game.currentStroke=[];game.isDrawing=false}
+
+  // Calculate accuracy for both characters (compare all strokes against each zone)
+  const xueAcc=calculateAccuracy(0);
+  const xiAcc=calculateAccuracy(1);
+  game.allCharAccuracies[0]=xueAcc;
+  game.allCharAccuracies[1]=xiAcc;
+  const overallAccuracy=(xueAcc+xiAcc)/2;
+  const passed=overallAccuracy>=CFG.passAccuracy;
+
+  game.phase='ended';game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;
+  game.slipPendingReplenish=false;game.slipReplenishEnd=0;
+  distractionOverlay.classList.remove('active');hintText.style.display='none';
+
+  const timeUsed=CFG.gameDuration-Math.round(game.timeLeft);
+  const dT=Math.round(stats.distractedTime),rT=Math.round(stats.pencilRetrievalTime),wT=Math.round(stats.writingTime),sT=Math.round(stats.slipRetrieveTime);
+  const oT=Math.round(CFG.gameDuration-wT-dT-rT-sT);
+
+  let h='';
+
+  // Large PASS/FAIL display
+  h+=`<div style="font-size:28px;font-weight:800;margin-bottom:4px;color:${passed?'#5bcc5a':'#cc5a5a'}">${passed?'PASS':'FAIL'}</div>`;
+  h+=`<div style="font-size:14px;opacity:0.6;margin-bottom:20px">${passed?'Overall handwriting accuracy is 70% or higher.' : 'Overall handwriting accuracy is below 70%.'}</div>`;
+
+  h+=`<div class="result-row"><span class="label">Overall Accuracy</span><span class="value ${passed?'good':'bad'}">${Math.round(overallAccuracy*100)}%</span></div>`;
+  h+=`<div class="result-row"><span class="label">Time Used</span><span class="value">${timeUsed} sec / ${CFG.gameDuration} sec</span></div>`;
+
+  // Per-character scores
+  h+=`<div class="char-scores"><div class="section-title">Per-Character Scores</div>`;
+  for(let i=0;i<TARGET_CHARS.length;i++){
+    const c=TARGET_CHARS[i],accVal=game.allCharAccuracies[i];
+    const pct=Math.round(accVal*100);
+    h+=`<div class="result-row"><span class="label">${c}</span><span class="value ${pct>=70?'good':'bad'}">${pct}%</span></div>`;
+  }
+  h+=`</div>`;
+
+  // Time breakdown
+  h+=`<div class="section-title">Time Breakdown</div>`;
+  h+=`<div class="result-row"><span class="label">⏱ Writing</span><span class="value">${wT} sec</span></div>`;
+  h+=`<div class="result-row"><span class="label">🔔 Distractions</span><span class="value">${dT} sec (${stats.distractionCount})</span></div>`;
+  h+=`<div class="result-row"><span class="label">✏️ Pencil Drops</span><span class="value">${rT} sec (${stats.pencilDropCount})</span></div>`;
+  h+=`<div class="result-row"><span class="label">💨 Pencil Slips</span><span class="value">${sT} sec (${stats.slipCount})</span></div>`;
+  if(oT>0)h+=`<div class="result-row"><span class="label">📋 Other</span><span class="value">${oT} sec</span></div>`;
+
+  h+=`<div class="result-summary">虽然描红任务看起来很简单，但<strong>干扰和动作控制事件</strong>大大缩短了你实际用来写字的时间。<br><br>这提醒我们：<strong>隐形的认知和身体挑战</strong>会显著影响日常的课堂表现——<br>最终的成果并不仅仅取决于努力，还受许多看不见的因素影响。</div>`;
+
+  resultsEl.innerHTML=h;
+  endGrade.textContent=passed?'恭喜通过！你克服了所有挑战完成描红。':'时间到了。最终准确率未达到 70% 通过线。';
+
+  // Blackout + popup
+  timerEl.classList.remove('warning');
+  blackout.classList.add('active');
+  setTimeout(()=>{ endScreen.style.display='flex'; }, 400);
+}
+
+// ==================== START ====================
+function startGame(e){
+  if(e)e.preventDefault();
+  // Guard against double-start
+  if(gameActive)return;
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+
+  initAudio();resetGame();
+  gameActive=true;game.phase='playing';
+  game.lastTimestamp=performance.now();game.gameStartTime=performance.now()/1000;
+  game.nextInterruptionTime=performance.now()/1000+3+Math.random()*5;
+  game.nextMotorEventTime=performance.now()/1000+5+Math.random()*7;
+  game.nextSlipTime=performance.now()/1000+8+Math.random()*8;
+  game.slipCooldownEnd=0;
+  game.pencilX=CFG.paperX+CFG.paperW/2;game.pencilY=CFG.paperY+CFG.paperH/2;
+
+  // Show game, hide others
+  introScreen.style.display='none';endScreen.style.display='none';
+  blackout.classList.remove('active');
+  hintText.style.display='block';hintText.style.opacity='1';
+  accuracyEl.textContent='—';
+
+  timerEl.classList.remove('warning');updateHUD();
+  game.lastTimestamp=performance.now();requestAnimationFrame(gameLoop);
+}
+btnStart.addEventListener('click',startGame);
+
+// Return Home button: return to intro screen (not restart game)
+function returnHome(e){
+  if(e)e.preventDefault();
+  gameActive=false;
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  game.phase='intro';
+  endScreen.style.display='none';
+  blackout.classList.remove('active');
+  introScreen.style.display='flex';
+  hintText.style.display='none';
+  timerEl.classList.remove('warning');
+  game.pencilX=CFG.paperX+CFG.paperW/2;game.pencilY=CFG.paperY+CFG.paperH/2;
+  render();
+}
+btnReturnHome.addEventListener('click',returnHome);
+
+// ==================== PENCIL SLIP MECHANIC ====================
+function triggerPencilSlip(){
+  const p=CFG;const now=performance.now()/1000;
+  if(game.phase!=='playing')return;
+  game.phase='pencilSlipping';game.isDrawing=false;
+  if(game.currentStroke.length>0){game.allStrokes.push([...game.currentStroke]);game.currentStroke=[]}
+  game.slipPencilX=game.pencilX;game.slipPencilY=game.pencilY;
+  game.slipAngle=-20+Math.random()*40;
+  const W=canvas.width/(window.devicePixelRatio||1),H=canvas.height/(window.devicePixelRatio||1);
+  const targetX=Math.random()>0.5?W+60:-60;
+  const targetY=p.paperY-30+Math.random()*(H-p.paperY+10);
+  const dx=targetX-game.slipPencilX,dy=targetY-game.slipPencilY;
+  const dLen=Math.sqrt(dx*dx+dy*dy)||1;
+  game.slipRollSpeed=120+Math.random()*60;
+  game.slipVelocityX=(dx/dLen)*game.slipRollSpeed;
+  game.slipVelocityY=(dy/dLen)*game.slipRollSpeed;
+  game.slipEndTime=now+CFG.slipRollDuration;
+  game.slipPendingReplenish=false;game.slipReplenishEnd=0;
+  stats.slipCount++;stats.slipEventStart=now;
+  playTone(200,0.25,'triangle',0.07);
+}
+function catchPencil(){
+  const now=performance.now()/1000;
+  stats.slipRetrieveTime+=now-stats.slipEventStart;
+  game.phase='playing';game.slipPendingReplenish=false;game.slipReplenishEnd=0;
+  game.motorState='stable';game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;
+  game.pencilX=game.slipPencilX;game.pencilY=game.slipPencilY;
+  game.slipCooldownEnd=now+CFG.slipCooldown;
+  game.nextSlipTime=now+CFG.slipCooldown+CFG.slipMinInterval+Math.random()*(CFG.slipMaxInterval-CFG.slipMinInterval);
+  game.nextMotorEventTime=now+2;game.dropCooldownTimer=3;
+  playTone(500,0.12,'sine',0.07);setTimeout(()=>playTone(700,0.1,'sine',0.06),120);
+}
+function handleSlipFallOff(){
+  const now=performance.now()/1000;
+  stats.slipRetrieveTime+=now-stats.slipEventStart;
+  game.slipPendingReplenish=true;
+  game.slipReplenishEnd=now+2.5;
+  playTone(100,0.3,'triangle',0.08);
+}
+
+// ==================== INPUT ====================
+let mouseX=0,mouseY=0,mouseDown=false;
+function getCanvasPos(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+function dist(x1,y1,x2,y2){return Math.sqrt((x1-x2)**2+(y1-y2)**2)}
+
+canvas.addEventListener('mousemove',(e)=>{
+  if(!gameActive)return;
+  const pos=getCanvasPos(e);mouseX=pos.x;mouseY=pos.y;
+  if(game.phase==='playing'){game.pencilX=pos.x;game.pencilY=pos.y}
+  if(game.phase==='pencilRetrieving'&&game.isRetrieving){game.fallenPencilX=pos.x-game.retrieveOffsetX;game.fallenPencilY=pos.y-game.retrieveOffsetY}
+  if(game.isDrawing&&game.phase==='playing'){const tip=getActualTip();game.currentStroke.push({x:tip.x,y:tip.y})}
+  if(game.phase==='playing'&&game.currentStroke.length>1){
+    const prev=game.currentStroke[game.currentStroke.length-2],curr=game.currentStroke[game.currentStroke.length-1];
+    const dx=curr.x-prev.x,dy=curr.y-prev.y;
+    if(Math.abs(dx)>1||Math.abs(dy)>1){game.targetPencilAngle=Math.max(35,Math.min(65,Math.atan2(dy,dx)*180/Math.PI))}
+  }
+});
+canvas.addEventListener('mouseleave',()=>{mouseDown=false;if(game.isDrawing&&game.currentStroke.length>0){game.allStrokes.push([...game.currentStroke]);game.currentStroke=[]}game.isDrawing=false});
+canvas.addEventListener('mousedown',(e)=>{
+  if(!gameActive)return;
+  const pos=getCanvasPos(e);mouseDown=true;
+  if(game.phase==='pencilSlipping'){if(dist(pos.x,pos.y,game.slipPencilX,game.slipPencilY)<CFG.slipRetrieveRadius){catchPencil()}return}
+  if(game.phase==='pencilDropped'){const d=dist(pos.x,pos.y,game.fallenPencilX,game.fallenPencilY);if(d<50){game.phase='pencilRetrieving';game.isRetrieving=true;game.retrieveOffsetX=pos.x-game.fallenPencilX;game.retrieveOffsetY=pos.y-game.fallenPencilY;stats.retrievalStart=performance.now()/1000;playTone(400,0.1,'sine',0.06)}return}
+  if(game.phase==='playing'){const tip=getActualTip();if(isOnPaper(tip.x,tip.y)){game.isDrawing=true;game.currentStroke=[{x:tip.x,y:tip.y}];hintText.style.opacity='0'}}
+});
+canvas.addEventListener('mouseup',()=>{
+  mouseDown=false;
+  if(game.phase==='pencilRetrieving'&&game.isRetrieving){
+    game.isRetrieving=false;const px=game.fallenPencilX,py=game.fallenPencilY;
+    if(px>CFG.paperX&&px<CFG.paperX+CFG.paperW&&py>CFG.paperY-20&&py<CFG.paperY+CFG.paperH+20){
+      game.phase='playing';game.motorState='stable';game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;
+      game.dropCooldownTimer=4;game.pencilX=px;game.pencilY=py;
+      stats.pencilRetrievalTime+=performance.now()/1000-stats.retrievalStart;
+      game.nextMotorEventTime=performance.now()/1000+CFG.motorEventCooldown+CFG.motorEventMinInterval;
+      game.motorEventCooldownEnd=performance.now()/1000+CFG.motorEventCooldown;
+      playTone(600,0.15,'sine',0.08);setTimeout(()=>playTone(800,0.1,'sine',0.06),150);
+    }return;
+  }
+  if(game.isDrawing){if(game.currentStroke.length>0){game.allStrokes.push([...game.currentStroke]);playNoise(0.04,0.02)}game.currentStroke=[];game.isDrawing=false}
+});
+canvas.addEventListener('touchmove',(e)=>{e.preventDefault();const pos=getCanvasPos(e.touches[0]);mouseX=pos.x;mouseY=pos.y;if(game.phase==='playing'){game.pencilX=pos.x;game.pencilY=pos.y}if(game.isDrawing&&game.phase==='playing'){const tip=getActualTip();game.currentStroke.push({x:tip.x,y:tip.y})}},{passive:false});
+canvas.addEventListener('touchstart',(e)=>{e.preventDefault();const pos=getCanvasPos(e.touches[0]);mouseDown=true;if(game.phase==='pencilSlipping'){if(dist(pos.x,pos.y,game.slipPencilX,game.slipPencilY)<CFG.slipRetrieveRadius){catchPencil()}return}if(game.phase==='pencilDropped'){if(dist(pos.x,pos.y,game.fallenPencilX,game.fallenPencilY)<50){game.phase='pencilRetrieving';game.isRetrieving=true;game.retrieveOffsetX=pos.x-game.fallenPencilX;game.retrieveOffsetY=pos.y-game.fallenPencilY}return}if(game.phase==='playing'){const tip=getActualTip();if(isOnPaper(tip.x,tip.y)){game.isDrawing=true;game.currentStroke=[{x:tip.x,y:tip.y}];hintText.style.opacity='0'}}},{passive:false});
+canvas.addEventListener('touchend',(e)=>{e.preventDefault();mouseDown=false;if(game.phase==='pencilRetrieving'&&game.isRetrieving){game.isRetrieving=false;game.phase='playing';game.motorState='stable';game.shakeIntensity=0;game.shakeOffsetX=0;game.shakeOffsetY=0;game.dropCooldownTimer=4;game.nextMotorEventTime=performance.now()/1000+CFG.motorEventCooldown+CFG.motorEventMinInterval;game.motorEventCooldownEnd=performance.now()/1000+CFG.motorEventCooldown}if(game.isDrawing&&game.currentStroke.length>0){game.allStrokes.push([...game.currentStroke]);game.currentStroke=[]}game.isDrawing=false},{passive:false});
+
+// ==================== GAME LOOP ====================
+function gameLoop(timestamp){
+  if(game.phase==='ended'||game.phase==='intro'){if(game.phase==='ended')render();return}
+  if(!gameActive)return;
+  const dt=Math.min((timestamp-game.lastTimestamp)/1000,0.1);game.lastTimestamp=timestamp;
+  update(dt);render();
+  if(game.phase!=='ended')requestAnimationFrame(gameLoop);else{render()}
+}
+
+// ==================== INIT ====================
+// Prevent keyboard from triggering buttons
+document.addEventListener('keydown',(e)=>{e.preventDefault()},{passive:false});
+document.addEventListener('keyup',(e)=>{e.preventDefault()},{passive:false});
+
+hintText.style.display='none';
+introScreen.style.display='flex';endScreen.style.display='none';
+game.pencilX=CFG.paperX+CFG.paperW/2;game.pencilY=CFG.paperY+CFG.paperH/2;
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Development Process — 3x3 Rubik's Cube</title>
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+<div class="site">
+  <header class="site-header">
+    <a class="brand" href="index.html">3x3 Rubik's Cube</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#domain">Domain</a>
+      <a href="index.html#system">System Design</a>
+      <a href="process.html" class="active">Process</a>
+      <a class="btn primary" href="game.html" style="color:#0f1419">▶ Play</a>
+    </nav>
+  </header>
+
+  <section class="section">
+    <h1 style="font-size:42px; margin-bottom:8px;">Development Process</h1>
+    <p style="color:#a8aebc;">A chronological log of design decisions, implementation milestones, and what changed between versions.</p>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <h2>Timeline</h2>
+    <div class="timeline">
+      <div class="item">
+        <h4>Brief review &amp; game idea</h4>
+        <div class="meta">Stage 1 · planning</div>
+        <p>Read the development brief and the IMA system graph. Identified the three data roles (environment, player-controlled, calculated results) and the three difficulty presets (full algorithms / brief hints / no hints + timer).</p>
+      </div>
+      <div class="item">
+        <h4>Tech track decision</h4>
+        <div class="meta">Stage 1 · planning</div>
+        <p>Chose Track B (locally vendored library) with <code>three.js</code> 0.160.0. Pinned the version, downloaded the ES module build into <code>exhibition/assets/vendor/</code>. Avoided npm/Vite to keep the final exhibition build a single static folder that runs from any HTTP server.</p>
+      </div>
+      <div class="item">
+        <h4>First playable build</h4>
+        <div class="meta">Stage 2 · implementation</div>
+        <p>Built the 3D Rubik's cube as 27 mini-cubes with 6 face materials each. Implemented face turns via a temporary pivot object, smooth easing animation, and face highlight on selection. Added scramble, undo/redo, and the basic stats HUD (time, moves, % solved).</p>
+      </div>
+      <div class="item">
+        <h4>Three levels &amp; hint system</h4>
+        <div class="meta">Stage 2 · implementation</div>
+        <p>Wired up the three difficulty levels. Level 1 shows a full algorithm for the current CFOP-style stage. Level 2 shows a brief hint only. Level 3 hides hints and starts a 5-minute countdown. The hint card updates whenever a move is made.</p>
+      </div>
+      <div class="item">
+        <h4>Camera &amp; input polish</h4>
+        <div class="meta">Stage 2 · polish</div>
+        <p>Added custom orbit-style camera (drag to rotate, scroll to zoom) and click-to-select-face via raycasting. Keyboard shortcuts (R, L, U, D, F, B + arrows) for fast play.</p>
+      </div>
+      <div class="item">
+        <h4>Win / give-up / time-up overlays</h4>
+        <div class="meta">Stage 2 · polish</div>
+        <p>Win detection compares all 54 stickers against each face's center color.  Added a Give Up button and a Time Up handler for Level 3, both showing a final summary modal.</p>
+      </div>
+      <div class="item">
+        <h4>Website &amp; submission prep</h4>
+        <div class="meta">Stage 3 · packaging</div>
+        <p>Built the multi-page static site (index / game / process), wrote README and THIRD_PARTY, recorded this process page, and confirmed all internal links use relative paths so the project works inside <code>gallery/projects/group-XX/</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Decisions &amp; trade-offs</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="pill">Decision</div>
+        <h3>Custom camera instead of OrbitControls</h3>
+        <p>OrbitControls could not be vendored at the same version of three.js. To stay fully offline, a small custom orbit camera was written by hand.  Same effect, no dependency.</p>
+      </div>
+      <div class="card">
+        <div class="pill">Trade-off</div>
+        <h3>Approximate stage detection</h3>
+        <p>The hint system estimates the solving stage from percent-of-stickers-correct, not by deep pattern recognition.  This trades perfect accuracy for code a beginner can read.</p>
+      </div>
+      <div class="card">
+        <div class="pill">Decision</div>
+        <h3>Three levels instead of nine</h3>
+        <p>The brief asked for "2-3 challenge presets when they are clearly defined". The system graph names three (Full Algorithms / Brief Hints / No Hints + Timer) so the game exposes those three.</p>
+      </div>
+      <div class="card">
+        <div class="pill">Open issue</div>
+        <h3>Scramble depth is fixed</h3>
+        <p>The scramble applies 20 random face turns. A future iteration could vary the scramble depth by level and store best times per level in localStorage.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How to run</h2>
+    <p>From the project root, run a static HTTP server, then open the URL.</p>
+    <pre style="background:#0a0d14; padding:16px; border-radius:8px; color:#a8aebc; font-size:13px; overflow-x:auto; border:1px solid #2a3142;"><code># from the project root
+cd exhibition
+python -m http.server 8080
+# then open http://localhost:8080</code></pre>
+    <p>You can also use <code>npx http-server exhibition -p 8080</code> if you have Node installed.  The game will not work via <code>file://</code> because the JS modules need a real HTTP origin.</p>
+  </section>
+
+  <footer style="padding:40px 48px; color:#6c7383; font-size:12px; text-align:center; border-top:1px solid #2a3142; margin-top:40px;">
+    IMA Summer Program · Game Design · Group 1 · Built with WorkBuddy
+  </footer>
+</div>
+</body>
+</html>

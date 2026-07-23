@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process — Shark Bite</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand"><span class="mark">SB</span> Shark Bite</div>
+      <nav class="main">
+        <a href="index.html">Home</a>
+        <a href="domain.html">Domain &amp; System</a>
+        <a href="process.html" class="active">Process</a>
+        <a href="game.html">Play Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>Development process</h1>
+      <p>A truthful chronological timeline of how this project was built with an AI agent. Mirrors <code>agent-development-log.md</code>.</p>
+    </div>
+
+    <section class="block">
+      <h2>How the project was built</h2>
+      <p class="sub">Human–AI collaboration. The student owns the design decisions; the AI agent implements, explains, and suggests.</p>
+      <ul class="clean">
+        <li><b>AI agent used:</b> WorkBuddy (the active development agent). The brief originally listed ChatGPT; the actual build was done with WorkBuddy.</li>
+        <li><b>Dependency track:</b> Track A — no build step. Plain HTML, CSS, and Canvas 2D JavaScript.</li>
+        <li><b>Source of truth for this page:</b> <code>agent-development-log.md</code>. Nothing here is invented or smoothed over.</li>
+      </ul>
+    </section>
+
+    <section class="block">
+      <h2>Timeline</h2>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="when">Interaction 01 · Session 1</div>
+          <h4>Project initialized &amp; first playable loop built</h4>
+          <p>Read the brief and the system graph, restated the core learning shift and core loop, then scaffolded the project structure (<code>exhibition/</code>, <code>source/</code>). Chose Track A (no build) so the final build runs from a static folder. Implemented the full observe → judge → act → feedback → adjust loop: diver movement, oxygen, depth/pressure, equipment stability, species scanning with a real fact catalog, radar beeps, pressure mesh, and attack feedback.</p>
+        </div>
+        <div class="tl-item">
+          <div class="when">Interaction 01 · Session 1</div>
+          <h4>Three challenge presets added</h4>
+          <p>Defined presets that differ through variables, not decoration: <b>Reef Welcome</b> (tutorial, shallow), <b>Pressure Point</b> (deep, equipment strain), and <b>Big Fish, Calm Diver</b> (the whale-shark lesson that delivers the core learning shift). Each changes equipment depth limit, oxygen rate, species pool, target count, and danger.</p>
+        </div>
+        <div class="tl-item">
+          <div class="when">Interaction 01 · Session 1</div>
+          <h4>Integrated website created</h4>
+          <p>Built Home, Domain &amp; System Design, Development Process, and Play Game pages with shared styling and Gallery-compatible relative paths. Wired the system graph into the design page.</p>
+        </div>
+        <div class="tl-item">
+          <div class="when">Interaction 01 · Session 1</div>
+          <h4>Local test pass</h4>
+          <p>Served <code>exhibition/</code> from a local static server and verified navigation, all three challenges, win/lose, restart, and the radar/pressure/attack feedback. Confirmed offline-capable relative paths.</p>
+        </div>
+        <div class="tl-item">
+          <div class="when">Interaction 02 · Session 1</div>
+          <h4>Redesigned for coral reef exploration &amp; eco-health</h4>
+          <p>Student requested a more intuitive experience: looking through coral reefs for animals and maintaining environmental health. Rebuilt the game world around a living coral reef — coral formations (brain, fan, tube, anemone, plate) with individual health, creatures that hide inside coral and emerge when the diver approaches, a pollution system where debris drifts and damages coral, and an eco-health meter that is a win condition. Added cleaning by swimming through pollution, coral glow for hidden creatures, coral bleaching when sick, and water murk when the ecosystem declines. Replaced the three challenge presets with Reef Welcome, Stressed Reef, and Predator Balance. Updated all website pages, README, and docs to match.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>What the AI influenced</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>Design directions AI introduced</h3>
+          <p>The radar-beeps-for-size (not danger) mechanic, and the penalty for startling harmless creatures, were AI suggestions that directly serve the learning shift. They are recorded as AI influence, not student authorship, until the student confirms.</p>
+        </div>
+        <div class="card">
+          <h3>Open questions for the student</h3>
+          <p>Public-display consent for the manifest; development start/end dates; and whether the species facts read as accurate enough to keep. These are flagged in the log, not decided silently.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Reflection checkpoint</h2>
+      <p class="sub">The first playable loop is complete. A stage reflection has been opened in the log and the student is asked to answer it — the AI does not fill it in.</p>
+      <div class="card">
+        <h3>Required student reflection (pending)</h3>
+        <p>Does the current game still help the player experience the intended domain-learning shift? What became stronger, weaker, or different? Which AI suggestion did you accept, reject, or change, and why?</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">Shark Bite · Natalia Ma · IMA Summer Program — Game Design</div>
+  </footer>
+</body>
+</html>

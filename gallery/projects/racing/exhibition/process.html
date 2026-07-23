@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Racing — Development Process</title>
+  <link rel="stylesheet" crossorigin href="./assets/style-CAqbcE1U.css">
+</head>
+<body>
+
+<nav>
+  <span class="logo">RACING</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="game.html">Play Game</a></li>
+    <li><a href="process.html" class="active">Process</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <h1>Development Process</h1>
+  <p style="color:#aaa;">A chronological timeline of how this project was built through human-AI collaboration.</p>
+  <p style="color:var(--text-dim);font-size:0.85rem;">The complete raw log with all interactions is in <code>agent-development-log.md</code>. This page presents a concise, honest summary of the development journey.</p>
+
+  <!-- Stage 1: Initial Build -->
+  <h2>Stage 1 — First Playable Version</h2>
+  <div class="timeline-entry">
+    <div class="entry-meta">July 15, 2026 · Project Initialization</div>
+    <h4>Project Setup and Core Implementation</h4>
+    <p><strong>Goal:</strong> Build the smallest complete game loop that validates one observe → judge → act → feedback → adjust cycle.</p>
+    <p><strong>What was built:</strong></p>
+    <ul>
+      <li>Top-down 2D racing game with scrolling road, lane markings, and grass shoulders</li>
+      <li>WASD driving controls: accelerate, brake, steer left/right</li>
+      <li>Space bar boost with limited energy that recharges</li>
+      <li>Police car that chases from behind — proximity drives siren volume and red/blue flash intensity</li>
+      <li>Traffic cars in three lanes that the player must dodge</li>
+      <li>Gas system: fuel depletes based on speed and boost usage, refilled by collecting gas tokens on the road</li>
+      <li>Car health: collisions cause damage, damage reduces top speed and increases gas drain</li>
+      <li>Smoke particle effects when the car is damaged</li>
+      <li>HUD showing health, gas, boost, speed, time remaining, distance progress, and police distance</li>
+      <li>Procedural audio via Web Audio API: siren (wah-wah effect), engine hum, crash noise, low gas alert, gas collection chime, win/lose fanfares</li>
+      <li>3 challenge levels (Novice, Driver, Expert) that change traffic density, police speed, gas drain rate, and track length</li>
+      <li>Integrated website with Home, Play Game, and Process pages</li>
+      <li>Win condition: reach destination before time runs out</li>
+      <li>Lose conditions: time runs out, police catches you, run out of gas, car health reaches zero</li>
+    </ul>
+    <p><strong>Technical decisions:</strong></p>
+    <ul>
+      <li>Chose Track A (no build step): HTML + CSS + plain JS + Canvas 2D — no npm, no Vite, no external dependencies</li>
+      <li>All audio synthesized with Web Audio API — no audio files needed, works fully offline</li>
+      <li>All graphics hand-drawn with Canvas 2D primitives — no spritesheets or image assets</li>
+      <li>Game canvas is 960x640, CSS-scaled to fit the container for responsive display on iMac (1920x1080) and student laptops</li>
+    </ul>
+    <p><strong>Challenges solved:</strong></p>
+    <ul>
+      <li>Police chase balance: tied police distance directly to player speed — slow down = police gets closer, creating the core learning tension</li>
+      <li>Gas token visibility: tokens pulse and glow so they're visible against the road surface</li>
+      <li>Damage feedback chain: damage → slower speed → harder to escape police → need to collect gas → slow down → police gets closer — a multi-layered consequence system</li>
+      <li>Audio with no files: used OscillatorNode + GainNode with LFO modulation for the siren, buffer sources with noise for crashes</li>
+    </ul>
+    <p><strong>Student decisions:</strong> Awaiting playtest feedback. The student will test all three levels and provide reactions on difficulty, controls, and whether the learning shift is communicated.</p>
+  </div>
+
+  <!-- Upcoming stages placeholder -->
+  <h2>Stage 2 — Playtest &amp; Tune</h2>
+  <div class="timeline-entry" style="opacity:0.5;border-left-color:var(--border);">
+    <div class="entry-meta">Upcoming</div>
+    <h4>Pending playtest results</h4>
+    <p>This stage will document:</p>
+    <ul>
+      <li>What felt right and what felt wrong after real play</li>
+      <li>Difficulty adjustments based on student feedback</li>
+      <li>Any mechanics that were changed, added, or removed</li>
+      <li>Whether the core learning shift is being communicated effectively</li>
+      <li>Student reflection on AI influence and design direction</li>
+    </ul>
+  </div>
+
+  <h2>Stage 3 — Polish &amp; Submission</h2>
+  <div class="timeline-entry" style="opacity:0.5;border-left-color:var(--border);">
+    <div class="entry-meta">Upcoming</div>
+    <h4>Final exhibition packaging</h4>
+    <p>This stage will document:</p>
+    <ul>
+      <li>Final balance pass across all three levels</li>
+      <li>Submission audit (offline test, 1920x1080 layout check, link validation)</li>
+      <li>System graph integration into the website</li>
+      <li>Preview.png capture</li>
+      <li>Final ZIP packaging</li>
+      <li>Submission manifest review with the student</li>
+    </ul>
+  </div>
+
+  <footer style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:0.8rem;">
+    <p>Racing — IMA Summer Program Game Design · Group 4 · Sungmo</p>
+    <p>Development log maintained in <code>agent-development-log.md</code></p>
+  </footer>
+
+</div>
+</body>
+</html>

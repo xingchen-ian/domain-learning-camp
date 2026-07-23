@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play Game — Raise a Cat Successfully</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="cat-icon">🐱</span> Raise a Cat Successfully
+    </a>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="domain.html">Domain & System</a></li>
+      <li><a href="process.html">Process</a></li>
+      <li><a href="game.html" class="active">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== Cat Selection Screen ===== -->
+  <div id="catSelectScreen" class="cat-select-screen">
+    <h2>Choose Your Cat</h2>
+    <p>Each cat has a different personality and needs. Your care strategy must change accordingly — that's the core of responsible pet keeping.</p>
+
+    <div class="cat-cards">
+      <!-- Mimi -->
+      <div class="cat-card" id="btnSelectMimi">
+        <canvas id="preview_mimi"></canvas>
+        <h3>Mimi</h3>
+        <span class="cat-tag">Balanced House Cat</span>
+        <p>A well-adjusted cat with standard needs. Good for learning the basics of feeding, play, and grooming.</p>
+      </div>
+
+      <!-- Shadow -->
+      <div class="cat-card" id="btnSelectShadow">
+        <canvas id="preview_shadow"></canvas>
+        <h3>Shadow</h3>
+        <span class="cat-tag">Formerly Stray</span>
+        <p>Rescued from the street. Distrustful, sensitive stomach. Needs patience and special diet food.</p>
+      </div>
+
+      <!-- Bounce -->
+      <div class="cat-card" id="btnSelectBounce">
+        <canvas id="preview_bounce"></canvas>
+        <h3>Bounce</h3>
+        <span class="cat-tag">High Energy</span>
+        <p>Extremely energetic! Burns food fast, needs lots of play. Gets depressed quickly without attention.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Game Play Screen ===== -->
+  <div id="gamePlayScreen" style="display: none;">
+    <!-- Info Bar -->
+    <div class="game-info-bar">
+      <span class="cat-name" id="catNameDisplay">Cat</span>
+      <span class="day-age" id="catAgeDisplay">Age: 0 years</span>
+      <span class="day-age" id="vaccStatus">Not vaccinated</span>
+      <button class="end-btn" id="btnEndGame">Give Up</button>
+    </div>
+
+    <div class="game-wrapper">
+      <!-- Canvas Area -->
+      <div class="game-canvas-area">
+        <canvas id="gameCanvas"></canvas>
+      </div>
+
+      <!-- Sidebar: Stats + Actions -->
+      <div class="game-sidebar">
+        <!-- Status Panel -->
+        <div class="status-panel">
+          <h3>Cat Status</h3>
+          <div class="stat-row">
+            <span class="stat-label">Health</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" id="healthBar" style="background: var(--health-color); width: 80%"></div></div>
+            <span class="stat-value" id="healthValue">80</span>
+            <span class="stat-delta" id="healthDelta"></span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Affection</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" id="affectionBar" style="background: var(--affection-color); width: 50%"></div></div>
+            <span class="stat-value" id="affectionValue">50</span>
+            <span class="stat-delta" id="affectionDelta"></span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Fullness</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" id="fullnessBar" style="background: var(--fullness-color); width: 60%"></div></div>
+            <span class="stat-value" id="fullnessValue">60</span>
+            <span class="stat-delta" id="fullnessDelta"></span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Energy</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" id="energyBar" style="background: var(--energy-color); width: 70%"></div></div>
+            <span class="stat-value" id="energyValue">70</span>
+            <span class="stat-delta" id="energyDelta"></span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Water</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" id="waterBar" style="background: var(--water-color); width: 60%"></div></div>
+            <span class="stat-value" id="waterValue">60</span>
+            <span class="stat-delta" id="waterDelta"></span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Clean</span>
+            <div class="stat-bar-bg"><div class="stat-bar-fill" id="cleanlinessBar" style="background: var(--clean-color); width: 70%"></div></div>
+            <span class="stat-value" id="cleanlinessValue">70</span>
+            <span class="stat-delta" id="cleanlinessDelta"></span>
+          </div>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="action-panel">
+          <h3>Actions</h3>
+
+          <!-- Food Type Selection -->
+          <div class="action-group">
+            <div class="action-group-label">Food Type</div>
+            <div class="action-buttons">
+              <button class="btn btn-food-type active" id="foodType_dry">Dry</button>
+              <button class="btn btn-food-type" id="foodType_wet">Wet</button>
+              <button class="btn btn-food-type" id="foodType_special">Special</button>
+            </div>
+          </div>
+
+          <!-- Feeding -->
+          <div class="action-group">
+            <div class="action-group-label">Feeding</div>
+            <div class="action-buttons">
+              <button class="btn btn-feed" id="btnAddFood">+ Food (25g)</button>
+              <button class="btn btn-feed" id="btnAddFoodSmall">+ Food (10g)</button>
+              <button class="btn btn-feed" id="btnReduceFood">- Remove</button>
+            </div>
+          </div>
+
+          <!-- Water -->
+          <div class="action-group">
+            <div class="action-group-label">Water</div>
+            <div class="action-buttons">
+              <button class="btn btn-water" id="btnAddWater">+ Refill Water</button>
+            </div>
+          </div>
+
+          <!-- Interaction -->
+          <div class="action-group">
+            <div class="action-group-label">Interaction</div>
+            <div class="action-buttons">
+              <button class="btn btn-interact" id="btnPet">Pet</button>
+              <button class="btn btn-interact" id="btnPlay">Play</button>
+              <button class="btn btn-interact" id="btnHug">Hug</button>
+              <button class="btn btn-interact" id="btnSleep">Send to Bed</button>
+            </div>
+          </div>
+
+          <!-- Healthcare -->
+          <div class="action-group">
+            <div class="action-group-label">Healthcare</div>
+            <div class="action-buttons">
+              <button class="btn btn-health" id="btnWash">Wash</button>
+              <button class="btn btn-health" id="btnCleanEars">Clean Ears</button>
+              <button class="btn btn-health" id="btnVet">Vet Visit</button>
+              <button class="btn btn-health" id="btnVaccinate">Vaccinate</button>
+            </div>
+          </div>
+
+          <!-- Movement -->
+          <div class="action-group">
+            <div class="action-group-label">Movement</div>
+            <div class="action-buttons">
+              <button class="btn btn-move" id="btnTakeOut">Take Out</button>
+              <button class="btn btn-move" id="btnStayHome">Stay Home</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Log -->
+        <div class="message-log" id="messageLog">
+          <h4>Activity Log</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Game Over Overlay ===== -->
+  <div class="game-overlay" id="gameOverlay" style="display: none;">
+    <div class="game-overlay-content">
+      <h2 id="overlayTitle"></h2>
+      <p id="overlayReason"></p>
+      <div class="stats-summary" id="overlayStats"></div>
+      <button class="overlay-btn" id="btnPlayAgain">Play Again</button>
+      <button class="overlay-btn secondary" id="btnBackToSelect">Choose Different Cat</button>
+    </div>
+  </div>
+
+  <script src="assets/js/game.js"></script>
+</body>
+</html>

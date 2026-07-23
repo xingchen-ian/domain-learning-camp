@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cake - Domain &amp; System</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-title">Cake</div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="design.html" class="active">Domain &amp; System</a>
+      <a href="process.html">Development Process</a>
+      <a href="game.html">Play the Game</a>
+    </nav>
+  </header>
+
+  <main class="info-page">
+    <h1>Domain &amp; System Design</h1>
+    <p class="lead">
+      Why baking, what real-world knowledge the game teaches, and how the system graph
+      becomes a playable loop.
+    </p>
+
+    <section>
+      <h2>The Real-World Domain</h2>
+      <p>
+        Baking a cake is a real sequence of decisions, not just decoration. You read the order,
+        choose a base and a frosting, decide how many layers to bake, then add toppings. Skipping
+        any step shows up in the final cake.
+      </p>
+      <p>
+        I used to bake with my mother on birthdays. I enjoyed decorating the cakes and learned
+        that baking requires following steps carefully. That hands-on feeling is what this game
+        tries to capture.
+      </p>
+    </section>
+
+    <section>
+      <h2>Novice Misconception</h2>
+      <div class="callout warning">
+        Beginners think that finishing as fast as possible, or making the cake look good, is
+        the most important thing. In real baking, the order comes first. The fastest cake
+        still has to match what the customer asked for.
+      </div>
+    </section>
+
+    <section>
+      <h2>Expert Judgment</h2>
+      <p>Experienced bakers do three things in order:</p>
+      <ol>
+        <li><strong>Read the order</strong> &mdash; the order tells you the base, frosting, layers, and toppings.</li>
+        <li><strong>Plan</strong> &mdash; decide the smallest correct set of actions and the order to do them in.</li>
+        <li><strong>Build</strong> &mdash; mix, bake, decorate, then check the cake against the order before serving.</li>
+      </ol>
+      <p>The game models each of these as a step you can act on, not just a tip.</p>
+    </section>
+
+    <section>
+      <h2>Why This Knowledge Becomes Playable</h2>
+      <p>
+        The game turns the invisible habit of "read the order first" into a real input
+        (<kbd>A</kbd>). The timer turns planning into a measurable cost. The customer face
+        turns the final check into feedback you can see.
+      </p>
+    </section>
+
+    <section>
+      <h2>System Graph</h2>
+      <p>The graph below shows the full observe &rarr; judge &rarr; act &rarr; feedback loop.</p>
+      <div class="callout">
+        <strong>Win or Game Over.</strong> Win: all customer requirements met, time &gt; 0.
+        Game Over: missing requirements or time = 0.
+      </div>
+      <p>
+        <strong>Player input.</strong> Read customer order (A key), select ingredients (mouse),
+        put cake into oven (W key), add decorations (mouse), submit cake (Space).
+      </p>
+      <p>
+        <strong>Game environment.</strong> Timer, customer requirements. Difficulty preset
+        changes the time limit and how many requirements the customer has.
+      </p>
+      <p>
+        <strong>Exposed data on screen.</strong> Timer, cake progress, ingredients available,
+        customer patience level.
+      </p>
+      <p>
+        Three difficulty presets:
+      </p>
+      <ul>
+        <li><strong>Level 1.</strong> Finish the cake based on requirements. No timer.</li>
+        <li><strong>Level 2.</strong> Finish the cake based on the 1-minute time limit.</li>
+        <li><strong>Level 3.</strong> Finish the cake based on requirements and a <strong>1-minute</strong> time limit. You must manually pick a different base for each of the 3 layers.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Data Model</h2>
+      <div class="data-grid">
+        <div class="data-card">
+          <h4>Environment Data</h4>
+          <ul>
+            <li>Customer order &amp; requirements</li>
+            <li>Available ingredients &amp; decorations</li>
+            <li>Current cake stage (mixing, baking, decorating)</li>
+            <li>Remaining time</li>
+          </ul>
+        </div>
+        <div class="data-card">
+          <h4>Player-Controlled Data</h4>
+          <ul>
+            <li>Selected base</li>
+            <li>Selected frosting</li>
+            <li>Layers set at mix time</li>
+            <li>Decorations added / removed</li>
+          </ul>
+        </div>
+        <div class="data-card">
+          <h4>System-Calculated Results</h4>
+          <ul>
+            <li>Cake visual appearance</li>
+            <li>Customer satisfaction</li>
+            <li>Time remaining</li>
+            <li>Win or failure at the end of the level</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Feedback Translation</h2>
+      <ul>
+        <li><strong>Cake appearance.</strong> The cake on the canvas updates whenever you add an ingredient or decoration. You can also tell at a glance whether the cake differs from the order.</li>
+        <li><strong>Countdown timer.</strong> The timer sits at the top of the screen. It turns yellow with 20 seconds left and red with 5 seconds left.</li>
+        <li><strong>Customer reaction.</strong> When you submit, the customer face smiles for a correct cake and frowns for a wrong one. The order card shows checkmarks or X marks for each requirement.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Rules, Boundaries, and Outcomes</h2>
+      <p><strong>Important states.</strong> Unmixed / mixed. Baked / unbaked. Decorated / not decorated. Patient / impatient. Satisfied / unsatisfied. Incomplete / complete. Success / failure.</p>
+      <p><strong>How player actions change the system.</strong></p>
+      <ul>
+        <li>Mixing the batter takes <strong>10 seconds</strong>. A progress bar fills up. You cannot do anything else while mixing.</li>
+        <li>Baking in the oven takes <strong>10 seconds</strong>. The oven light turns on and a progress bar fills. You cannot do anything else while baking.</li>
+        <li>Adding toppings changes the state from not decorated to decorated.</li>
+        <li>Submitting changes customer satisfaction.</li>
+      </ul>
+      <p><strong>Feedback during the game.</strong></p>
+      <ul>
+        <li>While mixing, a progress bar fills under the Mix button and the stage message says "The batter is mixing… wait for it!"</li>
+        <li>While baking, a progress bar fills under the Oven button and the stage message says "The cake is baking… patience!"</li>
+        <li>When the level timer runs out, the game immediately shows "Game Over" and freezes.</li>
+      </ul>
+        <li>Time ticks down each second when a timer is active.</li>
+      </ul>
+      <p><strong>Success condition.</strong> Meet all customer requirements before the time limit.</p>
+      <p><strong>Failure conditions.</strong> Submit a cake that does not match the order, or run out of time before completing the cake.</p>
+    </section>
+
+    <section>
+      <h2>Challenge Presets</h2>
+      <p>
+        Each level changes the system, not just the look. The time limit and the number of
+        requirements are real variables.
+      </p>
+      <ul>
+        <li><strong>Level 1.</strong> No timer. 1 layer. 1 topping. Teaches reading the order.</li>
+        <li><strong>Level 2.</strong> 1 minute timer. 2 layers. 2 toppings. Teaches planning.</li>
+        <li><strong>Level 3.</strong> 1-minute timer. 3 layers (player picks a different base for each layer manually). 3 toppings. Teaches multi-layered planning and memorization under time pressure.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Cake &middot; A first playable web game by Huang Yan Yue.</span>
+  </footer>
+</body>
+</html>

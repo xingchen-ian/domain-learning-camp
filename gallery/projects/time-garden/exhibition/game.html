@@ -1,0 +1,2956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Time Garden — A Puzzle of Four Seasons</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: #0e0c1f; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #fff;
+    user-select: none; -webkit-user-select: none; }
+  #stage { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 1280px; height: 720px; box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    border-radius: 14px; overflow: hidden; background: #000; }
+  canvas { display: block; width: 100%; height: 100%; }
+  .hud { position: absolute; pointer-events: none; z-index: 5; }
+  #season-pill { top: 18px; left: 18px; background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-radius: 999px; padding: 9px 18px 9px 14px; display: flex; align-items: center;
+    gap: 10px; color: #4a3a2a; font-weight: 600; font-size: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+  #season-dot { width: 16px; height: 16px; border-radius: 50%;
+    background: #f5b7c8; box-shadow: 0 0 10px #f5b7c8, inset 0 0 4px rgba(255,255,255,0.6);
+    transition: background 0.4s ease, box-shadow 0.4s ease; }
+  #season-name { letter-spacing: 0.5px; }
+  #season-count { font-size: 12px; color: #8a7a5a; margin-left: 6px; }
+  #flower-count { top: 18px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.88); backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); border-radius: 999px; padding: 8px 16px;
+    display: flex; align-items: center; gap: 8px; color: #4a3a2a; font-weight: 600;
+    font-size: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+  #flower-count .ic { font-size: 16px; }
+  #pause-btn { top: 14px; right: 18px; width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,0.88); border: none; color: #4a3a2a; font-size: 16px;
+    cursor: pointer; pointer-events: auto; box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+  #pause-btn:hover { transform: scale(1.06); }
+  #hint { bottom: 22px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); color: #4a3a2a; padding: 9px 18px;
+    border-radius: 999px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.3s;
+    max-width: 80%; text-align: center; }
+  #hint.show { opacity: 1; }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; background: rgba(14,12,31,0.7);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    z-index: 10; pointer-events: auto; transition: opacity 0.4s; padding: 30px; }
+  .overlay.hidden { opacity: 0; pointer-events: none; }
+  .overlay h1 { font-size: 60px; font-weight: 300; letter-spacing: 2px;
+    margin-bottom: 4px; text-shadow: 0 4px 18px rgba(0,0,0,0.5); }
+  .overlay .sub { font-size: 15px; color: rgba(255,255,255,0.7); margin-bottom: 28px;
+    letter-spacing: 3px; text-transform: uppercase; }
+  .overlay .tag { color: rgba(255,255,255,0.6); font-size: 13px; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 6px; }
+  .overlay .desc { max-width: 540px; text-align: center; color: rgba(255,255,255,0.85);
+    line-height: 1.7; font-size: 15px; margin-bottom: 26px; }
+  .overlay .keys { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+    justify-content: center; max-width: 700px; }
+  .overlay .key { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    padding: 12px 16px; border-radius: 12px; min-width: 130px; text-align: center; }
+  .overlay .key .kc { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+  .overlay .key .kd { font-size: 11px; color: rgba(255,255,255,0.6);
+    text-transform: uppercase; letter-spacing: 1px; }
+  .overlay .btn { background: rgba(255,255,255,0.95); color: #4a3a2a; border: none;
+    padding: 12px 32px; border-radius: 999px; font-size: 15px; font-weight: 600;
+    cursor: pointer; letter-spacing: 1px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    transition: transform 0.2s; }
+  .overlay .btn:hover { transform: translateY(-2px); }
+  .overlay .btn.alt { background: rgba(255,255,255,0.1); color: #fff;
+    border: 1px solid rgba(255,255,255,0.3); margin-left: 8px; }
+  #pause-menu h1 { font-size: 48px; }
+  #world-map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    max-width: 720px; margin: 12px 0 24px 0; }
+  .world-cell { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px; padding: 16px; text-align: left; cursor: pointer;
+    transition: background 0.2s, transform 0.2s; }
+  .world-cell:hover { background: rgba(255,255,255,0.14); transform: translateY(-2px); }
+  .world-cell.locked { opacity: 0.45; cursor: not-allowed; }
+  .world-cell .wn { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+  .world-cell .wm { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .world-cell .ws { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 6px;
+    letter-spacing: 1px; text-transform: uppercase; }
+  #audio-toggle { position: absolute; bottom: 14px; right: 18px; z-index: 5;
+    background: rgba(255,255,255,0.7); border: none; width: 34px; height: 34px;
+    border-radius: 50%; cursor: pointer; font-size: 14px; color: #4a3a2a;
+    pointer-events: auto; }
+  #seeds-bar { position: absolute; top: 70px; left: 18px; display: flex; gap: 4px;
+    background: rgba(255,255,255,0.85); padding: 6px 10px; border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+  .seed-slot { width: 14px; height: 14px; border-radius: 50%; background: #d8c8a8;
+    border: 1px solid #b89c70; transition: background 0.3s; }
+  .seed-slot.got { background: #ffd24a; border-color: #c89a20;
+    box-shadow: 0 0 6px #ffd24a; }
+  #upgrades-bar { position: absolute; top: 70px; right: 70px; display: flex; gap: 6px;
+    background: rgba(255,255,255,0.85); padding: 6px 10px; border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18); align-items: center; }
+  .upgrade-icon { font-size: 14px; opacity: 0.3; transition: opacity 0.3s; }
+  .upgrade-icon.on { opacity: 1; }
+  #goal-pill { top: 110px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.88); backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); border-radius: 999px; padding: 6px 14px;
+    color: #4a3a2a; font-weight: 600; font-size: 12px; letter-spacing: 0.6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15); white-space: nowrap; }
+  #goal-pill.hidden { display: none; }
+  #flower-count.hidden { display: none; }
+  #seeds-bar.hidden { display: none; }
+  #upgrades-bar.hidden { display: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game" width="1280" height="720"></canvas>
+
+  <div id="season-pill" class="hud">
+    <div id="season-dot"></div>
+    <div id="season-name">Spring</div>
+    <div id="season-count"></div>
+  </div>
+  <div id="flower-count" class="hud">
+    <span class="ic">✿</span><span id="fc-text">0 / 3</span>
+  </div>
+  <div id="goal-pill" class="hud"><span id="goal-text">Reach the gate</span></div>
+  <button id="pause-btn" class="hud" title="Pause">⏸</button>
+  <div id="seeds-bar" class="hud">
+    <div class="seed-slot" title="Hidden Seed 1"></div>
+    <div class="seed-slot" title="Hidden Seed 2"></div>
+    <div class="seed-slot" title="Hidden Seed 3"></div>
+  </div>
+  <div id="upgrades-bar" class="hud" title="Permanent upgrades from collected seeds">
+    <span class="upgrade-icon" data-u="speed" title="Speed +">👟</span>
+    <span class="upgrade-icon" data-u="vine" title="Vine Range +">🌿</span>
+    <span class="upgrade-icon" data-u="ice" title="Ice Size +">❄</span>
+    <span class="upgrade-icon" data-u="push" title="Push Power +">💪</span>
+  </div>
+  <div id="hint" class="hud"></div>
+  <button id="audio-toggle" title="Toggle audio (M)">♪</button>
+
+  <div id="title-screen" class="overlay">
+    <div class="tag">A Puzzle of Four Seasons</div>
+    <h1>Time Garden</h1>
+    <div class="sub">Plan · Switch · Solve</div>
+    <div class="desc">
+      Each room asks something different. Push a crate, light a flower,
+      cross a gap, freeze a plate, ride the wind — switch seasons to find
+      a way through.
+    </div>
+    <div class="keys">
+      <div class="key"><div class="kc">WASD</div><div class="kd">Move / Push</div></div>
+      <div class="key"><div class="kc">SPACE</div><div class="kd">Cycle Season</div></div>
+      <div class="key"><div class="kc">E</div><div class="kd">Interact</div></div>
+      <div class="key"><div class="kc">Q</div><div class="kd">Revert 1 change</div></div>
+    </div>
+    <button class="btn" id="start-btn">Enter the Garden</button>
+  </div>
+
+  <div id="world-screen" class="overlay hidden">
+    <div class="tag">World Map</div>
+    <h1>Choose a Garden</h1>
+    <div id="world-map"></div>
+    <div>
+      <button class="btn" id="world-reset">Reset Progress</button>
+      <button class="btn alt" id="world-back">Back to Title</button>
+    </div>
+  </div>
+
+  <div id="pause-menu" class="overlay hidden">
+    <h1>Paused</h1>
+    <div class="sub" style="margin-top:14px">Take a breath</div>
+    <div style="margin-top: 28px">
+      <button class="btn" id="resume-btn">Resume</button>
+      <button class="btn alt" id="world-btn">World Map</button>
+      <button class="btn alt" id="restart-btn">Restart Room</button>
+    </div>
+  </div>
+
+  <div id="room-clear" class="overlay hidden">
+    <div class="tag" id="rc-world">World 1</div>
+    <h1>Room Complete</h1>
+    <div class="sub" id="rc-room">Spring Meadow · 1</div>
+    <div class="desc" id="rc-msg">A small victory. The garden remembers.</div>
+    <div>
+      <button class="btn" id="rc-next">Next Room</button>
+      <button class="btn alt" id="rc-map">World Map</button>
+    </div>
+  </div>
+
+  <div id="world-clear" class="overlay hidden">
+    <div class="tag">World Complete</div>
+    <h1>The Garden Awakens</h1>
+    <div class="sub" id="wc-world">A new garden blooms</div>
+    <div class="desc">A new region of Time Garden is now open.</div>
+    <button class="btn" id="wc-btn">Return to Map</button>
+  </div>
+</div>
+
+<script>
+/* ========================================================================
+   TIME GARDEN v2 — A Puzzle of Four Seasons
+   Persistent state · Pushable objects · Pressure plates · Light & wind
+   ======================================================================== */
+(() => {
+'use strict';
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d', { alpha: false });
+const W = 1280, H = 720;
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+canvas.width = W * DPR; canvas.height = H * DPR;
+ctx.scale(DPR, DPR);
+
+const TILE = 64;
+let GW = 20, GH = 11; // default; overridden per-room
+
+// ============== Seasons ==============
+const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
+const SEASON_IDX = { spring: 0, summer: 1, autumn: 2, winter: 3 };
+const SN = { spring: 'Spring', summer: 'Summer', autumn: 'Autumn', winter: 'Winter' };
+const PALETTE = {
+  spring: { sky: ['#fde8d8', '#f5c8c8'], ground: '#a8d5a8', grassDark: '#6cb46e',
+    accent: '#ff9eb5', treeLeaf: '#86c282', treeTrunk: '#7a5230', water: '#9dd5e0',
+    waterDeep: '#7ec5d3', vignette: 'rgba(255,160,180,0)', wash: 'rgba(255,180,200,0.18)',
+    glow: 'rgba(255,200,210,0.6)', particle: '#ffc1d3', particleKind: 'petal' },
+  summer: { sky: ['#dff5b8', '#a3d6a3'], ground: '#8fc488', grassDark: '#5c9a5a',
+    accent: '#ffd24a', treeLeaf: '#5fa855', treeTrunk: '#6b4520', water: '#7ec5d3',
+    waterDeep: '#5ba8be', vignette: 'rgba(255,200,80,0)', wash: 'rgba(255,220,140,0.16)',
+    glow: 'rgba(255,240,160,0.6)', particle: '#fff2a0', particleKind: 'sparkle' },
+  autumn: { sky: ['#f3c896', '#d68a5a'], ground: '#c79b6a', grassDark: '#8e6638',
+    accent: '#e76f51', treeLeaf: '#d9772b', treeTrunk: '#5b3a1a', water: '#7a9aa6',
+    waterDeep: '#5b7782', vignette: 'rgba(220,100,60,0)', wash: 'rgba(220,120,70,0.18)',
+    glow: 'rgba(255,150,90,0.6)', particle: '#e26b3a', particleKind: 'leaf' },
+  winter: { sky: ['#e9f4fb', '#bfd6e5'], ground: '#eaf3f8', grassDark: '#a8c0cc',
+    accent: '#a8dadc', treeLeaf: '#cfe1e8', treeTrunk: '#4a3a2a', water: '#dceaf2',
+    waterDeep: '#c1d8e2', vignette: 'rgba(170,210,230,0)', wash: 'rgba(180,220,240,0.22)',
+    glow: 'rgba(220,240,255,0.7)', particle: '#ffffff', particleKind: 'snow' }
+};
+
+// ============== Goal types — diversify how each room is solved ==============
+// Each room declares exactly ONE goalType. The 'checkGoal' function below
+// dispatches to a specific check. The HUD and hint text adapt to the goal.
+const GOAL_TYPES = {
+  exit:            { label: 'Reach the gate',     short: 'Exit' },
+  collect_flowers: { label: 'Collect flowers',    short: 'Flowers' },
+  collect_seeds:   { label: 'Harvest seeds',      short: 'Seeds' },
+  activate_plates: { label: 'Activate plates',    short: 'Plates' },
+  push_crate:      { label: 'Push crate to gate', short: 'Push' },
+  light_flower:    { label: 'Light the flower',   short: 'Light' },
+  combined:        { label: 'All objectives',     short: 'Combined' }
+};
+
+// ============== Game state ==============
+const game = {
+  state: 'title', // title | worldmap | playing | paused | roomclear | worldclear
+  season: 0,
+  prevSeason: 0,
+  transition: 1,
+  transitionPhase: 'idle',
+  audioOn: false,
+  audioCtx: null, audioMaster: null, audioNodes: [],
+  // progression
+  world: 0,        // 0..WORLDS.length-1
+  room: 0,         // index within world
+  collectedSeeds: new Set(), // 'worldN-roomM-seedK'
+  upgrades: { speed: 0, vine: 0, ice: 0, push: 0 },
+  unlockedWorlds: 1,
+  // room
+  roomTiles: null,
+  roomObjects: null, // pushable
+  roomPlates: null,
+  roomGates: null,
+  roomFlowers: null, // magic flowers that need to bloom
+  roomGoal: null,    // { type, target, description } — see GOAL_TYPES below
+  roomGoalMet: false,
+  roomStart: { x: 1, y: 1 },
+  hints: [],
+  // runtime
+  player: null,
+  particles: [],
+  changeLog: [],     // stack of { type, before, after } — for Q to revert
+  lastInteract: 0,
+  windDir: 0,        // -1, 0, 1 (autumn)
+  windTimer: 0,
+  hintTimer: 0
+};
+
+const player = {
+  x: 1.5, y: 1.5, vx: 0, vy: 0, dir: 'down', facing: 0,
+  speed: 3.0, animTime: 0, moving: false, pushTarget: null
+};
+
+// ============== Worlds / rooms ==============
+// Each room is a compact 16x10 puzzle with a hand-crafted objective.
+// Difficulty: each room requires >=3 season changes or persistent state.
+const WORLDS = [
+  { name: 'Spring Meadow', desc: 'Learn the seasons', color: '#ff9eb5',
+    icon: '🌸', rooms: [] },
+  { name: 'Crystal Forest', desc: 'Push & freeze', color: '#a8dadc',
+    icon: '❄', rooms: [] },
+  { name: 'Golden Valley', desc: 'Pressure & plants', color: '#ffd24a',
+    icon: '⚙', rooms: [] },
+  { name: 'Moon Garden', desc: 'Light & mirrors', color: '#c4b0ff',
+    icon: '🌙', rooms: [] },
+  { name: 'Wind Realm', desc: 'Wind carries things', color: '#86c282',
+    icon: '🌀', rooms: [] },
+  { name: 'Beast Glade', desc: 'Animals help & hinder', color: '#ff9eb5',
+    icon: '🦊', rooms: [] }
+];
+
+// Inline room definitions — small grids (16x10) with embedded objects.
+// Symbols:
+//   T tree  W water  V vine  G leaf gap  . grass
+//   K cracked wall  M mushroom platform  I ice block
+//   R rock (pushable heavy)  C crate (pushable light)
+//   P player start
+//   S seed (collectible, permanent)   F magic flower (must bloom)
+//   B blue flower (winter only)  D red flower (summer only)
+//   A rainbow flower (after B+D)
+//   E exit gate   X pressure plate
+//   L mirror (rotatable)  O light source
+//   Y wind vortex  Z frozen statue
+//   N animal (spring bee, autumn squirrel, summer frog, winter fox)
+
+function R(rows, opts = {}) {
+  // rows: array of 16 strings, 10 rows tall (16x10 default)
+  return {
+    rows,
+    gridW: rows[0].length,
+    gridH: rows.length,
+    ...opts
+  };
+}
+
+// ----- World 1: Spring Meadow (3 rooms) — learn seasons -----
+// Each room uses a DIFFERENT goal type so the player experiences variety:
+//   R1: 'exit'         — just walk to the gate (no season switch needed)
+//   R2: 'collect_flowers' — collect one blue flower (winter)
+//   R3: 'collect_flowers' — collect 3 flowers across all seasons
+WORLDS[0].rooms = [
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'First Steps',
+    intro: 'Walk to the gate. The garden is open.',
+    goalType: 'exit',
+    hint: 'Use WASD to walk east. The gate is right there.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T...........B......T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Winter Bloom',
+    intro: 'Blue flowers only open in Winter.',
+    goalType: 'collect_flowers',
+    hint: 'Walk to the flower. Press SPACE three times to reach Winter. Then press E.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..D...............T',
+    'T..................T',
+    'T..................T',
+    'T..........B.......T',
+    'T..................T',
+    'T..................T',
+    'T..........F.......T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Four Seasons',
+    intro: 'Three flowers, three seasons. Switch and collect.',
+    goalType: 'collect_flowers',
+    hint: 'D = Summer, B = Winter, F = magic (any season, but harvest in Spring).'
+  })
+];
+
+// ----- World 2: Crystal Forest (3 rooms) — push crates -----
+//   R1: 'push_crate'      — push a crate onto the gate
+//   R2: 'activate_plates' — push a crate onto a pressure plate
+//   R3: 'combined'        — push a crate AND collect a flower
+WORLDS[1].rooms = [
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP.C..........E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Push Forward',
+    intro: 'Walk into a crate to push it. Push it onto the gate.',
+    goalType: 'push_crate',
+    hint: 'Walk east into the crate. Keep walking — it slides one tile at a time.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..C...............T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP..........X.E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Plate Push',
+    intro: 'Push the crate onto the pressure plate to open the gate.',
+    goalType: 'activate_plates',
+    hint: 'Walk up to the crate, push it south, then east onto X.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T...........B......T',
+    'T..................T',
+    'T..................T',
+    'T..C...............T',
+    'T..................T',
+    'T..X...............T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Frozen Combo',
+    intro: 'Push the crate to the plate AND collect the blue flower.',
+    goalType: 'combined',
+    hint: 'Push the crate onto X. Then switch to Winter and collect B.'
+  })
+];
+
+// ----- World 3: Golden Valley (3 rooms) — pressure plates & latching -----
+//   R1: 'activate_plates' — stand on a plate in Winter, press E to latch
+//   R2: 'activate_plates' — latch one plate, push a crate to the other
+//   R3: 'collect_flowers' — use Autumn mushrooms to cross a gap to a flower
+WORLDS[2].rooms = [
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T.....X............T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'The Latch',
+    intro: 'Stand on the plate. Switch to Winter. Press E to freeze it.',
+    goalType: 'activate_plates',
+    hint: 'A plate stays active only while something is on it. Latch freezes it.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..C...............T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..........X.......T',
+    'T.....X............T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Two Plates',
+    intro: 'Push the crate to one plate. Latch the other with E in Winter.',
+    goalType: 'activate_plates',
+    hint: 'Push C onto the plate near the bottom. Walk onto the other, switch to Winter, press E.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T...GG..F..........T',
+    'TP.........E.......T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Autumn Crossing',
+    intro: 'A gap blocks your path. In Autumn, leaves bridge it.',
+    goalType: 'collect_flowers',
+    hint: 'Switch to Autumn. The gap is passable. Walk to F, then collect in Spring.'
+  })
+];
+
+// ----- World 4: Moon Garden (3 rooms) — light, mirrors, magical flowers -----
+// Light only exists in Summer. Mirrors reflect 180° (E<->W, N<->S).
+// 'F' here is a special lit-flower: it ONLY blooms when light hits its tile.
+//   R1: 'light_flower' — direct line, no rotation needed
+//   R2: 'light_flower' — rotate the mirror so the beam bounces onto a flower
+//   R3: 'light_flower' — two mirrors; default rotations work
+WORLDS[3].rooms = [
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T.O.........F......T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Direct Light',
+    intro: 'Light exists in Summer. A flower waits in the beam.',
+    goalType: 'light_flower',
+    goalTarget: { x: 11, y: 5 },
+    hint: 'Switch to Summer. Walk east. The beam already points at the flower.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T.O....F...L.......T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Bounce the Light',
+    intro: 'A mirror sits east of the flower. The beam bounces back to hit it.',
+    goalType: 'light_flower',
+    goalTarget: { x: 7, y: 5 },
+    hint: 'Switch to Summer. The mirror at L is already oriented to bounce E→W.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T.O....L.F..L.......T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Multi-Mirror',
+    intro: 'The beam passes the first mirror, then bounces off the second back to the flower.',
+    goalType: 'light_flower',
+    goalTarget: { x: 8, y: 5 },
+    hint: 'The first L is open. The second L bounces the beam back to F.'
+  })
+];
+
+// ----- World 5: Wind Realm (3 rooms) — wind in autumn -----
+//   R1: 'collect_flowers' — switch to autumn, walk east, the wind does the work
+//   R2: 'activate_plates' — wind pushes a crate onto a plate
+//   R3: 'combined'         — push a crate to a plate AND collect a flower
+WORLDS[4].rooms = [
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP.YY.......F......T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T............E.....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Autumn Drift',
+    intro: 'The wind blows east in Autumn. Let it carry you to the flower.',
+    goalType: 'collect_flowers',
+    hint: 'Switch to Autumn. The wind pushes you east. Walk back to E when done.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP.CY......X.......T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T............E.....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Wind Pusher',
+    intro: 'Wind pushes the crate east. Aim it at the plate.',
+    goalType: 'activate_plates',
+    hint: 'Switch to Autumn. Stand still and watch the crate slide onto X.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP.CY.....X........T',
+    'T..................T',
+    'T...........B......T',
+    'T..................T',
+    'T..................T',
+    'T............E.....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Wind Garden',
+    intro: 'Wind pushes the crate. Then collect the blue flower.',
+    goalType: 'combined',
+    hint: 'Switch to Autumn — wind pushes C onto X. Then Winter — collect B.'
+  })
+];
+
+// ----- World 6: Beast Glade (3 rooms) — animals as flavor -----
+WORLDS[5].rooms = [
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..........N.......T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP............E....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Wild Walk',
+    intro: 'A bee hums in the grass. Just walk to the gate.',
+    goalType: 'exit',
+    hint: 'Switch seasons to see the bee change. Then walk east.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'TP.R...............T',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T............X.....T',
+    'T............E.....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'Boulder Path',
+    intro: 'A boulder blocks the path. Only Summer lets you push heavy things.',
+    goalType: 'activate_plates',
+    hint: 'Switch to Summer (one SPACE). Push the boulder east onto X.'
+  }),
+  R([
+    'TTTTTTTTTTTTTTTTTTTT',
+    'T..................T',
+    'T..................T',
+    'T..................T',
+    'T..C...........B...T',
+    'T..................T',
+    'T..................T',
+    'T............X.....T',
+    'T..................T',
+    'T..................T',
+    'TP...........E.....T',
+    'TTTTTTTTTTTTTTTTTTTT'
+  ], {
+    title: 'The Final Bloom',
+    intro: 'Everything you learned. Push a crate. Latch a plate. Collect a flower.',
+    goalType: 'combined',
+    hint: 'Push C east onto X. Latch it in Winter. Then collect B in Winter.'
+  })
+];
+
+// ============== Tile/object parsing ==============
+function parseRoom(room) {
+  const tiles = [];
+  const objects = []; // pushable: { id, type, x, y, w, h, frozen, mass }
+  const plates = []; // { id, x, y, active, latched, connects: [gateId] }
+  const gates = [];  // { id, x, y, open, condition }
+  const flowers = []; // { id, type, x, y, bloomed, requiredSeason }
+  const seeds = [];  // { id, x, y, taken, glow }
+  const lights = []; // { id, x, y, dir }
+  const mirrors = []; // { id, x, y, rot }  0=N 1=E 2=S 3=W
+  const animals = []; // { id, type, x, y, ... }
+  const sources = []; // light source
+  const mushrooms = []; // { id, x, y, grown }
+  const iceBlocks = []; // { id, x, y, melted, frozen }
+  const crackedWalls = []; // { id, x, y, broken }
+  const frozenStatues = []; // { id, x, y, pushed }
+  const windVortexes = []; // { id, x, y, dir }
+
+  GW = room.gridW; GH = room.gridH;
+  const start = { x: 1, y: 1 };
+  let goal = null;
+
+  for (let y = 0; y < room.rows.length; y++) {
+    tiles[y] = [];
+    const row = (room.rows[y] + '.'.repeat(GW)).slice(0, GW);
+    for (let x = 0; x < GW; x++) {
+      const c = row[x];
+      let tile = { base: c, mod: {}, type: 'grass' };
+      switch (c) {
+        case 'T': tile.type = 'tree'; break;
+        case 'W': tile.type = 'water'; break;
+        case 'V': tile.type = 'vine'; break;
+        case 'G': tile.type = 'gap'; break;
+        case 'M': tile.type = 'grass'; mushrooms.push({ id: 'm'+x+'-'+y, x, y, grown: false }); break;
+        case 'I': tile.type = 'grass'; iceBlocks.push({ id: 'i'+x+'-'+y, x, y, melted: false, frozen: true }); break;
+        case 'K': tile.type = 'cracked'; crackedWalls.push({ id: 'k'+x+'-'+y, x, y, broken: false }); break;
+        case 'R': tile.type = 'grass';
+          objects.push({ id: 'r'+x+'-'+y, type: 'boulder', x: x+0.5, y: y+0.5, mass: 2, frozen: false });
+          break;
+        case 'C': tile.type = 'grass';
+          objects.push({ id: 'c'+x+'-'+y, type: 'crate', x: x+0.5, y: y+0.5, mass: 1, frozen: false });
+          break;
+        case 'P': tile.type = 'grass'; start.x = x; start.y = y; break;
+        case 'S': tile.type = 'grass';
+          // Seeds are now plantable: must be planted in spring, watered in spring,
+          // harvested in autumn. The "harvestSeason" determines which season unlocks collection.
+          seeds.push({ id: game.world+'-'+game.room+'-s'+x+'-'+y, x, y,
+            taken: false, glow: 0,
+            planted: false, water: 0, mature: false, collected: false,
+            requiredWater: 2, harvestSeason: 'autumn' });
+          break;
+        case 'F': tile.type = 'grass';
+          // Magic flower: blooms by proximity, HARVESTED only in spring.
+          flowers.push({ id: 'f'+x+'-'+y, type: 'magic', x, y,
+            bloomed: false, collected: false,
+            requiredSeason: null, harvestSeason: 'spring' });
+          break;
+        case 'B': tile.type = 'grass';
+          // Blue flower: blooms in winter, HARVESTED in winter.
+          flowers.push({ id: 'b'+x+'-'+y, type: 'blue', x, y,
+            bloomed: false, collected: false,
+            requiredSeason: 'winter', harvestSeason: 'winter' });
+          break;
+        case 'D': tile.type = 'grass';
+          // Red flower: blooms in summer, HARVESTED in summer.
+          flowers.push({ id: 'd'+x+'-'+y, type: 'red', x, y,
+            bloomed: false, collected: false,
+            requiredSeason: 'summer', harvestSeason: 'summer' });
+          break;
+        case 'A': tile.type = 'grass';
+          // Rainbow flower: blooms after B+D, HARVESTED in autumn.
+          flowers.push({ id: 'a'+x+'-'+y, type: 'rainbow', x, y,
+            bloomed: false, collected: false,
+            requiredSeason: null, harvestSeason: 'autumn' });
+          break;
+        case 'E': tile.type = 'grass';
+          gates.push({ id: 'e'+x+'-'+y, x, y, open: false, condition: 'bloom' });
+          tile.gateId = 'e'+x+'-'+y;
+          break;
+        case 'X': tile.type = 'plate';
+          plates.push({ id: 'x'+x+'-'+y, x, y, active: false, latched: false });
+          tile.plateId = 'x'+x+'-'+y;
+          break;
+        case 'L': tile.type = 'grass';
+          mirrors.push({ id: 'l'+x+'-'+y, x, y, rot: 1 }); // default E
+          break;
+        case 'O': tile.type = 'grass';
+          sources.push({ id: 'o'+x+'-'+y, x, y });
+          break;
+        case 'Y': tile.type = 'grass';
+          windVortexes.push({ id: 'y'+x+'-'+y, x, y, dir: 1 });
+          break;
+        case 'Z': tile.type = 'grass';
+          frozenStatues.push({ id: 'z'+x+'-'+y, x, y, pushed: false });
+          break;
+        case 'N': tile.type = 'grass';
+          animals.push({ id: 'n'+x+'-'+y, x, y, kind: 'bee', state: 'idle',
+            targetX: x+0.5, targetY: y+0.5, moveTimer: 0, follows: false });
+          break;
+        default: tile.type = 'grass';
+      }
+      tiles[y][x] = tile;
+    }
+  }
+  // Build the room goal object from the room definition. If no goalType is
+  // given, default to 'combined' so old rooms still work.
+  const roomGoal = {
+    type: room.goalType || 'combined',
+    target: room.goalTarget || null,
+    description: room.intro || ''
+  };
+  return { tiles, objects, plates, gates, flowers, seeds, lights: sources,
+    mirrors, animals, mushrooms, iceBlocks, crackedWalls, frozenStatues,
+    windVortexes, start, goal, room, roomGoal };
+}
+
+// ============== Animal state — type based on starting season, react to changes ==============
+function refreshAnimals() {
+  // Each animal in the room has a type that changes with the season.
+  // Bee = spring, Frog = summer, Squirrel = autumn, Fox = winter.
+  const sn = SEASONS[game.season];
+  const newKind = sn === 'spring' ? 'bee' : sn === 'summer' ? 'frog' :
+                  sn === 'autumn' ? 'squirrel' : 'fox';
+  for (const a of game.roomAnimals) {
+    const oldKind = a.kind;
+    a.kind = newKind;
+    if (oldKind !== newKind) a.state = 'alert';
+  }
+}
+
+function updateAnimals(dt) {
+  const sn = SEASONS[game.season];
+  for (const a of game.roomAnimals) {
+    a.moveTimer -= dt;
+    if (a.moveTimer > 0) continue;
+    a.moveTimer = 0.4 + Math.random() * 0.4;
+    // Behavior per kind
+    if (a.kind === 'bee') {
+      // Follows player (helpful in spring) — small step toward player
+      const dx = player.x - a.x;
+      const dy = player.y - a.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 0.1) {
+        a.targetX = a.x + Math.sign(dx) * Math.min(0.6, Math.abs(dx));
+        a.targetY = a.y + Math.sign(dy) * Math.min(0.6, Math.abs(dy));
+        a.follows = dist < 4;
+      } else {
+        a.targetX = a.x + (Math.random() - 0.5) * 0.4;
+        a.targetY = a.y + (Math.random() - 0.5) * 0.4;
+      }
+    } else if (a.kind === 'frog') {
+      // Frog hops (summer) — random hops, prefers water
+      a.targetX = a.x + (Math.random() - 0.5) * 1.2;
+      a.targetY = a.y + (Math.random() - 0.5) * 1.2;
+      a.targetX = Math.max(0.5, Math.min(GW - 0.5, a.targetX));
+      a.targetY = Math.max(0.5, Math.min(GH - 0.5, a.targetY));
+    } else if (a.kind === 'squirrel') {
+      // Squirrel runs to nearest tree (autumn)
+      let bestX = a.x, bestY = a.y, bestD = 999;
+      for (let yy = 0; yy < GH; yy++) {
+        for (let xx = 0; xx < GW; xx++) {
+          if (game.roomTiles[yy][xx].type === 'tree') {
+            const d = Math.hypot(xx + 0.5 - a.x, yy + 0.5 - a.y);
+            if (d < bestD) { bestD = d; bestX = xx + 0.5; bestY = yy + 0.5; }
+          }
+        }
+      }
+      a.targetX = a.x + Math.sign(bestX - a.x) * 0.7;
+      a.targetY = a.y + Math.sign(bestY - a.y) * 0.7;
+    } else if (a.kind === 'fox') {
+      // Fox stalks player (winter) — moves 1 tile toward player if in line of sight
+      const dx = player.x - a.x;
+      const dy = player.y - a.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 6 && dist > 0.1) {
+        a.targetX = a.x + Math.sign(dx) * 0.5;
+        a.targetY = a.y + Math.sign(dy) * 0.5;
+      } else {
+        a.targetX = a.x + (Math.random() - 0.5) * 0.3;
+        a.targetY = a.y + (Math.random() - 0.5) * 0.3;
+      }
+    }
+    // Try to step toward target
+    const newX = a.x + Math.sign(a.targetX - a.x) * 0.5;
+    const newY = a.y + Math.sign(a.targetY - a.y) * 0.5;
+    const tx = Math.floor(newX), ty = Math.floor(newY);
+    if (tx < 0 || ty < 0 || tx >= GW || ty >= GH) continue;
+    const t = game.roomTiles[ty][tx];
+    if (t.type === 'tree' || t.type === 'water') continue;
+    // Don't overlap with player (bees follow, others give space)
+    if (tx === Math.floor(player.x) && ty === Math.floor(player.y)) {
+      if (a.kind === 'fox') {
+        showHint('The fox caught you.', 2);
+        // Bump player away
+        player.x = a.x;
+        player.y = a.y;
+      }
+      continue;
+    }
+    a.x = newX; a.y = newY;
+  }
+}
+
+function tileAt(x, y) {
+  if (x < 0 || y < 0 || x >= GW || y >= GH) return { type: 'tree' };
+  return game.roomTiles[y][x];
+}
+
+// ============== Passability & pushability ==============
+function canStandOn(tile, sn) {
+  if (!tile) return false;
+  // Persistent modifications
+  if (tile.mod.grown && tile.base === 'V') return true;  // grown vine = climbable
+  if (tile.mod.broken) return true; // broken wall = passable
+  switch (tile.type) {
+    case 'grass': return true;
+    case 'plate': return true;
+    case 'tree': return false;
+    case 'water':
+      if (sn === 'spring') return true;  // lily pads
+      if (sn === 'winter' && !tile.mod.thawed) return true;  // ice
+      if (tile.mod.frozen) return true;  // persistently frozen
+      return false;
+    case 'vine':
+      if (sn !== 'spring') return true;  // withered
+      if (tile.mod.grown) return true;   // grown vine
+      return false;
+    case 'gap':
+      return sn === 'autumn' || tile.mod.bridged;
+    case 'cracked':
+      return tile.mod.broken;
+    default: return false;
+  }
+}
+
+function isBlocked(x, y, sn) {
+  const t = tileAt(x, y);
+  if (!canStandOn(t, sn)) return true;
+  // Check for pushable
+  for (const o of game.roomObjects) {
+    if (Math.floor(o.x) === x && Math.floor(o.y) === y) return true;
+  }
+  return false;
+}
+
+// ============== Object helpers ==============
+function objAt(x, y) {
+  for (const o of game.roomObjects) {
+    if (Math.floor(o.x) === x && Math.floor(o.y) === y) return o;
+  }
+  return null;
+}
+
+function plateAt(x, y) {
+  for (const p of game.roomPlates) {
+    if (p.x === x && p.y === y) return p;
+  }
+  return null;
+}
+
+function flowerAt(x, y) {
+  for (const f of game.roomFlowers) {
+    if (f.x === x && f.y === y) return f;
+  }
+  return null;
+}
+
+function seedAt(x, y) {
+  for (const s of game.roomSeeds) {
+    if (s.x === x && s.y === y) return s;
+  }
+  return null;
+}
+
+function mirrorAt(x, y) {
+  for (const m of game.roomMirrors) {
+    if (m.x === x && m.y === y) return m;
+  }
+  return null;
+}
+
+function logChange(change) {
+  game.changeLog.push(change);
+  if (game.changeLog.length > 32) game.changeLog.shift();
+}
+
+function revertLastChange() {
+  if (game.changeLog.length === 0) {
+    showHint('Nothing to revert.', 2);
+    return;
+  }
+  const c = game.changeLog.pop();
+  switch (c.type) {
+    case 'push': {
+      const o = game.roomObjects.find(o => o.id === c.id);
+      if (o) { o.x = c.before.x; o.y = c.before.y; }
+      break;
+    }
+    case 'vine_grow': {
+      const tile = tileAt(c.x, c.y);
+      delete tile.mod.grown;
+      break;
+    }
+    case 'wall_break': {
+      const tile = tileAt(c.x, c.y);
+      tile.mod.broken = false;
+      break;
+    }
+    case 'flower_bloom': {
+      const f = game.roomFlowers.find(f => f.id === c.id);
+      if (f) f.bloomed = false;
+      break;
+    }
+    case 'flower_harvest': {
+      const f = game.roomFlowers.find(f => f.id === c.id);
+      if (f) f.collected = false;
+      break;
+    }
+    case 'seed_plant': {
+      const s = game.roomSeeds.find(s => s.id === c.id);
+      if (s) { s.planted = false; s.water = 0; s.mature = false; }
+      break;
+    }
+    case 'seed_water': {
+      const s = game.roomSeeds.find(s => s.id === c.id);
+      if (s) { s.water = Math.max(0, s.water - 1); s.mature = false; }
+      break;
+    }
+    case 'seed_harvest': {
+      const s = game.roomSeeds.find(s => s.id === c.id);
+      if (s) {
+        s.collected = false;
+        s.taken = false;
+        game.collectedSeeds.delete(s.id);
+        // Undo the upgrade
+        const types = ['speed', 'vine', 'ice', 'push'];
+        const t = types[(game.collectedSeeds.size) % types.length];
+        if (game.upgrades[t] > 0) game.upgrades[t]--;
+        updateUpgradeUI();
+      }
+      break;
+    }
+    case 'ice_freeze': {
+      const tile = tileAt(c.x, c.y);
+      delete tile.mod.frozen;
+      break;
+    }
+    case 'ice_melt': {
+      const ib = game.roomIceBlocks.find(i => i.id === c.id);
+      if (ib) { ib.melted = false; ib.frozen = true; }
+      break;
+    }
+  }
+  showHint('Reverted one change.', 1.5);
+  updateHUD();
+}
+
+// ============== Input ==============
+const keys = {};
+const oneShot = {};
+window.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (!keys[k]) oneShot[k] = true;
+  keys[k] = true;
+  if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) e.preventDefault();
+});
+window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+// ============== Audio ==============
+function initAudio() {
+  if (game.audioCtx) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    const ctxA = new AC();
+    game.audioCtx = ctxA;
+    game.audioMaster = ctxA.createGain();
+    game.audioMaster.gain.value = 0;
+    game.audioMaster.connect(ctxA.destination);
+    game.audioMaster.gain.linearRampToValueAtTime(0.16, ctxA.currentTime + 1.2);
+    const padGain = ctxA.createGain(); padGain.gain.value = 0.18;
+    padGain.connect(game.audioMaster);
+    [110, 165, 220, 277].forEach((freq, i) => {
+      const osc = ctxA.createOscillator();
+      osc.type = i === 0 ? 'sine' : 'triangle';
+      osc.frequency.value = freq;
+      const g = ctxA.createGain(); g.gain.value = 0.12;
+      const lfo = ctxA.createOscillator();
+      lfo.frequency.value = 0.1 + i * 0.07;
+      const lfoG = ctxA.createGain(); lfoG.gain.value = 0.08;
+      lfo.connect(lfoG).connect(g.gain); lfo.start();
+      osc.connect(g).connect(padGain); osc.start();
+      game.audioNodes.push(osc, lfo);
+    });
+    const bufferSize = 2 * ctxA.sampleRate;
+    const noiseBuf = ctxA.createBuffer(1, bufferSize, ctxA.sampleRate);
+    const out = noiseBuf.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) out[i] = (Math.random() * 2 - 1) * 0.4;
+    const noise = ctxA.createBufferSource(); noise.buffer = noiseBuf; noise.loop = true;
+    const noiseFilter = ctxA.createBiquadFilter();
+    noiseFilter.type = 'lowpass'; noiseFilter.frequency.value = 800;
+    const noiseGain = ctxA.createGain(); noiseGain.gain.value = 0.08;
+    noise.connect(noiseFilter).connect(noiseGain).connect(game.audioMaster); noise.start();
+    game.audioNodes.push(noise);
+  } catch (e) {}
+}
+function playTone(freq, dur = 0.4, type = 'sine', vol = 0.18) {
+  if (!game.audioOn || !game.audioCtx) return;
+  try {
+    const ctxA = game.audioCtx;
+    const osc = ctxA.createOscillator();
+    const g = ctxA.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    const t = ctxA.currentTime;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(game.audioMaster); osc.start(t); osc.stop(t + dur + 0.05);
+  } catch (e) {}
+}
+function playCollect() { playTone(660, 0.18, 'sine', 0.18);
+  setTimeout(() => playTone(880, 0.18, 'sine', 0.14), 60);
+  setTimeout(() => playTone(1100, 0.22, 'sine', 0.10), 120); }
+function playSeason() { if (!game.audioOn) return;
+  playTone(440, 0.5, 'triangle', 0.12);
+  setTimeout(() => playTone(554, 0.5, 'triangle', 0.10), 90);
+  setTimeout(() => playTone(659, 0.5, 'triangle', 0.08), 180); }
+function playWin() { [523, 659, 784, 1047].forEach((n, i) => setTimeout(() => playTone(n, 0.4, 'sine', 0.18), i * 130)); }
+function toggleAudio() {
+  game.audioOn = !game.audioOn;
+  if (game.audioOn) { initAudio();
+    if (game.audioCtx && game.audioCtx.state === 'suspended') game.audioCtx.resume(); }
+  document.getElementById('audio-toggle').textContent = game.audioOn ? '♪' : '♪̸';
+}
+
+// ============== Particles ==============
+function emitAmbient(dt) {
+  const p = PALETTE[SEASONS[game.season]];
+  if (p.particleKind === 'petal' && Math.random() < 0.4) {
+    game.particles.push({ kind: 'petal', x: Math.random()*W, y: -10,
+      vx: -10 + Math.random()*20, vy: 20 + Math.random()*20,
+      size: 3 + Math.random()*3, rot: Math.random()*Math.PI*2, vrot: -1 + Math.random()*2,
+      color: '#ffc1d3', life: 12 });
+  } else if (p.particleKind === 'sparkle' && Math.random() < 0.2) {
+    game.particles.push({ kind: 'sparkle', x: Math.random()*W, y: Math.random()*H,
+      vx: 0, vy: -3 - Math.random()*2, size: 1 + Math.random()*2, life: 2 + Math.random()*2, color: '#fffacd' });
+  } else if (p.particleKind === 'leaf' && Math.random() < 0.5) {
+    const colors = ['#e26b3a', '#d9772b', '#a85f2a', '#f4a35c'];
+    game.particles.push({ kind: 'leaf', x: Math.random()*W, y: -10,
+      vx: -15 + Math.random()*30, vy: 30 + Math.random()*25,
+      size: 4 + Math.random()*4, rot: Math.random()*Math.PI*2, vrot: -2 + Math.random()*4,
+      color: colors[Math.floor(Math.random()*4)], life: 10 });
+  } else if (p.particleKind === 'snow' && Math.random() < 0.7) {
+    game.particles.push({ kind: 'snow', x: Math.random()*W, y: -10,
+      vx: -8 + Math.random()*16, vy: 25 + Math.random()*20,
+      size: 2 + Math.random()*2, rot: 0, vrot: 0, color: '#fff', life: 14 });
+  }
+}
+function spawnBurst(x, y, color, count = 12) {
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = 40 + Math.random() * 70;
+    game.particles.push({ kind: 'sparkle', x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+      size: 2 + Math.random()*3, life: 0.5 + Math.random()*0.5, color });
+  }
+}
+function updateParticles(dt) {
+  for (let i = game.particles.length - 1; i >= 0; i--) {
+    const p = game.particles[i];
+    p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+    if (p.rot !== undefined) p.rot += p.vrot * dt;
+    if (p.kind === 'petal' || p.kind === 'leaf' || p.kind === 'snow') {
+      p.vx += Math.sin((p.life + i) * 0.5) * 6 * dt;
+    }
+    if (p.life <= 0 || p.y > H + 20) game.particles.splice(i, 1);
+  }
+  if (game.particles.length > 200) game.particles.splice(0, game.particles.length - 200);
+}
+function drawParticles() {
+  for (const p of game.particles) {
+    const a = Math.max(0, Math.min(1, p.life / 1.5));
+    ctx.globalAlpha = a;
+    if (p.kind === 'petal') {
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.ellipse(0, 0, p.size, p.size*0.6, 0, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    } else if (p.kind === 'leaf') {
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.moveTo(0, -p.size);
+      ctx.quadraticCurveTo(p.size, 0, 0, p.size);
+      ctx.quadraticCurveTo(-p.size, 0, 0, -p.size); ctx.fill();
+      ctx.restore();
+    } else if (p.kind === 'snow') {
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+    } else if (p.kind === 'sparkle') {
+      ctx.fillStyle = p.color; ctx.shadowColor = p.color; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ============== Wind force ==============
+// In autumn, the wind blows horizontally. Vortexes (Y) amplify the force
+// in their row. Wind pushes the player and pushable objects (crates, boulders).
+function applyWindForce(dt) {
+  if (SEASONS[game.season] !== 'autumn' || game.windDir === 0) return;
+  const baseForce = 1.4;
+  // For player
+  const px = Math.floor(player.x);
+  const py = Math.floor(player.y);
+  let force = baseForce;
+  for (const v of game.roomWindVortexes) {
+    if (Math.abs(v.y - py) <= 1) force = Math.max(force, 2.4);
+  }
+  player.x += game.windDir * force * dt;
+  player.x = Math.max(0.4, Math.min(GW - 0.4, player.x));
+  // For pushable objects
+  for (const o of game.roomObjects) {
+    const ox = Math.floor(o.x), oy = Math.floor(o.y);
+    let of = baseForce * 0.5;
+    for (const v of game.roomWindVortexes) {
+      if (Math.abs(v.y - oy) <= 1) of = Math.max(of, 1.6);
+    }
+    const newX = o.x + game.windDir * of * dt;
+    // Don't push into a wall or another object
+    const newTX = Math.floor(newX);
+    const t = tileAt(newTX, oy);
+    if (t.type === 'tree' || t.type === 'water') continue;
+    let blocked = false;
+    for (const oo of game.roomObjects) {
+      if (oo !== o && Math.floor(oo.x) === newTX && Math.floor(oo.y) === oy) {
+        blocked = true; break;
+      }
+    }
+    if (blocked) continue;
+    o.x = newX;
+  }
+}
+function updatePlayer(dt) {
+  const sn = SEASONS[game.season];
+  const ax = (keys['d']||keys['arrowright']?1:0) - (keys['a']||keys['arrowleft']?1:0);
+  const ay = (keys['s']||keys['arrowdown']?1:0) - (keys['w']||keys['arrowup']?1:0);
+  const mag = Math.hypot(ax, ay);
+  const spd = player.speed * (1 + game.upgrades.speed * 0.1);
+  const targetVX = mag > 0 ? (ax/mag) * spd : 0;
+  const targetVY = mag > 0 ? (ay/mag) * spd : 0;
+  const accel = 14;
+  player.vx = lerp(player.vx, targetVX, Math.min(accel * dt, 1));
+  player.vy = lerp(player.vy, targetVY, Math.min(accel * dt, 1));
+  player.moving = mag > 0;
+  if (player.moving) {
+    player.facing = Math.atan2(ay, ax);
+    const a = player.facing;
+    if (Math.abs(Math.cos(a)) > Math.abs(Math.sin(a))) {
+      player.dir = Math.cos(a) > 0 ? 'right' : 'left';
+    } else {
+      player.dir = Math.sin(a) > 0 ? 'down' : 'up';
+    }
+    player.animTime += dt * 8;
+  }
+  // Try move, with push
+  const stepX = player.vx * dt;
+  const stepY = player.vy * dt;
+  tryMoveAxis('x', stepX, sn);
+  tryMoveAxis('y', stepY, sn);
+  player.x = Math.max(0.4, Math.min(GW - 0.4, player.x));
+  player.y = Math.max(0.4, Math.min(GH - 0.4, player.y));
+}
+
+function tryMoveAxis(axis, delta, sn) {
+  if (delta === 0) return;
+  const dir = Math.sign(delta);
+  const newPos = axis === 'x' ? player.x + delta : player.y + delta;
+  const tx = axis === 'x' ? Math.floor(player.x + (dir > 0 ? 0.4 : -0.4) + dir * 0.1) : Math.floor(player.x);
+  const ty = axis === 'y' ? Math.floor(player.y + (dir > 0 ? 0.4 : -0.4) + dir * 0.1) : Math.floor(player.y);
+  // Check pushable
+  const obj = objAt(tx, ty);
+  if (obj) {
+    // Try to push
+    const pdx = axis === 'x' ? dir : 0;
+    const pdy = axis === 'y' ? dir : 0;
+    const pushToX = Math.floor(obj.x) + pdx;
+    const pushToY = Math.floor(obj.y) + pdy;
+    const pushTile = tileAt(pushToX, pushToY);
+    if (canStandOn(pushTile, sn) && !objAt(pushToX, pushToY)) {
+      // Determine if player can push (mass check)
+      const playerPush = 1 + game.upgrades.push * 0.5;
+      const canPush = (sn === 'summer') ? true : (sn === 'winter' && obj.frozen) ? true : (playerPush >= obj.mass);
+      // Spring vines stop crates
+      if (sn === 'spring' && pushTile.type === 'vine' && !pushTile.mod.grown) {
+        showHint('Vines block the crate until you grow them.', 2.5);
+        return;
+      }
+      // Winter ice slide (only if currently on ice)
+      const isOnIce = sn === 'winter' && (tileAt(Math.floor(obj.x), Math.floor(obj.y)).type === 'water' || obj.frozen);
+      if (isOnIce) {
+        // Slide 2 tiles
+        const slideX = Math.floor(obj.x) + pdx * 2;
+        const slideY = Math.floor(obj.y) + pdy * 2;
+        const slideTile = tileAt(slideX, slideY);
+        if (canStandOn(slideTile, sn) && !objAt(slideX, slideY)) {
+          logChange({ type: 'push', id: obj.id, before: { x: obj.x, y: obj.y } });
+          obj.x = slideX + 0.5; obj.y = slideY + 0.5;
+          player[axis === 'x' ? 'x' : 'y'] = newPos;
+          return;
+        }
+      }
+      // Normal push
+      logChange({ type: 'push', id: obj.id, before: { x: obj.x, y: obj.y } });
+      obj.x = pushToX + 0.5; obj.y = pushToY + 0.5;
+      player[axis === 'x' ? 'x' : 'y'] = newPos;
+      playTone(220, 0.1, 'square', 0.05);
+    }
+    return;
+  }
+  // Standard collision
+  const newX = axis === 'x' ? newPos : player.x;
+  const newY = axis === 'y' ? newPos : player.y;
+  const tileL = Math.floor(newX - 0.35);
+  const tileR = Math.floor(newX + 0.35);
+  const tileT = Math.floor(newY - 0.35);
+  const tileB = Math.floor(newY + 0.35);
+  for (let ty = tileT; ty <= tileB; ty++) {
+    for (let tx = tileL; tx <= tileR; tx++) {
+      if (!canStandOn(tileAt(tx, ty), sn)) return;
+    }
+  }
+  player.x = newX; player.y = newY;
+}
+
+// ============== Plates & flowers ==============
+function updatePlates() {
+  for (const p of game.roomPlates) {
+    if (p.latched) { p.active = true; continue; }
+    const obj = objAt(p.x, p.y);
+    if (obj) { p.active = true; continue; }
+    // Animals can also press plates
+    let animalOn = false;
+    for (const a of (game.roomAnimals || [])) {
+      if (Math.floor(a.x) === p.x && Math.floor(a.y) === p.y) { animalOn = true; break; }
+    }
+    p.active = animalOn;
+  }
+}
+
+function updateFlowers() {
+  const sn = SEASONS[game.season];
+  let changed = false;
+  for (const f of game.roomFlowers) {
+    if (f.bloomed) continue;
+    if (f.type === 'magic') {
+      // Blooms when player is adjacent OR when light beam hits the tile.
+      // The second condition makes the light_flower goal work in World 4.
+      let shouldBloom = false;
+      const dx = player.x - (f.x + 0.5);
+      const dy = player.y - (f.y + 0.5);
+      if (Math.hypot(dx, dy) < 1.3) shouldBloom = true;
+      if (!shouldBloom && sn === 'summer') {
+        const hit = castLight();
+        if (hit.has(f.x + ',' + f.y)) shouldBloom = true;
+      }
+      if (shouldBloom) {
+        f.bloomed = true;
+        logChange({ type: 'flower_bloom', id: f.id });
+        spawnBurst((f.x+0.5)*TILE, (f.y+0.5)*TILE, '#ff9eb5', 12);
+        changed = true;
+      }
+    } else if (f.type === 'blue') {
+      if (sn === 'winter') {
+        f.bloomed = true;
+        logChange({ type: 'flower_bloom', id: f.id });
+        spawnBurst((f.x+0.5)*TILE, (f.y+0.5)*TILE, '#a8dadc', 16);
+        changed = true;
+      }
+    } else if (f.type === 'red') {
+      if (sn === 'summer') {
+        f.bloomed = true;
+        logChange({ type: 'flower_bloom', id: f.id });
+        spawnBurst((f.x+0.5)*TILE, (f.y+0.5)*TILE, '#ff6b6b', 16);
+        changed = true;
+      }
+    } else if (f.type === 'rainbow') {
+      const blue = game.roomFlowers.find(x => x.type === 'blue');
+      const red = game.roomFlowers.find(x => x.type === 'red');
+      if (blue && red && blue.bloomed && red.bloomed) {
+        f.bloomed = true;
+        logChange({ type: 'flower_bloom', id: f.id });
+        spawnBurst((f.x+0.5)*TILE, (f.y+0.5)*TILE, '#ffd24a', 24);
+        changed = true;
+      }
+    }
+  }
+  if (changed) updateHUD();
+}
+
+// ============== Goal system — one check per goal type ==============
+// Returns true if the room's goal condition is currently met.
+function checkGoal() {
+  const goal = game.roomGoal;
+  if (!goal) return true; // no goal = always open
+
+  switch (goal.type) {
+    case 'exit':
+      // The gate is always open; player just needs to reach it.
+      return true;
+    case 'collect_flowers': {
+      if (game.roomFlowers.length === 0) return false;
+      return game.roomFlowers.every(f => f.collected);
+    }
+    case 'collect_seeds': {
+      if (game.roomSeeds.length === 0) return false;
+      return game.roomSeeds.every(s => s.collected);
+    }
+    case 'activate_plates': {
+      if (game.roomPlates.length === 0) return false;
+      return game.roomPlates.every(p => p.active);
+    }
+    case 'push_crate': {
+      // Any pushable object sitting on ANY gate tile counts.
+      for (const g of game.roomGates) {
+        for (const o of game.roomObjects) {
+          if (Math.floor(o.x) === g.x && Math.floor(o.y) === g.y) return true;
+        }
+      }
+      return false;
+    }
+    case 'light_flower': {
+      if (!goal.target) return false;
+      const hit = castLight();
+      return hit.has(goal.target.x + ',' + goal.target.y);
+    }
+    case 'combined': {
+      const flowersOk = game.roomFlowers.length === 0 ||
+        game.roomFlowers.every(f => f.collected);
+      const seedsOk = game.roomSeeds.length === 0 ||
+        game.roomSeeds.every(s => s.collected);
+      const platesOk = game.roomPlates.length === 0 ||
+        game.roomPlates.every(p => p.active);
+      return flowersOk && seedsOk && platesOk;
+    }
+  }
+  return false;
+}
+
+function checkGateUnlock() {
+  for (const g of game.roomGates) {
+    if (g.open) continue;
+    if (checkGoal()) {
+      g.open = true;
+      const goalDesc = game.roomGoal && GOAL_TYPES[game.roomGoal.type] ?
+        GOAL_TYPES[game.roomGoal.type].label : 'The garden awakens';
+      spawnBurst((g.x+0.5)*TILE, (g.y+0.5)*TILE, '#ffe2a8', 30);
+      showHint(goalDesc + '. Walk through the gate.', 3);
+    }
+  }
+}
+
+// ============== Interact ==============
+function interact() {
+  const cx = Math.floor(player.x), cy = Math.floor(player.y);
+  const sn = SEASONS[game.season];
+
+  // ---- Tile the player is standing on (plant / harvest / collect) ----
+  // 1. Plant a seed in spring
+  const hereSeed = seedAt(cx, cy);
+  if (hereSeed && !hereSeed.planted && !hereSeed.collected && sn === 'spring') {
+    hereSeed.planted = true;
+    hereSeed.water = 0;
+    // Pre-assign an upgrade type based on seed position
+    const upgradeTypes = ['speed', 'vine', 'ice', 'push'];
+    hereSeed.upgradeType = upgradeTypes[(hereSeed.x + hereSeed.y * 3) % 4];
+    logChange({ type: 'seed_plant', id: hereSeed.id });
+    spawnBurst((cx+0.5)*TILE, (cy+0.5)*TILE, '#86c282', 12);
+    playTone(523, 0.15, 'sine', 0.14);
+    showHint('Seed planted. Water it in Spring.', 2);
+    return;
+  }
+  // 2. Harvest a mature seed in autumn
+  if (hereSeed && hereSeed.mature && !hereSeed.collected && sn === 'autumn') {
+    hereSeed.collected = true;
+    hereSeed.taken = true;
+    game.collectedSeeds.add(hereSeed.id);
+    grantUpgrade(hereSeed.upgradeType);
+    logChange({ type: 'seed_harvest', id: hereSeed.id, upgradeType: hereSeed.upgradeType });
+    spawnBurst((cx+0.5)*TILE, (cy+0.5)*TILE, '#e76f51', 18);
+    playTone(784, 0.22, 'sine', 0.16);
+    showHint('A ' + (hereSeed.upgradeType || 'fruit') + ' fruit harvested.', 2);
+    updateHUD();
+    return;
+  }
+  // 3. Collect a bloomed flower (only in its harvest season)
+  const hereFlower = flowerAt(cx, cy);
+  if (hereFlower && hereFlower.bloomed && !hereFlower.collected) {
+    if (sn === hereFlower.harvestSeason) {
+      hereFlower.collected = true;
+      logChange({ type: 'flower_harvest', id: hereFlower.id });
+      const color = hereFlower.type === 'blue' ? '#a8dadc' :
+                    hereFlower.type === 'red' ? '#ff6b6b' :
+                    hereFlower.type === 'rainbow' ? '#ffd24a' : '#ff9eb5';
+      spawnBurst((cx+0.5)*TILE, (cy+0.5)*TILE, color, 18);
+      playTone(hereFlower.type === 'rainbow' ? 1047 : 880, 0.18, 'sine', 0.16);
+      showHint('A ' + hereFlower.type + ' flower collected.', 2);
+      updateHUD();
+      return;
+    } else {
+      showHint('This flower is harvested in ' + SN[hereFlower.harvestSeason] + '.', 2);
+      return;
+    }
+  }
+
+  // ---- 4-neighbor tiles (water, mirror, vine, cracked, plate, freeze) ----
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  for (const [ox, oy] of dirs) {
+    const tx = cx+ox, ty = cy+oy;
+
+    // Water an adjacent planted seed (spring)
+    const ns = seedAt(tx, ty);
+    if (ns && ns.planted && !ns.mature && !ns.collected && sn === 'spring') {
+      ns.water++;
+      if (ns.water >= ns.requiredWater) ns.mature = true;
+      logChange({ type: 'seed_water', id: ns.id });
+      // Water droplet effect
+      for (let i = 0; i < 6; i++) {
+        game.particles.push({ kind: 'sparkle',
+          x: (tx+0.3+Math.random()*0.4)*TILE, y: (ty-0.2)*TILE,
+          vx: -20+Math.random()*40, vy: 60+Math.random()*40,
+          size: 1.5+Math.random()*1.5, life: 0.6+Math.random()*0.4,
+          color: '#a8dadc' });
+      }
+      playTone(660, 0.12, 'sine', 0.10);
+      if (ns.mature) showHint('The seed is mature. Harvest it in Autumn.', 2.5);
+      else showHint('Watered (' + ns.water + '/' + ns.requiredWater + ').', 1.5);
+      updateHUD();
+      return;
+    }
+
+    // Mirror
+    const m = mirrorAt(tx, ty);
+    if (m) {
+      m.rot = (m.rot + 1) % 4;
+      playTone(600, 0.1, 'sine', 0.1);
+      return;
+    }
+    // Vine growth
+    const tile = tileAt(tx, ty);
+    if (tile.type === 'vine' && !tile.mod.grown && sn === 'spring') {
+      tile.mod.grown = true;
+      logChange({ type: 'vine_grow', x: tx, y: ty });
+      spawnBurst((tx+0.5)*TILE, (ty+0.5)*TILE, '#86c282', 14);
+      playTone(523, 0.15, 'sine', 0.15);
+      return;
+    }
+    // Cracked wall: press E in spring to break with vine
+    if (tile.type === 'cracked' && !tile.mod.broken && sn === 'spring') {
+      tile.mod.broken = true;
+      logChange({ type: 'wall_break', x: tx, y: ty });
+      spawnBurst((tx+0.5)*TILE, (ty+0.5)*TILE, '#86c282', 20);
+      playTone(440, 0.2, 'sine', 0.15);
+      return;
+    }
+    // Latch plate: in winter, E to latch
+    const p = plateAt(tx, ty);
+    if (p && p.active && !p.latched && sn === 'winter') {
+      p.latched = true;
+      showHint('Plate frozen in place.', 2);
+      playTone(700, 0.15, 'sine', 0.12);
+      return;
+    }
+    if (p && p.latched && sn === 'summer') {
+      p.latched = false;
+      showHint('Plate unfrozen.', 1.5);
+      return;
+    }
+    // Water: E in winter to freeze persistently
+    if (tile.type === 'water' && !tile.mod.frozen && sn === 'winter') {
+      tile.mod.frozen = true;
+      logChange({ type: 'ice_freeze', x: tx, y: ty });
+      spawnBurst((tx+0.5)*TILE, (ty+0.5)*TILE, '#ffffff', 12);
+      return;
+    }
+  }
+}
+
+// ============== Season change ==============
+function changeSeason() {
+  if (game.state !== 'playing') return;
+  if (game.transitionPhase !== 'idle') return;
+  const newS = (game.season + 1) % 4;
+  const sn = SEASONS[newS];
+  // Apply persistent changes that depend on the new season
+  // Mushrooms appear in autumn
+  for (const m of game.roomMushrooms) {
+    if (sn === 'autumn') m.grown = true;
+  }
+  // Ice blocks: melt in summer
+  for (const ib of game.roomIceBlocks) {
+    if (sn === 'summer' && !ib.melted) {
+      ib.melted = true; ib.frozen = false;
+      logChange({ type: 'ice_melt', id: ib.id });
+    } else if (sn === 'winter' && ib.melted) {
+      ib.melted = false; ib.frozen = true;
+    }
+  }
+  // Wind direction in autumn
+  game.windDir = (sn === 'autumn') ? (Math.random() < 0.5 ? 1 : -1) : 0;
+  // Refresh animal types (bee -> frog -> squirrel -> fox)
+  if (game.roomAnimals) refreshAnimals();
+  // Vine fade
+  game.prevSeason = game.season;
+  game.season = newS;
+  game.transition = 0;
+  game.transitionPhase = 'out';
+  playSeason();
+  for (let i = 0; i < 25; i++) {
+    game.particles.push({ kind: 'sparkle',
+      x: Math.random()*W, y: Math.random()*H,
+      vx: -30 + Math.random()*60, vy: -50 + Math.random()*80,
+      size: 2 + Math.random()*4, life: 0.6 + Math.random()*0.6,
+      color: PALETTE[sn].accent });
+  }
+  updateHUD();
+}
+
+function updateSeasonTransition(dt) {
+  if (game.transitionPhase === 'out') {
+    game.transition += dt * 1.4;
+    if (game.transition >= 0.5) { game.transitionPhase = 'in'; game.transition = 0.5; }
+  } else if (game.transitionPhase === 'in') {
+    game.transition += dt * 1.4;
+    if (game.transition >= 1) { game.transition = 1; game.transitionPhase = 'idle'; }
+  }
+}
+
+// ============== Light & mirror logic ==============
+function castLight() {
+  // Returns set of tile coords that light hits
+  if (SEASONS[game.season] !== 'summer') return new Set();
+  const hit = new Set();
+  for (const src of game.roomLights) {
+    let x = src.x, y = src.y, dir = 1; // 0=N 1=E 2=S 3=W
+    const maxSteps = 32;
+    for (let step = 0; step < maxSteps; step++) {
+      const dx = [0, 1, 0, -1][dir];
+      const dy = [-1, 0, 1, 0][dir];
+      x += dx; y += dy;
+      if (x < 0 || y < 0 || x >= GW || y >= GH) break;
+      const tile = tileAt(x, y);
+      if (tile.type === 'tree') break;
+      hit.add(x + ',' + y);
+      // Mirror
+      const m = mirrorAt(x, y);
+      if (m) {
+        // Reflect: if moving N/S, mirror at 0/2 swaps to E/W and vice versa
+        if (dir === 0 || dir === 2) {
+          // N/S -> check rot 1(E) or 3(W): if mirror rot is E or W, the beam bounces 180
+          if (m.rot === 1 || m.rot === 3) dir = (dir + 2) % 4;
+        } else {
+          if (m.rot === 0 || m.rot === 2) dir = (dir + 2) % 4;
+        }
+      }
+    }
+  }
+  return hit;
+}
+
+// ============== Check win ==============
+function checkWin() {
+  for (const g of game.roomGates) {
+    if (!g.open) continue;
+    const dx = player.x - (g.x + 0.5);
+    const dy = player.y - (g.y + 0.5);
+    if (Math.hypot(dx, dy) < 0.55) {
+      onRoomClear();
+      return;
+    }
+  }
+}
+
+function onRoomClear() {
+  // Seeds are now granted at harvest time (within the room), not at room clear.
+  // This rewards the player for completing the full plant/water/harvest cycle.
+  // Any unharvested seeds simply remain in the world — they don't grant upgrades.
+  playWin();
+  // Show clear screen
+  const w = WORLDS[game.world];
+  document.getElementById('rc-world').textContent = w.name;
+  document.getElementById('rc-room').textContent = 'Room ' + (game.room + 1) + ' of ' + w.rooms.length;
+  // Report how many seeds were harvested this room
+  const harvested = game.roomSeeds.filter(s => s.collected).length;
+  const total = game.roomSeeds.length;
+  document.getElementById('rc-msg').textContent = harvested === total
+    ? 'A perfect harvest. The garden remembers.'
+    : 'The garden remembers your work.';
+  document.getElementById('room-clear').classList.remove('hidden');
+  game.state = 'roomclear';
+  updateSeedUI();
+}
+
+function grantUpgrade(type) {
+  // Each seed in a room pre-assigns its upgrade type at plant time so that
+  // a single seed always gives the same upgrade regardless of order harvested.
+  // The type is determined by the seed's position to give variety.
+  if (!type) {
+    const types = ['speed', 'vine', 'ice', 'push'];
+    type = types[game.collectedSeeds.size % types.length];
+  }
+  game.upgrades[type]++;
+  updateUpgradeUI();
+}
+
+function revokeUpgrade(type) {
+  if (!type) return;
+  if (game.upgrades[type] > 0) game.upgrades[type]--;
+  updateUpgradeUI();
+}
+
+function onWorldClear() {
+  // Player finished all rooms in current world
+  game.unlockedWorlds = Math.min(WORLDS.length, game.unlockedWorlds + 1);
+  document.getElementById('wc-world').textContent = WORLDS[game.world].name + ' · complete';
+  document.getElementById('world-clear').classList.remove('hidden');
+  game.state = 'worldclear';
+}
+
+// ============== Update ==============
+function update(dt) {
+  if (game.state === 'playing') {
+    updatePlayer(dt);
+    applyWindForce(dt);
+    updateAnimals(dt);
+    updatePlates();
+    updateFlowers();
+    checkGateUnlock();
+    checkWin();
+    updateSeasonTransition(dt);
+    emitAmbient(dt);
+    game.hintTimer -= dt;
+    if (game.hintTimer <= 0) document.getElementById('hint').classList.remove('show');
+  }
+  updateParticles(dt);
+}
+
+function showHint(text, dur = 3) {
+  const el = document.getElementById('hint');
+  el.innerHTML = text;
+  el.classList.add('show');
+  game.hintTimer = dur;
+}
+
+// ============== HUD ==============
+// ============== HUD ==============
+// setupRoomHUD is called once when entering a new room. It shows or hides
+// HUD elements that are only relevant to certain rooms (e.g. the seed bar
+// is hidden if the room has no seeds; the flower count is hidden if the
+// room has no flowers). This is the "elements only when they are needed"
+// part of the design brief.
+function setupRoomHUD() {
+  const hasSeeds = game.roomSeeds.length > 0;
+  const hasFlowers = game.roomFlowers.length > 0;
+  const hasPlates = game.roomPlates.length > 0;
+  const goal = game.roomGoal;
+  const goalType = goal ? goal.type : 'combined';
+
+  // Seeds bar + upgrade bar: only show if the room has seeds.
+  document.getElementById('seeds-bar').classList.toggle('hidden', !hasSeeds);
+  document.getElementById('upgrades-bar').classList.toggle('hidden', !hasSeeds);
+
+  // Flower count (the "✿ 0/3" pill): only show for goals that count flowers.
+  const showFlowerCount = goalType === 'collect_flowers' ||
+                          goalType === 'combined' ||
+                          goalType === 'light_flower';
+  document.getElementById('flower-count').classList.toggle('hidden', !showFlowerCount);
+
+  // Goal pill: always show, with text matching the current goal.
+  const goalInfo = GOAL_TYPES[goalType] || GOAL_TYPES.combined;
+  const goalText = document.getElementById('goal-text');
+  if (goalText) goalText.textContent = goalInfo.label;
+  document.getElementById('goal-pill').classList.remove('hidden');
+
+  // The "seeds-bar" decoration shows N slots matching the room's seed count,
+  // not a fixed 3.
+  if (hasSeeds) {
+    const slotsHost = document.getElementById('seeds-bar');
+    slotsHost.innerHTML = '';
+    for (let i = 0; i < game.roomSeeds.length; i++) slotsHost.innerHTML +=
+      '<div class="seed-slot"></div>';
+  }
+}
+
+function updateHUD() {
+  const sn = SEASONS[game.season];
+  document.getElementById('season-name').textContent = SN[sn];
+  const dot = document.getElementById('season-dot');
+  dot.style.background = PALETTE[sn].accent;
+  dot.style.boxShadow = `0 0 10px ${PALETTE[sn].accent}`;
+
+  // The "fc-text" (flower count pill) and "season-count" adapt to the goal.
+  const goal = game.roomGoal;
+  const goalType = goal ? goal.type : 'combined';
+  const fcText = document.getElementById('fc-text');
+  const seasonCount = document.getElementById('season-count');
+
+  switch (goalType) {
+    case 'collect_flowers': {
+      const total = game.roomFlowers.length;
+      const got = game.roomFlowers.filter(f => f.collected).length;
+      fcText.textContent = total > 0 ? got + ' / ' + total : '0';
+      if (seasonCount) seasonCount.textContent = '· ' + total + ' flower' + (total===1?'':'s');
+      break;
+    }
+    case 'collect_seeds': {
+      const total = game.roomSeeds.length;
+      const got = game.roomSeeds.filter(s => s.collected).length;
+      fcText.textContent = total > 0 ? got + ' / ' + total : '0';
+      if (seasonCount) seasonCount.textContent = '· ' + total + ' seed' + (total===1?'':'s');
+      break;
+    }
+    case 'activate_plates': {
+      const total = game.roomPlates.length;
+      const got = game.roomPlates.filter(p => p.active).length;
+      fcText.textContent = total > 0 ? got + ' / ' + total : '0';
+      if (seasonCount) seasonCount.textContent = '· ' + total + ' plate' + (total===1?'':'s');
+      break;
+    }
+    case 'push_crate': {
+      // 1 if a crate is on a gate, 0 otherwise
+      let onGate = 0;
+      for (const g of game.roomGates) {
+        for (const o of game.roomObjects) {
+          if (Math.floor(o.x) === g.x && Math.floor(o.y) === g.y) { onGate = 1; break; }
+        }
+      }
+      fcText.textContent = onGate ? 'Ready' : 'Push crate';
+      if (seasonCount) seasonCount.textContent = '· ' + (onGate ? 'on gate' : 'to gate');
+      break;
+    }
+    case 'light_flower': {
+      let lit = false;
+      if (goal && goal.target) {
+        const hit = castLight();
+        lit = hit.has(goal.target.x + ',' + goal.target.y);
+      }
+      fcText.textContent = lit ? 'Lit' : 'Aim light';
+      if (seasonCount) seasonCount.textContent = '· ' + (lit ? 'bloom!' : 'in Summer');
+      break;
+    }
+    case 'combined': {
+      const fg = game.roomFlowers.filter(f => f.collected).length;
+      const sg = game.roomSeeds.filter(s => s.collected).length;
+      const pg = game.roomPlates.filter(p => p.active).length;
+      const total = game.roomFlowers.length + game.roomSeeds.length + game.roomPlates.length;
+      fcText.textContent = (fg + sg + pg) + ' / ' + total;
+      if (seasonCount) seasonCount.textContent = '· all goals';
+      break;
+    }
+    case 'exit': {
+      fcText.textContent = 'Walk east';
+      if (seasonCount) seasonCount.textContent = '· to the gate';
+      break;
+    }
+    default: {
+      fcText.textContent = '';
+    }
+  }
+}
+function updateSeedUI() {
+  const slots = document.querySelectorAll('.seed-slot');
+  slots.forEach((s, i) => {
+    const arr = Array.from(game.collectedSeeds);
+    s.classList.toggle('got', i < arr.length);
+  });
+}
+function updateUpgradeUI() {
+  for (const el of document.querySelectorAll('.upgrade-icon')) {
+    const u = el.dataset.u;
+    el.classList.toggle('on', game.upgrades[u] > 0);
+  }
+}
+
+// ============== Rendering ==============
+let time = 0;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+function drawSky(t) {
+  const sn = SEASONS[game.season];
+  const p = PALETTE[sn];
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, p.sky[0]);
+  grad.addColorStop(1, p.sky[1]);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  // Sun/moon
+  const cx = W * 0.78, cy = H * 0.18;
+  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 220);
+  if (sn === 'summer') {
+    glow.addColorStop(0, 'rgba(255,240,170,0.6)');
+  } else if (sn === 'winter') {
+    glow.addColorStop(0, 'rgba(230,245,255,0.5)');
+  } else {
+    glow.addColorStop(0, 'rgba(255,255,255,0.2)');
+  }
+  glow.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+  // Clouds drift
+  ctx.save(); ctx.globalAlpha = 0.5;
+  for (let i = 0; i < 4; i++) {
+    const ox = ((i * 380 + time * 6) % (W + 200)) - 100;
+    const oy = 40 + i * 30;
+    ctx.save(); ctx.translate(ox, oy); ctx.scale(0.6, 0.6);
+    ctx.fillStyle = sn === 'autumn' ? 'rgba(255,220,200,0.9)' : 'rgba(255,255,255,0.85)';
+    for (let j = 0; j < 5; j++) {
+      ctx.beginPath();
+      ctx.arc(j * 14 - 28, Math.sin(j) * 4, 16 + j, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawGround(t) {
+  const sn = SEASONS[game.season];
+  const p = PALETTE[sn];
+  ctx.fillStyle = p.ground;
+  ctx.fillRect(0, 0, W, H);
+  // Grass blades on grass tiles
+  for (let y = 0; y < GH; y++) {
+    for (let x = 0; x < GW; x++) {
+      const tile = game.roomTiles[y][x];
+      if (tile.type === 'grass' || tile.type === 'plate') {
+        const px = x * TILE + 8 + ((x * 17 + y * 31) % 36);
+        const py = y * TILE + 8 + ((x * 13 + y * 29) % 36);
+        const sway = Math.sin(time * 1.5 + px * 0.05) * 1.2;
+        ctx.strokeStyle = p.grassDark;
+        ctx.globalAlpha = 0.4; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(px, py);
+        ctx.quadraticCurveTo(px + sway, py - 3, px + sway * 1.4, py - 6);
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawTree(x, y) {
+  const px = x * TILE + TILE/2, py = y * TILE + TILE/2;
+  const sn = SEASONS[game.season];
+  const p = PALETTE[sn];
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath(); ctx.ellipse(px, py + 14, 18, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = p.treeTrunk;
+  ctx.fillRect(px - 4, py - 3, 8, 22);
+  // Canopy
+  const leaves = [
+    { ox: 0, oy: -7, r: 17 },
+    { ox: -8, oy: 0, r: 13 },
+    { ox: 8, oy: 0, r: 13 },
+    { ox: 0, oy: -13, r: 14 }
+  ];
+  for (const L of leaves) {
+    const grad = ctx.createRadialGradient(px + L.ox - 2, py + L.oy - 2, 1, px + L.ox, py + L.oy, L.r);
+    grad.addColorStop(0, p.treeLeaf);
+    grad.addColorStop(1, p.grassDark);
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(px + L.ox, py + L.oy, L.r, 0, Math.PI*2); ctx.fill();
+  }
+  if (sn === 'spring') {
+    for (let i = 0; i < 5; i++) {
+      const a = i * 1.2 + time * 0.3;
+      const r = 13;
+      const bx = px + Math.cos(a) * r;
+      const by = py - 6 + Math.sin(a) * r * 0.7;
+      ctx.fillStyle = '#ffc1d3';
+      ctx.beginPath(); ctx.arc(bx, by, 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffe2a8';
+      ctx.beginPath(); ctx.arc(bx, by, 1, 0, Math.PI*2); ctx.fill();
+    }
+  } else if (sn === 'summer') {
+    for (let i = 0; i < 3; i++) {
+      const a = i * 2.1 + 0.5;
+      const r = 11;
+      ctx.fillStyle = '#ff6b6b';
+      ctx.beginPath();
+      ctx.arc(px + Math.cos(a)*r, py - 3 + Math.sin(a)*r*0.5, 2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  } else if (sn === 'winter') {
+    ctx.fillStyle = '#fff';
+    for (const L of leaves) {
+      ctx.beginPath();
+      ctx.arc(px + L.ox, py + L.oy - L.r * 0.5, L.r * 0.55, Math.PI, 0);
+      ctx.fill();
+    }
+  }
+}
+
+function drawWater(x, y) {
+  const sn = SEASONS[game.season];
+  const tile = game.roomTiles[y][x];
+  const px = x * TILE, py = y * TILE;
+  if (sn === 'winter' || tile.mod.frozen) {
+    const grad = ctx.createLinearGradient(px, py, px, py + TILE);
+    grad.addColorStop(0, '#e8f2f7'); grad.addColorStop(1, '#cce0ea');
+    ctx.fillStyle = grad; ctx.fillRect(px, py, TILE, TILE);
+    ctx.strokeStyle = 'rgba(140,180,200,0.5)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px+8, py+12); ctx.lineTo(px+22, py+24);
+    ctx.lineTo(px+28, py+38); ctx.lineTo(px+44, py+50);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(px + 12 + i*18 + Math.sin(time*2 + i)*2, py + 14 + (i%2)*22, 1.2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  } else if (sn === 'spring') {
+    const p = PALETTE.spring;
+    const grad = ctx.createLinearGradient(px, py, px, py + TILE);
+    grad.addColorStop(0, p.water); grad.addColorStop(1, p.waterDeep);
+    ctx.fillStyle = grad; ctx.fillRect(px, py, TILE, TILE);
+    ctx.fillStyle = '#5fa860';
+    ctx.beginPath(); ctx.ellipse(px + 24, py + 28, 18, 8, 0.2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ff9eb5';
+    ctx.beginPath(); ctx.arc(px + 24, py + 24, 3, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffe2a8';
+    ctx.beginPath(); ctx.arc(px + 24, py + 24, 1, 0, Math.PI*2); ctx.fill();
+  } else {
+    const grad = ctx.createLinearGradient(px, py, px, py + TILE);
+    grad.addColorStop(0, '#7ec5d3'); grad.addColorStop(1, '#5ba8be');
+    ctx.fillStyle = grad; ctx.fillRect(px, py, TILE, TILE);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1.2;
+    for (let i = 0; i < 2; i++) {
+      ctx.beginPath();
+      const yOff = py + 14 + i * 22;
+      ctx.moveTo(px + 4, yOff);
+      for (let xx = 0; xx < TILE; xx += 6) {
+        ctx.lineTo(px + xx, yOff + Math.sin(time * 2 + xx * 0.2 + i) * 1.2);
+      }
+      ctx.stroke();
+    }
+  }
+}
+
+function drawVine(x, y) {
+  const sn = SEASONS[game.season];
+  const tile = game.roomTiles[y][x];
+  const px = x * TILE, py = y * TILE;
+  const grown = tile.mod.grown;
+  if (sn === 'spring' || grown) {
+    ctx.strokeStyle = '#5fa860'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(px + 8, py + 4);
+    for (let i = 0; i < 5; i++) {
+      ctx.quadraticCurveTo(px + 8 + i*12 + 6, py + 4 + (i%2)*30,
+                            px + 8 + (i+1)*12, py + 4 + ((i+1)%2)*30);
+    }
+    ctx.stroke();
+    for (let i = 0; i < 6; i++) {
+      const a = i * 0.9 + time * 0.3;
+      const bx = px + 10 + i * 8;
+      const by = py + 8 + Math.sin(a + i) * 10;
+      ctx.fillStyle = '#86c282';
+      ctx.beginPath(); ctx.ellipse(bx, by, 4, 2.5, a, 0, Math.PI*2); ctx.fill();
+    }
+    if (grown) {
+      ctx.fillStyle = '#ff9eb5';
+      ctx.beginPath(); ctx.arc(px + 24, py + 24, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffe2a8';
+      ctx.beginPath(); ctx.arc(px + 24, py + 24, 1, 0, Math.PI*2); ctx.fill();
+    }
+  } else {
+    ctx.strokeStyle = '#8a7a5a'; ctx.lineWidth = 1.5;
+    for (let i = 0; i < 2; i++) {
+      ctx.beginPath();
+      ctx.moveTo(px + 8, py + 16 + i * 24);
+      ctx.lineTo(px + 56, py + 16 + i * 24);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = '#a89070'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px + 8, py + 24);
+    ctx.quadraticCurveTo(px + 30, py + 12, px + 56, py + 30);
+    ctx.stroke();
+  }
+}
+
+function drawCracked(x, y) {
+  const px = x * TILE, py = y * TILE;
+  const tile = game.roomTiles[y][x];
+  if (tile.mod.broken) {
+    // Floor with rubble
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath(); ctx.ellipse(px + 24, py + 24, 18, 10, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#9a8a6a';
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      ctx.arc(px + 10 + i*8, py + 18 + (i%2)*12, 3 + (i%2), 0, Math.PI*2);
+      ctx.fill();
+    }
+  } else {
+    // Cracked wall
+    const grad = ctx.createLinearGradient(px, py, px, py + TILE);
+    grad.addColorStop(0, '#a89880'); grad.addColorStop(1, '#7a6850');
+    ctx.fillStyle = grad; ctx.fillRect(px, py, TILE, TILE);
+    ctx.strokeStyle = 'rgba(50,30,10,0.6)'; ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(px + 8, py + 8); ctx.lineTo(px + 22, py + 18);
+    ctx.lineTo(px + 16, py + 30); ctx.lineTo(px + 36, py + 38);
+    ctx.stroke();
+    ctx.strokeStyle = '#5fa860'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(px + 26, py + 12); ctx.quadraticCurveTo(px + 32, py + 18, px + 28, py + 26);
+    ctx.stroke();
+  }
+}
+
+function drawGap(x, y) {
+  const sn = SEASONS[game.season];
+  const px = x * TILE, py = y * TILE;
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath(); ctx.ellipse(px + 24, py + 24, 22, 12, 0, 0, Math.PI*2); ctx.fill();
+  if (sn === 'autumn' || game.roomTiles[y][x].mod.bridged) {
+    const grad = ctx.createLinearGradient(px + 4, py + 18, px + 44, py + 30);
+    grad.addColorStop(0, '#e26b3a'); grad.addColorStop(1, '#d9772b');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.ellipse(px + 24, py + 24, 22, 9, 0, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawPlate(x, y) {
+  const px = x * TILE, py = y * TILE;
+  const p = game.roomPlates.find(pp => pp.x === x && pp.y === y);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(px + 24, py + 26, 16, 4, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = p.active ? '#ff9eb5' : '#9a8a8a';
+  ctx.fillRect(px + 8, py + 14, 32, 16);
+  ctx.fillStyle = p.active ? '#ffe2a8' : '#bababa';
+  ctx.fillRect(px + 8, py + 14, 32, 3);
+  if (p.latched) {
+    ctx.fillStyle = '#a8dadc';
+    ctx.beginPath(); ctx.arc(px + 24, py + 22, 6, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(px + 22, py + 20, 1.5, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawObject(o) {
+  const px = o.x * TILE, py = o.y * TILE;
+  if (o.type === 'crate') {
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath(); ctx.ellipse(px, py + 18, 18, 4, 0, 0, Math.PI*2); ctx.fill();
+    const grad = ctx.createLinearGradient(px - 16, py - 16, px + 16, py + 16);
+    grad.addColorStop(0, '#c89860'); grad.addColorStop(1, '#8a6230');
+    ctx.fillStyle = grad;
+    ctx.fillRect(px - 16, py - 14, 32, 28);
+    ctx.strokeStyle = '#5a3a10'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(px - 16, py - 14, 32, 28);
+    ctx.beginPath();
+    ctx.moveTo(px - 16, py - 4); ctx.lineTo(px + 16, py - 4);
+    ctx.moveTo(px, py - 14); ctx.lineTo(px, py + 14);
+    ctx.stroke();
+    if (o.frozen) {
+      ctx.fillStyle = 'rgba(180,220,255,0.4)';
+      ctx.fillRect(px - 16, py - 14, 32, 28);
+    }
+  } else if (o.type === 'boulder') {
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath(); ctx.ellipse(px, py + 14, 20, 5, 0, 0, Math.PI*2); ctx.fill();
+    const grad = ctx.createRadialGradient(px - 4, py - 4, 1, px, py, 18);
+    grad.addColorStop(0, '#a89a8a'); grad.addColorStop(1, '#5a4a3a');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath(); ctx.ellipse(px - 4, py - 4, 6, 3, -0.4, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawIceBlock(ib) {
+  const px = (ib.x + 0.5) * TILE, py = (ib.y + 0.5) * TILE;
+  if (ib.melted) return;
+  const grad = ctx.createLinearGradient(px - 16, py - 16, px + 16, py + 16);
+  grad.addColorStop(0, '#dceaf2'); grad.addColorStop(1, '#a8c8d8');
+  ctx.fillStyle = grad;
+  ctx.fillRect(px - 16, py - 14, 32, 28);
+  ctx.strokeStyle = 'rgba(140,180,200,0.6)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(px - 12, py - 6); ctx.lineTo(px - 4, py - 10);
+  ctx.lineTo(px + 4, py - 2); ctx.lineTo(px + 12, py - 8);
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.arc(px - 8 + i*8, py - 4, 1, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function drawMushroom(m) {
+  if (!m.grown) return;
+  const px = (m.x + 0.5) * TILE, py = (m.y + 0.5) * TILE;
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(px, py + 8, 14, 3, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#d8b890';
+  ctx.fillRect(px - 3, py - 4, 6, 12);
+  ctx.fillStyle = '#a85f2a';
+  ctx.beginPath(); ctx.ellipse(px, py - 6, 12, 6, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(px - 4, py - 6, 1.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(px + 3, py - 8, 1, 0, Math.PI*2); ctx.fill();
+}
+
+function drawSeed(s) {
+  if (s.collected) {
+    // Wilted stem with a small leaf cluster
+    const px = (s.x + 0.5) * TILE, py = (s.y + 0.5) * TILE;
+    ctx.strokeStyle = '#8a6a4a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(px, py + 8);
+    ctx.lineTo(px, py - 4);
+    ctx.stroke();
+    ctx.fillStyle = '#a89070';
+    ctx.beginPath();
+    ctx.ellipse(px - 3, py - 2, 4, 2, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(px + 3, py, 4, 2, 0.4, 0, Math.PI * 2); ctx.fill();
+    return;
+  }
+  const px = (s.x + 0.5) * TILE, py = (s.y + 0.5) * TILE;
+
+  if (!s.planted) {
+    // Unplanted seed: small brown acorn with golden glow
+    const glow = ctx.createRadialGradient(px, py, 1, px, py, 20 + Math.sin(time*2 + s.glow)*3);
+    glow.addColorStop(0, 'rgba(255,220,100,0.5)');
+    glow.addColorStop(1, 'rgba(255,220,100,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(px, py, 22, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#a85f2a';
+    ctx.beginPath(); ctx.ellipse(px, py, 4, 6, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffd24a';
+    for (let i = 0; i < 3; i++) {
+      const a = time * 2 + i * 2.1;
+      ctx.beginPath();
+      ctx.arc(px + Math.cos(a)*8, py + Math.sin(a)*8, 1.2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  } else {
+    // Planted seed: stem with leaves, growing with water count, mature has fruit
+    const sn = SEASONS[game.season];
+    const sway = Math.sin(time * 2 + s.x) * 1.5;
+    const stemH = 12 + s.water * 4; // taller with each water
+    const stemY = py + 8;
+    const stemTop = stemY - stemH + sway;
+    // Soil mound
+    ctx.fillStyle = '#8a5a3a';
+    ctx.beginPath();
+    ctx.ellipse(px, py + 10, 10, 3, 0, 0, Math.PI * 2); ctx.fill();
+    // Stem
+    ctx.strokeStyle = s.mature ? '#5fa860' : '#86c282';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, stemY);
+    ctx.quadraticCurveTo(px + sway, stemY - stemH/2, stemTop, stemTop);
+    ctx.stroke();
+    // Leaves
+    if (s.water >= 1) {
+      ctx.fillStyle = '#5fa860';
+      ctx.beginPath();
+      ctx.ellipse(px - 4 + sway*0.5, stemY - 6, 5, 2.5, -0.5, 0, Math.PI * 2); ctx.fill();
+    }
+    if (s.water >= 2) {
+      ctx.fillStyle = '#86c282';
+      ctx.beginPath();
+      ctx.ellipse(px + 4 - sway*0.5, stemY - 10, 5, 2.5, 0.5, 0, Math.PI * 2); ctx.fill();
+    }
+    // Bud/flower on top
+    if (s.mature) {
+      const pulse = 1 + Math.sin(time * 3) * 0.1;
+      // Fruit
+      ctx.fillStyle = '#e76f51';
+      ctx.beginPath();
+      ctx.arc(stemTop, stemTop - 2, 4 * pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffd24a';
+      ctx.beginPath();
+      ctx.arc(stemTop - 1, stemTop - 3, 1.5, 0, Math.PI * 2); ctx.fill();
+      // Hint sparkle if in autumn (ready to harvest)
+      if (sn === 'autumn') {
+        const sparkGlow = ctx.createRadialGradient(stemTop, stemTop, 1, stemTop, stemTop, 18);
+        sparkGlow.addColorStop(0, 'rgba(255,210,100,0.6)');
+        sparkGlow.addColorStop(1, 'rgba(255,210,100,0)');
+        ctx.fillStyle = sparkGlow;
+        ctx.beginPath(); ctx.arc(stemTop, stemTop, 18, 0, Math.PI * 2); ctx.fill();
+      }
+    } else {
+      // Small bud
+      ctx.fillStyle = '#86c282';
+      ctx.beginPath();
+      ctx.arc(stemTop, stemTop, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+
+function drawFlower(f) {
+  const px = (f.x + 0.5) * TILE, py = (f.y + 0.5) * TILE;
+  if (!f.bloomed) {
+    // Closed bud
+    ctx.fillStyle = '#5fa860';
+    ctx.beginPath(); ctx.ellipse(px, py - 2, 3, 5, 0, 0, Math.PI*2); ctx.fill();
+    return;
+  }
+  if (f.collected) {
+    // Picked stem — a small bent stem with two leaves
+    ctx.strokeStyle = '#5fa860';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(px, py + 8);
+    ctx.quadraticCurveTo(px - 3, py + 2, px - 4, py - 4);
+    ctx.stroke();
+    ctx.fillStyle = '#86c282';
+    ctx.beginPath();
+    ctx.ellipse(px - 6, py, 4, 2, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(px - 2, py - 2, 3, 1.5, 0.4, 0, Math.PI * 2); ctx.fill();
+    // Subtle sparkle to show "done"
+    const a = Math.sin(time * 2) * 0.4 + 0.6;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = '#ffd24a';
+    ctx.beginPath(); ctx.arc(px - 4, py - 5, 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    return;
+  }
+  // Bloomed — draw the flower
+  const colors = f.type === 'blue' ? ['#a8dadc', '#7ec0c8'] :
+                 f.type === 'red' ? ['#ff6b6b', '#e04444'] :
+                 f.type === 'rainbow' ? ['#ff9eb5', '#a8dadc', '#ffd24a', '#86c282'] :
+                 ['#ff9eb5', '#ffc1d3'];
+  const aura = ctx.createRadialGradient(px, py, 1, px, py, 22);
+  aura.addColorStop(0, colors[0] === '#a8dadc' ? 'rgba(168,218,220,0.5)' : 'rgba(255,180,200,0.5)');
+  aura.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = aura;
+  ctx.beginPath(); ctx.arc(px, py, 22, 0, Math.PI*2); ctx.fill();
+  // Petals
+  for (let i = 0; i < 6; i++) {
+    const a = i * (Math.PI*2/6) + time * 0.3;
+    const c = colors[i % colors.length];
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.arc(px + Math.cos(a)*6, py + Math.sin(a)*6, 4, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#fff2a0';
+  ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fill();
+}
+
+function drawMirror(m) {
+  const px = (m.x + 0.5) * TILE, py = (m.y + 0.5) * TILE;
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(px, py + 14, 14, 3, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#a89070';
+  ctx.fillRect(px - 3, py - 6, 6, 20);
+  // Mirror surface
+  ctx.save();
+  ctx.translate(px, py - 8);
+  const rot = m.rot * Math.PI / 2;
+  ctx.rotate(rot);
+  const grad = ctx.createLinearGradient(-12, 0, 12, 0);
+  grad.addColorStop(0, '#a8dadc'); grad.addColorStop(0.5, '#ffffff');
+  grad.addColorStop(1, '#a8dadc');
+  ctx.fillStyle = grad;
+  ctx.fillRect(-14, -8, 28, 16);
+  ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(-14, -8, 28, 16);
+  ctx.restore();
+}
+
+function drawLightSource(s) {
+  const px = (s.x + 0.5) * TILE, py = (s.y + 0.5) * TILE;
+  if (SEASONS[game.season] !== 'summer') {
+    ctx.fillStyle = 'rgba(200,200,200,0.3)';
+    ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI*2); ctx.fill();
+    return;
+  }
+  const grad = ctx.createRadialGradient(px, py, 1, px, py, 30);
+  grad.addColorStop(0, 'rgba(255,240,160,0.9)');
+  grad.addColorStop(0.5, 'rgba(255,220,140,0.4)');
+  grad.addColorStop(1, 'rgba(255,200,120,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.arc(px, py, 30, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff2a0';
+  ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI*2); ctx.fill();
+}
+
+function drawGate(g) {
+  const px = (g.x + 0.5) * TILE, py = (g.y + 0.5) * TILE;
+  ctx.fillStyle = g.open ? '#a89070' : '#7a5a3a';
+  ctx.fillRect(px - 14, py - 14, 4, 28);
+  ctx.fillRect(px + 10, py - 14, 4, 28);
+  ctx.beginPath(); ctx.arc(px, py - 14, 12, Math.PI, 0); ctx.fill();
+  if (g.open) {
+    const grad = ctx.createRadialGradient(px, py, 1, px, py, 32);
+    grad.addColorStop(0, 'rgba(255,240,180,0.5)');
+    grad.addColorStop(1, 'rgba(255,240,180,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(px, py, 32, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#86c282';
+    ctx.beginPath(); ctx.arc(px, py - 14, 4, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawLightBeams(lightHit) {
+  if (SEASONS[game.season] !== 'summer') return;
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#fff2a0';
+  for (const k of lightHit) {
+    const [x, y] = k.split(',').map(Number);
+    ctx.beginPath();
+    ctx.arc((x+0.5)*TILE, (y+0.5)*TILE, 10, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawWindVortex(v) {
+  if (SEASONS[game.season] !== 'autumn') {
+    // Subtle dormant marker
+    const px = (v.x + 0.5) * TILE, py = (v.y + 0.5) * TILE;
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.strokeStyle = '#a8a8a8';
+    ctx.lineWidth = 1.2;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(px, py, 6 + i * 4, 0, Math.PI * 1.5);
+      ctx.stroke();
+    }
+    ctx.restore();
+    return;
+  }
+  const px = (v.x + 0.5) * TILE, py = (v.y + 0.5) * TILE;
+  ctx.save();
+  ctx.translate(px, py);
+  // Outer glow
+  const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, 28);
+  glow.addColorStop(0, 'rgba(220,240,255,0.5)');
+  glow.addColorStop(1, 'rgba(220,240,255,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.fill();
+  // Swirling arcs
+  for (let i = 0; i < 4; i++) {
+    const r = 5 + i * 3;
+    const startA = time * 2 + i * 0.7;
+    ctx.strokeStyle = 'rgba(255,255,255,' + (0.8 - i * 0.15) + ')';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, startA, startA + Math.PI * 1.2);
+    ctx.stroke();
+  }
+  // Direction arrow
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.beginPath();
+  const ax = Math.cos(time * 2) * 10;
+  const ay = Math.sin(time * 2) * 10;
+  ctx.moveTo(ax, ay - 3);
+  ctx.lineTo(ax + 4, ay + 2);
+  ctx.lineTo(ax - 4, ay + 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawAnimal(a) {
+  const px = a.x * TILE, py = a.y * TILE;
+  const bob = Math.sin(time * 4 + a.x + a.y) * 1.2;
+  ctx.save();
+  ctx.translate(px, py + bob);
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath(); ctx.ellipse(0, 10, 9, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+  if (a.kind === 'bee') {
+    // Body
+    ctx.fillStyle = '#ffd24a';
+    ctx.beginPath(); ctx.ellipse(0, 0, 7, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a2a1a';
+    ctx.fillRect(-3, -5, 1.5, 10);
+    ctx.fillRect(1.5, -5, 1.5, 10);
+    // Wings
+    ctx.fillStyle = 'rgba(220,240,255,0.6)';
+    ctx.beginPath(); ctx.ellipse(-4, -5, 4, 3, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(4, -5, 4, 3, 0.3, 0, Math.PI * 2); ctx.fill();
+    // Eyes
+    ctx.fillStyle = '#2a2a3a';
+    ctx.beginPath(); ctx.arc(-2, -2, 0.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(2, -2, 0.8, 0, Math.PI * 2); ctx.fill();
+  } else if (a.kind === 'frog') {
+    // Body
+    ctx.fillStyle = '#5fa860';
+    ctx.beginPath(); ctx.ellipse(0, 0, 9, 7, 0, 0, Math.PI * 2); ctx.fill();
+    // Legs
+    ctx.beginPath(); ctx.ellipse(-7, 3, 4, 2, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(7, 3, 4, 2, 0.4, 0, Math.PI * 2); ctx.fill();
+    // Eyes (bulging)
+    ctx.fillStyle = '#a8d5a8';
+    ctx.beginPath(); ctx.arc(-3, -6, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, -6, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2a2a3a';
+    ctx.beginPath(); ctx.arc(-3, -6, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, -6, 1, 0, Math.PI * 2); ctx.fill();
+  } else if (a.kind === 'squirrel') {
+    // Body
+    ctx.fillStyle = '#a85f2a';
+    ctx.beginPath(); ctx.ellipse(0, 0, 8, 6, 0, 0, Math.PI * 2); ctx.fill();
+    // Tail (curly)
+    ctx.strokeStyle = '#c97a40';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(6, 0);
+    ctx.quadraticCurveTo(12, -4, 10, -8);
+    ctx.quadraticCurveTo(7, -10, 9, -4);
+    ctx.stroke();
+    // Ears
+    ctx.fillStyle = '#a85f2a';
+    ctx.beginPath(); ctx.arc(-3, -5, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, -5, 1.8, 0, Math.PI * 2); ctx.fill();
+    // Belly
+    ctx.fillStyle = '#f4d4b0';
+    ctx.beginPath(); ctx.ellipse(0, 2, 4, 3, 0, 0, Math.PI * 2); ctx.fill();
+    // Eyes
+    ctx.fillStyle = '#2a2a3a';
+    ctx.beginPath(); ctx.arc(-2, -2, 0.9, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(2, -2, 0.9, 0, Math.PI * 2); ctx.fill();
+  } else if (a.kind === 'fox') {
+    // Body
+    ctx.fillStyle = '#e76f51';
+    ctx.beginPath(); ctx.ellipse(0, 0, 9, 6, 0, 0, Math.PI * 2); ctx.fill();
+    // Tail
+    ctx.fillStyle = '#e76f51';
+    ctx.beginPath();
+    ctx.moveTo(8, 0);
+    ctx.lineTo(14, -2);
+    ctx.lineTo(13, 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(14, -1, 1.2, 0, Math.PI * 2); ctx.fill();
+    // Ears (pointy)
+    ctx.fillStyle = '#e76f51';
+    ctx.beginPath();
+    ctx.moveTo(-4, -5); ctx.lineTo(-6, -9); ctx.lineTo(-2, -7); ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(4, -5); ctx.lineTo(6, -9); ctx.lineTo(2, -7); ctx.closePath();
+    ctx.fill();
+    // Face
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(0, 1, 4, 3, 0, 0, Math.PI * 2); ctx.fill();
+    // Eyes (glowing)
+    ctx.fillStyle = '#ffd24a';
+    ctx.beginPath(); ctx.arc(-2, -2, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(2, -2, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2a2a3a';
+    ctx.beginPath(); ctx.arc(-2, -2, 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(2, -2, 0.5, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawPlayer(t) {
+  const px = player.x * TILE, py = player.y * TILE;
+  const bob = Math.sin(player.animTime) * 1.5;
+  const sn = SEASONS[game.season];
+  const p = PALETTE[sn];
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(0, 16, 12, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  // Legs
+  const step = Math.sin(player.animTime) * 2.5;
+  ctx.fillStyle = '#5a7d8a';
+  ctx.fillRect(-5, 6 - bob, 3.5, 9);
+  ctx.fillRect(1.5, 6 - bob, 3.5, 9);
+  // Boots
+  ctx.fillStyle = '#3a2a1a';
+  ctx.beginPath(); ctx.ellipse(-3, 15 - bob, 3, 2, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(3, 15 - bob, 3, 2, 0, 0, Math.PI*2); ctx.fill();
+  // Body
+  ctx.fillStyle = p.accent;
+  ctx.beginPath();
+  ctx.moveTo(-8, 0 - bob); ctx.lineTo(8, 0 - bob);
+  ctx.lineTo(6, 10 - bob); ctx.lineTo(-6, 10 - bob);
+  ctx.closePath(); ctx.fill();
+  // Arms
+  const armSwing = player.moving ? Math.sin(player.animTime) * 1.8 : 0;
+  ctx.fillStyle = '#f4d4b0';
+  ctx.fillRect(-10, 2 - bob + armSwing, 3.5, 7);
+  ctx.fillRect(6.5, 2 - bob - armSwing, 3.5, 7);
+  // Head
+  ctx.fillStyle = '#f4d4b0';
+  ctx.beginPath(); ctx.arc(0, -6 - bob, 6, 0, Math.PI*2); ctx.fill();
+  // Hair
+  ctx.fillStyle = '#4a3a2a';
+  ctx.beginPath(); ctx.arc(0, -8 - bob, 6, Math.PI, 0); ctx.fill();
+  // Hat
+  if (sn === 'spring') {
+    ctx.fillStyle = '#ff9eb5';
+    ctx.beginPath(); ctx.ellipse(0, -12 - bob, 7, 2.5, 0, 0, Math.PI*2); ctx.fill();
+  } else if (sn === 'summer') {
+    ctx.fillStyle = '#fff2a0';
+    ctx.beginPath(); ctx.ellipse(0, -12 - bob, 8, 2.5, 0, 0, Math.PI*2); ctx.fill();
+  } else if (sn === 'autumn') {
+    ctx.fillStyle = '#a85f2a';
+    ctx.beginPath(); ctx.ellipse(0, -12 - bob, 7, 2.5, 0, 0, Math.PI*2); ctx.fill();
+  } else {
+    ctx.fillStyle = '#a8dadc';
+    ctx.beginPath(); ctx.ellipse(0, -12 - bob, 7, 2.5, 0, 0, Math.PI*2); ctx.fill();
+  }
+  // Eyes
+  ctx.fillStyle = '#2a2a3a';
+  if (player.dir === 'left') {
+    ctx.beginPath(); ctx.arc(-2, -5 - bob, 0.7, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(2, -5 - bob, 0.7, 0, Math.PI*2); ctx.fill();
+  } else if (player.dir === 'right') {
+    ctx.beginPath(); ctx.arc(-2, -5 - bob, 0.7, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(2, -5 - bob, 0.7, 0, Math.PI*2); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(-1.5, -5 - bob, 0.7, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(1.5, -5 - bob, 0.7, 0, Math.PI*2); ctx.fill();
+  }
+  // Cheek
+  ctx.fillStyle = 'rgba(255,150,170,0.5)';
+  ctx.beginPath(); ctx.arc(-3.5, -3 - bob, 1.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(3.5, -3 - bob, 1.3, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawInteractHint() {
+  const cx = Math.floor(player.x), cy = Math.floor(player.y);
+  const sn = SEASONS[game.season];
+
+  // Tile under player — seed and flower hints
+  const hereSeed = seedAt(cx, cy);
+  if (hereSeed) {
+    if (hereSeed.collected) {
+      // already picked, no hint
+    } else if (!hereSeed.planted && sn === 'spring') {
+      drawHint((cx+0.5)*TILE, (cy-0.5)*TILE, 'E — plant seed'); return;
+    } else if (hereSeed.planted && !hereSeed.mature) {
+      drawHint((cx+0.5)*TILE, (cy-0.5)*TILE,
+        sn === 'spring' ? 'Seed planted (waiting)' : 'Wait until Spring to water');
+      return;
+    } else if (hereSeed.mature && sn !== 'autumn') {
+      drawHint((cx+0.5)*TILE, (cy-0.5)*TILE, 'Wait until Autumn to harvest');
+      return;
+    } else if (hereSeed.mature && sn === 'autumn') {
+      drawHint((cx+0.5)*TILE, (cy-0.5)*TILE, 'E — harvest fruit'); return;
+    }
+  }
+  const hereFlower = flowerAt(cx, cy);
+  if (hereFlower && hereFlower.bloomed && !hereFlower.collected) {
+    if (sn === hereFlower.harvestSeason) {
+      drawHint((cx+0.5)*TILE, (cy-0.5)*TILE, 'E — collect flower'); return;
+    } else {
+      drawHint((cx+0.5)*TILE, (cy-0.5)*TILE,
+        'Harvest in ' + SN[hereFlower.harvestSeason]); return;
+    }
+  }
+
+  // 4-neighbors — water, mirror, vine, cracked, plate, freeze
+  const dx = [-1, 0, 1], dy = [-1, 0, 1];
+  for (const oy of dy) for (const ox of dx) {
+    if (Math.abs(ox) + Math.abs(oy) > 1) continue;
+    const tx = cx+ox, ty = cy+oy;
+    // Water an adjacent planted seed
+    const ns = seedAt(tx, ty);
+    if (ns && ns.planted && !ns.mature && !ns.collected) {
+      if (sn === 'spring') {
+        drawHint((tx+0.5)*TILE, (ty-0.5)*TILE, 'E — water plant'); return;
+      } else {
+        drawHint((tx+0.5)*TILE, (ty-0.5)*TILE, 'Water in Spring');
+        return;
+      }
+    }
+    if (mirrorAt(tx, ty)) { drawHint((tx+0.5)*TILE, (ty-0.5)*TILE, 'E — rotate mirror'); return; }
+    const tile = tileAt(tx, ty);
+    if (tile.type === 'vine' && !tile.mod.grown && sn === 'spring') {
+      drawHint((tx+0.5)*TILE, (ty-0.5)*TILE, 'E — grow vine'); return;
+    }
+    if (tile.type === 'cracked' && !tile.mod.broken && sn === 'spring') {
+      drawHint((tx+0.5)*TILE, (ty-0.5)*TILE, 'E — vines break wall'); return;
+    }
+    if (tile.type === 'water' && !tile.mod.frozen && sn === 'winter') {
+      drawHint((tx+0.5)*TILE, (ty-0.5)*TILE, 'E — freeze water'); return;
+    }
+    const p = plateAt(tx, ty);
+    if (p && p.active && !p.latched && sn === 'winter') {
+      drawHint((tx+0.5)*TILE, (ty-0.5)*TILE, 'E — freeze plate'); return;
+    }
+  }
+}
+
+function drawHint(px, py, text) {
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  const w = ctx.measureText(text).width + 14;
+  ctx.beginPath();
+  ctx.roundRect(px - w/2, py - 20, w, 18, 9);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, px, py - 7);
+}
+
+function render(t, dt) {
+  time = t;
+  drawSky(t);
+  drawGround(t);
+  // Tiles
+  for (let y = 0; y < GH; y++) {
+    for (let x = 0; x < GW; x++) {
+      const tile = game.roomTiles[y][x];
+      switch (tile.type) {
+        case 'tree': drawTree(x, y); break;
+        case 'water': drawWater(x, y); break;
+        case 'vine': drawVine(x, y); break;
+        case 'gap': drawGap(x, y); break;
+        case 'cracked': drawCracked(x, y); break;
+        case 'plate': drawPlate(x, y); break;
+      }
+    }
+  }
+  // Mushrooms
+  for (const m of game.roomMushrooms) drawMushroom(m);
+  // Ice blocks
+  for (const ib of game.roomIceBlocks) drawIceBlock(ib);
+  // Wind vortexes
+  for (const v of (game.roomWindVortexes || [])) drawWindVortex(v);
+  // Mirrors
+  for (const m of game.roomMirrors) drawMirror(m);
+  // Light sources
+  for (const s of game.roomLights) drawLightSource(s);
+  // Light beams
+  const lightHit = castLight();
+  drawLightBeams(lightHit);
+  // Flowers
+  for (const f of game.roomFlowers) drawFlower(f);
+  // Seeds
+  for (const s of game.roomSeeds) drawSeed(s);
+  // Objects
+  for (const o of game.roomObjects) drawObject(o);
+  // Gates
+  for (const g of game.roomGates) drawGate(g);
+  // Animals
+  for (const a of (game.roomAnimals || [])) drawAnimal(a);
+  // Particles
+  drawParticles();
+  // Player
+  drawPlayer(t);
+  // Interact hints
+  if (game.state === 'playing') drawInteractHint();
+  // Vignette
+  const grad = ctx.createRadialGradient(W/2, H/2, W*0.3, W/2, H/2, W*0.7);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.25)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  // Season wash
+  if (game.transitionPhase !== 'idle') {
+    const sn = SEASONS[game.season];
+    const p = PALETTE[sn];
+    let a = game.transition < 0.5 ? game.transition * 2 : (1 - game.transition) * 2;
+    a *= 0.6;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.wash;
+    ctx.fillRect(0, 0, W, H);
+    const burst = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 300);
+    burst.addColorStop(0, p.glow);
+    burst.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = burst;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ============== Init / loop ==============
+function startRoom(worldIdx, roomIdx) {
+  game.world = worldIdx;
+  game.room = roomIdx;
+  const w = WORLDS[worldIdx];
+  const room = w.rooms[roomIdx];
+  const parsed = parseRoom(room);
+  game.roomTiles = parsed.tiles;
+  game.roomObjects = parsed.objects;
+  game.roomPlates = parsed.plates;
+  game.roomGates = parsed.gates;
+  game.roomFlowers = parsed.flowers;
+  game.roomSeeds = parsed.seeds;
+  game.roomLights = parsed.lights;
+  game.roomMirrors = parsed.mirrors;
+  game.roomMushrooms = parsed.mushrooms;
+  game.roomIceBlocks = parsed.iceBlocks;
+  game.roomCrackedWalls = parsed.crackedWalls;
+  game.roomFrozenStatues = parsed.frozenStatues;
+  game.roomWindVortexes = parsed.windVortexes;
+  game.roomAnimals = parsed.animals;
+  game.roomGoal = parsed.roomGoal;
+  game.roomGoalMet = false;
+  refreshAnimals();
+  player.x = parsed.start.x + 0.5;
+  player.y = parsed.start.y + 0.5;
+  player.vx = 0; player.vy = 0;
+  game.season = 0; game.prevSeason = 0;
+  game.transition = 1; game.transitionPhase = 'idle';
+  game.particles = []; game.changeLog = []; game.windDir = 0;
+  // For 'exit' goal, open the gate immediately so the player can walk through.
+  if (game.roomGoal && game.roomGoal.type === 'exit') {
+    for (const g of game.roomGates) g.open = true;
+  }
+  document.getElementById('room-clear').classList.add('hidden');
+  document.getElementById('pause-menu').classList.add('hidden');
+  document.getElementById('world-screen').classList.add('hidden');
+  document.getElementById('title-screen').classList.add('hidden');
+  game.state = 'playing';
+  setupRoomHUD();
+  if (room.hint) showHint(room.hint, 5);
+  updateHUD();
+}
+
+function startWorldMap() {
+  document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
+  const map = document.getElementById('world-map');
+  map.innerHTML = '';
+  WORLDS.forEach((w, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'world-cell';
+    if (i >= game.unlockedWorlds) cell.classList.add('locked');
+    const done = i < game.unlockedWorlds - 1;
+    const cur = i === game.unlockedWorlds - 1;
+    cell.innerHTML = `
+      <div class="wn">${w.icon} ${w.name}</div>
+      <div class="wm">${w.desc}</div>
+      <div class="ws">${done ? 'Completed' : cur ? (i+1) + ' / ' + WORLDS.length : 'Locked'}</div>
+    `;
+    if (i < game.unlockedWorlds) {
+      cell.addEventListener('click', () => startRoom(i, 0));
+    }
+    map.appendChild(cell);
+  });
+  document.getElementById('world-screen').classList.remove('hidden');
+  game.state = 'worldmap';
+}
+
+function startGame() {
+  document.getElementById('title-screen').classList.add('hidden');
+  game.audioOn = true;
+  if (game.audioCtx && game.audioCtx.state === 'suspended') game.audioCtx.resume();
+  initAudio();
+  startWorldMap();
+}
+
+let lastT = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000);
+  lastT = now;
+  if (game.state === 'playing') update(dt);
+  else updateParticles(dt);
+  if (game.state === 'playing' || game.state === 'title' || game.state === 'worldmap' || game.state === 'paused' || game.state === 'roomclear' || game.state === 'worldclear') {
+    if (game.roomTiles) render(time, dt);
+  }
+  time += dt;
+  requestAnimationFrame(loop);
+}
+
+// UI
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('pause-btn').addEventListener('click', () => {
+  if (game.state === 'playing') { game.state = 'paused'; document.getElementById('pause-menu').classList.remove('hidden'); }
+});
+document.getElementById('resume-btn').addEventListener('click', () => {
+  document.getElementById('pause-menu').classList.add('hidden');
+  game.state = 'playing';
+});
+document.getElementById('restart-btn').addEventListener('click', () => startRoom(game.world, game.room));
+document.getElementById('world-btn').addEventListener('click', startWorldMap);
+document.getElementById('world-reset').addEventListener('click', () => {
+  game.collectedSeeds.clear();
+  game.upgrades = { speed: 0, vine: 0, ice: 0, push: 0 };
+  game.unlockedWorlds = 1;
+  game.world = 0; game.room = 0;
+  updateSeedUI(); updateUpgradeUI();
+  startWorldMap();
+});
+document.getElementById('world-back').addEventListener('click', () => {
+  document.getElementById('title-screen').classList.remove('hidden');
+  document.getElementById('world-screen').classList.add('hidden');
+  game.state = 'title';
+});
+document.getElementById('rc-next').addEventListener('click', () => {
+  if (game.room + 1 < WORLDS[game.world].rooms.length) {
+    startRoom(game.world, game.room + 1);
+  } else {
+    onWorldClear();
+  }
+});
+document.getElementById('rc-map').addEventListener('click', startWorldMap);
+document.getElementById('wc-btn').addEventListener('click', startWorldMap);
+document.getElementById('audio-toggle').addEventListener('click', toggleAudio);
+
+window.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k === ' ' || e.code === 'Space') {
+    if (game.state === 'title') { startGame(); e.preventDefault(); return; }
+    if (game.state === 'playing') { changeSeason(); e.preventDefault(); }
+  }
+  if (k === 'e' && game.state === 'playing') { interact(); e.preventDefault(); }
+  if (k === 'q' && game.state === 'playing') { revertLastChange(); e.preventDefault(); }
+  if ((k === 'p' || k === 'escape') && (game.state === 'playing' || game.state === 'paused')) {
+    if (game.state === 'playing') { game.state = 'paused'; document.getElementById('pause-menu').classList.remove('hidden'); }
+    else { document.getElementById('pause-menu').classList.add('hidden'); game.state = 'playing'; }
+    e.preventDefault();
+  }
+  if (k === 'm') toggleAudio();
+});
+
+// Init
+updateSeedUI(); updateUpgradeUI();
+requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>

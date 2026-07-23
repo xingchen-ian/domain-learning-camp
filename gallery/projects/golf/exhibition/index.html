@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Golf — Project by Zoe (Zhuoyi Li)</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-title">Golf<span class="dot"> · </span><span style="font-weight:400;color:var(--ink-soft);font-size:14px;">by Zoe</span></div>
+    <nav class="site-nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="design.html">Domain &amp; System</a>
+      <a href="process.html">Development</a>
+      <a href="game.html">Play</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Golf — a small strategy game about choosing well</h1>
+    <p class="lede">
+      I have played golf for two years, and what surprised me most is that it is not really a
+      physical sport. The hard part is <em>deciding</em>: how far is the flag, which club fits the
+      lie, how much power is enough, and where on the fairway should I aim. This game is my
+      attempt to put that decision-making under the player's hands.
+    </p>
+
+    <div class="card">
+      <span class="tag">Game idea</span>
+      <h2 style="margin-top:8px;">A top-down, 5-club golf game across three holes</h2>
+      <p>
+        Each hole starts on a tee box, the flag sits somewhere down the fairway, and the player
+        picks an aim direction, a club, and a power level before every swing. The ball lands,
+        gives feedback, and the next decision begins. The goal is to finish the hole in fewer
+        strokes than <strong>par + 5</strong>. Going over that means game over.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>What the player learns</h2>
+        <p>
+          Beginners walk in thinking "if I swing harder, the ball will go where I want."
+          The game gently breaks that assumption. Power without the right club overshoots.
+          A wedge on a short shot underhits. A driver in a tight gap lands in the bunker.
+          After three holes the player should instinctively think: <em>distance first,
+          club second, power last</em>.
+        </p>
+      </div>
+      <div class="card">
+        <h2>How to play</h2>
+        <p>
+          Open <a href="game.html">Play</a>, pick a hole from the menu, and use:
+        </p>
+        <ul class="tight">
+          <li><span class="kbd">A</span> / <span class="kbd">D</span> — change aim direction</li>
+          <li><span class="kbd">W</span> / <span class="kbd">S</span> — raise / lower power</li>
+          <li><span class="kbd">Space</span> — take the swing</li>
+          <li>Click a club button — switch club</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      Want the design backstory? Read <a href="design.html">Domain &amp; System</a>
+      for the original brief and system graph, or <a href="process.html">Development</a>
+      for the build log.
+    </div>
+  </main>
+
+  <footer>Golf · First Playable · Built with HTML, CSS, plain JavaScript &amp; Canvas 2D</footer>
+</body>
+</html>

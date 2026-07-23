@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Skating Novice — Project Website</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">A Skating Novice</a>
+      <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="game.html">Play Game</a></li>
+        <li><a href="process.html">Development</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- Hero -->
+    <section class="hero">
+      <h1>⛸ A Skating Novice</h1>
+      <p class="subtitle">Learn to skate — not by walking on ice, but by mastering posture, speed, and the frozen surface beneath you.</p>
+      <p class="meta">Sihan Lyu / Group 4 | Domain: Skating | Built with WorkBuddy</p>
+      <a href="game.html" class="btn-play">▶ Play the Game</a>
+    </section>
+
+    <!-- Game Idea -->
+    <section class="section" id="idea">
+      <h2>Game Idea</h2>
+      <p><strong>What if skating wasn't just pressing buttons — but actually feeling what makes a skater stable or fall?</strong></p>
+      <p>I joined a beginner skating lesson and realized that things like your posture, the smoothness of the ice, and other people all influence whether you can skate safely. This game lets you experience that: steer across a real ice rink, control your knee bend, feel the ice change under your blades, and learn why experts don't skate like they're walking.</p>
+
+      <h3>Core Learning Shift</h3>
+      <div class="comparison">
+        <div class="comparison-box novice">
+          <span class="label">🚫 Novice Misconception</span>
+          <p>Skating is just like walking — stand up straight, move your feet, and you'll glide.</p>
+          <p><small>Result: high center of gravity, loss of balance, uncontrolled stops.</small></p>
+        </div>
+        <div class="comparison-box expert">
+          <span class="label">✅ Expert Understanding</span>
+          <p>Good skating relies on <strong>speed control</strong> and <strong>keeping knees bent</strong>.</p>
+          <p><small>Result: stable posture, responsive turning, predictable braking.</small></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Domain Knowledge -->
+    <section class="section" id="domain">
+      <h2>Domain Knowledge</h2>
+      <p>Skating is about the relationship between <strong>body posture, speed, and environment</strong> — not just moving your feet.</p>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>🦵 Knee Bend &amp; Posture</h4>
+          <p>Too straight: high center of gravity, easy to lose balance. Too bent: rigid movement, slow to turn. The sweet spot is slightly bent — compact, responsive, and stable.</p>
+        </div>
+        <div class="info-card">
+          <h4>🧊 Ice Surface Quality</h4>
+          <p>Not all ice is equal. Smooth ice lets you glide fast. Rough or cracked ice increases friction, destabilizes your blades, and demands more control.</p>
+        </div>
+        <div class="info-card">
+          <h4>⚡ Speed vs. Control</h4>
+          <p>Speed is useful, but uncontrolled speed on uncertain ice leads to falls. Skilled skaters adjust speed to match the surface they're on.</p>
+        </div>
+        <div class="info-card">
+          <h4>🚧 Obstacles &amp; Routing</h4>
+          <p>In a real rink, you navigate around people, cones, and ice holes. Planning a zigzag route is often safer than charging straight ahead.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- System Design -->
+    <section class="section" id="system">
+      <h2>System Design</h2>
+
+      <div class="system-graph">
+        <img src="assets/system-graph.png" alt="System graph showing the game data model — Environment Data, Player-Controlled Data, System-Calculated Results, and Feedback Translation" onerror="this.style.display='none'">
+        <p style="color:#999;font-size:0.85rem;margin-top:8px;">System graph exported from Canva</p>
+      </div>
+
+      <h3>Data Model</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>🌍 Environment Data</h4>
+          <ul>
+            <li>Ice surface smoothness (varies by position)</li>
+            <li>Venue obstacles (holes, cones, other skaters)</li>
+            <li>Distance to goal</li>
+            <li>Time remaining</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>🎮 Player-Controlled Data</h4>
+          <ul>
+            <li>Steering direction (left / right)</li>
+            <li>Knee bend angle (straight ↔ deeply bent)</li>
+            <li>Arm spread (balance adjustment)</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>⚙ System-Calculated Results</h4>
+          <ul>
+            <li>Travelling speed</li>
+            <li>Stability / balance</li>
+            <li>Fall detection</li>
+            <li>Movement trail on ice</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4>📢 Feedback Translation</h4>
+          <ul>
+            <li>Blade friction sound → posture &amp; speed indicator</li>
+            <li>Ice trail → movement trajectory</li>
+            <li>Balance / Speed / Knee meters → real-time state</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Challenge Presets (3 Levels)</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>Level 1 — First Steps</h4>
+          <p>Smooth ice, few obstacles, generous time. Learn the basics of posture and steering in a forgiving environment.</p>
+        </div>
+        <div class="info-card">
+          <h4>Level 2 — Navigate the Rink</h4>
+          <p>Mixed ice quality, more obstacles, tighter time. You must read the ice surface and plan your route around hazards.</p>
+        </div>
+        <div class="info-card">
+          <h4>Level 3 — Race to the Finish</h4>
+          <p>Rough ice, many obstacles, minimal time. Only efficient paths and expert posture will get you through.</p>
+        </div>
+      </div>
+
+      <h3>Feedback Priorities</h3>
+      <div class="info-grid">
+        <div class="info-card feedback-immediate">
+          <h4>🔴 Immediate</h4>
+          <p>Whether the player falls, and the blade friction sound generated by the movement.</p>
+        </div>
+        <div class="info-card feedback-discovered">
+          <h4>🟡 Discovered Over Time</h4>
+          <p>The ice trail shows your path — helping you plan better routes on subsequent attempts.</p>
+        </div>
+        <div class="info-card feedback-audible">
+          <h4>🔵 Audible</h4>
+          <p>The sound of blades on ice changes with speed, stability, and surface quality.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Play Now -->
+    <section class="section" style="text-align:center">
+      <h2 style="border:none;margin-bottom:24px">Ready to Skate?</h2>
+      <a href="game.html" class="btn btn-primary">▶ Play the Game</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Sihan Lyu / Group 4 — A Skating Novice — Built with WorkBuddy</p>
+  </footer>
+</body>
+</html>

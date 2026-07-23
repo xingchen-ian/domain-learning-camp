@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>An Adventure on Horseback - Home</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="page">
+    <div class="page-inner">
+      <header class="site-header">
+        <div class="site-title">An Adventure on Horseback</div>
+        <nav class="site-nav">
+          <a href="index.html" class="active">Home</a>
+          <a href="system.html">System Design</a>
+          <a href="process.html">Development</a>
+          <a href="game.html">Play</a>
+        </nav>
+      </header>
+
+      <h1>An Adventure on Horseback</h1>
+      <p class="lead">Riding with judgment. Riding with trust.</p>
+
+      <p>
+        You are about to ride a real horse - not control a cartoon on a flat
+        track. Three courses, three horses, three lessons. Speed, line,
+        take-off point, and the feel of a living animal under you.
+        Welcome to <em>An Adventure on Horseback</em>.
+      </p>
+
+      <a class="cta" href="game.html">Play the Game</a>
+
+      <h2>Game Idea</h2>
+      <div class="card">
+        <h3>Player Goal</h3>
+        <p>
+          Ride your horse through a course of show-jumping obstacles and
+          reach the finish flag. Time, route, take-off point and the
+          horse's mood all matter. Clear the course with your horse
+          willing to work with you.
+        </p>
+
+        <h3>Core Learning Shift</h3>
+        <p>
+          The naive idea is: the faster the better, the shorter the line the
+          better. After 4 years of real horse-riding, the player learns
+          that <strong>riding needs a decisive, feasible and reasonable
+          judgment</strong>, and <strong>a horse is an organism with its
+          own feelings</strong>. You have to read your horse, not just
+          push it.
+        </p>
+      </div>
+
+      <h2>Domain Knowledge</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Real-World Domain</h3>
+          <p>
+            After 4 years of riding, the student has learned three layers of
+            skill: <strong>beginners</strong> must learn the feel of the
+            horse, <strong>intermediate</strong> riders must pick the right
+            speed, line and take-off point, and <strong>advanced</strong>
+            riders must build a deep relationship with a horse that has its
+            own mood.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Novice Misconception</h3>
+          <p>
+            Beginners think: speed up, take the shortest line, force
+            the horse over the fence. This almost always knocks down the
+            bar, runs out of time on the corners, or turns the horse
+            against you.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Expert Judgment</h3>
+          <p>
+            A good rider plans the line before the obstacle, picks a
+            stable working speed, and chooses a take-off point that
+            lets the horse see the fence and still has time to fold its
+            front legs. The horse's mood sets the ceiling.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Why This Becomes Playable</h3>
+          <p>
+            Each mechanic in the game is a real riding decision: speed
+            has a sweet spot, the route has a workable line, the take-off
+            point has a window, and the horse's emotion is a live system
+            that you must manage, not override.
+          </p>
+        </div>
+      </div>
+
+      <h2>Three Levels, Three Lessons</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Level 1 - First Canter</h3>
+          <p>
+            <span class="tag">Beginner</span>
+            <span class="tag">No timer</span>
+            <span class="tag">Gentle horse</span>
+            <span class="tag">8 fences</span>
+          </p>
+          <p>
+            A straight route across an open meadow with 8 show-jumping fences.
+            No time pressure &mdash; learn the feel of speed, line and take-off
+            point on a willing horse at your own pace.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Level 2 - Winding Path</h3>
+          <p>
+            <span class="tag">Intermediate</span>
+            <span class="tag">90s limit</span>
+            <span class="tag">10 mixed fences</span>
+          </p>
+          <p>
+            An S-shaped course across wide grassland with verticals, oxers and
+            walls. Plan your line through 10 obstacles before the clock runs out.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Level 3 - Trust the Bond</h3>
+          <p>
+            <span class="tag">Advanced</span>
+            <span class="tag">80s limit</span>
+            <span class="tag">Spirited horse</span>
+            <span class="tag">14 fences</span>
+          </p>
+          <p>
+            A long roundabout course on a strong but bad-tempered mare with 14
+            fences. Whip her and she will refuse. Soothe her and she will clear
+            the whole course.
+          </p>
+        </div>
+      </div>
+
+      <h2>The Core Challenge: Your Horse May Not Listen</h2>
+      <div class="card">
+        <h3>Disobedience System</h3>
+        <p>
+          This is the heart of the game. A real horse is a living creature,
+          not a machine. When you scare it or tire it out, it stops listening
+          to your hands.
+        </p>
+
+        <table>
+          <tr>
+            <th>Horse Emotion</th>
+            <th>Obedience</th>
+            <th>What Happens</th>
+          </tr>
+          <tr>
+            <td><strong>Happy (&ge;75)</strong></td>
+            <td>100%</td>
+            <td>Horse responds perfectly to all inputs</td>
+          </tr>
+          <tr>
+            <td>Calm (50&ndash;74)</td>
+            <td>52%&ndash;93%</td>
+            <td>Slight lag in steering; still willing to jump</td>
+          </tr>
+          <tr>
+            <td>Tired (25&ndash;49)</td>
+            <td>11%&ndash;50%</td>
+            <td>Steering barely works; random drift; may refuse jumps</td>
+          </tr>
+          <tr>
+            <td><strong style="color:#e0524a">Angry (&lt;25)</strong></td>
+            <td><strong>&le;11%</strong></td>
+            <td><strong>Horse ignores reins, drifts wildly, refuses most jumps, may bolt</strong></td>
+          </tr>
+        </table>
+
+        <p>
+          The game shows a red warning banner when your horse stops listening.
+          Press <kbd>E</kbd> (Soothe) to raise her mood. Avoid <kbd>F</kbd>
+          (Whip) unless absolutely necessary &mdash; every whip makes things worse.
+        </p>
+      </div>
+
+      <h2>Before You Ride: Intro & Camera</h2>
+      <div class="card">
+        <h3>Story intro</h3>
+        <p>
+          The game opens on a short story screen that sets the scene: a horse is
+          a feeling creature, not a machine. It previews the three lessons
+          &mdash; read the horse, plan your line, keep calm. Press
+          <kbd>Space</kbd> or click to continue to the menu.
+        </p>
+        <h3>Camera views (press <kbd>V</kbd>)</h3>
+        <p>
+          While playing, press <kbd>V</kbd> to cycle three perspectives:
+        </p>
+        <ul>
+          <li><strong>Behind</strong> (default) &mdash; a low follow-cam over the
+          horse's tail. The horse faces each fence head-on, so you meet the
+          jump square instead of sideways &mdash; the realistic way a rider
+          approaches a fence.</li>
+          <li><strong>Top-down</strong> &mdash; a high, near-bird's-eye angle
+          across the open meadow, good for reading your line and spacing.</li>
+          <li><strong>Side</strong> &mdash; the classic 3/4 view that shows the
+          horse's full stride and jump arc.</li>
+        </ul>
+        <p>
+          The fences are sized to real show-jumping scale (the top rail sits at
+          roughly the horse's withers height, about 0.85&ndash;1.10&times; the
+          horse's own scale) and spaced generously apart &mdash; roughly
+          85&ndash;115 world units between fences &mdash; so you have room to
+          rebalance and set up a clean approach.
+        </p>
+      </div>
+
+      <h2>System at a Glance</h2>
+      <div class="card">
+        <table>
+          <tr>
+            <th>Type</th>
+            <th>Variable</th>
+            <th>Role</th>
+          </tr>
+          <tr>
+            <td><span class="legend-color" style="background:#7eb6e6"></span>Environment</td>
+            <td>Speed, route, take-off point, obstacle position, time limit</td>
+            <td>The course the player must read</td>
+          </tr>
+          <tr>
+            <td><span class="legend-color" style="background:#7bd389"></span>Player-controlled</td>
+            <td>Accelerate, decelerate, steer, jump, soothe, whip</td>
+            <td>What the rider can do</td>
+          </tr>
+          <tr>
+            <td><span class="legend-color" style="background:#e6c14b"></span>Calculated</td>
+            <td>Bar dropped, time remaining, horse speed, horse mood</td>
+            <td>Live feedback</td>
+          </tr>
+          <tr>
+            <td><span class="legend-color" style="background:#e0524a"></span>Failure states</td>
+            <td>Knocked bars, time-out, horse refuses, horse too angry</td>
+            <td>Why the run failed</td>
+          </tr>
+        </table>
+        <p>
+          For the full system graph see <a href="system.html">System Design</a>.
+        </p>
+      </div>
+
+      <a class="cta" href="game.html">Play the Game</a>
+      <a class="cta cta-secondary" href="system.html">Read the System Design</a>
+
+      <footer>
+        An Adventure on Horseback &middot; A learning game by Ziqi Xu &middot; Built with WorkBuddy
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

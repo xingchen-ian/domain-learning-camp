@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knead for Speed - Development Process</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Comic Sans MS', cursive, sans-serif;
+      background: #fff0f5;
+      color: #5d3a4b;
+      line-height: 1.7;
+    }
+    header {
+      background: linear-gradient(135deg, #f8a5c2, #e8b4d0);
+      color: #fff;
+      padding: 40px 0;
+      text-align: center;
+    }
+    header h1 { font-size: 36px; margin-bottom: 8px; }
+    header p { font-size: 16px; color: #fff0f5; }
+    nav {
+      background: #f8bbd0;
+      padding: 14px 0;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(248,165,194,0.2);
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 22px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: #e91e63; }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    h2 {
+      font-size: 24px;
+      color: #9575cd;
+      margin: 32px 0 16px;
+      border-bottom: 3px solid #d1c4e9;
+      padding-bottom: 8px;
+    }
+    h3 {
+      font-size: 19px;
+      color: #66bb6a;
+      margin: 24px 0 10px;
+    }
+    h4 {
+      font-size: 15px;
+      color: #ff8a65;
+      margin: 10px 0 6px;
+    }
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #f8bbd0;
+    }
+    .entry {
+      position: relative;
+      margin-bottom: 28px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(248,165,194,0.1);
+      border: 1px solid #f8bbd0;
+    }
+    .entry::before {
+      content: '';
+      position: absolute;
+      left: -28px;
+      top: 24px;
+      width: 14px;
+      height: 14px;
+      background: #f48fb1;
+      border-radius: 50%;
+      border: 3px solid #fff0f5;
+    }
+    .entry h3 {
+      font-size: 18px;
+      color: #66bb6a;
+      margin-bottom: 8px;
+    }
+    .entry .meta {
+      font-size: 12px;
+      color: #ba68c8;
+      margin-bottom: 10px;
+    }
+    .entry p { font-size: 14px; margin-bottom: 8px; color: #5d3a4b; }
+    .entry ul { margin-left: 20px; font-size: 14px; color: #5d3a4b; }
+    .entry li { margin-bottom: 4px; }
+    footer {
+      background: linear-gradient(135deg, #f8a5c2, #e8b4d0);
+      color: #fff;
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Development Process</h1>
+    <p>How Knead for Speed was built through human-AI collaboration</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#domain">Domain Knowledge</a>
+    <a href="index.html#system">System Design</a>
+    <a href="process.html">Development Process</a>
+    <a href="game.html">Play the Game</a>
+  </nav>
+
+  <div class="container">
+    <h2>Development Timeline</h2>
+    <div class="timeline" id="timeline">
+      <div class="entry">
+        <h3>Project Initiated</h3>
+        <div class="meta">2026-07-15 — Camellia Cai & WorkBuddy</div>
+        <p>Student shared the design brief and system graph for "Knead for Speed." The AI transcribed the system graph, confirmed the three challenge presets (Cake, Cookies, Brownies), and proposed a Track A implementation using plain HTML/CSS/Canvas 2D with no build step.</p>
+        <ul>
+          <li>Created project directory structure</li>
+          <li>Initialized agent-development-log.md</li>
+          <li>Began implementing core game mechanics</li>
+        </ul>
+      </div>
+      <div class="entry">
+        <h3>Core Game Loop Completed</h3>
+        <div class="meta">2026-07-15 — Camellia Cai & WorkBuddy</div>
+        <p>Implemented the complete observe-judge-act-feedback-adjust loop with all three challenge presets. Fixed canvas event handling, tuned pour rates, and added procedural audio feedback.</p>
+        <ul>
+          <li>Ingredient measuring with press-and-hold space mechanic</li>
+          <li>Mixer and oven timing with tolerance-based evaluation</li>
+          <li>Per-step sound jingles (perfect/okay/bad)</li>
+          <li>Win/loss evaluation with detailed result screen</li>
+          <li>Tip calculation based on accuracy and speed</li>
+          <li>Three levels: Cake (no limit), Cookies (90s), Brownies (60s)</li>
+        </ul>
+      </div>
+      <div class="entry">
+        <h3>Visual & Mechanical Polish</h3>
+        <div class="meta">2026-07-15 — Camellia Cai & WorkBuddy</div>
+        <p>Major aesthetic and gameplay overhaul based on playtesting feedback. Redesigned the visual theme to a pastel pink bakery style and refined all mechanics.</p>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Visual Design</h4>
+        <ul>
+          <li>Pastel pink color scheme with decorative hearts, flowers, and baking tools</li>
+          <li>Illustrated ingredient icons (butter block, sugar cube, flour bag, baking powder on a spoon, vanilla flower, eggs, chocolate, milk carton)</li>
+          <li>Top-down mixing bowl that shows accumulated ingredients inside a circular bowl with a visible rim</li>
+          <li>End-result pastry drawing (cake/cookies/brownies) with color saturation tied to accuracy score</li>
+          <li>Baking-themed decorations: whisk, chef's hat, pot with steam, rolling pin, completed pastries</li>
+          <li>Pastel accent colors: purple, green, yellow, blue, mint, lavender dots</li>
+          <li>Website pages restyled to match the game's bakery theme</li>
+          <li>Stopwatch timer in top-left corner with counterclockwise hand and tick marks</li>
+          <li>Baking powder rendered as white powder on a metallic spoon</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Gameplay Mechanics</h4>
+        <ul>
+          <li>Mixing changed to tap-space-N-times with countdown timer per difficulty (7/6/5s for 10-press, 5/4/3s for 5-press)</li>
+          <li>Oven changed to toggle on/off (press space once to start, once to stop)</li>
+          <li>All ingredients visible at once — player must reference recipe to pick correctly</li>
+          <li>Wrong ingredient selection triggers an error buzz with no penalty other than wasted time</li>
+          <li>Mixer and oven always visible as selectable appliances — player must click to activate</li>
+          <li>Level-specific ingredient sets (5 for Cake, 5 for Cookies, 7 for Brownies)</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">UI & Feedback</h4>
+        <ul>
+          <li>Compact two-column result screen with summary/measurements on the left, appliance results/issues on the right</li>
+          <li>Recipe panel shows completed (green), active (pink highlight), and upcoming steps</li>
+          <li>Real-time progress bar for mix press count with gradient fill</li>
+          <li>Circular countdown ring for mix time limit (green → orange → red)</li>
+          <li>Audio feedback: per-step jingles (perfect/okay/bad), win/loss fanfares, error buzz</li>
+        </ul>
+      </div>
+      <div class="entry">
+        <h3>Layout Fixes & Modal Redesign</h3>
+        <div class="meta">2026-07-16 — Camellia Cai & WorkBuddy</div>
+        <p>Fixed a critical crash when using the whisk (undefined variable in updateStats), and redesigned the modal overlays and layout based on playtesting feedback.</p>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Bug Fixes</h4>
+        <ul>
+          <li>Fixed game crash when selecting the whisk — caused by referencing undefined variable <code>mixerElapsed</code> instead of <code>mixElapsed</code> in the stats update function</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Layout & Positioning</h4>
+        <ul>
+          <li>Moved mixing bowl up between ingredients and appliances — was previously overlapping with appliance boxes at the bottom</li>
+          <li>Moved appliances further down to prevent overlap with bowl and section labels</li>
+          <li>Moved all instruction text (e.g. "click the right ingredient from the recipe") to the very bottom of the canvas, below all visual elements</li>
+          <li>Reduced bowl radius from 90 to 72 for better space fit</li>
+          <li>Appliance section divider moved down to accommodate the repositioned bowl</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Modal Overlays</h4>
+        <ul>
+          <li>Enlarged measuring cup modal from 200×250 to 300×340 to fit text and graphics without overlap</li>
+          <li>Separated measuring cup graphic (left) from text labels (right) — target amount, current amount, and live status indicator now display side-by-side instead of overlapping the cup</li>
+          <li>Added live status indicator in measuring modal (Perfect / Close / Too little / Too much) with color coding</li>
+          <li>Redesigned mix modal with whisk on left and timer ring + progress bar on right, eliminating text-on-graphic overlap</li>
+          <li>Mix modal widened from 350 to 380px to accommodate side-by-side layout</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Visual Enhancements</h4>
+        <ul>
+          <li>Increased background emoji opacity from 0.06 to 0.15 for better visibility</li>
+          <li>Added cake and cookie emojis to the floating background decorations</li>
+          <li>Increased decoration count from 14 to 18 items</li>
+          <li>Larger emoji font sizes for better visibility</li>
+        </ul>
+      </div>
+      <div class="entry">
+        <h3>Serve Screen, Bake Times & Visual Polish</h3>
+        <div class="meta">2026-07-20 — Camellia Cai & WorkBuddy</div>
+        <p>Redesigned the serve screen, shortened bake times, added a custom baking powder measuring visual, applied black outlines to all ingredients, and improved background decoration visibility.</p>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Visual Design</h4>
+        <ul>
+          <li>Serve screen now displays a plate with the finished pastry instead of the mixing bowl — removes the bowl and "Ingredients" label for a cleaner presentation</li>
+          <li>All ingredient icons now have thin black outlines for improved definition and contrast</li>
+          <li>Baking powder measuring modal redesigned: shows a baking powder box with an open lid and a 1 tsp measuring spoon being scooped, replacing the generic measuring cup</li>
+          <li>Background emojis increased in opacity from 0.15 to 0.25 for better visibility</li>
+          <li>Background emojis now distributed in an even grid pattern across the canvas with gentle floating animation</li>
+          <li>Cake and cookie emojis confirmed in the floating background decoration pool</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Gameplay Mechanics</h4>
+        <ul>
+          <li>Shortened bake times: Level 1 &amp; 2 oven target reduced from 30s to 15s; Level 3 reduced from 20s to 10s</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">UI & Layout</h4>
+        <ul>
+          <li>Moved appliances further down to prevent overlap with the "Appliances" section label</li>
+          <li>Moved all instruction text (e.g. "click the right ingredient from the recipe") further down below all visual elements</li>
+          <li>Serve button repositioned below the plate for clearer visual hierarchy</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ===== Iteration: 2026-07-20 ===== -->
+    <div class="entry">
+      <div class="entry-title">
+        <h3>Mouse-Circle Mixing, Pouring Animation, Bowl Blobs &amp; Serve Fix</h3>
+        <div class="meta">2026-07-20 — Camellia Cai & WorkBuddy</div>
+      </div>
+      <div class="entry-body">
+
+        <h4 style="color:#e91e63;margin:10px 0 6px;">Visual Design</h4>
+        <ul>
+          <li>Bowl enlarged (radius 72 → 88) and redesigned: colored blobs replace ingredient icons, with each blob sized proportionally to the ingredient's volume and positioned via spiral packing to fit within the bowl boundaries</li>
+          <li>Blob colors match ingredient identity: yellow for butter, white for flour/sugar, light blue for milk, green for vanilla, cream for eggs, brown for chocolate</li>
+          <li>Each blob receives a thin black outline for clarity and a small colored status dot (green = perfect, orange = okay, red = bad)</li>
+          <li>Serve screen pastry moved up (plateY-5 → plateY-14) for better centering on the plate</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Gameplay Mechanics</h4>
+        <ul>
+          <li>Mixing mechanic completely overhauled: replaced spacebar-tap-N-times with mouse-circle-in-bowl motion tracking</li>
+          <li>Mixing progress bar now fills based on accumulated angular mouse movement around the bowl center</li>
+          <li>Progress bar fills faster when the time limit is shorter — inversely proportional scaling enables balanced difficulty across different mix durations</li>
+          <li>Mix modal now displays a mini top-down bowl with a dashed circular track guide, a live radial progress arc, and the mouse pointer position</li>
+          <li>Pouring animation added: during measuring, small colored particles stream from the ingredient icon down into the measuring cup (or from the baking powder box to the spoon), creating a dynamic visual flow that intensifies as more ingredient is poured</li>
+        </ul>
+
+        <h4 style="color:#66bb6a;margin:10px 0 6px;">UI &amp; Feedback</h4>
+        <ul>
+          <li>Controls hint bar updated: "Mouse circles to mix" replaces "Space to mix"</li>
+          <li>Recipe sidebar now shows "Mix within Xs (mouse circles)" instead of "Mix Nx in Xs"</li>
+          <li>Right panel stats display mix progress as percentage (e.g. "67% mixed | 3.2s left")</li>
+          <li>Result summary shows actual mix time in seconds alongside the target</li>
+          <li>Variable cleanup: all mixerPressCount/mixerTarget references fully removed and replaced with mouse-angle-based tracking (mixTotalAngle, mixProgress, mixMouseActive)</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ===== Iteration: 2026-07-20 (refine) ===== -->
+    <div class="entry">
+      <div class="entry-title">
+        <h3>Mix-on-Click &amp; Cleaned Measuring Modal</h3>
+        <div class="meta">2026-07-20 — Camellia Cai & WorkBuddy</div>
+      </div>
+      <div class="entry-body">
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Gameplay Mechanics</h4>
+        <ul>
+          <li>Mouse-circle mixing now requires an explicit click inside the bowl to begin — no longer starts tracking immediately when the whisk appliance is selected, giving the player a moment to ready their mouse position</li>
+          <li>Mix modal shows three guiding states: "Click whisk appliance first" → "Click inside bowl to start!" → "Keep circling!"</li>
+        </ul>
+
+        <h4 style="color:#e91e63;margin:10px 0 6px;">Visual Design</h4>
+        <ul>
+          <li>Removed pouring particle animation from measuring cup and baking powder modals at user's request</li>
+          <li>Measuring cup re-centered in modal window with text labels stacked below the cup instead of positioned to the sides</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ===== Iteration: 2026-07-20 (arrow-key whisk) ===== -->
+    <div class="entry">
+      <div class="entry-title">
+        <h3>Arrow-Key Whisk Mechanic &amp; Modal Redesign</h3>
+        <div class="meta">2026-07-20 — Camellia Cai & WorkBuddy</div>
+      </div>
+      <div class="entry-body">
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Gameplay Mechanics</h4>
+        <ul>
+          <li>Replaced mouse-circle mixing with arrow-key (left/right) whisk mechanic — player moves the whisk around an elliptical track inside the bowl using left and right arrow keys</li>
+          <li>Added progress bar and countdown timer to the whisking modal, with time limits scaled by difficulty level</li>
+          <li>Whisk image follows the player's movement around the bowl in real-time</li>
+        </ul>
+
+        <h4 style="color:#e91e63;margin:10px 0 6px;">Visual Design</h4>
+        <ul>
+          <li>Moved timer and progress bar lower in the whisking modal to avoid overlapping with the bowl</li>
+          <li>Moved bowl down slightly within the modal for better visual balance</li>
+          <li>Added large arrow symbols (← →) in the whisking window below the progress bar to indicate controls</li>
+          <li>Whisk bottom constrained to stay inside the bowl circle at all times; whisk shadow removed for cleaner look</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ===== Iteration: 2026-07-20 (ingredient modals) ===== -->
+    <div class="entry">
+      <div class="entry-title">
+        <h3>Ingredient-Specific Modals, Egg Crack &amp; Countdown</h3>
+        <div class="meta">2026-07-20 — Camellia Cai & WorkBuddy</div>
+      </div>
+      <div class="entry-body">
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Ingredient Interactions</h4>
+        <ul>
+          <li>Increased baking powder spoon size — now shows a large measuring spoon with a clear target line for 1 tsp</li>
+          <li>Eggs: replaced measuring cup with an interactive egg crack — player clicks an egg to crack it, adding it to the bowl</li>
+          <li>Butter: replaced measuring cup with a butter stick modal — a dotted line moves along a stick of butter showing where to cut</li>
+          <li>Vanilla: replaced measuring cup with a vanilla essence bottle that pours into a teaspoon</li>
+        </ul>
+
+        <h4 style="color:#e91e63;margin:10px 0 6px;">Visual Design</h4>
+        <ul>
+          <li>Non-egg blobs made shapeless and random using a seeded RNG for stable organic shapes (each blob gets a unique irregular outline)</li>
+          <li>Vanilla blob made smaller and light brown to match vanilla essence color</li>
+          <li>Blob positions randomized on first render and cached so they don't shift after placement</li>
+          <li>Cracked egg blobs added to the bowl with white and yolk coloring</li>
+          <li>Moved whisk image up in the ingredients list for better visual hierarchy</li>
+          <li>Recipe title on left panel made more visible with larger font and better contrast</li>
+        </ul>
+
+        <h4 style="color:#66bb6a;margin:10px 0 6px;">UI &amp; Feedback</h4>
+        <ul>
+          <li>Added 3-2-1 countdown animation before each level starts, with large animated numbers centered on screen</li>
+          <li>Level numbers changed: Cakes = Level 0, Cookies = Level 1, Brownies = Level 2 (zero-indexed)</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ===== Iteration: 2026-07-20 (timer & layout polish) ===== -->
+    <div class="entry">
+      <div class="entry-title">
+        <h3>Timer Visibility, Layout Shift &amp; Arrow Repositioning</h3>
+        <div class="meta">2026-07-20 — Camellia Cai & WorkBuddy</div>
+      </div>
+      <div class="entry-body">
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">UI &amp; Layout</h4>
+        <ul>
+          <li>Corner timer made significantly bigger and more prominent in the top-right area</li>
+          <li>Timer flashes red when there are 15 seconds or fewer remaining</li>
+          <li>Moved "Ingredients" heading above the ingredient buttons (was previously blocked during cookie and brownie levels)</li>
+          <li>Shifted the entire baking gameplay area to the left for better centering on screen</li>
+          <li>Removed arrow symbols from the top corner during whisking — arrows now only appear inside the whisking modal below the progress bar</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ===== Iteration: 2026-07-20 (Level 3: Customers!) ===== -->
+    <div class="entry">
+      <div class="entry-title">
+        <h3>Level 3: Customers! — Bakery Scene &amp; Character Interaction</h3>
+        <div class="meta">2026-07-20 — Camellia Cai & WorkBuddy</div>
+      </div>
+      <div class="entry-body">
+
+        <h4 style="color:#e91e63;margin:10px 0 6px;">New Game Mode</h4>
+        <ul>
+          <li>Added "Level 3: Customers!" — a new level accessible from the main menu with a pink themed button</li>
+          <li>A character enters a bakery scene and randomly orders cake, cookies, or brownies (one of Levels 0-2)</li>
+          <li>Speech bubble appears: "I want cake!" / "I want cookies!" / "I want brownies!"</li>
+          <li>Standard baking gameplay runs for the requested pastry, then returns to the bakery scene</li>
+          <li>Instead of pressing "Serve", the player drags the finished pastry to the character</li>
+          <li>Eating animation: screen clears, character is centered at 50%+ of screen size. Arm raises to mouth, takes a bite (pastry shrinks), chews, then reacts</li>
+        </ul>
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Character Design</h4>
+        <ul>
+          <li>Full character with head, brown hair, body (purple shirt with collar), and two arms</li>
+          <li>Three facial expressions: smile (upturned mouth + blush), neutral (straight mouth), frown (downturned mouth + downturned eyebrows)</li>
+          <li>Eyes with white shine highlights</li>
+          <li>Chewing motion during eating animation using sine wave oscillation</li>
+          <li>Pastry in hand during eating that shrinks with each bite</li>
+        </ul>
+
+        <h4 style="color:#66bb6a;margin:10px 0 6px;">Bakery Scene</h4>
+        <ul>
+          <li>Pink-themed bakery with striped walls, shelf of colored jars, tiled floor</li>
+          <li>Kitchen counter with countertop perspective (trapezoidal shape, wider at front)</li>
+          <li>Character stands behind the counter (counter drawn over character for proper depth)</li>
+          <li>Walk-in animation: character enters from the right using easeOut cubic easing</li>
+          <li>Menu board on the wall with "Menu" heading and bullet points: cake 🎂, cookies 🍪, brownies 🍫</li>
+          <li>Cash register on the countertop with money slot, LCD screen, button grid, receipt printer, and cash drawer</li>
+          <li>Glass display case on the countertop with 5 columns of baked goods emojis (🧁 🍰 🎂 🍩 🍪), 2 of each stacked vertically</li>
+          <li>Cabinet doors on the counter front face with handles</li>
+        </ul>
+
+        <h4 style="color:#9575cd;margin:10px 0 6px;">Result &amp; Customer Satisfaction</h4>
+        <ul>
+          <li>Customer face and text based on game result: "Perfect Bake!" → smiling character + "customer happy!", "Baking Failed" → frowning character + "customer dissatisfied"</li>
+          <li>Character face displayed on the result canvas alongside accuracy percentage</li>
+          <li>Time frozen during serve/drag/eating phases using a recorded bake finish time — only baking time counts</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ===== Iteration: 2026-07-21 (customers refinement) ===== -->
+    <div class="entry">
+      <div class="entry-title">
+        <h3>Customers! Refinements — Speech Bubble Fix, Menu &amp; Display Enhancements</h3>
+        <div class="meta">2026-07-21 — Camellia Cai & WorkBuddy</div>
+      </div>
+      <div class="entry-body">
+
+        <h4 style="color:#ff8a65;margin:10px 0 6px;">Bug Fixes</h4>
+        <ul>
+          <li>Fixed speech bubble showing "I want !" instead of "I want cake/cookies/brownies!" — the <code>customersRequestedItem</code> variable was being reset to empty string by <code>resetState()</code> after assignment; moved assignment after the reset call</li>
+          <li>Enlarged speech bubble width (220 → 260px) to ensure all text fits comfortably on screen</li>
+        </ul>
+
+        <h4 style="color:#e91e63;margin:10px 0 6px;">Bakery Scene Enhancements</h4>
+        <ul>
+          <li>Menu board doubled in size (165×135 → 330×270) and repositioned to fit entirely within the empty wall space on the left side</li>
+          <li>Baked goods emoji size increased (30 → 45px) and spacing reduced to bring items closer together</li>
+          <li>Glass display case added around the baked goods — metallic frame, cream interior, shelf divider line, and diagonal glass reflection highlight</li>
+          <li>Cash register enlarged (75×48 → 120×78) with more detail: money slot at top with "MONEY" label, green LCD display screen showing "$0.00", 3×4 button grid, receipt printer slot on the side, and cash drawer with handle at the bottom</li>
+        </ul>
+
+        <h4 style="color:#66bb6a;margin:10px 0 6px;">Result Screen</h4>
+        <ul>
+          <li>Finished product image on the result screen increased by 50% (canvas 240×160 → 360×240 for normal mode, 240×200 → 360×280 for customers mode)</li>
+          <li>Pastry drawings scaled 1.5× using canvas transform; character face scale increased (0.65 → 0.95) in customers mode</li>
+        </ul>
+
+      </div>
+    </div>
+
+    <h2>Development Approach</h2>
+    <p>This project follows <strong>Track A — No build step</strong>: the game is built with plain HTML, CSS, and JavaScript using the Canvas 2D API. No npm, Vite, or external libraries are required. The exhibition version is a fully self-contained static website.</p>
+
+    <h3>Key Technical Decisions</h3>
+    <ul>
+      <li><strong>Canvas 2D over Three.js:</strong> The game is fundamentally 2D (measuring cups, progress bars, buttons). Three.js would add unnecessary complexity.</li>
+      <li><strong>Web Audio API for sounds:</strong> All jingles are generated procedurally with oscillators — no external audio files needed.</li>
+      <li><strong>Single-page game:</strong> The playable game lives in game.html with all logic embedded for simplicity and portability.</li>
+      <li><strong>Relative paths throughout:</strong> All links and assets use relative paths so the project works inside a gallery subfolder.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>Knead for Speed — Camellia Cai — IMA Summer Program 2026 — Built with WorkBuddy</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dream Cake STUDIO — Home</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .home-hero { text-align: center; padding: 40px 20px; background: #e8a87c; color: #fff; }
+    .home-hero h1 { font-size: 40px; margin-bottom: 8px; }
+    .home-hero p { font-size: 18px; max-width: 600px; margin: 0 auto; }
+    .home-sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 30px 20px; max-width: 900px; margin: 0 auto; }
+    .home-card { background: #fff; border: 2px solid #e8a87c; border-radius: 12px; padding: 24px; text-align: center; }
+    .home-card h2 { font-size: 20px; color: #e8a87c; margin-bottom: 12px; }
+    .home-card p { font-size: 14px; color: #5c3d2e; margin-bottom: 16px; }
+    .home-card .btn { display: inline-block; }
+    .nav-bar { background: #fff8f0; padding: 10px 20px; display: flex; justify-content: center; gap: 12px; border-bottom: 2px solid #e8a87c; }
+    .nav-bar a { color: #e8a87c; font-weight: bold; text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
+    .nav-bar a:hover, .nav-bar a.active { background: #e8a87c; color: #fff; }
+  </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+  <a href="index.html" class="active">Home</a>
+  <a href="game.html">Play Game</a>
+  <a href="process.html">Process</a>
+</nav>
+
+<div class="home-hero">
+  <h1>Dream Cake STUDIO</h1>
+  <p>Bake a cake by learning to adapt — not just following a recipe.</p>
+</div>
+
+<div class="home-sections">
+  <div class="home-card">
+    <h2>Game Idea</h2>
+    <p>I once wanted to make a hand-made birthday cake for my sister and realized it's far more than following online tutorials. Temperature, ingredients, and tools all matter — and they interact.</p>
+    <p><strong>Core Learning Shift:</strong> Beginners strictly follow fixed recipes, while experts adapt heat, proportions, and cream texture based on on-site conditions.</p>
+  </div>
+
+  <div class="home-card">
+    <h2>Domain Knowledge</h2>
+    <p><strong>Domain:</strong> Baking</p>
+    <p><strong>Novice misconception:</strong> Beginners think strictly following online tutorial steps is enough.</p>
+    <p><strong>Expert judgment:</strong> Small deviations in oven temperature or ingredient ratios greatly affect the cake's texture and shape. Experts read batter condition, choose proper oven temperature, and plan baking time.</p>
+  </div>
+
+  <div class="home-card">
+    <h2>System Design</h2>
+    <p><strong>Observe:</strong> Oven temperature, cake rising state, surface color, cream texture, baking time.</p>
+    <p><strong>Act:</strong> Adjust oven temperature, alter batter proportion, add decorative cream, adjust baking duration.</p>
+    <p><strong>Feedback:</strong> Cake cracks → temp too high. Overflow → temp too high + thin batter. Stops rising → oven opened too early.</p>
+    <p>See the full <a href="system-graph.png">system graph</a>.</p>
+  </div>
+
+  <div class="home-card">
+    <h2>Play the Game</h2>
+    <p>Try the playable version of Dream Cake STUDIO. Five baking steps, three difficulty levels, real-time feedback.</p>
+    <a href="game.html" class="btn btn-primary">Play Game</a>
+  </div>
+</div>
+
+</body>
+</html>

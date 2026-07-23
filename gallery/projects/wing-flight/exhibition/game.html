@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play — Wing Flight</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="logo"><span>🕊</span> Wing Flight</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#domain">Domain Knowledge</a></li>
+      <li><a href="index.html#system">System Design</a></li>
+      <li><a href="process.html">Development Process</a></li>
+      <li><a href="game.html" class="active">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <div id="level-select">
+    <h2>Choose Your Challenge</h2>
+    <p class="subtitle">Each level changes wind, obstacles, and energy — not just visuals.</p>
+    <div id="level-cards"></div>
+
+    <div class="controls-help" style="max-width: 680px; width: 100%;">
+      <h3>Controls</h3>
+      <div class="keys">
+        <div class="key-group"><kbd>W</kbd> / <kbd>↑</kbd> Ascend (uses energy)</div>
+        <div class="key-group"><kbd>S</kbd> / <kbd>↓</kbd> Dive (regenerates energy)</div>
+        <div class="key-group"><kbd>1</kbd> 🐦 Sparrow wing (light, efficient)</div>
+        <div class="key-group"><kbd>2</kbd> 🐦 Bluebird wing (balanced)</div>
+        <div class="key-group"><kbd>3</kbd> 🦅 Eagle wing (powerful, energy-hungry)</div>
+        <div class="key-group"><kbd>Space</kbd> Boost flap</div>
+        <div class="key-group"><kbd>R</kbd> Restart level</div>
+        <div class="key-group"><kbd>Esc</kbd> Back to menu</div>
+        <div class="key-group" style="margin-top:8px; color:#4fc3f7;">🐟 <strong>Fish mode (Level 4):</strong> Fly through the dive portal to transform! Same W/↑/S/↓ controls swim underwater. Auto-transforms back after 10s.</div>
+      </div>
+      <p style="margin-top: 12px; font-size: 13px; color: #b0bec5;">
+        <strong>Core learning:</strong> Don't just fly straight. Observe the wind vane, manage your energy by diving to regen, and plan your route around storms.
+      </p>
+    </div>
+  </div>
+
+  <canvas id="game-canvas"></canvas>
+
+  <script src="assets/js/game.js"></script>
+</body>
+</html>

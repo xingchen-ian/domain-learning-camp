@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sailing Adventure — Play</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <a href="index.html" class="logo"><span class="icon">&#9975;</span> Sailing Adventure</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#domain">Domain Knowledge</a></li>
+    <li><a href="index.html#system">System Design</a></li>
+    <li><a href="process.html">Development Process</a></li>
+    <li><a href="game.html" class="active">Play Game</a></li>
+  </ul>
+</nav>
+
+<div class="game-container">
+  <div class="game-wrapper">
+    <canvas id="game-canvas"></canvas>
+    <div class="game-info">
+      Click a challenge to start &mdash; Left/Right = steer &mdash; Up/Down = sail trim &mdash; Space = restart &mdash; Esc = menu
+    </div>
+  </div>
+</div>
+
+<script src="assets/game.js"></script>
+
+</body>
+</html>

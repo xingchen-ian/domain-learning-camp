@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In the Opera House — Development Process</title>
+  <link rel="stylesheet" href="assets/game.css">
+  <style>
+    body { overflow: auto; }
+    .site-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    nav {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 16px;
+    }
+    nav a {
+      color: var(--gold);
+      text-decoration: none;
+      font-family: Georgia, serif;
+      font-size: 1.1rem;
+    }
+    nav a:hover { text-decoration: underline; }
+    h1, h2 { font-family: Georgia, serif; color: var(--gold-light); }
+    h1 { text-align: center; }
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+      border-left: 3px solid var(--gold);
+      margin: 32px 0;
+    }
+    .entry {
+      position: relative;
+      margin-bottom: 28px;
+      padding-left: 24px;
+    }
+    .entry::before {
+      content: '';
+      position: absolute;
+      left: -33px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+    .entry h3 { margin: 0 0 8px; color: var(--gold); font-family: Georgia, serif; }
+    .entry p { margin: 0; font-size: 1.1rem; line-height: 1.5; }
+    .entry .meta { color: var(--gold); opacity: 0.7; font-size: 0.95rem; margin-bottom: 6px; }
+    .design-images {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .design-images img {
+      width: 100%;
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+    }
+    .design-images figcaption {
+      text-align: center;
+      color: var(--gold);
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+    .card {
+      background: rgba(0,0,0,0.35);
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .card h2 { margin-top: 0; }
+    .card a { color: var(--gold-light); }
+    footer.site-footer {
+      text-align: center;
+      padding: 30px 0;
+      color: var(--gold);
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="site-wrapper">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="game.html">Play Game</a>
+      <a href="process.html">Development Process</a>
+    </nav>
+
+    <h1>Development Process</h1>
+
+    <div class="card">
+      <h2>Project Overview</h2>
+      <p>
+        This project is a first-playable web game built from the design brief
+        <em>In the Opera House</em> by Yuyue Ji. The goal was to turn a paper prototype
+        and system graph into a working browser game that teaches the player how to
+        escape a locked theatre through observation, tool collection, and sequencing.
+      </p>
+      <p>
+        The full human-AI development log is kept in
+        <a href="agent-development-log.md">agent-development-log.md</a>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Design References</h2>
+      <div class="design-images">
+        <figure>
+          <img src="assets/system-graph.png" alt="System graph showing win/game over, player input, game environment, and levels.">
+          <figcaption>System Graph</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/environment.png" alt="Paper prototype of the dressing room and stage.">
+          <figcaption>Paper Prototype</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="entry">
+        <div class="meta">July 15, 2026</div>
+        <h3>Design Review</h3>
+        <p>
+          Read the design brief and studied the system graph: mirror color code,
+          drawer with lens/poem, broken spotlight, curtain, chair, and side door.
+          Identified the core loop: observe → judge → act → feedback → adjust.
+        </p>
+      </div>
+      <div class="entry">
+        <div class="meta">July 15, 2026</div>
+        <h3>First Playable Loop</h3>
+        <p>
+          Implemented the complete three-level sequence in a single HTML/CSS/JS file set:
+          Level 1 unlocks the drawer, Level 2 repairs and powers the spotlight to open the curtain,
+          Level 3 rotates the beam onto the chair to reveal the key and escape.
+          Added a 10-minute countdown timer with win/lose states.
+        </p>
+      </div>
+      <div class="entry">
+        <div class="meta">July 15, 2026</div>
+        <h3>Visual Style</h3>
+        <p>
+          Applied a vintage opera aesthetic: velvet reds, gold trim, ornate frames, and a blonde
+          opera singer character. Kept graphics readable and scalable for a 1920×1080 exhibition screen.
+        </p>
+      </div>
+      <div class="entry">
+        <div class="meta">July 15, 2026</div>
+        <h3>Redesign: Character Movement & Room Switching</h3>
+        <p>
+          Added direct control of the opera singer with arrow keys / WASD. The stage is hidden until the
+          singer walks onto it; the player can walk back and forth between dressing room and stage to explore.
+          The spotlight/key logic was tightened so the key only appears when the beam is clearly aimed at the chair.
+        </p>
+      </div>
+      <div class="entry">
+        <div class="meta">July 15, 2026</div>
+        <h3>Visual Upgrade</h3>
+        <p>
+          Expanded the dressing room with chandeliers, wardrobe, velvet stool, flower vase, side table, and vanity props.
+          Upgraded the opera singer and stage with richer gold trim, crystal chandeliers, and more detailed silhouettes.
+        </p>
+      </div>
+      <div class="entry">
+        <div class="meta">July 15, 2026</div>
+        <h3>Testing & Bug Fixes</h3>
+        <p>
+          Played through the full game to verify the code lock, inventory, spotlight angle logic,
+          curtain animation, key appearance, and door escape. Ensured the timer stops correctly on both win and lose.
+        </p>
+      </div>
+      <div class="entry">
+        <div class="meta">July 15, 2026</div>
+        <h3>Website & Submission</h3>
+        <p>
+          Built the project website (Home, Play Game, Development Process) with relative paths
+          and created the required README, THIRD_PARTY, and submission manifest files.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tools & Decisions</h2>
+      <p>
+        <strong>Track A — No build step.</strong> The game uses plain HTML, CSS, and JavaScript
+        so it runs on any ordinary static HTTP server without Node.js or npm.
+        <br><br>
+        <strong>Visual approach:</strong> CSS-only vintage styling with a few custom SVG-like shapes
+        built from CSS gradients and borders. This keeps the project lightweight and easy to modify.
+        <br><br>
+        <strong>Student decisions:</strong> Preserved the designed level order and color code.
+        Added keyboard movement for the opera singer, room-transition exploration, and Q/E spotlight rotation to make the final stage feel more direct.
+      </p>
+    </div>
+
+    <footer class="site-footer">
+      Project by Yuyue Ji · AI Agent: WorkBuddy
+    </footer>
+  </div>
+</body>
+</html>

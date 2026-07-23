@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidden Tides — Play (3D Edition)</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body class="game-body">
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <a href="index.html">Home</a>
+    <a href="domain.html">Domain &amp; System Design</a>
+    <a href="process.html">Development Process</a>
+    <a href="game.html" class="active">Play Game</a>
+  </nav>
+
+  <!-- Game container -->
+  <main id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Overlay for menu / pause / win / lose -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- HUD layer (HTML on top of 3D canvas) -->
+    <div id="hud-layer"></div>
+  </main>
+
+  <script src="assets/game.js"></script>
+</body>
+</html>

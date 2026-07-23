@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3x3 Rubik's Cube — IMA Summer Program — Group 1</title>
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+<div class="site">
+  <header class="site-header">
+    <a class="brand" href="index.html">3x3 Rubik's Cube</a>
+    <nav class="nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="#domain">Domain</a>
+      <a href="#system">System Design</a>
+      <a href="process.html">Process</a>
+      <a class="btn primary" href="game.html" style="color:#0f1419">▶ Play</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Learn the cube the<br /><span class="grad">right way</span></h1>
+    <p class="lead">
+      A web game that takes you from random turns to recognizing patterns
+      and choosing the correct algorithm. Built around a 3D Rubik's Cube
+      that you can rotate, scramble, and solve.
+    </p>
+    <a class="cta" href="game.html">▶ Play the Game</a>
+    <div style="margin-top:32px; color:#6c7383; font-size:13px;">
+      IMA Summer Program · Game Design · Group 1 · Kimi Xu
+    </div>
+  </section>
+
+  <section class="section" id="domain">
+    <h2>Game Idea</h2>
+    <p>
+      <strong>3x3 Rubik's Cube</strong> is a learning game built around the
+      real experience of solving a Rubik's Cube. Players start by
+      experimenting with random face turns, then progress through three
+      difficulty levels that gradually remove hints, encouraging them to
+      recognize patterns and remember algorithms on their own.
+    </p>
+    <p>
+      <strong>Player goal:</strong> restore the cube to a fully solved
+      state with as few moves and as little time as possible.
+    </p>
+    <p>
+      <strong>Core learning shift:</strong> moving from random turns to
+      recognizing patterns and choosing the correct algorithm.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="pill">Domain</div>
+        <h3>Solving the Rubik's Cube</h3>
+        <p>
+          The real challenge is not turning one color onto a face — that
+          destroys parts of the cube that were already solved. The actual
+          method (CFOP) builds the cube in stages: cross, F2L, OLL, PLL.
+        </p>
+      </div>
+      <div class="card">
+        <div class="pill">Misconception</div>
+        <h3>Novice assumption</h3>
+        <p>
+          Beginners believe the keys should directly be turned onto the
+          face each piece belongs to.  In practice this random-turn
+          approach almost always breaks the work that came before it.
+        </p>
+      </div>
+      <div class="card">
+        <div class="pill">Expert judgment</div>
+        <h3>Pattern recognition</h3>
+        <p>
+          Experts read the cube as a small set of patterns (headlights,
+          solved corners, edge pairs) and pick the algorithm that fits
+          the current pattern, not the desired end state.
+        </p>
+      </div>
+      <div class="card">
+        <div class="pill">Why playable</div>
+        <h3>Information & memory</h3>
+        <p>
+          The challenge of incomplete information, time, memory, accuracy
+          and efficiency translates naturally into a game where the cube
+          is the puzzle, the clock is the pressure, and the move log is
+          the score.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="system">
+    <h2>System Design</h2>
+    <p>
+      The game exposes the three data roles described in the development
+      brief — environment data, player-controlled data, and
+      system-calculated results — on screen at all times so players can
+      see how their actions change the system.
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="pill">Environment data</div>
+        <h3>Cube state</h3>
+        <p>
+          Colors and piece positions, the current pattern, and which
+          face is selected / highlighted.  This is the puzzle the player
+          has to read.
+        </p>
+      </div>
+      <div class="card">
+        <div class="pill">Player input</div>
+        <h3>Six faces + actions</h3>
+        <p>
+          Turn the 6 faces (R, L, U, D, F, B) by clicking or pressing
+          the matching key.  Shuffle, undo, redo, restart, and give-up
+          are exposed as buttons.
+        </p>
+      </div>
+      <div class="card">
+        <div class="pill">Calculated</div>
+        <h3>Time · moves · % solved</h3>
+        <p>
+          The system calculates elapsed time, total moves made, and
+          percent of stickers that are on their correct face.  These
+          three numbers translate invisible progress into readable
+          feedback.
+        </p>
+      </div>
+      <div class="card">
+        <div class="pill">Three levels</div>
+        <h3>Progressive hint removal</h3>
+        <p>
+          Level 1 shows the full algorithm for the current stage.
+          Level 2 shows a brief hint with no algorithm.  Level 3 shows
+          no hint and adds a 5-minute countdown.
+        </p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px; color:#fff">Win &amp; lose conditions</h3>
+    <p>
+      <strong>Win:</strong> all six faces show a uniform color (each of
+      the 54 stickers matches the center of its face).  The timer stops
+      and the final time, move count, and level are shown.
+    </p>
+    <p>
+      <strong>Lose:</strong> the player chooses Give Up, or on Level 3
+      the 5-minute countdown reaches zero.  In both cases the final
+      attempt summary is shown and the player can restart.
+    </p>
+  </section>
+
+  <section class="section">
+    <h2>Tech notes</h2>
+    <p>
+      The game is a static web app using a locally vendored copy of
+      <code>three.js</code> 0.160.0.  No build step, no CDNs, no
+      internet connection needed at runtime.  Open
+      <code>exhibition/index.html</code> in a browser served by any
+      static HTTP server and you're done.
+    </p>
+    <p>
+      See <a href="process.html" style="color:#feca57">Development Process</a>
+      for a chronological log of design decisions, failures, and what
+      changed between versions.
+    </p>
+  </section>
+
+  <footer style="padding:40px 48px; color:#6c7383; font-size:12px; text-align:center; border-top:1px solid #2a3142; margin-top:40px;">
+    IMA Summer Program · Game Design · Group 1 · Built with WorkBuddy
+  </footer>
+</div>
+</body>
+</html>

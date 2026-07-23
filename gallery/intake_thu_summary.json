@@ -1,0 +1,40 @@
+{
+  "thu_ingested": 30,
+  "thu_errors": [],
+  "thu_skipped": [
+    {
+      "folder": "Escape the Cellar - Doris",
+      "title": "Escape the Cellar",
+      "team": "Doris",
+      "reason": "Submitted as Next.js/Vite source (needs build); no static exhibition HTML.",
+      "reasonZh": "提交的是 Next.js/Vite 源码包，需构建，没有可直接托管的静态展览页。"
+    },
+    {
+      "folder": "general(with ai) - group2 - rex xinyi li",
+      "title": "General (with AI)",
+      "team": "Rex / Xinyi Li",
+      "reason": "Submitted as Next.js client/server app; no static playable HTML package.",
+      "reasonZh": "提交的是 Next.js 前后端工程，没有静态可玩 HTML 包。"
+    },
+    {
+      "folder": "黄馨娴。win a basketball game",
+      "title": "Win a Basketball Game",
+      "team": "Huang Xinxian (黄馨娴)",
+      "reason": "ZIP contains the course website, not the basketball game; only a screen recording is present.",
+      "reasonZh": "ZIP 里是课程网站而非篮球游戏本体，只有录屏可用。"
+    },
+    {
+      "folder": "Weiru_LabEscape",
+      "title": "Lab Escape (duplicate package)",
+      "team": "Weiru Xu",
+      "reason": "Duplicate of WeiruXu_LabEscape; gallery lists one Lab Escape entry.",
+      "reasonZh": "与 WeiruXu_LabEscape 重复；展览只保留一份 Lab Escape。"
+    }
+  ],
+  "gallery_total": 62,
+  "by_group": {
+    "group-04": 1,
+    "day1": 31,
+    "thu": 30
+  }
+}

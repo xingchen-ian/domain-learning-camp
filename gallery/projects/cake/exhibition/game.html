@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cake - Play the Game</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body class="game-body">
+  <header class="site-header">
+    <div class="site-title">Cake</div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="design.html">Domain &amp; System</a>
+      <a href="process.html">Development Process</a>
+      <a href="game.html" class="active">Play the Game</a>
+    </nav>
+  </header>
+
+  <main class="game-main">
+    <!-- Level Select Screen -->
+    <section id="levelSelect" class="screen level-select">
+      <h1 class="screen-title">Choose a Level</h1>
+      <p class="screen-hint">Each level changes what the customer wants, how much time you have, and how many details you must track.</p>
+      <div class="level-cards">
+        <button class="level-card" data-level="1">
+          <div class="level-num">Level 1</div>
+          <div class="level-target">Read the order. Make the cake.</div>
+          <ul class="level-rules">
+            <li>Time limit: <strong>None</strong></li>
+            <li>Requirements: <strong>Yes</strong></li>
+            <li>Practice reading the order carefully.</li>
+          </ul>
+        </button>
+        <button class="level-card" data-level="2">
+          <div class="level-num">Level 2</div>
+          <div class="level-target">Add pressure. 1 minute. Choose each layer.</div>
+          <ul class="level-rules">
+            <li>Time limit: <strong>1 minute</strong></li>
+            <li>Requirements: <strong>Yes (pick 2 layers)</strong></li>
+            <li>Pick a base for each layer manually.</li>
+          </ul>
+        </button>
+        <button class="level-card" data-level="3">
+          <div class="level-num">Level 3</div>
+          <div class="level-target">Full challenge. 20 seconds. Choose each layer.</div>
+          <ul class="level-rules">
+            <li>Time limit: <strong>20 seconds</strong></li>
+            <li>Requirements: <strong>Yes (pick 3 layers)</strong></li>
+            <li>Pick a different base for each layer. Then decorate!</li>
+          </ul>
+        </button>
+      </div>
+    </section>
+
+    <!-- Game Screen -->
+    <section id="gameScreen" class="screen game-screen hidden">
+      <div class="game-top">
+        <div class="top-cell level-cell">
+          <span class="top-label">Level</span>
+          <span id="levelDisplay" class="top-value">1</span>
+        </div>
+        <div class="top-cell timer-cell">
+          <span class="top-label">Time Left</span>
+          <span id="timerDisplay" class="top-value">--</span>
+        </div>
+        <div class="top-cell state-cell">
+          <span class="top-label">Current Step</span>
+          <span id="stateDisplay" class="top-value">Read the order</span>
+        </div>
+        <button id="restartBtn" class="btn btn-ghost">Restart</button>
+      </div>
+
+      <div class="game-body-grid">
+        <!-- Order Panel -->
+        <aside class="panel order-panel">
+          <h2>Customer Order</h2>
+          <div id="orderCard" class="order-card empty">
+            <p class="hint-text">Press <kbd>A</kbd> to read the order.</p>
+          </div>
+          <div id="orderInstructions" class="order-instructions hidden"></div>
+          <div id="customerFace" class="customer-face" aria-label="Customer expression">
+            <div class="face-shape">
+              <div class="eye eye-left"></div>
+              <div class="eye eye-right"></div>
+              <div class="mouth"></div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Cake Stage -->
+        <section class="stage">
+          <canvas id="cakeCanvas" width="640" height="480" aria-label="Cake preview"></canvas>
+          <div class="stage-message" id="stageMessage">Press A to read the order.</div>
+        </section>
+
+        <!-- Tools Panel -->
+        <aside class="panel tools-panel">
+          <h2>Workbench</h2>
+
+          <div class="tool-group" data-step="select">
+            <h3>1. Pick ingredients</h3>
+            <p class="tool-hint">Click an ingredient. Then click <strong>Mix</strong>.</p>
+            <div class="ingredient-grid" id="ingredientGrid"></div>
+            <div class="mixer-row">
+              <button id="mixBtn" class="btn btn-primary" disabled>Mix the batter</button>
+            </div>
+            <div id="mixProgress" class="phase-progress hidden">
+              <div class="phase-bar"><div id="mixBar" class="phase-fill"></div></div>
+              <span id="mixLabel" class="phase-label">Mixing...</span>
+            </div>
+          </div>
+
+          <div class="tool-group" data-step="bake">
+            <h3>2. Bake</h3>
+            <p class="tool-hint">Press <kbd>W</kbd> to put the cake into the oven.</p>
+            <div class="oven-wrap">
+              <button id="ovenBtn" class="btn btn-primary" disabled>Oven (W)</button>
+              <div id="ovenVisual" class="oven-visual">
+                <div class="oven-light"></div>
+                <span class="oven-label">Oven</span>
+              </div>
+            </div>
+            <div id="bakeProgress" class="phase-progress hidden">
+              <div class="phase-bar"><div id="bakeBar" class="phase-fill"></div></div>
+              <span id="bakeLabel" class="phase-label">Baking...</span>
+            </div>
+          </div>
+
+          <div class="tool-group" data-step="decorate">
+            <h3>3. Decorate</h3>
+            <p class="tool-hint">Click decorations to add them to the cake.</p>
+            <div class="deco-grid" id="decoGrid"></div>
+            <p class="cake-progress-label">Your cake so far:</p>
+            <div id="cakeProgress" class="cake-progress"></div>
+          </div>
+
+          <div class="tool-group" data-step="submit">
+            <h3>4. Submit</h3>
+            <p class="tool-hint">Press <kbd>Space</kbd> to hand the cake to the customer.</p>
+            <button id="submitBtn" class="btn btn-primary" disabled>Submit (Space)</button>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Result Overlay -->
+      <div id="resultOverlay" class="result-overlay hidden">
+        <div class="result-card">
+          <h2 id="resultTitle">Result</h2>
+          <p id="resultDetail"></p>
+          <div class="result-actions">
+            <button id="retryBtn" class="btn btn-primary">Try Again</button>
+            <button id="nextLevelBtn" class="btn btn-ghost">Level Select</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Cake &middot; A first playable web game by Huang Yan Yue.</span>
+  </footer>
+
+  <script src="assets/game.js"></script>
+</body>
+</html>

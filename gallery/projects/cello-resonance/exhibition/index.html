@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>弦境回响 — Cello Resonance</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="active">项目主页</a>
+    <a href="game.html">开始游戏</a>
+    <a href="process.html">开发过程</a>
+  </nav>
+
+  <div class="container">
+    <h1>弦境回响</h1>
+    <p class="subtitle">Cello Resonance — 2D叙事解谜冒险游戏</p>
+
+    <div class="highlight">
+      <strong>核心概念：</strong> 一个手持古董大提琴的探险者穿行于神秘森林，
+      用声音与世界互动——音高创造光桥、弓压碎石或生藤、和声共鸣驱散守护者。
+      这不是演奏模拟器，而是以大提琴为叙事工具的解谜冒险。
+    </div>
+
+    <h2>创意起源</h2>
+    <p>大提琴的音域横跨近三个八度，从深沉的 C2 到明亮的 A4。
+    在这个游戏中，我们将这些音高映射为与环境互动的力量：</p>
+    <ul>
+      <li><strong>低音 (C2-G2)</strong> — 温暖厚重的光桥，缓慢而坚定地跨越深渊</li>
+      <li><strong>中音 (G3-C4)</strong> — 平衡的力量，既可碎岩也可生藤</li>
+      <li><strong>高音 (E4-A4)</strong> — 幽蓝冷冽的光桥，轻盈而遥远</li>
+    </ul>
+
+    <h2>游戏机制</h2>
+
+    <div class="card-grid">
+      <div class="chapter-card">
+        <h3>第一章：音高光桥</h3>
+        <p class="desc">不同的音高创造不同颜色的光桥。低音=暖色桥，高音=冷色桥。
+        用鼠标左右拖拽运弓，上下位置控制音高，在峡谷中架桥前行。</p>
+      </div>
+      <div class="chapter-card">
+        <h3>第二章：弓压机关</h3>
+        <p class="desc">重弓压=音波震荡碎裂岩石墙壁，轻弓压=温和音调催生发光藤蔓。
+        拖拽速度和力度决定弓压——快速猛拖碎石，缓慢轻拉生藤。</p>
+      </div>
+      <div class="chapter-card">
+        <h3>第三章：和声共鸣</h3>
+        <p class="desc">面对森林守护者，需要匹配特定的和声模式。
+        用特定音高运弓来共鸣，逐层削弱守护者，直到森林苏醒。</p>
+      </div>
+    </div>
+
+    <h2>操控方式</h2>
+    <table class="data-table">
+      <tr><th>操作</th><th>方式</th><th>效果</th></tr>
+      <tr><td>运弓</td><td>鼠标左右拖拽</td><td>发出声音、产生光波</td></tr>
+      <tr><td>音高</td><td>鼠标上下位置</td><td>上=高音(冷色)，下=低音(暖色)</td></tr>
+      <tr><td>弓压</td><td>拖拽力度/速度</td><td>猛拖=重压(碎石)，轻拖=轻压(生藤)</td></tr>
+      <tr><td>移动</td><td>A/D 或 ←→</td><td>左右移动探险者</td></tr>
+      <tr><td>共鸣</td><td>Space (Boss阶段)</td><td>持续发出和声共鸣</td></tr>
+    </table>
+
+    <h2>反馈系统</h2>
+    <ul class="feedback-list">
+      <li><span class="signal">音波涟漪</span> — <span class="meaning">运弓时从大提琴发出的彩色光波</span> — <span class="display">音高→颜色，弓压→大小</span></li>
+      <li><span class="signal">光桥成形</span> — <span class="meaning">正确音高范围内运弓时光桥逐渐出现</span> — <span class="display">桥的亮度随运弓持续增强</span></li>
+      <li><span class="signal">屏幕震动</span> — <span class="meaning">重弓压碎岩时的视觉冲击</span> — <span class="display">画面抖动+岩石裂痕动画</span></li>
+      <li><span class="signal">藤蔓生长</span> — <span class="meaning">轻弓压时发光藤蔓逐节生长</span> — <span class="display">从种子点向上生长+叶片绽放</span></li>
+      <li><span class="signal">守护者光环</span> — <span class="meaning">Boss阶段匹配音高时守护者变色</span> — <span class="display">金色共鸣光覆盖紫色守护者</span></li>
+    </ul>
+
+    <h2>系统设计</h2>
+
+    <h3>音频引擎</h3>
+    <p>Web Audio API 合成大提琴音色：三角波基频 + 锯齿波谐波（弓压越高谐波越丰富） + 正弦波二次谐波。
+    加上2.5秒卷积混响模拟森林空间感。</p>
+
+    <h3>物理引擎</h3>
+    <p>简单的2D平台物理：重力、平台碰撞、光桥和藤蔓作为可交互的动态平台。
+    相机跟随玩家，视差滚动背景树层。</p>
+
+    <h3>视觉风格</h3>
+    <p>手绘风格（painterly）：软性渐变填充、噪声纹理叠加、雾气粒子、
+    多层视差树、发光效果用径向渐变模拟。整体色调偏暖土色+深绿+幽紫。</p>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="game.html" class="play-btn">开始冒险</a>
+    </div>
+  </div>
+
+  <footer>弦境回响 Cello Resonance — 纯 HTML5 Canvas + Web Audio API，离线可用</footer>
+</body>
+</html>

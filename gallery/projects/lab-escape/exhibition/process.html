@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Escape — Development</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="brand">LAB ESCAPE</span>
+    <a href="index.html">Home</a>
+    <a href="system.html">Domain &amp; System</a>
+    <a href="process.html" class="active">Development</a>
+    <span class="spacer"></span>
+    <a href="game.html" class="play-cta">Play</a>
+  </nav>
+
+  <header class="hero">
+    <h1>DEVELOPMENT</h1>
+    <p class="tag">How the game was built</p>
+  </header>
+
+  <main class="page">
+    <section class="card">
+      <h2>Approach</h2>
+      <p>
+        The game was developed as a single self-contained Canvas project in plain JavaScript — no
+        frameworks, no build tools. Iteration happened in short playable loops: add a system, test
+        it in the browser, refine.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Milestones</h2>
+      <ul>
+        <li>Tile grid, player movement, and collision.</li>
+        <li>Enemy patrol + vision cone + sight blocking.</li>
+        <li>Weapons (melee + ranged), contact-only death, blood effects.</li>
+        <li>Three levels with safe spawn rooms, doors, and lab-themed cover.</li>
+        <li>Masks / loadout selection and HUD feedback.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>What I learned</h2>
+      <p>
+        Small, readable feedback (a detection bar, a danger vignette, clear animations) teaches the
+        player more than complex rules. And environment design — where doors and cover are placed —
+        drives the whole difficulty curve.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site">Built for the First Playable Game exhibition · plain HTML/CSS/Canvas (Track A)</footer>
+</body>
+</html>

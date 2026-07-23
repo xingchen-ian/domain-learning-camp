@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dream — System Design</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <span class="logo">dream</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="knowledge.html">Domain Knowledge</a></li>
+    <li><a href="system.html" class="active">System Design</a></li>
+    <li><a href="process.html">Development Process</a></li>
+    <li><a href="game.html">Play the Game</a></li>
+  </ul>
+</nav>
+
+<main class="page-content">
+
+  <h1>System Design</h1>
+
+  <h2>System Graph</h2>
+  <div class="graph-container">
+    <img src="assets/img/system-graph.jpg" alt="Game system and challenge graph showing the data flow, feedback relationships, and three level presets">
+    <div class="caption">The hand-drawn system graph by Wu Zhen — the original design reference for all game mechanics.</div>
+  </div>
+
+  <h2>Data Model</h2>
+
+  <h3>Environment Data (read-only, set by the level)</h3>
+  <table class="info-table">
+    <thead>
+      <tr><th>Variable</th><th>Description</th><th>Who sets it</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Character features</td><td>Who the character is — personality, preferences, age</td><td>Level preset</td></tr>
+      <tr><td>Character difficulties</td><td>What actually troubles them — the emotional knots they carry</td><td>Level preset</td></tr>
+      <tr><td>Daily difficulty event</td><td>A specific event each morning (exam pressure, argument, loneliness, overwhelm, self-doubt) that changes which activities are truly beneficial</td><td>Randomly selected each run</td></tr>
+      <tr><td>Character reactions</td><td>Dialogue lines for each activity, revealing true feelings</td><td>Level preset</td></tr>
+      <tr><td>Energy limit</td><td>Daily energy budget (not used in Level 1; active in Levels 2 &amp; 3)</td><td>Level preset</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Player-Controlled Data (chosen by the player)</h3>
+  <table class="info-table">
+    <thead>
+      <tr><th>Variable</th><th>Description</th><th>Who controls it</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Selected activities</td><td>Which objects/NPCs the player chooses to interact with during the day</td><td>Player</td></tr>
+    </tbody>
+  </table>
+
+  <h3>System-Calculated Results (derived)</h3>
+  <table class="info-table">
+    <thead>
+      <tr><th>Variable</th><th>Description</th><th>How it's derived</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Mood %</td><td>Character's emotional state after activities</td><td>Sum of mood changes from each chosen activity</td></tr>
+      <tr><td>Excitement %</td><td>Accumulated stimulation level</td><td>Sum of excitement changes from each chosen activity</td></tr>
+      <tr><td>Energy %</td><td>Remaining daily energy (Levels 2 &amp; 3 only)</td><td>Starting budget minus energy cost of each chosen activity</td></tr>
+      <tr><td>Dream type</td><td>serene / echoes / absurd / kaleidoscope / wandering / unexpectedCalm / drifting / descent</td><td>Mood, excitement, beneficial activities, + randomness</td></tr>
+      <tr><td>Wake state</td><td>energized / tired / neutral</td><td>Derived from dream type</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Feedback Relationships</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🌅</div>
+      <div class="card-title">Morning — Daily Difficulty</div>
+      <div class="card-text">Each morning, Lin tells you about a specific difficulty (exam pressure, argument, loneliness, overwhelm, or self-doubt). This is the first thing to <strong>observe</strong> — it changes which activities are truly beneficial today.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <div class="card-title">Immediate — Character Reaction</div>
+      <div class="card-text">After each activity, the character says a line. This is the fastest feedback, but it can be misleading — a polite response doesn't always mean the activity truly helped.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Immediate — Mood &amp; Excitement %</div>
+      <div class="card-text">Numerical gauges update after each action. You can see whether mood went up and excitement is building. But the dream outcome depends on the <em>combination</em> at bedtime.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌙</div>
+      <div class="card-title">Delayed — Dream Outcome</div>
+      <div class="card-text">The dream is dynamically generated from the activities you chose — each activity contributes surreal imagery fragments that are woven into a unique narrative. There are 7 possible dream types, and the outcome isn't always predictable: sometimes the mind finds peace even without solving the problem.</div>
+    </div>
+  </div>
+
+  <h2>Success and Failure Conditions</h2>
+  <table class="info-table">
+    <thead>
+      <tr><th>Outcome</th><th>Condition</th><th>Wake-up state</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>✅ Good dream</td><td>Mood &gt; 50 and Excitement &lt; 70 at sleep</td><td>Energized — start the day in a good mood</td></tr>
+      <tr><td>❌ Nightmare</td><td>Mood ≤ 50 at sleep</td><td>Tired — wake up drained and in a low mood</td></tr>
+      <tr><td>❌ Too exciting</td><td>Mood &gt; 50 but Excitement ≥ 70 at sleep</td><td>Tired — even a "good" dream that's too intense leaves you exhausted</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Challenge Presets</h2>
+
+  <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card">
+      <span class="level-badge">Level 1</span>
+      <div class="card-title">Tutorial — All Activities Help</div>
+      <div class="card-text">
+        Every activity improves the dream. No energy limit. 
+        <strong>New constraint:</strong> doing too many activities raises excitement past the threshold — even "good" things can make the dream too exciting. 
+        Learn the basic loop and discover that quantity isn't the answer.
+      </div>
+    </div>
+    <div class="card">
+      <span class="level-badge">Level 2</span>
+      <div class="card-title">Resource Management</div>
+      <div class="card-text">
+        All activities still improve the dream, but now there's an <strong>energy budget</strong>. 
+        Some activities cost more energy than others for the same mood gain. 
+        You must choose efficient activities and can't do everything.
+      </div>
+    </div>
+    <div class="card">
+      <span class="level-badge">Level 3</span>
+      <div class="card-title">Full Challenge — Attunement</div>
+      <div class="card-text">
+        <strong>Not all activities improve the dream.</strong> Some are mismatches for the character's real needs. 
+        You must read their dialogue carefully to know which activities truly help. 
+        Energy limit is still active. This is where the core learning shift fully kicks in.
+      </div>
+    </div>
+  </div>
+
+  <a href="game.html" class="play-btn">Play the Game</a>
+
+</main>
+
+<footer class="site-footer">
+  dream — Wu Zhen — Have a good dream domain — Built with WorkBuddy
+</footer>
+
+</body>
+</html>

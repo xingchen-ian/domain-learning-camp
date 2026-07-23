@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>折·Fold — 精度折纸 | Home</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">折·Fold <small>精度折纸</small></div>
+  <div class="links">
+    <a href="index.html" class="active">首页</a>
+    <a href="#domain">领域知识</a>
+    <a href="#system">系统设计</a>
+    <a href="process.html">开发过程</a>
+    <a href="game.html">玩游戏</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Domain Learning Game · 折纸</div>
+    <h1>折·Fold</h1>
+    <p class="sub">每一次对齐，都在累积 —— 一个关于精度与误差的折纸游戏</p>
+    <p style="margin-top:26px;"><a class="btn" href="game.html">▶ 开始游戏</a></p>
+  </div>
+
+  <!-- 游戏创意 -->
+  <div class="card">
+    <h2>游戏创意</h2>
+    <div class="grid-2">
+      <div>
+        <p><strong>概念：</strong>把一张方纸按引导逐步折叠，目标是每一次都对齐到精确的参考点。</p>
+        <p><strong>玩家目标：</strong>用最高的累计精度完成整组折叠，得到 S 级评价。</p>
+      </div>
+      <div>
+        <p><strong>核心学习转变：</strong>从"折纸是一串步骤" → "折纸是由对齐、方向和累积精度构成的系统"。</p>
+        <p>玩家在几折之后会真切体会到：第一步歪一点点，到第五步就歪成一大截。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 领域知识 -->
+  <div class="card" id="domain">
+    <h2>领域知识：折纸</h2>
+    <h3>新手误解</h3>
+    <p>新手以为折纸就是"照图示把纸折一下"，只要大致折到位置就行——折角差不多对上、折痕差不多居中就够了。他们没意识到对齐必须精确到边、角、已有折痕这些参考点，没意识到山折与谷折方向不同会得到完全不同的结构，更没意识到折叠顺序与误差累积。</p>
+    <h3>行家判断</h3>
+    <p>熟练者把每一次折叠看作对整个参考体系的精确改变：读取当前纸形 → 找到正确参考点 → 判断方向 → 用刚好到位的力道对齐 → 从折痕的歪斜与错位里读反馈 → 在下一步补偿。他们知道早期 2mm 的偏差会在后续步骤里被放大成 1cm。</p>
+    <h3>为什么这些知识能变成游戏</h3>
+    <p>"对齐精度"和"误差累积"天然是可量化、可反馈的——精度计让不可见的对齐误差变成可见的数字，累计精度条让跨步骤的复合误差变得直观。玩家循环（观察 → 判断 → 行动 → 反馈 → 调整）正好对应真实折纸的实践节奏。</p>
+  </div>
+
+  <!-- 系统设计 -->
+  <div class="card" id="system">
+    <h2>系统设计</h2>
+    <p>下图展示数据、玩家操作、系统计算、反馈与挑战之间的关系。完整图见 <code>system-graph.png</code>。</p>
+
+    <!-- 内嵌系统图 SVG -->
+    <svg class="sysgraph" viewBox="0 0 980 460" role="img" aria-label="游戏系统图">
+      <defs>
+        <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#6f6557"/></marker>
+      </defs>
+      <rect width="980" height="460" fill="#f8f2e4"/>
+      <!-- 环境数据 -->
+      <g>
+        <rect x="40" y="40" width="200" height="120" rx="12" fill="#e3d2ac" stroke="#c9b896"/>
+        <text x="140" y="70" text-anchor="middle" font-size="16" font-weight="800" fill="#2c2620">环境数据</text>
+        <text x="140" y="95" text-anchor="middle" font-size="12" fill="#44403a">纸张多边形 / 图层</text>
+        <text x="140" y="113" text-anchor="middle" font-size="12" fill="#44403a">目标轮廓 · 折线引导</text>
+        <text x="140" y="131" text-anchor="middle" font-size="12" fill="#44403a">折角起点 · 目标点</text>
+        <text x="140" y="149" text-anchor="middle" font-size="12" fill="#44403a">已完成折痕</text>
+      </g>
+      <!-- 玩家操作 -->
+      <g>
+        <rect x="390" y="40" width="200" height="120" rx="12" fill="#3a7d72" stroke="#2f655c"/>
+        <text x="490" y="70" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">玩家操作</text>
+        <text x="490" y="98" text-anchor="middle" font-size="12" fill="#eaf5f2">拖动折角手柄</text>
+        <text x="490" y="118" text-anchor="middle" font-size="12" fill="#eaf5f2">控制折叠进度 p</text>
+        <text x="490" y="138" text-anchor="middle" font-size="12" fill="#eaf5f2">（0 未折 → 1 全折）</text>
+      </g>
+      <!-- 系统计算 -->
+      <g>
+        <rect x="740" y="40" width="200" height="120" rx="12" fill="#c85243" stroke="#9f392f"/>
+        <text x="840" y="70" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">系统计算</text>
+        <text x="840" y="95" text-anchor="middle" font-size="12" fill="#fdecea">翻折侧裁剪 + 镜像反射</text>
+        <text x="840" y="113" text-anchor="middle" font-size="12" fill="#fdecea">折叠插值动画</text>
+        <text x="840" y="131" text-anchor="middle" font-size="12" fill="#fdecea">本折精度 · 累计精度</text>
+        <text x="840" y="149" text-anchor="middle" font-size="12" fill="#fdecea">视角自适应拟合</text>
+      </g>
+      <!-- 反馈 -->
+      <g>
+        <rect x="390" y="250" width="200" height="120" rx="12" fill="#b08a3e" stroke="#8f6e30"/>
+        <text x="490" y="280" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">反馈</text>
+        <text x="490" y="305" text-anchor="middle" font-size="12" fill="#fbf3df">实时翻折动画</text>
+        <text x="490" y="323" text-anchor="middle" font-size="12" fill="#fbf3df">精度计 · 累计精度条</text>
+        <text x="490" y="341" text-anchor="middle" font-size="12" fill="#fbf3df">吸附高光 · 错位提示</text>
+        <text x="490" y="359" text-anchor="middle" font-size="12" fill="#fbf3df">评级 S/A/B/C</text>
+      </g>
+      <!-- 挑战预设 -->
+      <g>
+        <rect x="40" y="250" width="200" height="120" rx="12" fill="#f8f2e4" stroke="#c9b896"/>
+        <text x="140" y="280" text-anchor="middle" font-size="16" font-weight="800" fill="#2c2620">挑战预设</text>
+        <text x="140" y="305" text-anchor="middle" font-size="12" fill="#44403a">方寸 · 3 折</text>
+        <text x="140" y="323" text-anchor="middle" font-size="12" fill="#44403a">纸帽 · 4 折（角对中心）</text>
+        <text x="140" y="341" text-anchor="middle" font-size="12" fill="#44403a">回纹 · 5 折（累积极限）</text>
+      </g>
+      <!-- 规则/边界 -->
+      <g>
+        <rect x="740" y="250" width="200" height="120" rx="12" fill="#f8f2e4" stroke="#c9b896"/>
+        <text x="840" y="280" text-anchor="middle" font-size="16" font-weight="800" fill="#2c2620">规则与边界</text>
+        <text x="840" y="305" text-anchor="middle" font-size="12" fill="#44403a">成功：高累计精度</text>
+        <text x="840" y="323" text-anchor="middle" font-size="12" fill="#44403a">无硬失败 · 可重试</text>
+        <text x="840" y="341" text-anchor="middle" font-size="12" fill="#44403a">刚好区间：对齐即精确</text>
+      </g>
+      <!-- 箭头：循环 -->
+      <g stroke="#6f6557" stroke-width="2" fill="none" marker-end="url(#arr)">
+        <line x1="240" y1="100" x2="385" y2="100"/>
+        <line x1="590" y1="100" x2="735" y2="100"/>
+        <line x1="840" y1="160" x2="840" y2="245"/>
+        <line x1="740" y1="310" x2="595" y2="310"/>
+        <line x1="390" y1="310" x2="245" y2="310"/>
+        <line x1="140" y1="250" x2="140" y2="165"/>
+      </g>
+      <text x="490" y="430" text-anchor="middle" font-size="13" fill="#6f6557" font-style="italic">观察 → 判断 → 行动 → 反馈 → 调整：一个完整循环</text>
+    </svg>
+
+    <div class="grid-2" style="margin-top:18px;">
+      <div>
+        <h3>数据模型</h3>
+        <p><span class="pill">环境</span>纸张形状、目标轮廓、折线、折角/目标点、已存折痕</p>
+        <p><span class="pill">玩家</span>折角手柄拖动位置、折叠进度 p</p>
+        <p><span class="pill">计算</span>翻折侧裁剪+反射、插值动画、精度、累计精度、视角拟合</p>
+        <p><span class="pill">反馈</span>翻折动画、精度计、累计条、吸附高光、评级</p>
+      </div>
+      <div>
+        <h3>规则与刚好区间</h3>
+        <p>对齐必须接近精确——精度由释放时折角到目标点的距离决定，越近越高。这正是折纸的"刚好区间"：折多了或折少了都不行，必须刚好对齐参考点。</p>
+        <p>累计精度 = 各折精度的连乘，让跨步骤的复合误差变得可见，迫使玩家越往后越小心。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <h2>准备好折了吗？</h2>
+    <p>从一对方纸开始，看看你能不能在误差累积之前，把每一步都对齐到位。</p>
+    <p style="margin-top:18px;"><a class="btn accent" href="game.html">▶ 进入游戏</a></p>
+  </div>
+
+</div>
+<footer>折·Fold · 精度折纸 · Domain Learning Game Project</footer>
+</body>
+</html>

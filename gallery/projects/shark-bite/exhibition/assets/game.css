@@ -1,0 +1,111 @@
+/* Shark Bite — game page styling (Track A, no dependencies) */
+
+#game-screen { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px; }
+
+/* canvas wrapper keeps 16:9-ish frame and scales down on small screens */
+.canvas-wrap {
+  position: relative;
+  width: 960px;
+  max-width: 100%;
+  aspect-ratio: 960 / 600;
+}
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #02132E;
+  border-radius: 10px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+  image-rendering: auto;
+}
+
+/* HUD bars sit below the canvas */
+.hud {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 13px;
+  color: #2C2C2A;
+}
+.hud .stat { display: flex; flex-direction: column; gap: 3px; min-width: 92px; }
+.hud .stat label { font-size: 11px; color: #5F5E5A; font-weight: 500; }
+.hud .bar { height: 10px; border-radius: 6px; background: #E1E0DA; overflow: hidden; width: 110px; }
+.hud .bar > i { display: block; height: 100%; width: 100%; transition: width 0.15s linear; }
+#hud-oxygen { background: #378ADD; }
+#hud-equip { background: #7F77DD; }
+#hud-health { background: #E24B4A; }
+#hud-eco { background: #1D9E75; transition: width 0.2s linear, background 0.3s ease; }
+.eco-stat .bar { border: 1px solid rgba(29,158,117,0.3); }
+.hud .readout { font-weight: 500; }
+#hud-status { font-weight: 600; letter-spacing: 0.5px; }
+
+/* overlays */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(2, 15, 30, 0.82);
+  color: #fff;
+  border-radius: 10px;
+  padding: 24px;
+}
+.overlay.hidden { display: none; }
+.overlay h2 { font-size: 22px; margin: 0 0 8px; font-weight: 500; }
+.overlay p { font-size: 14px; max-width: 560px; line-height: 1.6; color: #CFE0EE; }
+
+/* challenge menu cards */
+#challenge-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+.ch-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  width: 250px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid #B4B2A9;
+  background: #F1EFE8;
+  color: #2C2C2A;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+  font-family: inherit;
+}
+.ch-card:hover { transform: translateY(-2px); border-color: #378ADD; }
+.ch-tag { font-size: 11px; font-weight: 600; color: #185FA5; text-transform: uppercase; letter-spacing: 0.5px; }
+.ch-name { font-size: 16px; font-weight: 500; }
+.ch-desc { font-size: 12px; color: #5F5E5A; line-height: 1.5; }
+.ch-meta { font-size: 11px; color: #888780; margin-top: 4px; }
+
+/* buttons */
+.btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #378ADD;
+  background: #378ADD;
+  color: #fff;
+  cursor: pointer;
+}
+.btn:hover { background: #185FA5; }
+.btn.ghost { background: transparent; color: #185FA5; }
+.btn.ghost:hover { background: #E6F1FB; }
+
+#end-screen .btn-row { display: flex; gap: 12px; margin-top: 18px; }
+
+/* controls hint */
+.controls-hint {
+  font-size: 12px;
+  color: #5F5E5A;
+  text-align: center;
+  max-width: 760px;
+  line-height: 1.7;
+}
+.controls-hint b { color: #2C2C2A; }

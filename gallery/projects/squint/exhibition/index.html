@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Squint — Painting &amp; Light Game</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">Squint <small>Painting &amp; Light</small></div>
+    <div class="links">
+      <a href="index.html" class="active">Home</a>
+      <a href="index.html#system">System Design</a>
+      <a href="process.html">Development Process</a>
+      <a href="game.html">Play Game</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>Squint</h1>
+    <p>A small game about the hardest thing in painting: seeing light, not objects.</p>
+    <span class="tag">Domain · Painting &nbsp;|&nbsp; Student · Charlie. S &nbsp;|&nbsp; Track A (no build)</span>
+  </div>
+
+  <div class="wrap">
+    <!-- GAME IDEA -->
+    <section id="idea">
+      <h2>Game Idea</h2>
+      <div class="card">
+        <p><strong>Concept.</strong> You are shown a lit scene. Instead of painting details, you block in the big
+        shapes and assign each one a value from a limited 5-step grayscale (later, mixed colour). A "squint" view
+        blurs your canvas against the reference so you can judge the masses the way a real painter does.</p>
+        <p><strong>Player goal.</strong> Match the reference's value structure — not its outlines — using as few
+        strokes as possible, before the stroke budget runs out.</p>
+        <p><strong>Core learning shift.</strong>
+        <span class="badge">key idea</span>
+        <em>"Painting isn't just copying objects. It's all about translating the light you see into objective
+        values and shapes."</em></p>
+        <a class="cta" href="game.html">Play the Game →</a>
+      </div>
+    </section>
+
+    <!-- DOMAIN KNOWLEDGE -->
+    <section id="domain">
+      <h2>Domain Knowledge</h2>
+      <div class="grid2">
+        <div class="card">
+          <h3>Real-world domain</h3>
+          <p>Painting from observation. The same object looks completely different under different light direction
+          and temperature, so the painter must identify and understand the light before anything else. The student
+          has painted since childhood and studies art in school.</p>
+        </div>
+        <div class="card">
+          <h3>Novice misconception</h3>
+          <p>Beginners paint the picture in their head instead of what they actually see. They start with details
+          (eyelashes, texture) instead of blocking in the big masses, and they assign colours from memory instead
+          of observation.</p>
+        </div>
+        <div class="card">
+          <h3>Expert judgment</h3>
+          <p>Experts squint constantly. They read the scene as a few large value shapes, judge each value against
+          its neighbours, and only then refine. They know colour is decided by context, not by the object's "real"
+          colour.</p>
+        </div>
+        <div class="card">
+          <h3>Why it becomes playable</h3>
+          <p>The squint is the perfect game mechanic: blur removes detail and leaves only value relationships. The
+          game makes the invisible (light) visible through pops, step-back, and an end-of-level critique.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SYSTEM DESIGN -->
+    <section id="system">
+      <h2>System Design</h2>
+      <div class="card">
+        <img src="system-graph.png" alt="Squint system graph"
+             style="width:100%; max-width:760px; border:1px solid var(--line); border-radius:8px;">
+        <p class="hint">System graph: environment data, player input, calculated results, exposed feedback, and the three level presets.</p>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>Environment data (read-only)</h3>
+          <ul>
+            <li>Reference scene (objects + light)</li>
+            <li>Light direction &amp; temperature</li>
+            <li>Hidden true-value map</li>
+            <li>Stroke budget (int)</li>
+            <li>Level definition</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Player-controlled data</h3>
+          <ul>
+            <li>Place / resize shape blocks (drag)</li>
+            <li>Assign value 1–5 (keys / palette)</li>
+            <li>Mix colour (Level 3 slider)</li>
+            <li>Squint (Q), Step-back (E), Flip (F)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>System-calculated results</h3>
+          <ul>
+            <li>Per-region value match</li>
+            <li>Strokes used vs. budget</li>
+            <li>Squint-match similarity</li>
+            <li>AI critique score (int)</li>
+            <li>Win / lose state</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Feedback translation</h3>
+          <ul>
+            <li><strong>Region pop</strong> — a mismatched area glows red in squint mode.</li>
+            <li><strong>Squint match</strong> — blurred canvases compared overlay/flip.</li>
+            <li><strong>Step-back</strong> — canvas shrinks to test the whole from distance.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Challenge presets</h3>
+        <p class="hint">The first reference (a lit sphere + box) is reused for the first three levels so the core
+        skill is drilled before new subjects appear. After that, each level is a different, more interesting reference.</p>
+        <table>
+          <thead><tr><th>Preset</th><th>Reference</th><th>What changes</th><th>Skill trained</th></tr></thead>
+          <tbody>
+            <tr><td>Level 1 — Grayscale Basics</td><td>Sphere + box (first image)</td><td>Grayscale, 5 fixed values, single fixed light</td><td>Block masses, assign values by observation</td></tr>
+            <tr><td>Level 2 — Moving Light</td><td>Sphere + box (first image)</td><td>Light source moves right, same grayscale</td><td>Re-judge values as light shifts</td></tr>
+            <tr><td>Level 3 — Colour Mixing</td><td>Sphere + box (first image)</td><td>Colour via hue slider, coloured background</td><td>Keep value relationships while mixing colour</td></tr>
+            <tr><td>Apple</td><td>Semi-realistic apple</td><td>Colour; realistic cool blue-green shadows artists use</td><td>Read values even when hue shifts in shadow</td></tr>
+            <tr><td>Bird</td><td>Colourful stylised bird</td><td>Colour; several big colour masses (body/head/wing)</td><td>Block distinct masses before detail</td></tr>
+            <tr><td>Dragon</td><td>Simple, fun cartoon dragon</td><td>Colour; many friendly masses, final challenge</td><td>Hold the whole value read under complexity</td></tr>
+          </tbody>
+        </table>
+        <p class="hint">Win: AI score <strong>≥ 80%</strong> (a passing grade) <strong>and</strong> stroke budget &gt; 0.
+        Grading: 0–50 needs improvement · 60 a little work · 70 decent · 80 good · 90 great · 95–100 perfect.
+        Lose: stroke budget reaches 0 before you submit.</p>
+      </div>
+    </section>
+
+    <a class="cta" href="game.html">Play the Game →</a>
+  </div>
+
+  <footer>Squint — NYU Shanghai IMA Game Design Summer Camp · Built with the student by the AI agent (Claude) · Track A (no build)</footer>
+</body>
+</html>

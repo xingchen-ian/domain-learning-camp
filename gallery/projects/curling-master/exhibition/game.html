@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Curling Master</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; touch-action: none;
+  background: #2E353D; font-family: 'Helvetica Neue',Arial,sans-serif; user-select: none; }
+canvas { display: block; position: absolute; top: 0; left: 0; }
+#ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+#messages { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column;
+  gap: 8px; align-items: flex-end; max-width: 280px; }
+.msg { background: rgba(240,237,232,0.94); color: #4a5560; padding: 10px 14px; border-radius: 12px;
+  font-size: 13px; line-height: 1.5; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  animation: msgIn 0.35s ease-out; pointer-events: none; border-left: 3px solid #B5C0AA; }
+.msg.warn { border-left-color: #D4A88C; }
+.msg.score { border-left-color: #8FA4B5; font-weight: 600; }
+.msg.sweep { border-left-color: #E8C97A; background: rgba(255,248,235,0.94); }
+@keyframes msgIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes msgOut { from { opacity: 1; } to { opacity: 0; transform: translateX(30px); } }
+.msg.removing { animation: msgOut 0.4s ease-in forwards; }
+#level-select { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 14px; pointer-events: auto; z-index: 20; flex-wrap: wrap; justify-content: center; }
+.lvl-btn { padding: 14px 32px; border-radius: 20px; border: 2px solid #C4A8A0;
+  background: rgba(240,237,232,0.9); color: #5D6A75; font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; backdrop-filter: blur(8px); letter-spacing: 0.5px; }
+.lvl-btn:hover { background: #C4A8A0; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(196,168,160,0.4); }
+.lvl-btn:active { transform: translateY(0); }
+#scoreboard { position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  display: none; align-items: center; gap: 18px; pointer-events: none; z-index: 15; }
+.sb-team { display: flex; align-items: center; gap: 8px; color: #5D6A75; font-size: 14px; font-weight: 600;
+  background: rgba(240,237,232,0.88); padding: 8px 18px; border-radius: 16px; }
+.sb-dot { width: 14px; height: 14px; border-radius: 50%; }
+.sb-dot.p1 { background: #A8B5C0; border: 2px solid #6B7D8E; }
+.sb-dot.p2 { background: #C4A8A0; border: 2px solid #9B7D75; }
+.sb-score { font-size: 22px; color: #4a5560; min-width: 24px; text-align: center; }
+.sb-vs { color: #9BA4AD; font-size: 12px; }
+#turn-indicator { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%);
+  color: #5D6A75; font-size: 14px; font-weight: 600; pointer-events: none; z-index: 15;
+  background: rgba(240,237,232,0.85); padding: 7px 18px; border-radius: 18px; transition: opacity 0.3s; }
+#result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; align-items: center; justify-content: center; pointer-events: auto; z-index: 30;
+  background: rgba(46,53,61,0.55); backdrop-filter: blur(4px); }
+.result-card { background: rgba(240,237,232,0.96); border-radius: 24px; padding: 36px 48px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.25); max-width: 90vw; }
+.result-card h2 { font-size: 26px; color: #4a5560; margin-bottom: 4px; }
+.result-card .score-big { font-size: 44px; color: #8FA4B5; font-weight: 700; margin: 10px 0; }
+.result-card .detail { font-size: 14px; color: #7B8691; margin-bottom: 16px; }
+.result-card button { margin: 6px; padding: 12px 28px; border-radius: 16px; border: none;
+  background: #B5C0AA; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.result-card button:hover { background: #9BAA8E; transform: translateY(-1px); }
+.result-card button.secondary { background: #C4A8A0; }
+.result-card button.secondary:hover { background: #B09085; }
+#rps-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; align-items: center; justify-content: center; pointer-events: auto; z-index: 35;
+  background: rgba(46,53,61,0.55); backdrop-filter: blur(4px); }
+.rps-card { background: rgba(240,237,232,0.96); border-radius: 24px; padding: 28px 36px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
+.rps-card h3 { font-size: 20px; color: #4a5560; margin: 0 0 8px 0; }
+.rps-card .sub { font-size: 13px; color: #8FA4B5; margin-bottom: 18px; }
+.rps-btns { display: flex; gap: 16px; justify-content: center; }
+.rps-btn { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #C4A8A0;
+  background: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.rps-btn:hover { background: #C4A8A0; transform: scale(1.08); box-shadow: 0 4px 20px rgba(196,168,160,0.4); }
+.rps-btn .icon { font-size: 40px; }
+.rps-btn .label { font-size: 12px; color: #5D6A75; font-weight: 600; }
+.rps-btn:hover .label { color: #fff; }
+.rps-result { margin-top: 16px; padding: 10px 16px; background: rgba(212,168,140,0.15);
+  border-radius: 12px; font-size: 14px; color: #5D6A75; display: none; }
+.rps-result.win { background: rgba(168,181,192,0.25); color: #4a5560; }
+.rps-result.lose { background: rgba(196,168,160,0.25); color: #7A5E57; }
+.rps-result.draw { background: rgba(212,217,222,0.3); color: #6B7D8E; }
+#hint-bar { position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+  pointer-events: none; z-index: 15; color: #D4A88C; font-size: 12px; text-align: center;
+  background: rgba(240,237,232,0.8); padding: 6px 14px; border-radius: 12px; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="ui">
+  <div id="scoreboard"></div>
+  <div id="hint-bar"></div>
+  <div id="messages"></div>
+  <div id="turn-indicator"></div>
+  <div id="level-select"></div>
+  <div id="result-overlay"></div>
+  <div id="rps-overlay"></div>
+</div>
+
+<script>
+// ─── CANVAS ───
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W, H;
+function size() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+window.addEventListener('resize', size); size();
+
+// ─── roundRect polyfill ───
+if (!ctx.roundRect) {
+  ctx.roundRect = function(x, y, w, h, r) {
+    if (typeof r === 'number') r = { tl: r, tr: r, br: r, bl: r };
+    ctx.beginPath();
+    ctx.moveTo(x + r.tl, y);
+    ctx.lineTo(x + w - r.tr, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r.tr);
+    ctx.lineTo(x + w, y + h - r.br);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r.br, y + h);
+    ctx.lineTo(x + r.bl, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r.bl);
+    ctx.lineTo(x, y + r.tl);
+    ctx.quadraticCurveTo(x, y, x + r.tl, y);
+    ctx.closePath();
+  };
+}
+
+// ─── COLORS ───
+const C = {
+  ice: '#D4D9DE', iceT: 'rgba(190,198,205,0.2)',
+  board: '#9BA4AD', boardD: '#7B8691',
+  house: ['#E8E3DC','#8FA4B5','#C4A8A0','#8FA4B5'],
+  btn: '#D4B896', line: 'rgba(90,100,110,0.3)',
+  sP1: '#A8B5C0', sP1D: '#7D8E9B', hP1: '#6B7D8E',
+  sP2: '#C4A8A0', sP2D: '#9B7D75', hP2: '#7A5E57',
+  txt: '#5D6A75', char: '#B5C0AA', charD: '#7D8A72',
+  sweep: '#E8C97A', sweepGlow: 'rgba(232,201,122,0.35)',
+};
+
+// ─── STATES ───
+const ST = { MENU:0, PLAYING:1, DRAG:2, ANIM:3, AI_THINK:4, AI_ANIM:5, END:6, SWEEP:7, RPS:8 };
+let st = ST.MENU, lv = null;
+let pSc = 0, aSc = 0;
+let stones = [], turn = 'player', thrown = 0, total = 0;
+let dS = null, dC = null;
+let msgs = [], mid = 0;
+let tMsg = '', rData = null;
+let parts = [];
+let cx = 0, cy = 0, cs = 0;
+let hintTxt = '';
+
+// ─── SWEEP STATE ───
+let sweeping = false;        // actively sweeping
+let sweepIntensity = 0;      // 0-1
+let sweepTouch = null;       // {x, y, tx, ty, t}
+let sweepTrail = [];         // polished ice trail positions
+let sweepSparkTimer = 0;     // sparkle cooldown
+let showedSweepTutorial = false;
+
+// ─── LEVELS ───
+// fr_base: friction per frame (lower = more friction)
+// fr_sweep: friction when actively sweeping
+// At 60fps, fr=0.98 → after 1s: 0.98^60 ≈ 0.30 (70% speed loss)
+// At 60fps, fr=0.96 → after 1s: 0.96^60 ≈ 0.086 (91% speed loss - needs sweeping!)
+const LV = {
+  1:{n:'Level 1 · Precision',t:1,ice:'stable',acc:0,fr:0.970,sf:0.988,cf:0.18,d:'Touch the center ring to win! Slight curl, sweep to adjust'},
+  2:{n:'Level 2 · Power & Line',t:4,ice:'unstable',acc:0.68,fr:0.967,sf:0.986,cf:0.32,d:'Noticeable curl. Hard hits can knock out opponent stones!'},
+  3:{n:'Level 3 · Championship',t:6,ice:'variable',acc:0.83,fr:0.964,sf:0.984,cf:0.48,d:'Strong curl. Predict the arc precisely to win!'}
+};
+
+// ─── GEOMETRY ───
+function geo() {
+  const m = 28;
+  return {
+    m, sW: W-m*2, sH: H-m*2,
+    hY: m + (H-m*2)*0.17, hR: Math.min((W-m*2)*0.14, (H-m*2)*0.12),
+    dY: m + (H-m*2)*0.87, hgY: m + (H-m*2)*0.66,
+    bL: m, bR: W-m, bW: 10
+  };
+}
+
+// ─── STONE ───
+class Stone {
+  constructor(x, y, team) {
+    this.x = x; this.y = y; this.team = team;
+    this.vx = 0; this.vy = 0; this.r = 16; this.stopped = false;
+    this.knockedOut = false; // removed from play
+    this.trail = [];
+  }
+  upd(ice, efFr) {
+    if (this.stopped) return;
+    const l = LV[lv];
+    // curl effect — progressive: stronger as stone slows (like real pebbled ice)
+    // The lateral force from friction asymmetry is roughly constant,
+    // so angular change per frame = constant_force / speed → more curl at low speed
+    let sp = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+    if (sp > 0.1) {
+      // Symmetric curl: left side curls right, right side curls left
+      // (like both teams using opposite spin directions, or ice crown sloping toward center)
+      // left (x < center) → clockwise (dvx > 0, rightward)
+      // right (x > center) → counter-clockwise (dvx < 0, leftward)
+      // stones far from center feel stronger restoring force
+      const distFromCenter = (this.x - W/2) / (W/2);
+      const curlSign = this.x <= W/2 ? 1 : -1;
+      const speedFactor = 1 / Math.max(sp, 1.5);
+      const curlAmount = l.cf * 0.055 * speedFactor * (1 + Math.abs(distFromCenter) * 0.5);
+      // Rightward curl (clockwise): dvx = -vy*a, dvy = vx*a
+      // Leftward curl (counter-clockwise): dvx = vy*a, dvy = -vx*a
+      const dvx = -this.vy * curlAmount * curlSign;
+      const dvy = this.vx * curlAmount * curlSign;
+      this.vx += dvx;
+      this.vy += dvy;
+    }
+    // movement
+    this.x += this.vx; this.y += this.vy;
+    // friction - use effective fr (boosted by sweeping)
+    this.vx *= efFr; this.vy *= efFr;
+    // trail
+    sp = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+    if (sp > 0.2) {
+      this.trail.push({x:this.x, y:this.y, life:15});
+      if (this.trail.length > 30) this.trail.shift();
+    }
+    // boards
+    if (this.x - this.r < ice.bL + ice.bW) {
+      if (Math.abs(this.vx) > 3) { this.knockedOut = true; return; }
+      this.x = ice.bL + ice.bW + this.r; this.vx *= -0.4; partsBurst(this.x,this.y,'#C4C8CE');
+    }
+    if (this.x + this.r > ice.bR - ice.bW) {
+      if (Math.abs(this.vx) > 3) { this.knockedOut = true; return; }
+      this.x = ice.bR - ice.bW - this.r; this.vx *= -0.4; partsBurst(this.x,this.y,'#C4C8CE');
+    }
+    // Top boundary (past back line) - can be knocked out
+    if (this.y - this.r < ice.m) {
+      if (Math.abs(this.vy) > 3) { this.knockedOut = true; return; }
+      this.y = ice.m + this.r; this.vy *= -0.3;
+    }
+    const maxY = ice.m + ice.sH;
+    if (this.y + this.r > maxY) { this.y = maxY - this.r; this.vy *= -0.3; }
+    if (sp < 0.08) { this.vx=0; this.vy=0; this.stopped=true; }
+  }
+  draw(glow) {
+    const {hY,hR} = geo();
+    ctx.save();
+    // sweep glow
+    if (glow && !this.stopped && this.team === 'player') {
+      const gg = ctx.createRadialGradient(this.x, this.y, this.r*0.5, this.x, this.y, this.r*2.2);
+      gg.addColorStop(0, C.sweepGlow);
+      gg.addColorStop(1, 'transparent');
+      ctx.fillStyle = gg;
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.r*2.2, 0, Math.PI*2); ctx.fill();
+    }
+    // shadow
+    ctx.fillStyle='rgba(0,0,0,0.13)';
+    ctx.beginPath(); ctx.arc(this.x+2,this.y+3,this.r,0,Math.PI*2); ctx.fill();
+    // body
+    const mc = this.team==='player'?C.sP1:C.sP2;
+    const dc = this.team==='player'?C.sP1D:C.sP2D;
+    const g = ctx.createRadialGradient(this.x-4,this.y-4,this.r*0.1,this.x,this.y,this.r);
+    g.addColorStop(0,'#fff'); g.addColorStop(0.35,mc); g.addColorStop(1,dc);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fill();
+    // handle
+    const hc = this.team==='player'?C.hP1:C.hP2;
+    ctx.fillStyle = hc;
+    ctx.beginPath(); ctx.arc(this.x,this.y,this.r*0.32,0,Math.PI*2); ctx.fill();
+    // highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.beginPath(); ctx.arc(this.x-this.r*0.3,this.y-this.r*0.3,this.r*0.28,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ─── PARTICLE ───
+function partsBurst(x,y,col) {
+  for (let i=0;i<8;i++) {
+    const a=Math.random()*Math.PI*2, s=1+Math.random()*3;
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,col,life:18+Math.random()*12,ml:30});
+  }
+}
+function sweepSpark(x, y) {
+  for (let i=0;i<3;i++) {
+    const a = -Math.PI/2 + (Math.random()-0.5)*1.2;
+    const s = 1.5 + Math.random()*4;
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,col:'#E8C97A',life:8+Math.random()*8,ml:16,size:2+Math.random()*3});
+  }
+}
+function updParts() {
+  for (let i=parts.length-1;i>=0;i--) {
+    const p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vx*=0.92; p.vy*=0.92; p.life--;
+    if (p.life<=0) parts.splice(i,1);
+  }
+}
+
+// ─── MESSAGES ───
+function msg(t,ty) {
+  const id=++mid; msgs.push({id,t,ty,ts:Date.now()});
+  setTimeout(()=>{const el=document.querySelector(`.msg[data-id="${id}"]`);if(el)el.classList.add('removing');
+    setTimeout(()=>{msgs=msgs.filter(m=>m.id!==id);rMsgs();},400);},2800);
+  rMsgs();
+}
+function rMsgs() {
+  document.getElementById('messages').innerHTML = msgs.slice(-4).map(m=>
+    `<div class="msg ${m.ty||''}" data-id="${m.id}">${m.t}</div>`).join('');
+}
+function tSet(t) { tMsg=t; document.getElementById('turn-indicator').textContent=t; }
+function hint(t) { hintTxt=t; document.getElementById('hint-bar').textContent=t; }
+function sbd() {
+  const sb=document.getElementById('scoreboard');
+  sb.innerHTML=`<div class="sb-team"><div class="sb-dot p1"></div>You <span class="sb-score">${pSc}</span></div>
+    <span class="sb-vs">VS</span>
+    <div class="sb-team"><div class="sb-dot p2"></div>AI <span class="sb-score">${aSc}</span></div>`;
+}
+
+// ─── LEVEL SELECT ───
+function showLS() {
+  document.getElementById('level-select').innerHTML = `
+    <button class="lvl-btn" onclick="go(1)">L1 Precision</button>
+    <button class="lvl-btn" onclick="go(2)">L2 Power Duel</button>
+    <button class="lvl-btn" onclick="go(3)">L3 Championship</button>`;
+  document.getElementById('level-select').style.display = 'flex';
+}
+function hideLS() { document.getElementById('level-select').style.display='none'; }
+
+// ─── START / RESET ───
+function go(level) {
+  lv=level; pSc=0;aSc=0; stones=[]; thrown=0;
+  total=LV[level].t; parts=[]; msgs=[]; mid=0; rData=null;
+  sweepTrail=[]; sweeping=false; sweepIntensity=0; sweepTouch=null;
+  st=ST.PLAYING; cs=0; showedSweepTutorial=false;
+  hideLS(); document.getElementById('result-overlay').style.display='none';
+  document.getElementById('scoreboard').style.display='flex';
+  document.getElementById('messages').innerHTML='';
+  sbd();
+  const l=LV[level]; tSet(l.n); msg(l.d,'score');
+  
+  // L3: rock-paper-scissors to decide first turn
+  if (level === 3) {
+    st = ST.RPS;
+    hideLS();
+    document.getElementById('scoreboard').style.display = 'none';
+    msg('','');
+    hint('');
+    showRPS();
+    return;
+  } else if (level === 1) {
+    turn='player'; msg('One shot! Touch the smallest ring to win','');
+    hint('Slight curl on the ice — left throws bend right, right throws bend left!');
+  } else {
+    turn='player'; msg('You go first','');
+    hint(level===2?'Hard hits can knock out opponent stones!':'Drag to throw, then sweep hard to help your stone glide!');
+  }
+}
+function showRPS() {
+  document.getElementById('rps-overlay').style.display = 'flex';
+  document.getElementById('rps-overlay').innerHTML = `
+    <div class="rps-card">
+      <h3>✂️ Rock Paper Scissors</h3>
+      <div class="sub">Winner throws first!</div>
+      <div class="rps-btns">
+        <button class="rps-btn" onclick="chooseRPS('rock')">
+          <span class="icon">✊</span><span class="label">Rock</span>
+        </button>
+        <button class="rps-btn" onclick="chooseRPS('scissors')">
+          <span class="icon">✌️</span><span class="label">Scissors</span>
+        </button>
+        <button class="rps-btn" onclick="chooseRPS('paper')">
+          <span class="icon">🖐️</span><span class="label">Paper</span>
+        </button>
+      </div>
+      <div class="rps-result" id="rps-result"></div>
+    </div>`;
+}
+function chooseRPS(playerChoice) {
+  const choices = ['rock','scissors','paper'];
+  const aiChoice = choices[Math.floor(Math.random()*3)];
+  const emoji = {rock:'✊',scissors:'✌️',paper:'🖐️'};
+  const name = {rock:'Rock',scissors:'Scissors',paper:'Paper'};
+  
+  // Disable buttons
+  const btns = document.querySelectorAll('.rps-btn');
+  btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.pointerEvents = 'none'; });
+  
+  // Determine result
+  let result, cls;
+  if (playerChoice === aiChoice) {
+    result = 'draw'; cls = 'draw';
+  } else if (
+    (playerChoice==='rock' && aiChoice==='scissors') ||
+    (playerChoice==='scissors' && aiChoice==='paper') ||
+    (playerChoice==='paper' && aiChoice==='rock')
+  ) {
+    result = 'win'; cls = 'win';
+  } else {
+    result = 'lose'; cls = 'lose';
+  }
+  
+  const resultDiv = document.getElementById('rps-result');
+  resultDiv.className = 'rps-result ' + cls;
+  resultDiv.style.display = 'block';
+  
+  if (result === 'draw') {
+    resultDiv.innerHTML = `${emoji[playerChoice]} You chose ${name[playerChoice]}<br>${emoji[aiChoice]} AI chose ${name[aiChoice]}<br>Draw! Try again~`;
+    setTimeout(() => { showRPS(); }, 1200);
+    return;
+  }
+  
+  const playerWins = result === 'win';
+  resultDiv.innerHTML = `${emoji[playerChoice]} You chose ${name[playerChoice]}<br>${emoji[aiChoice]} AI chose ${name[aiChoice]}<br>${playerWins ? '🎉 You win! You go first!' : '😅 AI wins! AI goes first!'}`;
+  
+  setTimeout(() => {
+    document.getElementById('rps-overlay').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'flex';
+    sbd();
+    const l = LV[3];
+    tSet(l.n); msg(l.d,'score');
+    if (playerWins) {
+      turn = 'player';
+      hint('Symmetric curl — left throws bend right, right throws bend left!');
+      st = ST.PLAYING;
+    } else {
+      turn = 'ai';
+      msg('AI goes first!','score');
+      hint('AI goes first. Your turn after they throw!');
+      st = ST.AI_THINK;
+      setTimeout(() => { if (st === ST.AI_THINK) aiThrow(); }, 1200);
+    }
+  }, 1500);
+}
+function menu() {
+  st=ST.MENU; stones=[]; parts=[]; msgs=[]; rData=null; sweepTrail=[];
+  document.getElementById('result-overlay').style.display='none';
+  document.getElementById('rps-overlay').style.display='none';
+  document.getElementById('scoreboard').style.display='none';
+  tSet(''); hint(''); document.getElementById('messages').innerHTML='';
+  showLS();
+}
+
+// ─── INPUT ───
+canvas.addEventListener('mousedown',e=>hDown(e.clientX,e.clientY));
+canvas.addEventListener('mousemove',e=>hMove(e.clientX,e.clientY));
+canvas.addEventListener('mouseup',e=>hUp());
+canvas.addEventListener('touchstart',e=>{e.preventDefault();hDown(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();hMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+canvas.addEventListener('touchend',e=>hUp());
+
+function hDown(px,py) {
+  if (st === ST.PLAYING && turn === 'player') {
+    const g = geo();
+    if (py < g.dY - 100) return; // must start in delivery zone
+    dS = {x:px, y:py, t:Date.now()};
+    dC = {x:px, y:py};
+    st = ST.DRAG;
+    return;
+  }
+  if (st === ST.SWEEP) {
+    // Start sweeping
+    sweeping = true;
+    sweepIntensity = 0;
+    sweepTouch = {x:px, y:py, px:px, py:py, t:Date.now()};
+    if (!showedSweepTutorial) {
+      msg('🔥 Swipe back and forth to sweep the ice!', 'sweep');
+      showedSweepTutorial = true;
+    }
+  }
+}
+
+function hMove(px, py) {
+  if (st === ST.DRAG) {
+    dC = {x:px, y:py};
+    return;
+  }
+  if (st === ST.SWEEP && sweeping) {
+    if (!sweepTouch) {
+      sweepTouch = {x:px, y:py, px:px, py:py, t:Date.now()};
+      return;
+    }
+    const dx = px - sweepTouch.px;
+    const dy = py - sweepTouch.py;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const dt = Math.max(Date.now() - sweepTouch.t, 16);
+    const speed = dist / (dt / 1000); // px/s
+    // Need decent speed to count as sweeping
+    if (speed > 80) {
+      sweepIntensity = Math.min(speed / 800, 1);
+      sweepTouch.px = px;
+      sweepTouch.py = py;
+      sweepTouch.t = Date.now();
+      
+      // Add trail where sweeping
+      if (sweepTrail.length === 0 || 
+          Math.abs(px - sweepTrail[sweepTrail.length-1].x) > 12 ||
+          Math.abs(py - sweepTrail[sweepTrail.length-1].y) > 12) {
+        sweepTrail.push({x:px, y:py, life:20});
+        if (sweepTrail.length > 60) sweepTrail.shift();
+      }
+      
+      // Sparks near player stones
+      if (sweepSparkTimer <= 0) {
+        const pStones = stones.filter(s => s.team === 'player' && !s.stopped);
+        if (pStones.length > 0) {
+          const s = pStones[0];
+          sweepSpark(s.x + (Math.random()-0.5)*30, s.y + s.r + Math.random()*10);
+        }
+        sweepSparkTimer = 3;
+      }
+    } else {
+      sweepIntensity *= 0.85;
+    }
+    sweepTouch.x = px;
+    sweepTouch.y = py;
+  }
+}
+
+function hUp() {
+  if (st === ST.DRAG && dS && dC) {
+    const dx = dS.x - dC.x, dy = dS.y - dC.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 12) { st = ST.PLAYING; dS = null; dC = null; return; }
+    
+    const g = geo();
+    const ang = Math.atan2(-dy, -dx);
+    const pwr = Math.min(dist / 4, 20);
+    const spd = pwr * 0.8;
+    
+    const stone = new Stone(W/2, g.dY, 'player');
+    stone.vx = Math.cos(ang) * spd;
+    stone.vy = -Math.abs(Math.sin(ang) * spd);
+    if (stone.vy > -1.5) stone.vy = -1.5;
+    
+    stones.push(stone);
+    cs = 1.0;
+    
+    const sEst = spd.toFixed(1);
+    const aEst = (ang * 180 / Math.PI).toFixed(0);
+    const tEst = ((Date.now() - dS.t) / 1000).toFixed(1);
+    msg(`${sEst} m/s  |  ${aEst}°  |  ${tEst}s`);
+    
+    // Heuristic: if low power, remind to sweep
+    if (spd < 12) {
+      setTimeout(() => msg('Low power! Sweep now! 🔥', 'sweep'), 400);
+    }
+    
+    st = ST.SWEEP;
+    sweeping = false;
+    sweepIntensity = 0;
+    sweepTouch = null;
+    sweepTrail = [];
+    dS = null; dC = null;
+    tSet('Sweep! Rub the screen 🔥');
+    hint('Swipe back and forth to reduce friction and help your stone glide!');
+    return;
+  }
+  
+  if (st === ST.SWEEP) {
+    // Stop sweeping, but stay in SWEEP state until stones stop
+    sweeping = false;
+    sweepIntensity = 0;
+    sweepTouch = null;
+  }
+}
+
+// ─── AI ───
+function aiThrow() {
+  const g = geo(); const l = LV[lv];
+  // With symmetric curl, stones self-correct toward center.
+  // AI aims at center; slight random offset for variety.
+  const tx = W/2 + (Math.random() - 0.5) * 35, ty = g.hY;
+  const sx = W/2 + (Math.random() - 0.5) * 20;
+  const sy = g.dY;
+  const dx = tx - sx, dy = ty - sy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const ba = Math.atan2(dy, dx);
+  // angle error shrinks with accuracy
+  const err = (1 - l.acc) * 0.38 + 0.04;
+  const ea = ba + (Math.random() - 0.5) * err;
+  // Power: distance ÷ (1-fr) gives the v0 needed to travel that far.
+  // Add ~8% to compensate for curl energy loss. Higher acc → tighter power.
+  const basePower = dist * (1 - l.fr) * 1.08;
+  const pErr = (1 - l.acc) * 2.8 + 0.4;
+  const ep = basePower + (Math.random() - 0.5) * pErr * 2;
+  const stone = new Stone(sx, sy, 'ai');
+  stone.vx = Math.cos(ea) * ep;
+  stone.vy = Math.sin(ea) * ep;
+  if (stone.vy > -1) stone.vy = -1;
+  stones.push(stone);
+  msg('Opponent throws!', 'warn');
+  st = ST.AI_ANIM; tSet('Opponent stone sliding...');
+}
+
+// ─── COLLISION ───
+function collide() {
+  for (let i = 0; i < stones.length; i++) {
+    for (let j = i + 1; j < stones.length; j++) {
+      const a = stones[i], b = stones[j];
+      if ((a.stopped && b.stopped) || a.knockedOut || b.knockedOut) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const md = a.r + b.r;
+      if (dist < md && dist > 0.001) {
+        const nx = dx / dist, ny = dy / dist;
+        const ov = md - dist;
+        a.x -= nx * ov * 0.5; a.y -= ny * ov * 0.5;
+        b.x += nx * ov * 0.5; b.y += ny * ov * 0.5;
+        const dvx = a.vx - b.vx, dvy = a.vy - b.vy;
+        const dvn = dvx * nx + dvy * ny;
+        if (dvn > 0) {
+          // Scale restitution with impact force — harder hits = more bounce
+          const impact = Math.min(dvn / 14, 1);
+          const rest = 0.6 + impact * 0.35; // 0.6 ~ 0.95
+          a.vx -= dvn * nx * rest; a.vy -= dvn * ny * rest;
+          b.vx += dvn * nx * rest; b.vy += dvn * ny * rest;
+          // Un-stick stones on collision
+          if (a.stopped && dvn > 1) a.stopped = false;
+          if (b.stopped && dvn > 1) b.stopped = false;
+          // Particles
+          const nP = 5 + Math.floor(impact * 25);
+          for (let k = 0; k < nP; k++) {
+            const ang = Math.random() * Math.PI * 2;
+            const sp = 1 + Math.random() * (2 + impact * 8);
+            parts.push({x:(a.x+b.x)/2, y:(a.y+b.y)/2, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+              col: impact > 0.6 ? '#E8C97A' : '#D4D9DE', life:12+Math.random()*16, ml:28, size: impact > 0.5 ? 3+Math.random()*4 : null});
+          }
+          // Knockout messages
+          if (impact > 0.7) {
+            const who = dvn > 10 ? (a.team === 'player' ? 'Your' : 'AI') + ' stone' : '';
+            if (who) msg(`💥 Heavy hit on ${who}!`, 'warn');
+          }
+        }
+      }
+    }
+  }
+}
+
+// ─── SCORING ───
+function calcScore() {
+  const g = geo(); const hx = W/2, hy = g.hY;
+  const inH = stones.filter(s => {
+    const d = Math.sqrt((s.x-hx)**2 + (s.y-hy)**2);
+    return d < g.hR * 1.35;
+  });
+  if (!inH.length) return {p: 0, a: 0};
+  inH.sort((a, b) => {
+    const da = Math.sqrt((a.x-hx)**2 + (a.y-hy)**2);
+    const db = Math.sqrt((b.x-hx)**2 + (b.y-hy)**2);
+    return da - db;
+  });
+  const ct = inH[0].team; let sc = 0;
+  for (const s of inH) { if (s.team === ct) sc++; else break; }
+  return ct === 'player' ? {p: sc, a: 0} : {p: 0, a: sc};
+}
+
+// ─── END CHECK ───
+function chkEnd() {
+  const g = geo();
+  if (lv === 1 && stones.length > 0 && stones.every(s => s.stopped)) {
+    const stn = stones[0];
+    const d = Math.sqrt((stn.x - W/2)**2 + (stn.y - g.hY)**2);
+    // Win if stone overlaps the button (smallest circle)
+    const sR = stones[0].r; // stone radius
+    const btnR = g.hR * 0.18; // button radius
+    if (d < btnR + sR) { rData = {t: 'Got it!', s: 'Touched the center!', w: true, detail: 'Your stone touched the smallest ring — you win!'}; pSc = 1; aSc = 0; }
+    else if (d < g.hR) { rData = {t: 'So close', s: 'Missed the center', w: false, detail: 'In the house, but didn\'t touch the smallest ring'}; pSc = 0; aSc = 1; }
+    else { rData = {t: 'Missed', s: 'Out of the house', w: false, detail: 'Your stone didn\'t reach the house'}; pSc = 0; aSc = 1; }
+    showOver(); return;
+  }
+  if (thrown >= total * 2 && stones.every(s => s.stopped)) {
+    const sc = calcScore(); pSc += sc.p; aSc += sc.a;
+    if (sc.p > sc.a) { rData = {t: 'You win this end!', s: `You ${sc.p} : ${sc.a} AI`, w: true, detail: `${sc.p} stone(s) closer to the button than AI`}; }
+    else if (sc.a > sc.p) { rData = {t: 'AI wins', s: `You ${sc.p} : ${sc.a} AI`, w: false, detail: 'AI stones are closer to the button'}; }
+    else { rData = {t: 'Even match', s: `You ${sc.p} : ${sc.a} AI`, w: null, detail: 'Equal distance to the button'}; }
+    showOver();
+  }
+}
+function showOver() {
+  st = ST.END; sweeping = false; sweepIntensity = 0;
+  const ov = document.getElementById('result-overlay');
+  const r = rData;
+  ov.innerHTML = `<div class="result-card"><h2>${r.t}</h2><div class="score-big">${r.s}</div>
+    <div class="detail">${r.detail||''}</div>
+    <button onclick="go(${lv})">Play Again</button>
+    <button class="secondary" onclick="menu()">Select Level</button></div>`;
+  ov.style.display = 'flex';
+  msg(r.w === true ? 'Congratulations!' : r.w === false ? 'Keep trying!' : 'Evenly matched!', 'score');
+  sbd(); tSet(''); hint('');
+}
+
+// ─── NEXT TURN ───
+function nxtTurn() {
+  thrown++;
+  if (thrown >= total * 2) { chkEnd(); return; }
+  sweeping = false; sweepIntensity = 0; sweepTrail = [];
+  if (turn === 'player') {
+    turn = 'ai'; tSet(`AI Turn (${thrown+1}/${total*2})`);
+    st = ST.AI_THINK;
+    setTimeout(() => { if (st === ST.AI_THINK) aiThrow(); }, 900);
+  } else {
+    turn = 'player'; tSet(`Your Turn (${thrown+1}/${total*2})`);
+    st = ST.PLAYING;
+    hint('Drag to throw, then sweep to adjust distance!');
+  }
+}
+
+// ─── UPDATE ───
+function upd() {
+  const g = geo();
+  updParts();
+  
+  // Sweep trail decay
+  for (let i = sweepTrail.length - 1; i >= 0; i--) {
+    sweepTrail[i].life--;
+    if (sweepTrail[i].life <= 0) sweepTrail.splice(i, 1);
+  }
+  sweepSparkTimer = Math.max(0, sweepSparkTimer - 1);
+  
+  // Character position
+  if (cs > 0) { cs -= 0.025; if (cs < 0) cs = 0; }
+  cx = W/2; cy = g.dY + 35 + cs * 70;
+
+  if (st === ST.ANIM || st === ST.AI_ANIM || st === ST.SWEEP) {
+    const l = LV[lv];
+    // Determine effective friction
+    const efFr = (st === ST.SWEEP && sweeping && sweepIntensity > 0.05)
+      ? l.fr + (l.sf - l.fr) * sweepIntensity
+      : l.fr;
+    
+    stones.forEach(s => s.upd(g, efFr));
+    collide();
+    
+    // Remove knocked-out stones
+    const knocked = stones.filter(s => s.knockedOut);
+    if (knocked.length > 0) {
+      for (const s of knocked) {
+        const who = s.team === 'player' ? 'Your stone' : 'AI stone';
+        msg(`💨 ${who} knocked out of bounds!`, 'warn');
+        partsBurst(s.x, s.y, s.team === 'player' ? '#A8B5C0' : '#C4A8A0');
+      }
+      stones = stones.filter(s => !s.knockedOut);
+    }
+    
+    // Decay sweep intensity when not actively sweeping
+    if (st === ST.SWEEP && !sweeping) {
+      sweepIntensity *= 0.9;
+      if (sweepIntensity < 0.01) sweepIntensity = 0;
+    }
+    
+    const allStop = stones.every(s => s.stopped);
+    if (allStop) {
+      sweeping = false;
+      sweepIntensity = 0;
+      sweepTrail = [];
+      if (lv === 1) { chkEnd(); }
+      else {
+        st = ST.PLAYING;
+        nxtTurn();
+      }
+    }
+  }
+}
+
+// ─── RENDER ───
+function draw() {
+  const g = geo();
+  ctx.clearRect(0, 0, W, H);
+  
+  // bg
+  ctx.fillStyle = '#2E353D'; ctx.fillRect(0, 0, W, H);
+
+  // ice
+  const ig = ctx.createLinearGradient(0, g.m, 0, g.m + g.sH);
+  ig.addColorStop(0, '#D8DDE3'); ig.addColorStop(0.5, C.ice); ig.addColorStop(1, '#C8CED4');
+  ctx.fillStyle = ig; ctx.fillRect(g.bL, g.m, g.sW, g.sH);
+
+  // ice texture
+  ctx.strokeStyle = C.iceT; ctx.lineWidth = 1;
+  for (let y = g.m; y < g.m + g.sH; y += 35) {
+    ctx.beginPath(); ctx.moveTo(g.bL, y); ctx.lineTo(g.bR, y); ctx.stroke();
+  }
+
+  // center line
+  ctx.strokeStyle = C.line; ctx.lineWidth = 2; ctx.setLineDash([10, 18]);
+  ctx.beginPath(); ctx.moveTo(W/2, g.m); ctx.lineTo(W/2, g.m + g.sH); ctx.stroke(); ctx.setLineDash([]);
+
+  // hog line
+  ctx.strokeStyle = 'rgba(110,120,130,0.5)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(g.bL + 15, g.hgY); ctx.lineTo(g.bR - 15, g.hgY); ctx.stroke();
+
+  // delivery line
+  ctx.strokeStyle = 'rgba(100,110,120,0.35)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(g.bL + 20, g.dY); ctx.lineTo(g.bR - 20, g.dY); ctx.stroke();
+
+  // house
+  const hx = W/2, hy = g.hY, hr = g.hR;
+  const radii = [hr, hr*0.7, hr*0.4, hr*0.18];
+  for (let i = 3; i >= 0; i--) {
+    ctx.fillStyle = C.house[i];
+    ctx.beginPath(); ctx.arc(hx, hy, radii[i], 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(90,100,110,0.35)'; ctx.lineWidth = 2; ctx.stroke();
+  }
+  ctx.fillStyle = C.btn; ctx.beginPath(); ctx.arc(hx, hy, 5, 0, Math.PI*2); ctx.fill();
+
+  // back line
+  const bly = hy - hr * 1.35;
+  ctx.strokeStyle = 'rgba(110,120,130,0.45)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(g.bL + 25, bly); ctx.lineTo(g.bR - 25, bly); ctx.stroke();
+
+  // tee line
+  ctx.strokeStyle = 'rgba(100,110,120,0.3)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(hx - hr*1.15, hy); ctx.lineTo(hx + hr*1.15, hy); ctx.stroke();
+
+  // boards
+  const bgL = ctx.createLinearGradient(g.bL, 0, g.bL + g.bW, 0);
+  bgL.addColorStop(0, C.boardD); bgL.addColorStop(1, C.board);
+  ctx.fillStyle = bgL; ctx.fillRect(g.bL, g.m, g.bW, g.sH);
+  const bgR = ctx.createLinearGradient(g.bR, 0, g.bR - g.bW, 0);
+  bgR.addColorStop(0, C.boardD); bgR.addColorStop(1, C.board);
+  ctx.fillStyle = bgR; ctx.fillRect(g.bR - g.bW, g.m, g.bW, g.sH);
+
+  // board top edge
+  ctx.strokeStyle = 'rgba(160,170,180,0.6)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(g.bL, g.m); ctx.lineTo(g.bR, g.m); ctx.stroke();
+
+  // ─── SWEEP EFFECTS (under stones) ───
+  if (st === ST.SWEEP) {
+    // Draw polished ice trail from sweeping
+    for (const t of sweepTrail) {
+      const al = Math.min(t.life / 14, 0.7);
+      const grad = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, 22);
+      grad.addColorStop(0, `rgba(255,250,240,${al * 0.8})`);
+      grad.addColorStop(0.5, `rgba(232,201,122,${al * 0.3})`);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(t.x, t.y, 22, 0, Math.PI*2); ctx.fill();
+    }
+    
+    // Draw polished path behind moving player stones
+    for (const s of stones) {
+      if (s.team !== 'player' || s.stopped) continue;
+      for (let i = 0; i < s.trail.length; i++) {
+        const t = s.trail[i];
+        t.life--;
+        if (t.life <= 0) continue;
+        const al = t.life / 15;
+        const sz = 5 + (sweeping ? sweepIntensity * 8 : 3);
+        ctx.fillStyle = `rgba(232,201,122,${al * (0.15 + sweepIntensity * 0.35)})`;
+        ctx.beginPath(); ctx.arc(t.x, t.y, sz, 0, Math.PI*2); ctx.fill();
+      }
+    }
+  }
+
+  // ─── STONES ───
+  const activeSweep = st === ST.SWEEP && sweeping && sweepIntensity > 0.05;
+  stones.forEach(s => s.draw(activeSweep));
+
+  // ─── SWEEP particles ON TOP ───
+  parts.forEach(p => {
+    const al = p.life / p.ml;
+    ctx.fillStyle = p.col.replace(')', `,${al})`).replace('rgb', 'rgba');
+    if (p.size) {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * al, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3.5 * al, 0, Math.PI*2); ctx.fill();
+    }
+  });
+
+  // ─── SWEEP ZONE HIGHLIGHT ───
+  if (st === ST.SWEEP) {
+    // Subtle overlay at bottom to indicate sweeping zone
+    const zoneAlpha = 0.06 + (sweeping ? sweepIntensity * 0.08 : 0);
+    const zGrad = ctx.createLinearGradient(0, H - 180, 0, H);
+    zGrad.addColorStop(0, 'transparent');
+    zGrad.addColorStop(0.5, `rgba(232,201,122,${zoneAlpha})`);
+    zGrad.addColorStop(1, `rgba(232,201,122,${zoneAlpha * 1.5})`);
+    ctx.fillStyle = zGrad;
+    ctx.fillRect(0, H - 180, W, 180);
+    
+    // Sweep icon label
+    if (!sweeping) {
+      ctx.fillStyle = 'rgba(120,110,90,0.5)';
+      ctx.font = '13px "Helvetica Neue",Arial,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('👋 Swipe to sweep!', W/2, H - 20);
+    } else if (sweepIntensity > 0.3) {
+      ctx.fillStyle = `rgba(200,160,80,${0.5 + sweepIntensity * 0.5})`;
+      ctx.font = `bold ${13 + sweepIntensity * 4}px "Helvetica Neue",Arial,sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('🔥 Sweep harder!', W/2, H - 20);
+    }
+  }
+
+  // ─── DRAG INDICATOR ───
+  if (st === ST.DRAG && dS && dC) {
+    const drx = dS.x - dC.x, dry = dS.y - dC.y;
+    const dd = Math.sqrt(drx*drx + dry*dry);
+    const pw = Math.min(dd / 4, 20);
+    const al = Math.min(dd / 70, 1);
+    const l = LV[lv];
+    
+    // Estimated distance indicator
+    const spd = pw * 0.8;
+    const estDist = spd * l.fr / (1 - l.fr); // approximate
+    const distPct = Math.min(estDist / (g.dY - g.hY + g.hR), 1.2);
+    const distColor = distPct < 0.5 ? '#D4A88C' : distPct < 0.85 ? '#E8C97A' : '#B5C0AA';
+    
+    // target ring
+    ctx.strokeStyle = `rgba(181,192,170,${al*0.6})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(dS.x, dS.y, dd*0.65, 0, Math.PI*2); ctx.stroke();
+    
+    // arrow
+    const ang = Math.atan2(-dry, -drx);
+    const alen = pw * 9;
+    ctx.strokeStyle = `rgba(143,164,181,${al})`; ctx.lineWidth = 3; ctx.setLineDash([7, 5]);
+    ctx.beginPath(); ctx.moveTo(W/2, g.dY);
+    ctx.lineTo(W/2 + Math.cos(ang) * alen, g.dY - Math.abs(Math.sin(ang)) * alen); ctx.stroke(); ctx.setLineDash([]);
+    
+    // arrowhead
+    const ahx = W/2 + Math.cos(ang) * alen, ahy = g.dY - Math.abs(Math.sin(ang)) * alen;
+    ctx.fillStyle = `rgba(143,164,181,${al})`;
+    ctx.beginPath(); ctx.moveTo(ahx, ahy);
+    ctx.lineTo(ahx - Math.cos(ang-0.55)*14, ahy + Math.abs(Math.sin(ang-0.55))*14);
+    ctx.lineTo(ahx - Math.cos(ang+0.55)*14, ahy + Math.abs(Math.sin(ang+0.55))*14);
+    ctx.closePath(); ctx.fill();
+    
+    // power text
+    ctx.fillStyle = `rgba(74,85,96,${al})`; ctx.font = 'bold 13px "Helvetica Neue",Arial,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(`Power ${pw.toFixed(0)}  |  Angle ${(ang*180/Math.PI).toFixed(0)}°`, W/2, g.dY + 60);
+    
+    // distance estimate bar
+    const barW = 80, barH = 6, barX = W/2 - barW/2, barY = g.dY + 78;
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.beginPath(); ctx.roundRect(barX, barY, barW, barH, 3); ctx.fill();
+    ctx.fillStyle = distColor;
+    ctx.beginPath(); ctx.roundRect(barX, barY, Math.min(barW * distPct, barW), barH, 3); ctx.fill();
+    ctx.fillStyle = `rgba(74,85,96,0.6)`; ctx.font = '10px "Helvetica Neue",Arial,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${distPct < 0.5 ? 'Too weak!' : distPct < 0.85 ? 'May need sweeping' : 'Power OK'}` , W/2, barY + 18);
+    ctx.fillText(`Sweeping can add +${Math.round((l.sf - l.fr) / (1 - l.sf) * spd)}px`, W/2, barY + 32);
+  }
+
+  // ─── CHARACTER ───
+  if ((st === ST.PLAYING || st === ST.DRAG || st === ST.SWEEP) && turn === 'player') {
+    drawChar(cx, cy, cs, st === ST.SWEEP && sweeping && sweepIntensity > 0.1);
+  }
+
+  // ─── L1 center highlight ───
+  if (lv === 1 && st === ST.PLAYING && stones.length === 0) {
+    const cr = g.hR * 0.18;
+    ctx.strokeStyle = 'rgba(212,168,140,0.55)'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 5]);
+    ctx.beginPath(); ctx.arc(hx, hy, cr + 8, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(74,85,96,0.85)'; ctx.font = '13px "Helvetica Neue",Arial,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Target: here!', hx, hy - cr - 18);
+  }
+
+  // ─── REMAINING STONES ───
+  if (lv > 1 && st !== ST.MENU && st !== ST.END) {
+    const rem = total * 2 - thrown;
+    ctx.fillStyle = 'rgba(74,85,96,0.7)'; ctx.font = '12px "Helvetica Neue",Arial,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(`Stones left: ${rem}`, g.bR - 22, g.m + 20);
+  }
+}
+
+function drawChar(x, y, s, isSweeping) {
+  if (y > H - 15) return;
+  ctx.save(); ctx.translate(x, y);
+  const b = s > 0 ? Math.sin(Date.now() * 0.06) * 3 : 0;
+  const sw = isSweeping ? Math.sin(Date.now() * 0.18) * 5 : 0; // sweeping shake
+  
+  // legs (animated during sweep)
+  ctx.fillStyle = C.charD;
+  if (isSweeping) {
+    ctx.fillRect(-10, 9 + b, 6, 11 + sw * 0.3);
+    ctx.fillRect(4, 7 + b - sw * 0.3, 6, 11);
+  } else {
+    ctx.fillRect(-10, 9 + b, 6, 13);
+    ctx.fillRect(4, 7 + b, 6, 15);
+  }
+  
+  // body
+  ctx.fillStyle = C.char;
+  ctx.beginPath(); ctx.roundRect(-12 + sw * 0.3, -8 + b, 24, 20, 6); ctx.fill();
+  
+  // head
+  ctx.fillStyle = '#F0EDE8';
+  ctx.beginPath(); ctx.arc(sw * 0.2, -16 + b, 11, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#D4D9DE'; ctx.lineWidth = 1.5; ctx.stroke();
+  
+  // eyes + mouth
+  ctx.fillStyle = '#5D6A75';
+  const eyeX = sw * 0.3;
+  ctx.beginPath(); ctx.arc(-4 + eyeX, -18 + b, 2.2, 0, Math.PI*2); ctx.arc(4 + eyeX, -18 + b, 2.2, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#5D6A75'; ctx.lineWidth = 1.5;
+  if (isSweeping) {
+    // Determined expression
+    ctx.beginPath(); ctx.arc(eyeX, -12 + b, 3.5, 0.3, Math.PI - 0.3); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(0, -12 + b, 3.5, 0.1, Math.PI - 0.1); ctx.stroke();
+  }
+  
+  // arms
+  ctx.strokeStyle = C.charD; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-10, 0 + b);
+  ctx.lineTo(-24, -5 + b);
+  ctx.moveTo(10, 0 + b);
+  ctx.lineTo(22, -6 + b + sw);
+  ctx.stroke();
+  
+  // broom (animated during sweep)
+  ctx.save();
+  if (isSweeping) {
+    ctx.translate(28 + sw, 10 + b);
+    ctx.rotate(-0.3 + sw * 0.06);
+  } else {
+    ctx.translate(22, -6 + b);
+  }
+  ctx.strokeStyle = '#9BA4AD'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 18); ctx.stroke();
+  ctx.fillStyle = '#C4A8A0';
+  ctx.beginPath(); ctx.roundRect(-6, 18, 14, 5, 2); ctx.fill();
+  ctx.restore();
+  
+  ctx.restore();
+}
+
+// ─── LOOP ───
+function loop() { upd(); draw(); requestAnimationFrame(loop); }
+showLS(); loop();
+
+// globals
+window.go = go; window.menu = menu; window.chooseRPS = chooseRPS;
+</script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knead for Speed - Project Home</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Comic Sans MS', cursive, sans-serif;
+      background: #fff0f5;
+      color: #5d3a4b;
+      line-height: 1.7;
+    }
+    header {
+      background: linear-gradient(135deg, #f8a5c2, #e8b4d0);
+      color: #fff;
+      padding: 40px 0;
+      text-align: center;
+    }
+    header h1 { font-size: 44px; margin-bottom: 8px; color: #fff; }
+    header p { font-size: 17px; color: #fff0f5; }
+    nav {
+      background: #f8bbd0;
+      padding: 14px 0;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(248,165,194,0.2);
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 22px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: #7b1fa2; }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    h2 {
+      font-size: 26px;
+      color: #9575cd;
+      margin: 32px 0 16px;
+      border-bottom: 3px solid #d1c4e9;
+      padding-bottom: 8px;
+    }
+    h3 {
+      font-size: 19px;
+      color: #66bb6a;
+      margin: 24px 0 10px;
+    }
+    p { margin-bottom: 14px; color: #5d3a4b; }
+    .highlight {
+      background: #fce4ec;
+      border-left: 4px solid #f48fb1;
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 0 10px 10px 0;
+      color: #5d3a4b;
+    }
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #f8a5c2, #f48fb1);
+      color: #fff;
+      padding: 16px 36px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 14px;
+      text-decoration: none;
+      margin: 20px 0;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(248,165,194,0.5);
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(248,165,194,0.12);
+      border: 1px solid #f8bbd0;
+    }
+    .card h3 { margin-top: 0; color: #ff8a65; }
+    ul { margin-left: 22px; margin-bottom: 14px; color: #5d3a4b; }
+    li { margin-bottom: 6px; }
+    .graph-img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(248,165,194,0.2);
+      margin: 16px 0;
+      border: 2px solid #f8bbd0;
+    }
+    /* Domain knowledge visuals */
+    .domain-visual {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .domain-icon {
+      font-size: 48px;
+      flex-shrink: 0;
+      width: 72px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fce4ec;
+      border-radius: 50%;
+      border: 3px solid #f8bbd0;
+    }
+    .domain-text { flex: 1; }
+    .domain-text p { margin-bottom: 0; }
+
+    /* Baking decor cards */
+    .baking-visual-row {
+      display: flex;
+      gap: 16px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .baking-card {
+      flex: 1;
+      min-width: 180px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #f8bbd0;
+      box-shadow: 0 2px 8px rgba(248,165,194,0.1);
+    }
+    .baking-card .big-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+    .baking-card p {
+      font-size: 13px;
+      color: #7d5a6a;
+      margin: 0;
+    }
+    .baking-card h4 {
+      font-size: 14px;
+      color: #ba68c8;
+      margin-bottom: 6px;
+    }
+    footer {
+      background: linear-gradient(135deg, #f8a5c2, #e8b4d0);
+      color: #fff;
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+    }
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+      header h1 { font-size: 30px; }
+      .domain-visual { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Knead for Speed</h1>
+    <p>A baking game about balancing accuracy and timing</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#domain">Domain Knowledge</a>
+    <a href="index.html#system">System Design</a>
+    <a href="process.html">Development Process</a>
+    <a href="game.html">Play the Game</a>
+  </nav>
+
+  <div class="container">
+    <section id="idea">
+      <h2>Game Idea</h2>
+      <p><strong>Knead for Speed</strong> is a desktop-browser baking game where you manage a bakery by following recipes under time pressure. You must measure ingredients precisely, mix and bake for exactly the right duration, and serve customers before they lose patience.</p>
+
+      <div class="highlight">
+        <strong>Core Learning Shift:</strong> Beginners think success in baking in a cafe is purely based on accuracy, but experts know that finding a balance between <strong>accuracy</strong> and <strong>timing</strong> is the key.
+      </div>
+
+      <p>As you play, you'll discover that doing everything perfectly but too slowly earns you nothing &mdash; and rushing through measurements ruins the pastry. The best bakers multitask and find the sweet spot between precision and speed.</p>
+
+      <a href="game.html" class="cta">Play Now</a>
+    </section>
+
+    <section id="domain">
+      <h2>Domain Knowledge</h2>
+
+      <div class="baking-visual-row">
+        <div class="baking-card">
+          <div class="big-icon">&#x1F9C1;</div>
+          <h4>Measure</h4>
+          <p>Precise amounts of flour, sugar, butter, and more</p>
+        </div>
+        <div class="baking-card">
+          <div class="big-icon">&#x1F9C7;</div>
+          <h4>Mix</h4>
+          <p>Whisk ingredients together for the right duration</p>
+        </div>
+        <div class="baking-card">
+          <div class="big-icon">&#x1F525;</div>
+          <h4>Bake</h4>
+          <p>Perfect timing in the oven makes all the difference</p>
+        </div>
+        <div class="baking-card">
+          <div class="big-icon">&#x1F370;</div>
+          <h4>Serve</h4>
+          <p>Present your creation before time runs out!</p>
+        </div>
+      </div>
+
+      <h3>The Real-World Domain</h3>
+      <div class="domain-visual">
+        <div class="domain-icon">&#x1F3EA;</div>
+        <div class="domain-text">
+          <p>Managing a bakery or pastry cafe involves more than just following a recipe. In a real cafe, bakers work against the clock: customers expect their orders quickly, but a rushed pastry with inaccurate measurements or underbaked center will be sent back.</p>
+        </div>
+      </div>
+
+      <h3>Novice Misconception</h3>
+      <div class="domain-visual">
+        <div class="domain-icon">&#x1F4D6;</div>
+        <div class="domain-text">
+          <p>Beginners believe that referring to the recipe for every pastry and focusing entirely on getting each measurement exactly right is the path to success. They do one thing at a time, wait for each step to finish before starting the next, and ignore the overall clock.</p>
+        </div>
+      </div>
+
+      <h3>Expert Judgment</h3>
+      <div class="domain-visual">
+        <div class="domain-icon">&#x2B50;</div>
+        <div class="domain-text">
+          <p>Experienced bakers know that cafe success requires <strong>balancing accuracy with timing</strong>. They can measure quickly with practiced precision, start prepping the next ingredient while the mixer runs, and keep one eye on the oven timer while doing other tasks. They know when "close enough" is good enough and when perfection matters.</p>
+        </div>
+      </div>
+
+      <h3>Why This Becomes Playable</h3>
+      <div class="domain-visual">
+        <div class="domain-icon">&#x1F3AE;</div>
+        <div class="domain-text">
+          <p>The tension between "measure perfectly" and "hurry up" is an inherently game-like conflict. By giving the player direct control over both dimensions &mdash; with clear feedback on each &mdash; the game turns a real professional skill into an engaging challenge loop.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="system">
+      <h2>System Design</h2>
+
+      <h3>System Graph</h3>
+      <img src="assets/system-graph.jpg" alt="Game System Graph" class="graph-img" onerror="this.style.display='none'">
+      <p><em>The system graph shows the relationships between player input, game environment variables, and win/loss conditions across three challenge presets (Cake, Cookies, Brownies).</em></p>
+
+      <div class="two-col">
+        <div class="card">
+          <h3>Environment Data</h3>
+          <ul>
+            <li><strong>IngredientOrder</strong> &mdash; required sequence of adding ingredients</li>
+            <li><strong>IngredientAmount</strong> &mdash; target measurement for each ingredient</li>
+            <li><strong>MixerTimer</strong> &mdash; target mixing duration</li>
+            <li><strong>OvenTimer</strong> &mdash; target baking duration</li>
+            <li><strong>OverallTimer / TotalTimeLimit</strong> &mdash; total allowed time</li>
+            <li><strong>MixerState / OvenState</strong> &mdash; under/perfect/over</li>
+            <li><strong>AccuracyScore</strong> &mdash; composite measurement accuracy</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Player-Controlled Data</h3>
+          <ul>
+            <li><strong>Ingredient selection</strong> &mdash; mouse click to choose</li>
+            <li><strong>Pouring amount</strong> &mdash; hold space to fill measuring cup</li>
+            <li><strong>Mixing</strong> &mdash; tap space (N presses in time limit)</li>
+            <li><strong>Baking</strong> &mdash; tap space to start, tap again to stop</li>
+            <li><strong>Serving</strong> &mdash; click to finish</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>System-Calculated Results</h3>
+      <ul>
+        <li>Per-ingredient accuracy: within 5% of target = Perfect; 5-15% = Okay; >15% = Bad</li>
+        <li>Mix: exact press count = Mixed; under = Undermixed; over = Overmixed</li>
+        <li>Oven: within 2 seconds of target = Perfect; under = Underbaked; over = Burnt</li>
+        <li>Final tip: based on accuracy and speed (green = in time, red = overtime)</li>
+      </ul>
+
+      <h3>Win Condition</h3>
+      <p>All ingredients added perfectly, nothing overmixed/undermixed, nothing underbaked/burnt, correct order, and total time within limit.</p>
+
+      <h3>Failure Conditions</h3>
+      <p>Any ingredient measured poorly (Bad), mixture under/overmixed, pastry underbaked/burnt, wrong order, or exceeding the total time limit.</p>
+
+      <h3>Challenge Presets</h3>
+      <div class="two-col">
+        <div class="card">
+          <h3>Level 1: Cake</h3>
+          <p><strong>No time limit</strong></p>
+          <p>5 ingredients. Focus on learning the measuring and timing mechanics without pressure. Recipe: butter, sugar, flour, baking powder, milk.</p>
+        </div>
+        <div class="card">
+          <h3>Level 2: Cookies</h3>
+          <p><strong>1.5 minute limit</strong></p>
+          <p>5 ingredients. Introduces time pressure. Recipe adds vanilla. Player must start working faster while maintaining accuracy.</p>
+        </div>
+        <div class="card">
+          <h3>Level 3: Brownies</h3>
+          <p><strong>1 minute limit</strong></p>
+          <p>7 ingredients. Tightest timing. Recipe includes eggs and chocolate. Demands efficient multitasking and precise execution.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>Knead for Speed &mdash; Camellia Cai &mdash; IMA Summer Program 2026 &mdash; Built with WorkBuddy</p>
+  </footer>
+</body>
+</html>

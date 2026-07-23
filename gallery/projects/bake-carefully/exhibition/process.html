@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process — Bake Carefully</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="brand-emoji">🧁</span>
+      Bake Carefully
+    </a>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#domain">Domain Knowledge</a></li>
+      <li><a href="index.html#system">System Design</a></li>
+      <li><a href="process.html" class="active">Development Process</a></li>
+      <li><a href="game.html">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+
+    <section class="section">
+      <h2>Development Process</h2>
+      <p class="lead">A chronological timeline of how this project was built through human-AI collaboration. This timeline is based on <code>agent-development-log.md</code> and reflects the actual development path — including mistakes and unfinished ideas.</p>
+
+      <div class="info-box">
+        <h4>📋 Project Summary</h4>
+        <p><strong>Student:</strong> YuYu Choi &nbsp;|&nbsp; <strong>Domain:</strong> Baking baked goods &nbsp;|&nbsp; <strong>AI Agent:</strong> WorkBuddy (CodeBuddy)</p>
+        <p><strong>Core Learning Shift:</strong> Beginners just follow recipes. Experts check materials, understand equipment, and bake carefully.</p>
+        <p><strong>Dependency Track:</strong> Track A — No build step (HTML, CSS, Canvas 2D, plain JavaScript)</p>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="section">
+      <h3>Development Timeline</h3>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-date">Session 1 — Project Initialization</div>
+          <h4>📄 Brief Read &amp; Project Structure Created</h4>
+          <p>The AI Agent read the full development brief and the domain-learning design summary. The brief specified a baking-themed game where the core learning shift is moving from "just follow the recipe" to "check materials, understand equipment, bake carefully."</p>
+          <p>The project directory structure was created following the expected file layout: <code>exhibition/</code> for the final static website, <code>source/</code> for development source (not needed for Track A), and supporting documentation files.</p>
+          <span class="timeline-tag ai">AI Setup</span>
+          <span class="timeline-tag">Structure</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">Session 1 — Game Design</div>
+          <h4>🎮 Game Loop &amp; Challenge Presets Designed</h4>
+          <p>Based on the brief's core loop (Observe → Judge → Act → Feedback → Adjust), the game was designed with four phases: Menu (recipe selection), Pantry (ingredient selection), Mixing (timing mini-game), and Baking (oven monitoring). Each phase maps to a real baking skill.</p>
+          <p>Four challenge presets were defined — Cookies, Bread, Brownies, and Cake — each with different variables: different correct/wrong ingredients, different mix-time windows, different bake-time windows, and different difficulty levels. The key learning difference: cookies use baking soda, bread uses yeast, brownies need no leavening, and cake uses baking powder.</p>
+          <span class="timeline-tag ai">AI Design</span>
+          <span class="timeline-tag">Game Loop</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">Session 1 — Implementation</div>
+          <h4>💻 Game Built with Canvas 2D</h4>
+          <p>The complete game was implemented in a single <code>game.js</code> file using HTML5 Canvas 2D — no external libraries, no build step. Track A was chosen because the game is 2D and simple graphics are sufficient per the brief's guidance to "prioritize interaction, feedback, and learning over polish."</p>
+          <p>The game code separates environment data (recipe definitions, oven state), player-controlled data (selected ingredients, mixer actions), and calculated results (scores) into clearly labeled sections, as required by the brief.</p>
+          <span class="timeline-tag ai">AI Implementation</span>
+          <span class="timeline-tag">Canvas 2D</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">Session 1 — Website</div>
+          <h4>🌐 Website Pages Created</h4>
+          <p>Three HTML pages were built: <code>index.html</code> (home with game idea, domain knowledge, and system design sections), <code>game.html</code> (playable game page with instructions), and <code>process.html</code> (this development timeline page). A shared CSS stylesheet provides the warm baking-themed design.</p>
+          <p>The website includes a system graph diagram (SVG), data model blocks, a comparison table of novice vs. expert thinking, and a challenge preset table showing how each recipe changes variables. Navigation is consistent across all pages.</p>
+          <span class="timeline-tag ai">AI Implementation</span>
+          <span class="timeline-tag">Website</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">Session 1 — Testing</div>
+          <h4>🧪 Local Testing &amp; Feedback</h4>
+          <p>The game and website were tested through a local static HTTP server. Navigation links between all pages were verified. The game's full loop was tested: menu → pantry → mixing → baking → result → retry. Canvas rendering was verified at 1920×1080 exhibition resolution.</p>
+          <p>The game was confirmed to run without internet access, with all assets (CSS, JS) stored locally. No external dependencies, CDNs, or build tools are required for the exhibition version.</p>
+          <span class="timeline-tag fix">Testing</span>
+          <span class="timeline-tag">Verification</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">Session 1 — Documentation</div>
+          <h4>📝 Supporting Files Created</h4>
+          <p>The <code>agent-development-log.md</code> file was initialized with the project header and raw interaction log entries. <code>README.md</code> was created with development instructions, build process (none for Track A), controls, and main variable documentation. <code>THIRD_PARTY.md</code> was created (no third-party libraries used). A <code>submission-manifest.json</code> was prepared for exhibition packaging.</p>
+          <span class="timeline-tag ai">AI Documentation</span>
+          <span class="timeline-tag">Files</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Influence -->
+    <section class="section section-alt">
+      <h3>AI Influence on Design Direction</h3>
+      <div class="info-box">
+        <h4>🤖 What the AI Agent Did</h4>
+        <p>The AI Agent read the brief, designed the game loop mapping to the observe-judge-act-feedback-adjust cycle, chose Track A (no build step) as the simplest viable dependency track, designed the four challenge presets with different variables, implemented the complete Canvas 2D game, built the three website pages with a system graph and data model, and created all supporting documentation.</p>
+      </div>
+      <div class="info-box success">
+        <h4>👨‍🎓 Student Decisions</h4>
+        <p>The student provided the core design brief: the baking domain, the novice misconception (just follow a recipe), the expert approach (check materials, use equipment, bake carefully), and the success condition (bake 4 items). These student-authored decisions drove all AI implementation. The student should review the game and provide feedback on whether the experience matches the intended learning shift.</p>
+      </div>
+    </section>
+
+    <!-- Open Questions -->
+    <section class="section">
+      <h3>Open Questions &amp; Next Steps</h3>
+      <div class="info-box warning">
+        <h4>❓ Awaiting Student Input</h4>
+        <ul style="margin-left:20px; font-size:14px; line-height:2; font-family:Arial,sans-serif;">
+          <li>Does the game feel like it teaches the intended domain-learning shift?</li>
+          <li>Are the difficulty levels appropriate, or should timing windows be adjusted?</li>
+          <li>Should any recipes be added, removed, or changed?</li>
+          <li>Is the visual feedback (color change, smoke, ding) clear enough?</li>
+          <li>What should the project title be? (Currently "Bake Carefully")</li>
+          <li>Public display consent for exhibition: yes / anonymous / no?</li>
+        </ul>
+      </div>
+      <div class="info-box">
+        <h4>📋 Remaining Tasks Before Submission</h4>
+        <ul style="margin-left:20px; font-size:14px; line-height:2; font-family:Arial,sans-serif;">
+          <li>Student playtesting and feedback collection</li>
+          <li>System graph export as <code>system-graph.png</code></li>
+          <li>Preview screenshot capture (<code>preview.png</code>, 16:9)</li>
+          <li>Final submission audit and ZIP packaging</li>
+          <li>Confirm public display consent in <code>submission-manifest.json</code></li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="footer-student">Bake Carefully — A Domain-Learning Game by YuYu Choi</p>
+    <p>Baking Domain | Canvas 2D | Track A (No Build Step)</p>
+  </footer>
+
+</body>
+</html>

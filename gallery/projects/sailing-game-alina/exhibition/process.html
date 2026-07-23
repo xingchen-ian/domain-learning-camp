@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sailing Adventure — Development Process</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <a href="index.html" class="logo"><span class="icon">&#9975;</span> Sailing Adventure</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#domain">Domain Knowledge</a></li>
+    <li><a href="index.html#system">System Design</a></li>
+    <li><a href="process.html" class="active">Development Process</a></li>
+    <li><a href="game.html">Play Game</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <h1 class="page-title">Development Process</h1>
+  <p class="page-subtitle">A chronological record of human-AI collaboration on this project.</p>
+
+  <div class="card">
+    <h2>Project Setup</h2>
+    <p><strong>Student:</strong> Alina Zaigralova</p>
+    <p><strong>Domain:</strong> Sailing</p>
+    <p><strong>AI Agent:</strong> WorkBuddy</p>
+    <p><strong>Core Learning Shift:</strong> Beginners think sailing means steering toward the target. Experts know sailing means reading the wind and adjusting the boat, sail, and route in relation to it.</p>
+    <p><strong>Technical Track:</strong> Track A &mdash; No build step (HTML, CSS, plain JavaScript, Canvas 2D)</p>
+  </div>
+
+  <div class="card">
+    <h2>Development Timeline</h2>
+    <div class="timeline">
+
+      <div class="timeline-entry">
+        <span class="time">Session 1</span><span class="stage">&mdash; Planning &amp; Setup</span>
+        <h4>Brief Analysis &amp; Implementation Plan</h4>
+        <p>Read the development brief and identified the core learning shift (wind reading vs. target steering). Chose Track A (plain HTML/CSS/JS + Canvas 2D) because the game is 2D and this track requires no build step &mdash; ideal for the exhibition environment on an iMac.</p>
+        <p>Defined three challenge presets that change system variables: Downwind Run (wind behind), Beam Reach (wind perpendicular), and Upwind Challenge (target upwind, requiring tacking).</p>
+      </div>
+
+      <div class="timeline-entry">
+        <span class="time">Session 1</span><span class="stage">&mdash; Core Implementation</span>
+        <h4>Sailing Physics Engine</h4>
+        <p>Built the core game engine in <code>assets/game.js</code>. Implemented simplified sailing physics: angle of attack between wind direction and boat heading determines base speed via a polar curve (peak at beam reach, zero in the no-go zone). Sail trim efficiency is calculated by comparing the player's sail angle to the optimal angle for the current heading.</p>
+        <p>Environment variables (wind, current, rocks, target, time) are clearly separated from player-controlled variables (heading, sail angle) and calculated results (speed, drift, stability, distance) in the code, as specified in the brief.</p>
+      </div>
+
+      <div class="timeline-entry">
+        <span class="time">Session 1</span><span class="stage">&mdash; Visual Feedback</span>
+        <h4>Feedback System</h4>
+        <p>Implemented all feedback channels from the brief: sail flapping animation (inefficient angle), wake trail length (speed), wind direction arrow (environment reading), collision warning rings on rocks, HUD bars for speed/trim/stability, and text messages ("Good trim!", "Sail is flapping!", "Watch out for rocks!").</p>
+        <p>Added a "point of sail" indicator (In Irons, Close-Hauled, Beam Reach, Broad Reach, Running) to help players connect the visual experience with sailing terminology.</p>
+      </div>
+
+      <div class="timeline-entry">
+        <span class="time">Session 1</span><span class="stage">&mdash; Website</span>
+        <h4>Project Website</h4>
+        <p>Created the integrated project website with four pages: Home (game idea, domain knowledge, system design), Play Game (hosts the canvas), and Development Process (this page). Shared stylesheet provides coherent styling. All links use relative paths for Gallery compatibility.</p>
+      </div>
+
+      <div class="timeline-entry">
+        <span class="time">Session 1</span><span class="stage">&mdash; Testing</span>
+        <h4>Initial Testing</h4>
+        <p>Tested all three challenges: navigation links, game start, steering, sail trim, win/lose conditions, and restart. Verified the complete observe &rarr; judge &rarr; act &rarr; feedback &rarr; adjust loop works in each challenge.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>How AI Helped</h2>
+    <p>The AI agent (WorkBuddy) was responsible for: reading and interpreting the development brief, choosing the technical approach (Track A), implementing the full game engine and website, creating the project file structure, and maintaining the development log. The student provided the domain choice (sailing), the design direction (adventure, discovery), and the core learning shift.</p>
+  </div>
+
+  <div class="card">
+    <h2>Relationship to the Core Learning Shift</h2>
+    <p>The game is designed so that the <strong>Upwind Challenge</strong> (Challenge 3) directly confronts the player with the novice misconception. The target is directly upwind. A player who simply steers toward it will enter the no-go zone, their sail will flap, and the boat will stop. The only solution is to tack &mdash; sail at ~45 degrees to the wind in one direction, then turn and sail at ~45 degrees in the other. This is the expert behavior the game aims to teach.</p>
+    <p>The first two challenges (Downwind Run, Beam Reach) build the skills needed: reading the wind indicator, trimming the sail, and understanding how speed responds to angle changes. By the time the player reaches Challenge 3, they have the tools to discover tacking through experimentation.</p>
+  </div>
+
+  <div class="card">
+    <h2>Open Questions &amp; Next Steps</h2>
+    <p><strong>Student reflection needed:</strong> Does the current game help the player experience the intended domain-learning shift? Which AI suggestions were accepted, rejected, or modified?</p>
+    <p><strong>Potential improvements:</strong> Sound feedback for sailing (water/wind audio), more challenge presets with variable wind direction mid-game, a visual tutorial overlay for first-time players.</p>
+  </div>
+
+</div>
+
+<div class="footer">
+  Sailing Adventure &mdash; Development Process<br>
+  Based on <code>agent-development-log.md</code>. Updated as development progresses.
+</div>
+
+</body>
+</html>

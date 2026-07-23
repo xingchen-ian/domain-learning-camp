@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NYU Shanghai IMA Game Design Summer Camp summary: from real life to playable worlds, plus the student game showreel." />
+  <title>Camp Summary · From Real Life to Playable Worlds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,750&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #091015;
+      --ink: #edf2ef;
+      --muted: #9eaea9;
+      --lead: #d7e0dc;
+      --line: rgba(211, 223, 222, 0.14);
+      --accent: #c85243;
+      --accent-light: #e27b6d;
+      --warm: #d2b48b;
+      --teal: #78bcb6;
+      --blue: #86a9c9;
+      --display: "Fraunces", "Noto Serif SC", Georgia, serif;
+      --sans: "Manrope", "Noto Sans SC", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.6;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(120, 188, 182, 0.14), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 100% 30%, rgba(200, 82, 67, 0.08), transparent 50%),
+        radial-gradient(ellipse 40% 35% at 0% 70%, rgba(134, 169, 201, 0.08), transparent 45%),
+        linear-gradient(180deg, #121a1f 0%, #091015 28%, #070c10 100%);
+    }
+
+    body[data-lang="zh"] .en,
+    body[data-lang="en"] .zh { display: none !important; }
+
+    a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(160px, 1fr) auto auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(6, 11, 14, 0.78);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-subtitle {
+      margin: 3px 0 0;
+      color: #8fa3a5;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .nav,
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nav-link,
+    button,
+    .button {
+      min-height: 38px;
+      border: 1px solid rgba(202, 218, 220, 0.22);
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: rgba(10, 16, 19, 0.35);
+      color: #dce5e2;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+
+    .nav-link:hover,
+    button:hover,
+    .button:hover {
+      border-color: rgba(226, 123, 109, 0.65);
+      background: rgba(200, 82, 67, 0.14);
+    }
+
+    button.active,
+    .button.primary {
+      border-color: transparent;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .button:hover { transform: translateY(-1px); }
+
+    main {
+      width: min(920px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 64px 0 120px;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 800ms ease, transform 800ms ease;
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    .hero {
+      padding: 28px 0 12px;
+      text-align: center;
+    }
+
+    .hero-kicker {
+      margin: 0 0 22px;
+      color: var(--warm);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    h1 {
+      margin: 0 auto 22px;
+      max-width: 14ch;
+      font-family: var(--display);
+      font-size: clamp(40px, 7vw, 68px);
+      line-height: 1.05;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .lead {
+      margin: 0 auto 36px;
+      max-width: 34rem;
+      color: var(--muted);
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .showreel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      background: #05080a;
+      box-shadow:
+        0 0 0 1px rgba(120, 188, 182, 0.05),
+        0 36px 90px rgba(0, 0, 0, 0.5);
+    }
+
+    .showreel::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 28%;
+      pointer-events: none;
+      background: linear-gradient(transparent, rgba(5, 8, 10, 0.55));
+    }
+
+    .showreel video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+
+    .showreel-meta {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px 18px;
+      margin-top: -1px;
+      padding: 16px 20px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 0;
+      border-radius: 0 0 12px 12px;
+      background: rgba(8, 12, 15, 0.92);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* —— Section rhythm —— */
+    .section {
+      padding: clamp(88px, 12vw, 140px) 0 0;
+    }
+
+    .section h2 {
+      margin: 0 0 clamp(36px, 5vw, 52px);
+      max-width: 14ch;
+      font-family: var(--display);
+      font-size: clamp(28px, 4.5vw, 42px);
+      font-weight: 650;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .align-center {
+      text-align: center;
+    }
+
+    .align-center h2,
+    .align-center .statement,
+    .align-center .statement-note,
+    .align-center .prose,
+    .align-center .pullquote {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .align-center .prose {
+      text-align: left;
+    }
+
+    .shift-right {
+      padding-left: clamp(0px, 8vw, 96px);
+    }
+
+    .shift-left {
+      padding-right: clamp(0px, 8vw, 96px);
+    }
+
+    .statement {
+      margin: 0;
+      max-width: 18ch;
+      font-family: var(--display);
+      font-size: clamp(32px, 5.2vw, 48px);
+      font-weight: 650;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .statement-note {
+      margin: 28px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    .prose {
+      display: grid;
+      gap: 28px;
+      max-width: 36rem;
+    }
+
+    .prose p {
+      margin: 0;
+      color: var(--lead);
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.75;
+    }
+
+    /* Soft stacked takeaways — no table lines */
+    .takeaways {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 28px;
+      max-width: 34rem;
+    }
+
+    .align-center .takeaways {
+      margin-inline: auto;
+      text-align: left;
+    }
+
+    .takeaways li {
+      position: relative;
+      margin: 0;
+      padding: 8px 0 8px 28px;
+      color: var(--ink);
+      font-size: clamp(17px, 2.2vw, 20px);
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
+    .takeaways li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 3px;
+      height: 1.35em;
+      border-radius: 2px;
+      background: var(--mark, var(--teal));
+    }
+
+    /* Process as airy vertical steps */
+    .process {
+      display: grid;
+      gap: clamp(40px, 6vw, 64px);
+      margin: 0;
+      max-width: 40rem;
+    }
+
+    .align-center .process {
+      margin-inline: auto;
+      text-align: left;
+    }
+
+    .process article {
+      display: grid;
+      gap: 14px;
+    }
+
+    .process .num {
+      font-family: var(--display);
+      font-size: clamp(36px, 5vw, 48px);
+      font-weight: 650;
+      color: var(--mark, var(--teal));
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .process h3 {
+      margin: 0;
+      font-size: clamp(20px, 2.6vw, 24px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .process p {
+      margin: 0;
+      max-width: 32rem;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.55;
+    }
+
+    .roles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(40px, 7vw, 72px);
+      margin-top: 8px;
+    }
+
+    .roles h3 {
+      margin: 0 0 28px;
+      font-family: var(--display);
+      font-size: 26px;
+      font-weight: 650;
+    }
+
+    .roles ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 20px;
+    }
+
+    .roles li {
+      position: relative;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.55;
+    }
+
+    .roles li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.7em;
+      width: 8px;
+      height: 1px;
+      background: var(--mark, var(--teal));
+    }
+
+    .pullquote {
+      margin: clamp(56px, 8vw, 88px) auto 0;
+      max-width: 22ch;
+      font-family: var(--display);
+      font-size: clamp(24px, 3.6vw, 32px);
+      font-weight: 650;
+      line-height: 1.35;
+      color: var(--lead);
+      text-align: center;
+    }
+
+    /* Values as spaced pairs, not a spreadsheet */
+    .values {
+      display: grid;
+      gap: clamp(36px, 5vw, 52px);
+      max-width: 40rem;
+    }
+
+    .align-center .values {
+      margin-inline: auto;
+      text-align: left;
+    }
+
+    .value-row {
+      display: grid;
+      gap: 12px;
+    }
+
+    .value-row strong {
+      display: block;
+      font-family: var(--display);
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .value-row span {
+      display: block;
+      max-width: 36rem;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+
+    .how-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: clamp(28px, 4vw, 40px);
+      max-width: 36rem;
+    }
+
+    .align-center .how-list {
+      margin-inline: auto;
+      text-align: left;
+    }
+
+    .how-list li {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 18px;
+      align-items: baseline;
+      color: var(--lead);
+      font-size: 17px;
+      font-weight: 550;
+      line-height: 1.55;
+    }
+
+    .how-list .n {
+      font-family: var(--display);
+      color: var(--teal);
+      font-weight: 650;
+      font-size: 22px;
+    }
+
+    .gallery-link {
+      display: inline-block;
+      margin: 0 0 40px;
+      color: var(--teal);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: clamp(40px, 5vw, 56px);
+    }
+
+    .align-center .cta-row {
+      justify-content: center;
+    }
+
+    .closing {
+      padding-top: clamp(100px, 14vw, 160px);
+      text-align: center;
+    }
+
+    .closing p {
+      margin: 0 auto;
+      max-width: 26rem;
+      font-family: var(--display);
+      font-size: clamp(22px, 3.2vw, 30px);
+      font-weight: 650;
+      line-height: 1.4;
+    }
+
+    .closing .tagline {
+      margin-top: 40px;
+      color: var(--warm);
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    footer {
+      padding: 40px 22px 56px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: #6f8283;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 860px) {
+      .topbar { grid-template-columns: 1fr; gap: 12px; }
+      .roles { grid-template-columns: 1fr; gap: 48px; }
+      .shift-right,
+      .shift-left { padding-left: 0; padding-right: 0; }
+      main { width: min(920px, calc(100% - 32px)); }
+    }
+  </style>
+</head>
+<body data-lang="en">
+  <header class="topbar">
+    <div class="brand">
+      <p class="brand-title"><span class="zh">课程总结</span><span class="en">Camp Summary</span></p>
+      <p class="brand-subtitle"><span class="zh">从真实经验到可玩的世界</span><span class="en">From Real Life to Playable Worlds</span></p>
+    </div>
+    <nav class="nav" aria-label="Summary navigation">
+      <a class="nav-link" href="../index.html"><span class="zh">课程首页</span><span class="en">Home</span></a>
+      <a class="nav-link" href="#showreel"><span class="zh">集锦视频</span><span class="en">Showreel</span></a>
+      <a class="nav-link" href="#takeaways"><span class="zh">收获</span><span class="en">Takeaways</span></a>
+      <a class="nav-link" href="../gallery/index.html"><span class="zh">游戏展览</span><span class="en">Gallery</span></a>
+    </nav>
+    <div class="controls" aria-label="Language">
+      <button type="button" class="lang" data-lang="zh">中文</button>
+      <button type="button" class="lang active" data-lang="en">English</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero reveal" id="showreel">
+      <p class="hero-kicker">NYU Shanghai · Interactive Media Arts</p>
+      <h1>
+        <span class="zh">从真实生活到可玩的世界</span>
+        <span class="en">From Real Life to Playable Worlds</span>
+      </h1>
+      <p class="lead zh">你创造，AI 协助。以下是夏令营总结，以及学生游戏集锦。</p>
+      <p class="lead en">You create. AI assists. A camp summary, and the student game showreel.</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#showreel-player"><span class="zh">观看集锦</span><span class="en">Watch Showreel</span></a>
+        <a class="button" href="summer-camp-summary.pptx" download><span class="zh">下载总结 PPT</span><span class="en">Download PPT</span></a>
+        <a class="button" href="../gallery/index.html"><span class="zh">进入展览</span><span class="en">Open Gallery</span></a>
+      </div>
+
+      <div class="showreel" id="showreel-player">
+        <video controls playsinline preload="metadata">
+          <source src="media/showreel.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="showreel-meta">
+        <span><span class="zh">Game Designs Showreel · 约 2:40 · 代理素材预览版</span><span class="en">Game Designs Showreel · ~2:40 · Proxy preview</span></span>
+        <span><span class="zh">终版将替换为原片</span><span class="en">Final cut will use original footage</span></span>
+      </div>
+    </section>
+
+    <section class="section align-center reveal" id="opening">
+      <p class="statement">
+        <span class="zh">一段真实经验，可以变成一个可玩的游戏系统。</span>
+        <span class="en">A real-life experience can become a playable game system.</span>
+      </p>
+      <p class="statement-note">
+        <span class="zh">这不是编程训练营，也不是把设计交给 AI。</span>
+        <span class="en">Not a coding camp · Not AI-only design</span>
+      </p>
+    </section>
+
+    <section class="section shift-right reveal">
+      <h2><span class="zh">你是创作者</span><span class="en">You Are the Creator</span></h2>
+      <div class="prose">
+        <p class="zh">这不是编程课，我们也不会把设计或开发交给 AI。</p>
+        <p class="en">This is not a coding camp, and we do not hand design or development over to AI.</p>
+        <p class="zh">你选择经验、系统与目的；AI Agent 是助手——协助构建、记录与迭代。</p>
+        <p class="en">You choose the experience, the system, and the purpose. AI agents are your assistants — they build, document, and help you iterate.</p>
+      </div>
+    </section>
+
+    <section class="section align-center reveal" id="takeaways">
+      <h2><span class="zh">学生带走什么</span><span class="en">What Students Take Away</span></h2>
+      <ul class="takeaways">
+        <li style="--mark:var(--teal)"><span class="zh">一个可在网页上玩的游戏</span><span class="en">A playable game on the web</span></li>
+        <li style="--mark:var(--warm)"><span class="zh">一种思维方式：从真实经验抽象出游戏系统</span><span class="en">A way of thinking: abstract a game system from real-life experience</span></li>
+        <li style="--mark:var(--blue)"><span class="zh">用于记录设计与开发过程的 AI 工具箱</span><span class="en">AI toolkits for recording the design and development process</span></li>
+        <li style="--mark:var(--accent-light)"><span class="zh">一个能展示设计并让他人试玩的项目网站</span><span class="en">A project website that presents the design and lets others play</span></li>
+      </ul>
+    </section>
+
+    <section class="section shift-left reveal" id="process">
+      <h2><span class="zh">设计与开发过程</span><span class="en">Design &amp; Development Process</span></h2>
+      <div class="process">
+        <article>
+          <span class="num" style="--mark:var(--teal)">01</span>
+          <div>
+            <h3><span class="zh">从玩游戏中学习</span><span class="en">Learn from playing a game</span></h3>
+            <p><span class="zh">不只问好不好玩——还问它如何教人</span><span class="en">Not only whether it is fun — but how it teaches</span></p>
+          </div>
+        </article>
+        <article>
+          <span class="num" style="--mark:var(--warm)">02</span>
+          <div>
+            <h3><span class="zh">抽象交互系统</span><span class="en">Abstract an interactive system</span></h3>
+            <p><span class="zh">让系统和规则对 AI 与编程都清晰</span><span class="en">Clear for AI and for programming</span></p>
+          </div>
+        </article>
+        <article>
+          <span class="num" style="--mark:var(--blue)">03</span>
+          <div>
+            <h3><span class="zh">与 AI 做出可玩原型</span><span class="en">Build a playable demo with AI</span></h3>
+            <p><span class="zh">实现、测试、再改进</span><span class="en">Implement, test, and refine</span></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section reveal" id="roles">
+      <h2><span class="zh">人与 AI</span><span class="en">Human &amp; AI</span></h2>
+      <div class="roles">
+        <div>
+          <h3 style="color:var(--teal)"><span class="zh">创作者</span><span class="en">The creator</span></h3>
+          <ul style="--mark:var(--teal)">
+            <li><span class="zh">选择领域与真实经验</span><span class="en">Choose domain and real-life experience</span></li>
+            <li><span class="zh">把要素变成数据、规则与反馈</span><span class="en">Turn elements into data, rules, feedback</span></li>
+            <li><span class="zh">描述并可视化系统</span><span class="en">Describe and visualize the system</span></li>
+            <li><span class="zh">与 AI 迭代——保持批判性审视</span><span class="en">Iterate with AI — review critically</span></li>
+            <li><span class="zh">反思决策与协作</span><span class="en">Reflect on decisions and collaboration</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--warm)"><span class="zh">AI 助手</span><span class="en">AI assistants</span></h3>
+          <ul style="--mark:var(--warm)">
+            <li><span class="zh">加速构建与文档</span><span class="en">Accelerate building and documentation</span></li>
+            <li><span class="zh">协助快速实现与迭代</span><span class="en">Help implement and iterate quickly</span></li>
+            <li><span class="zh">提供备选方案——不是替你下判断</span><span class="en">Suggest alternatives — not judgment</span></li>
+            <li><span class="zh">无法决定这个游戏为何值得做</span><span class="en">Cannot decide why the game is worth making</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="pullquote">
+        <span class="zh">AI 可以加速设计与开发，但不能替你决定这个游戏为什么值得被做出来。</span>
+        <span class="en">AI can speed up design and development, but it cannot decide why this game is worth making.</span>
+      </p>
+    </section>
+
+    <section class="section shift-right reveal" id="value">
+      <h2><span class="zh">对未来设计师为何重要</span><span class="en">Why This Matters for Future Designers</span></h2>
+      <div class="values">
+        <div class="value-row">
+          <strong><span class="zh">设计思维</span><span class="en">Design thinking</span></strong>
+          <span><span class="zh">从真实生活出发，而不是从炫目画面或 AI 的第一反应出发</span><span class="en">Start from real life, not flashy visuals or whatever AI suggests first</span></span>
+        </div>
+        <div class="value-row">
+          <strong><span class="zh">系统思维</span><span class="en">Systems thinking</span></strong>
+          <span><span class="zh">看见数据、行动、反馈与挑战如何连接</span><span class="en">See how data, actions, feedback, and challenges connect</span></span>
+        </div>
+        <div class="value-row">
+          <strong><span class="zh">与 AI 共事的判断力</span><span class="en">Judgment with AI</span></strong>
+          <span><span class="zh">知道该接受、拒绝还是修改</span><span class="en">Know what to accept, reject, or revise</span></span>
+        </div>
+        <div class="value-row">
+          <strong><span class="zh">表达与展览</span><span class="en">Expression &amp; exhibition</span></strong>
+          <span><span class="zh">清楚地呈现游戏与设计</span><span class="en">Present your game and your design clearly</span></span>
+        </div>
+        <div class="value-row">
+          <strong><span class="zh">试玩与迭代</span><span class="en">Playtesting &amp; iteration</span></strong>
+          <span><span class="zh">与玩家测试，从失败中学习，再改进</span><span class="en">Test with players, learn from failure, improve</span></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section align-center reveal" id="play">
+      <h2><span class="zh">如何玩学生的游戏</span><span class="en">How to Play Students’ Games</span></h2>
+      <a class="gallery-link" href="../gallery/index.html">xingchen-ian.github.io/domain-learning-camp/gallery/</a>
+      <ol class="how-list">
+        <li>
+          <span class="n">01</span>
+          <span><span class="zh">打开游戏展览，选择一个作品</span><span class="en">Open the Game Gallery and choose a title</span></span>
+        </li>
+        <li>
+          <span class="n">02</span>
+          <span><span class="zh">阅读项目首页——它想教会玩家什么</span><span class="en">Read the project home page — what the game teaches</span></span>
+        </li>
+        <li>
+          <span class="n">03</span>
+          <span><span class="zh">点击 Play，试玩至少一个关卡</span><span class="en">Click Play and try one level</span></span>
+        </li>
+        <li>
+          <span class="n">04</span>
+          <span><span class="zh">问学生：玩家该学到什么？试玩后改了什么？</span><span class="en">Ask the student: What should the player learn? What changed after testing?</span></span>
+        </li>
+      </ol>
+      <div class="cta-row">
+        <a class="button primary" href="../gallery/index.html"><span class="zh">进入展览</span><span class="en">Enter Gallery</span></a>
+        <a class="button" href="summer-camp-summary.pptx" download><span class="zh">下载 PPT</span><span class="en">Download PPT</span></a>
+      </div>
+    </section>
+
+    <section class="section closing reveal" id="final">
+      <p>
+        <span class="zh">你来这里，不是为了一夜变成“AI 专家”。你来这里，是为了开始像设计师一样思考、制作与试玩——AI 是工具，不能替代你的判断。</span>
+        <span class="en">You are not here to become an “AI expert” overnight. You are here to begin thinking, crafting, and playing as a designer — with AI as a tool, not a substitute for your judgment.</span>
+      </p>
+      <p class="tagline">You create. AI assists.</p>
+    </section>
+  </main>
+
+  <footer>NYU Shanghai · IMA · Interactive Media Arts · Game Designs</footer>
+
+  <script>
+    const languageKey = "domain-learning-camp-language";
+    let lang = localStorage.getItem(languageKey) || "en";
+
+    function setLanguage(nextLanguage) {
+      lang = nextLanguage === "zh" ? "zh" : "en";
+      document.body.dataset.lang = lang;
+      document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+      document.querySelectorAll(".lang").forEach((button) => {
+        button.classList.toggle("active", button.dataset.lang === lang);
+        button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
+      });
+      localStorage.setItem(languageKey, lang);
+    }
+
+    document.querySelectorAll(".lang").forEach((button) => {
+      button.addEventListener("click", () => setLanguage(button.dataset.lang));
+    });
+
+    setLanguage(lang);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+    );
+
+    document.querySelectorAll(".reveal").forEach((el, i) => {
+      el.style.transitionDelay = `${Math.min(i * 40, 160)}ms`;
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>

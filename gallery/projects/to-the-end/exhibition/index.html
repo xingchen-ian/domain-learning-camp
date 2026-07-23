@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To the End - Home</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a href="index.html" class="nav-link active">Home</a>
+      <a href="process.html" class="nav-link">Process</a>
+      <a href="game.html" class="nav-link">Play</a>
+    </nav>
+  </header>
+
+  <main class="content-page">
+    <h1>To the End</h1>
+    <p><strong>A biking game about reading the road, not just pedaling harder.</strong></p>
+
+    <a href="game.html" class="play-button">Play the Game</a>
+
+    <h2>Game Idea</h2>
+    <p><strong>Project Title:</strong> To the End</p>
+    <p><strong>Student / Team:</strong> Hanson Liu</p>
+    <p><strong>Domain:</strong> Biking</p>
+
+    <p>
+      Most people think biking uphill is about forcing the pedals as hard as possible.
+      In this game, you control a rider on a road with changing inclines, wind, and road conditions.
+      Your goal is to reach the finish line before time runs out, without running out of stamina or pushing your heart rate into the danger zone.
+    </p>
+
+    <p>
+      <strong>Player goal:</strong> Reach the finish line of each challenge while keeping a steady heart rate, enough speed, and enough stamina.
+    </p>
+
+    <p>
+      <strong>Core learning shift:</strong> Beginners think biking uphill means pedaling hard to force their way up;
+      experts know biking uphill means reading the incline and adjusting the gear, pedaling speed, and power in relation to it.
+    </p>
+
+    <h2>Domain Knowledge</h2>
+    <p>
+      <strong>Real experience:</strong> Riding a bike up a hill shows that speed does not only come from pedaling fast.
+      Gravity on an incline, wind resistance, gear choice, and riding position all work together.
+    </p>
+
+    <p>
+      <strong>Novice misconception:</strong> Beginners think they have to maintain a fast pedaling speed by using a lot of power.
+      They often forget to adjust gears, use too much energy at the start, or try to keep spinning fast on steep sections.
+    </p>
+
+    <p>
+      <strong>Expert judgment:</strong> Experienced riders shift to an easier gear before a steep climb, keep a steady cadence,
+      change position to reduce wind resistance, and manage power so their heart rate stays under control.
+    </p>
+
+    <p>
+      <strong>Why it becomes playable:</strong> The game turns these invisible forces into visible numbers and bars.
+      When stamina drops fast or heart rate spikes, the player sees the feedback and can experiment with different gears, positions, and power levels.
+    </p>
+
+    <h2>System Design</h2>
+    <p>The system graph below shows how environment data, player input, and calculated results connect.</p>
+    <img src="assets/system-graph.png" alt="Biking game system graph showing win/lose conditions, player input, game environment, levels, and exposed data" />
+
+    <h3>Environment Data</h3>
+    <ul>
+      <li>Incline steepness of each road segment</li>
+      <li>Wind speed and direction (headwind / tailwind / none)</li>
+      <li>Remaining distance to the finish line</li>
+      <li>Road condition (smooth or rough)</li>
+      <li>Other competitors (visual atmosphere)</li>
+    </ul>
+
+    <h3>Player-Controlled Data</h3>
+    <ul>
+      <li>Pedaling speed (cadence)</li>
+      <li>Power output</li>
+      <li>Riding position (normal or leaning forward)</li>
+      <li>Gear selection (1 to 8)</li>
+    </ul>
+
+    <h3>System-Calculated Results</h3>
+    <ul>
+      <li>Bike speed</li>
+      <li>Stamina drain rate</li>
+      <li>Heart rate</li>
+      <li>Wind resistance force</li>
+    </ul>
+
+    <h3>Feedback</h3>
+    <ul>
+      <li><strong>Stamina:</strong> shown as a bar that turns from green to yellow to red.</li>
+      <li><strong>Heart rate:</strong> shown as a number that turns red and pulses when it is too high.</li>
+      <li><strong>Bike speed:</strong> shown through movement and the speed value.</li>
+      <li><strong>Incline:</strong> shown visually by slanted road segments with percentage labels.</li>
+    </ul>
+
+    <h3>Success and Failure</h3>
+    <ul>
+      <li><strong>Win:</strong> Reach the finish line while time, stamina, and heart rate are still safe.</li>
+      <li><strong>Lose:</strong> Run out of time, run out of stamina, let heart rate stay too high for too long, or stop moving completely.</li>
+    </ul>
+
+    <h2>Challenge Presets</h2>
+    <ul>
+      <li><strong>Level 1:</strong> 500 m, smooth road, no wind, small inclines. Learn the basic gear-incline relationship.</li>
+      <li><strong>Level 2:</strong> 1 km, smooth road, 30-knot headwind, larger inclines, 400-second time limit.</li>
+      <li><strong>Level 3:</strong> 1.5 km, rough road, 20-knot tailwind, very steep inclines, 570-second time limit.</li>
+    </ul>
+  </main>
+
+  <footer class="site-footer">
+    <p>Hanson Liu — To the End</p>
+  </footer>
+</body>
+</html>

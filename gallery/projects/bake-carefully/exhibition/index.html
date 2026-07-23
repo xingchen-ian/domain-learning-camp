@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bake Carefully — A Baking Domain-Learning Game</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="brand-emoji">🧁</span>
+      Bake Carefully
+    </a>
+    <ul class="navbar-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="index.html#domain">Domain Knowledge</a></li>
+      <li><a href="index.html#system">System Design</a></li>
+      <li><a href="process.html">Development Process</a></li>
+      <li><a href="game.html">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-emoji">🍞🍪🧁🎂</span>
+      <h1>Bake Carefully</h1>
+      <p class="hero-subtitle">A baking game about patience, precision, and learning from your mistakes</p>
+      <a href="game.html" class="btn-play">▶ Play the Game</a>
+    </div>
+  </section>
+
+  <!-- Game Idea -->
+  <div class="container">
+    <section class="section" id="game-idea">
+      <h2>Game Idea</h2>
+      <p class="lead">Bake four different goods — cookies, bread, brownies, and cake — by selecting the right ingredients, mixing at the right time, and pulling them out of the oven before they burn.</p>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <h4>Player Goal</h4>
+          <p>Successfully bake all 4 items. Each recipe tests a different skill: ingredient knowledge, mixing timing, and oven monitoring.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧠</div>
+          <h4>Core Learning Shift</h4>
+          <p>Beginners think baking is just following a recipe. Experts know you must check materials first, understand your equipment, and bake carefully with full attention.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⏱️</div>
+          <h4>Main Challenge</h4>
+          <p>Time is everything. Leave food in the oven too long and it burns. Don't pay attention, and you lose. Watch, judge, and act at the right moment.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔄</div>
+          <h4>Learning Loop</h4>
+          <p>Observe → Judge → Act → Read Feedback → Adjust. Every failure teaches you what to do differently next time.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Domain Knowledge -->
+  <section class="section section-alt" id="domain">
+    <div class="container">
+      <h2>Domain Knowledge</h2>
+      <p class="lead">The real-world domain is baking baked goods — something the student loves but learned the hard way is harder than it looks.</p>
+
+      <h3>The Real Experience</h3>
+      <p>Baking is a craft where things don't always go your way. Ingredients can be wrong, machines can malfunction, and timing is critical. The student learned through experience that success comes from preparation, attention, and understanding your tools — not just reading a recipe.</p>
+
+      <h3>Novice Misconception</h3>
+      <div class="info-box warning">
+        <h4>❌ What Beginners Think</h4>
+        <p>"You just need to follow a recipe for it to work." Beginners grab ingredients, throw them together, put everything in the oven, and expect perfect results. They don't check if ingredients are correct, don't test their equipment, and don't pay close attention to timing.</p>
+      </div>
+
+      <h3>Expert Judgment</h3>
+      <div class="info-box success">
+        <h4>✅ What Experts Do</h4>
+        <p>Experts learn how to use their equipment first. They check their materials before starting. They understand that different recipes need different leavening agents (baking soda vs. baking powder vs. yeast), different mixing times, and different bake times. They watch the oven and use visual and auditory cues — color change, the smell of doneness, the "ding" of readiness, and the warning sign of smoke.</p>
+      </div>
+
+      <h3>Why This Becomes Playable</h3>
+      <p>The gap between novice and expert thinking maps directly to game mechanics:</p>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Real-World Skill</th>
+            <th>Game Mechanic</th>
+            <th>What the Player Learns</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Checking ingredients before starting</td>
+            <td>Pantry phase: select correct ingredients from similar-looking options</td>
+            <td>Baking soda ≠ baking powder ≠ yeast — each does something different</td>
+          </tr>
+          <tr>
+            <td>Understanding your equipment</td>
+            <td>Mixing phase: stop the mixer at the right time</td>
+            <td>Under-mixing = lumpy dough, over-mixing = tough dough</td>
+          </tr>
+          <tr>
+            <td>Paying attention to timing</td>
+            <td>Baking phase: watch color change, listen for the ding, remove before smoke</td>
+            <td>Food goes from raw → golden → burnt in seconds. Watch carefully.</td>
+          </tr>
+          <tr>
+            <td>Learning from mistakes</td>
+            <td>Result screen with specific feedback, then retry</td>
+            <td>Each failure teaches what to adjust on the next attempt</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- System Design -->
+  <section class="section" id="system">
+    <div class="container">
+      <h2>System Design</h2>
+      <p class="lead">The game system is built around four data categories: environment data, player-controlled data, system-calculated results, and feedback translation.</p>
+
+      <!-- System Graph Diagram -->
+      <div class="diagram-container">
+        <h3 style="margin-top:0">System Graph</h3>
+        <svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg" style="max-width:850px">
+          <!-- Background -->
+          <rect x="0" y="0" width="900" height="400" fill="#FFF8F0" rx="12"/>
+
+          <!-- Environment Data -->
+          <rect x="30" y="30" width="180" height="100" rx="10" fill="#E3F2FD" stroke="#6BA3D6" stroke-width="2"/>
+          <text x="120" y="55" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#1565C0">Environment Data</text>
+          <text x="120" y="78" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Recipe definitions</text>
+          <text x="120" y="95" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Oven state &amp; timers</text>
+          <text x="120" y="112" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Ingredient lists</text>
+
+          <!-- Player Data -->
+          <rect x="360" y="30" width="180" height="100" rx="10" fill="#E8F5E9" stroke="#7FB069" stroke-width="2"/>
+          <text x="450" y="55" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#2E7D32">Player-Controlled Data</text>
+          <text x="450" y="78" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Selected ingredients</text>
+          <text x="450" y="95" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Mixer start/stop</text>
+          <text x="450" y="112" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Oven put-in / remove</text>
+
+          <!-- Calculated Results -->
+          <rect x="690" y="30" width="180" height="100" rx="10" fill="#FFF3E0" stroke="#E8A87C" stroke-width="2"/>
+          <text x="780" y="55" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#E65100">Calculated Results</text>
+          <text x="780" y="78" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Ingredient accuracy</text>
+          <text x="780" y="95" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Mix quality score</text>
+          <text x="780" y="112" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Bake quality score</text>
+
+          <!-- Arrows top row -->
+          <line x1="210" y1="80" x2="360" y2="80" stroke="#999" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <line x1="540" y1="80" x2="690" y2="80" stroke="#999" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+          <!-- Feedback Translation -->
+          <rect x="280" y="200" width="340" height="130" rx="10" fill="#FFEBEE" stroke="#C04F3E" stroke-width="2"/>
+          <text x="450" y="228" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#C62828">Feedback Translation</text>
+          <text x="450" y="252" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">🎨 Food color change (raw → golden → burnt)</text>
+          <text x="450" y="272" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">🔔 "Ding" indicator when food is ready</text>
+          <text x="450" y="292" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">💨 Smoke when left in oven too long</text>
+          <text x="450" y="312" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">✓/✗ marks on ingredient selection</text>
+
+          <!-- Arrow from results to feedback -->
+          <line x1="780" y1="130" x2="620" y2="200" stroke="#999" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <!-- Arrow from feedback back to player (adjust) -->
+          <line x1="450" y1="200" x2="450" y2="130" stroke="#999" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+
+          <!-- Adjust label -->
+          <text x="470" y="170" font-family="Arial" font-size="11" font-style="italic" fill="#888">Adjust &amp; Retry</text>
+
+          <!-- Success/Failure -->
+          <rect x="30" y="200" width="180" height="80" rx="10" fill="#F5F5F5" stroke="#999" stroke-width="2"/>
+          <text x="120" y="228" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#555">Success Condition</text>
+          <text x="120" y="250" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Bake all 4 items</text>
+          <text x="120" y="266" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">with score ≥ 60</text>
+
+          <rect x="690" y="200" width="180" height="80" rx="10" fill="#F5F5F5" stroke="#999" stroke-width="2"/>
+          <text x="780" y="228" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#555">Failure Conditions</text>
+          <text x="780" y="250" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Burnt food</text>
+          <text x="780" y="266" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Wrong ingredients/technique</text>
+
+          <!-- Arrow defs -->
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#999"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Data Model Blocks -->
+      <h3>Data Model</h3>
+      <div class="data-model">
+        <div class="data-block env">
+          <h4>🌐 Environment Data</h4>
+          <ul>
+            <li>Recipe definitions (ingredients, timing, temperature)</li>
+            <li>Oven state (on/off, temperature, timer)</li>
+            <li>Food readiness state (raw → golden → burnt)</li>
+            <li>Pantry inventory (correct + wrong items)</li>
+          </ul>
+        </div>
+        <div class="data-block player">
+          <h4>🎮 Player-Controlled Data</h4>
+          <ul>
+            <li>Selected ingredients from pantry</li>
+            <li>Mixer start and stop actions</li>
+            <li>Oven put-in and remove actions</li>
+            <li>Recipe selection from menu</li>
+          </ul>
+        </div>
+        <div class="data-block calc">
+          <h4>📊 Calculated Results</h4>
+          <ul>
+            <li>Ingredient accuracy (correct vs. wrong picks)</li>
+            <li>Mix quality (under / good / over)</li>
+            <li>Bake quality (under / good / burnt)</li>
+            <li>Total score (0–100) and pass/fail</li>
+          </ul>
+        </div>
+        <div class="data-block feedback">
+          <h4>💬 Feedback Translation</h4>
+          <ul>
+            <li>Smoke = food is burning (visual)</li>
+            <li>Ding sound = food is ready (auditory)</li>
+            <li>Color change = bake progress (visual)</li>
+            <li>✓/✗ marks = ingredient correctness (state)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Rules -->
+      <h3>Rules, Boundaries &amp; Outcomes</h3>
+      <div class="info-box">
+        <h4>📋 Important States</h4>
+        <p>Food visibly changes appearance based on bake time — from pale/raw to golden brown to dark/burnt. Ingredient correctness is shown with ✓ (correct) or ✗ (wrong) marks. The oven timer bar shows progress with a green "ideal zone" and a red "burn zone."</p>
+      </div>
+      <div class="info-box success">
+        <h4>🏆 Success Condition</h4>
+        <p>Finish baking all 4 items (Cookies, Bread, Brownies, Cake) with a total score of 60 or higher. Score is weighted: Ingredients 35%, Mixing 25%, Baking 40%.</p>
+      </div>
+      <div class="info-box danger">
+        <h4>💥 Failure Conditions</h4>
+        <p>Burning the food (leaving it in the oven past the burn threshold), using wrong ingredients (e.g., baking soda instead of baking powder for cake), or using wrong technique (under-mixing or over-mixing the dough).</p>
+      </div>
+
+      <!-- Challenge Presets -->
+      <h3>Challenge Presets</h3>
+      <p>Each recipe is a challenge preset that changes real variables — not just visual decoration. Different ingredients, different timing windows, and different difficulty levels.</p>
+
+      <table class="preset-table">
+        <thead>
+          <tr>
+            <th>Recipe</th>
+            <th>Difficulty</th>
+            <th>Key Ingredients</th>
+            <th>Wrong Substitutes</th>
+            <th>Mix Target</th>
+            <th>Bake Ideal</th>
+            <th>What Changes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>🍪 Cookies</td>
+            <td class="difficulty-easy">Easy</td>
+            <td>Flour, Sugar, Butter, Egg, Choc Chips, Baking Soda</td>
+            <td>Baking Powder, Salt, Yeast</td>
+            <td>2.5s (±1.2)</td>
+            <td>7s (±2.5)</td>
+            <td>Fewer ingredients, wide timing windows</td>
+          </tr>
+          <tr>
+            <td>🍞 Bread</td>
+            <td class="difficulty-medium">Medium</td>
+            <td>Flour, Water, Yeast, Salt, Oil</td>
+            <td>Baking Soda, Baking Powder, Sugar</td>
+            <td>3.5s (±1.0)</td>
+            <td>10s (±2.0)</td>
+            <td>Requires yeast (not soda), longer mix &amp; bake</td>
+          </tr>
+          <tr>
+            <td>🟫 Brownies</td>
+            <td class="difficulty-medium">Medium</td>
+            <td>Flour, Sugar, Cocoa, Butter, Egg, Choc Chips</td>
+            <td>Baking Soda, Baking Powder, Yeast</td>
+            <td>2.0s (±0.8)</td>
+            <td>8s (±1.5)</td>
+            <td>No leavening needed, tighter bake window</td>
+          </tr>
+          <tr>
+            <td>🎂 Cake</td>
+            <td class="difficulty-hard">Hard</td>
+            <td>Flour, Sugar, Butter, Egg, Milk, Baking Powder, Vanilla</td>
+            <td>Baking Soda, Yeast, Cocoa</td>
+            <td>3.0s (±0.7)</td>
+            <td>12s (±1.5)</td>
+            <td>Most ingredients, tightest windows, uses baking powder</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <h4>🔑 The Key Learning Difference</h4>
+        <p>Cookies use <strong>Baking Soda</strong>. Bread uses <strong>Yeast</strong>. Brownies use <strong>no leavening</strong>. Cake uses <strong>Baking Powder</strong>. A beginner grabs whatever looks similar. An expert knows the difference — and that's the core learning shift this game teaches.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section section-alt" style="text-align:center">
+    <div class="container-narrow">
+      <h2>Ready to Bake?</h2>
+      <p class="lead">Test your skills across four recipes. Can you bake them all without burning anything?</p>
+      <a href="game.html" class="btn-play" style="background:var(--color-primary);color:#fff;display:inline-block;padding:14px 40px;border-radius:30px;text-decoration:none;font-size:18px;font-weight:bold;font-family:Arial,sans-serif;margin-top:16px">▶ Play the Game</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="footer-student">Bake Carefully — A Domain-Learning Game by YuYu Choi</p>
+    <p>Baking Domain | Canvas 2D | Track A (No Build Step)</p>
+  </footer>
+
+</body>
+</html>

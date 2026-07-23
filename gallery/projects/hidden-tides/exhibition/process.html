@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidden Tides — Development Process</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a href="index.html">Home</a>
+    <a href="domain.html">Domain &amp; System Design</a>
+    <a href="process.html" class="active">Development Process</a>
+    <a href="game.html">Play Game</a>
+  </nav>
+
+  <main class="content">
+
+    <h1>Development Process</h1>
+
+    <div class="card">
+      <h2>Timeline</h2>
+
+      <h3 style="font-size:1.05rem;margin-top:0.8rem;">Phase 1 — First Build (Interaction 01–04)</h3>
+      <p>Built the complete game from scratch based on the development brief:</p>
+      <ul>
+        <li><strong>game.js + game.html:</strong> Canvas 2D sailing survival game with all core mechanics</li>
+        <li><strong>3 challenge presets:</strong> Calm Passage, Shark Waters, Storm Run — differing by system variables</li>
+        <li><strong>Website pages:</strong> index.html (home), domain.html (system design), process.html (timeline)</li>
+        <li><strong>Documentation:</strong> README.md, THIRD_PARTY.md, agent-development-log.md</li>
+        <li><strong>Track A:</strong> Pure HTML/CSS/JS with no build step or external dependencies</li>
+      </ul>
+
+      <h3 style="font-size:1.05rem;margin-top:0.8rem;">Phase 2 — Keyboard Input Debugging (Interaction 05–08)</h3>
+      <p>The player reported that WASD keys had no response in the browser. Multiple debugging rounds were conducted:</p>
+      <ul>
+        <li><strong>Issue 1:</strong> Game started in menu state; player needed to click a difficulty button first. Added auto-start on WASD press from menu.</li>
+        <li><strong>Issue 2:</strong> macOS Chinese IME was intercepting letter keys before they reached the game. Switched from e.key to e.code (physical key position) for input.</li>
+        <li><strong>Issue 3:</strong> Overlay div was not fully releasing keyboard events. Added pointer-events:none and innerHTML clear on hide.</li>
+        <li><strong>Issue 4:</strong> Canvas lacked focus. Added tabindex and canvas.focus() on game start.</li>
+        <li><strong>Issue 5:</strong> The !env condition in auto-start logic blocked triggering in some edge cases.</li>
+        <li><strong>Diagnostic tools added:</strong> HTML-level key event monitor (yellow bar), per-frame state/velocity display, boat color change on keypress.</li>
+      </ul>
+      <p><em>Root cause identified:</em> Multiple layers of issues compounded — IME interception, overlay event blocking, focus management, and conditional logic bugs. Each layer masked the others, making diagnosis difficult.</p>
+
+      <h3 style="font-size:1.05rem;margin-top:0.8rem;">Phase 3 — Complete Rewrite (Interaction 09)</h3>
+      <p>Due to persistent keyboard input issues across multiple fix attempts, a full rewrite was performed with these design principles:</p>
+      <ul>
+        <li><strong>Simpler input architecture:</strong> Single keyDown{} object, populated by both e.code and e.key on every keydown event</li>
+        <li><strong>isDown() helper:</strong> Checks all possible key identifiers at once (e.g., ["KeyW","w","ArrowUp"])</li>
+        <li><strong>All game keys get preventDefault():</strong> No exceptions for WASD</li>
+        <li><strong>No complex auto-start conditions:</strong> Clean button-only start from menu</li>
+        <li><strong>Built-in diagnostic display:</strong> Bottom-right HUD always shows active keys and velocity when playing</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Key Technical Decisions</h2>
+      <ul>
+        <li><strong>Canvas 2D over WebGL/Three.js:</strong> This is a 2D top-down sailing game. Canvas 2D is sufficient and keeps dependencies at zero (Track A).</li>
+        <li><strong>Web Audio API for sound:</strong> All sounds generated procedurally — no audio files needed. Works offline.</li>
+        <li><strong>IIFE pattern:</strong> Game code wrapped in an IIFE to avoid polluting global scope.</li>
+        <li><strong>1280x720 virtual resolution:</strong> Scales to any screen via CSS while keeping consistent game coordinates.</li>
+        <li><strong>Shark placement algorithm:</strong> Sharks are deliberately placed far from rocks (180px minimum), encoding the "open water = danger" rule into level generation itself rather than just gameplay mechanics.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Known Issues &amp; Future Work</h2>
+      <ul>
+        <li>Keyboard input reliability on macOS with CJK input methods requires careful handling of both e.code and e.key</li>
+        <li>Pink zone "angel" visuals are text-based (✡ symbols); could be improved with simple sprite drawings</li>
+        <li>No touch/mobile controls yet — designed for desktop browser with keyboard</li>
+        <li>preview.png and submission-manifest.json need to be generated before final submission</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <footer>Hidden Tides &mdash; Development Process</footer>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>旋界 · 旋转跑酷</title>
+  <meta name="description" content="一款在浏览器里直接玩的旋转解谜跑酷游戏：重力始终向下，旋转世界来移动主角。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="logo" href="#top">旋界</a>
+      <nav class="nav-links">
+        <a href="#features">特色</a>
+        <a href="#howto">玩法</a>
+        <a href="#gallery">画面</a>
+        <a href="#news">动态</a>
+      </nav>
+      <button class="btn btn-primary" id="play-btn-top">开始游戏</button>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-bg"></div>
+    <div class="hero-inner">
+      <p class="hero-tag">浏览器即开即玩 · 旋转世界解谜</p>
+      <h1 class="hero-title">旋<span>界</span></h1>
+      <p class="hero-sub">重力永远朝下。你控制不了主角往哪"掉"，但你可以旋转整个世界——让地形变成阶梯，让墙壁变成地板，把主角送到终点。</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" id="play-btn">▶ 立即开玩</button>
+        <a class="btn btn-ghost btn-lg" href="#howto">怎么玩</a>
+      </div>
+      <div class="hero-stats">
+        <div><strong>16</strong><span>循序渐进关卡</span></div>
+        <div><strong>Q/E</strong><span>旋转世界</span></div>
+        <div><strong>0</strong><span>下载体积</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <h2 class="section-title">为什么值得一玩</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-ico">⚡</div>
+        <h3>即开即玩</h3>
+        <p>不用安装、不占空间，点开网页就能开一局，等车午休随手来两把。</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">🔄</div>
+        <h3>旋转世界</h3>
+        <p>Q / E 旋转整个场景，重力始终向下，用"翻世界"的方式把主角送到终点。</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">🧩</div>
+        <h3>唯一路径</h3>
+        <p>每一关都手工设计成只有一条通关路线，逼你想清楚再动手。</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">📈</div>
+        <h3>渐进难度</h3>
+        <p>前 6 关教学循序渐进引入移动、跳跃、地刺、齿轮与旋转，之后旋转通关占比越来越高。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="howto">
+    <h2 class="section-title">怎么玩</h2>
+    <ol class="steps">
+      <li><span class="step-no">1</span><div><h3>移动</h3><p>← → 或 A / D 让主角沿当前"地面"左右移动。</p></div></li>
+      <li><span class="step-no">2</span><div><h3>跳跃</h3><p>↑ / W / 空格 逆着重力跳起，跨过缝隙与障碍。</p></div></li>
+      <li><span class="step-no">3</span><div><h3>旋转世界</h3><p>Q 逆时针、E 顺时针把整个场景转 90°，重力仍朝下，地形随之改变。</p></div></li>
+      <li><span class="step-no">4</span><div><h3>到达终点</h3><p>碰到发光的绿色传送门即过关。碰到地刺或齿轮会失败重来。</p></div></li>
+    </ol>
+  </section>
+
+  <section class="section" id="gallery">
+    <h2 class="section-title">游戏画面</h2>
+    <div class="gallery">
+      <div class="shot shot-a"><span>移动与跳跃</span></div>
+      <div class="shot shot-b"><span>地刺与齿轮</span></div>
+      <div class="shot shot-c"><span>旋转世界</span></div>
+      <div class="shot shot-d"><span>到达终点</span></div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="news">
+    <h2 class="section-title">更新动态</h2>
+    <ul class="news">
+      <li><time>2026.07.21</time><div><h3>v0.1 教学 6 关上线</h3><p>移动、跳跃、地刺、齿轮、旋转与组合，6 关循序渐进可玩。</p></div></li>
+      <li><time>规划中</time><div><h3>v0.2 第 7–16 关</h3><p>更大关卡 + 镜头卷动，旋转通关占比大幅提升。</p></div></li>
+      <li><time>规划中</time><div><h3>v0.3 关卡选择器</h3><p>自由跳关、通关进度保存。</p></div></li>
+    </ul>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">旋<span>界</span></div>
+      <p class="footer-note">示例游戏官网 · 可自由替换为你自己的游戏</p>
+      <div class="footer-links">
+        <a href="#">Discord</a>
+        <a href="#">B 站</a>
+        <a href="#">微博</a>
+        <a href="#">联系我们</a>
+      </div>
+      <p class="copyright">© 2026 你的工作室名称 · All rights reserved</p>
+    </div>
+  </footer>
+
+  <div class="game-modal" id="game-modal" aria-hidden="true">
+    <div class="game-panel">
+      <div class="game-bar">
+        <div class="game-hud">
+          <span id="game-level">第 1 关</span>
+          <span>失败 <b id="game-deaths">0</b></span>
+        </div>
+        <button class="game-close" id="game-close" aria-label="关闭">✕</button>
+      </div>
+      <div class="game-stage">
+        <canvas id="game-canvas" width="640" height="640"></canvas>
+        <div class="game-overlay" id="game-overlay">
+          <div class="game-overlay-box">
+            <h3 id="game-overlay-text">旋界</h3>
+            <p id="game-overlay-sub">← → 移动，↑ 跳跃，Q / E 旋转世界</p>
+            <button class="btn btn-primary" id="game-start">开始</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="engine.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+/* Dream Cake STUDIO — Game Stylesheet */
+/* Track A: Plain CSS, no preprocessors or frameworks */
+/* Layout: Everything fits in one viewport, no scrolling */
+
+/* === BASE RESET & LAYOUT === */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #fdf6e3;
+  color: #5c3d2e;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* === HEADER — compact === */
+.game-header {
+  background: #e8a87c;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #d4845a;
+  flex-shrink: 0;
+}
+
+.game-header h1 {
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.game-header .step-indicator {
+  font-size: 14px;
+  color: #fff;
+  background: rgba(0,0,0,0.15);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+/* === FEEDBACK — below canvas, compact === */
+.feedback-area {
+  padding: 6px 10px;
+  background: #fff8f0;
+  border: 1px solid #e8a87c;
+  border-radius: 4px;
+  min-height: 28px;
+  font-size: 13px;
+  color: #5c3d2e;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.feedback-msg { padding: 2px 6px; border-radius: 3px; }
+.feedback-msg.warning { background: #fff3cd; color: #856404; }
+.feedback-msg.danger { background: #f8d7da; color: #721c24; }
+.feedback-msg.good { background: #d4edda; color: #155724; }
+
+/* === MAIN GAME AREA — stacked column: canvas top, controls bottom === */
+.game-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 8px;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.canvas-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#gameCanvas {
+  border: 2px solid #d4845a;
+  border-radius: 6px;
+  background: #fff8f0;
+  max-width: 100%;
+  cursor: pointer;
+  display: block;
+}
+
+/* === CONTROLS PANEL — below canvas, full width === */
+.controls-panel {
+  width: 660px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.control-group {
+  background: #fff;
+  border: 1px solid #e8a87c;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.control-group h3 {
+  font-size: 13px;
+  color: #e8a87c;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  gap: 4px;
+}
+
+.control-row label {
+  font-size: 12px;
+  color: #8b6914;
+  min-width: 50px;
+}
+
+.control-row .value {
+  font-size: 12px;
+  font-weight: bold;
+  color: #5c3d2e;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* === MIX STEP: 4 sliders in 2-column grid === */
+#controlsMix .control-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+#controlsMix .control-group h3,
+#controlsMix .control-group .control-row:last-of-type,
+#controlsMix .control-group .ingredient-hints {
+  grid-column: 1 / -1;
+}
+
+/* === BAKE STEP: sliders + bars in 2-column grid === */
+#controlsBake .control-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+#controlsBake .control-group h3 {
+  grid-column: 1 / -1;
+}
+
+/* === CHECK STEP: bars in 2-column grid === */
+#controlsCheck .control-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+#controlsCheck .control-group h3 {
+  grid-column: 1 / -1;
+}
+
+/* Slider styling — compact */
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  background: #f0d9b5;
+  border-radius: 3px;
+  outline: none;
+  margin: 2px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  background: #e8a87c;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #d4845a;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #e8a87c;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #d4845a;
+}
+
+/* === BUTTONS — compact === */
+.btn {
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  border: 2px solid #d4845a;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  width: 100%;
+}
+
+.btn-primary { background: #e8a87c; color: #fff; }
+.btn-primary:hover { background: #d4845a; }
+.btn-secondary { background: #f0d9b5; color: #5c3d2e; }
+.btn-secondary:hover { background: #e8a87c; color: #fff; }
+.btn-danger { background: #ff6b6b; color: #fff; border-color: #e05555; }
+.btn-danger:hover { background: #e05555; }
+
+/* === STEP PROGRESS BAR — compact === */
+.step-progress {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  background: #fff8f0;
+  border-top: 1px solid #e8a87c;
+  flex-shrink: 0;
+}
+
+.step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f0d9b5;
+  border: 2px solid #d4845a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #8b6914;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.step-dot.active { background: #e8a87c; color: #fff; transform: scale(1.1); }
+.step-dot.completed { background: #4caf50; color: #fff; border-color: #388e3c; }
+
+/* === DIFFICULTY SELECT === */
+.difficulty-select {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+.diff-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  border: 2px solid #d4845a;
+  background: #f0d9b5;
+  color: #5c3d2e;
+  transition: all 0.15s;
+}
+
+.diff-btn:hover, .diff-btn.selected { background: #e8a87c; color: #fff; }
+
+/* === TOPPING CHOICES === */
+.topping-options {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.topping-btn {
+  padding: 8px;
+  border: 2px solid #d4845a;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  width: 70px;
+  transition: all 0.15s;
+}
+
+.topping-btn:hover, .topping-btn.selected { background: #e8a87c; color: #fff; }
+.topping-btn .topping-icon { font-size: 20px; display: block; }
+.topping-btn .topping-name { font-size: 10px; margin-top: 2px; }
+
+/* === RESULT SCREEN === */
+.result-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.result-overlay.show { display: flex; }
+
+.result-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  max-width: 360px;
+}
+
+.result-card h2 { font-size: 24px; margin-bottom: 8px; }
+.result-card.win h2 { color: #4caf50; }
+.result-card.gameover h2 { color: #e05555; }
+.result-card .score { font-size: 18px; margin: 8px 0; }
+.result-card .reason { font-size: 13px; color: #8b6914; margin: 6px 0; }
+
+/* === DATA DISPLAY BAR — compact === */
+.data-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.data-bar .bar-track {
+  width: 100%;
+  height: 8px;
+  background: #f0d9b5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.data-bar .bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s, background 0.3s;
+}
+
+.bar-fill.temp-bar { background: linear-gradient(90deg, #4caf50, #ff9800, #f44336); }
+.bar-fill.height-bar { background: #8bc34a; }
+.bar-fill.time-bar { background: #2196f3; }
+.bar-fill.glaze-bar { background: #ab47bc; }
+.bar-fill.raw-bar { background: #ffeb3b; }
+.bar-fill.dry-bar { background: #ff5722; }
+
+/* === INGREDIENT HINT === */
+.ingredient-hints {
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.ingredient-hints .hint-warn {
+  color: #ff9800;
+}
+
+.ingredient-hints .hint-danger {
+  color: #f44336;
+}
+
+.ingredient-hints .hint-ok {
+  color: #4caf50;
+}
+
+/* === BUTTON PULSE — hint for next step === */
+.btn-pulse {
+  animation: btnPulse 1.2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(232, 168, 124, 0.7);
+}
+
+@keyframes btnPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(232, 168, 124, 0.7); }
+  50%  { box-shadow: 0 0 12px 4px rgba(232, 168, 124, 0.5); transform: scale(1.04); }
+  100% { box-shadow: 0 0 0 0 rgba(232, 168, 124, 0.7); }
+}
+
+/* === HIDE/SHOW CONTROLS PER STEP === */
+.step-controls { display: none; }
+.step-controls.active { display: block; }
+
+/* === RESPONSIVE === */
+@media (max-width: 700px) {
+  .game-main {
+    flex-direction: column;
+    padding: 4px;
+    gap: 4px;
+  }
+  .controls-panel {
+    width: 100%;
+    max-height: none;
+  }
+}

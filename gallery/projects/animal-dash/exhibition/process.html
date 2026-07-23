@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animal Dash — Development Process</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <nav>
+    <span class="logo">Animal Dash</span>
+    <a href="index.html">Home</a>
+    <a href="game.html">Play Game</a>
+    <a href="process.html" class="active">Development Process</a>
+  </nav>
+
+  <div class="container">
+    <section>
+      <h2>Development Process</h2>
+      <p>A chronological timeline of how Animal Dash was built through human-AI collaboration.</p>
+
+      <div class="timeline">
+
+        <!-- Interaction 01 -->
+        <div class="timeline-item">
+          <div class="time">Session 1 — 2026-07-20</div>
+          <h4>Interaction 01: Project Initialization</h4>
+          <p><strong>Student Request:</strong> Start building the Racing Animals game based on the development brief.</p>
+          <p><strong>Agent Response:</strong> Analyzed the brief, identified the core learning shift (speed → adaptation), restated the implementation plan, and began building the project structure and first playable version.</p>
+          <p><strong>Development Action:</strong> Created project directory structure (exhibition/, source/, assets/), wrote complete game.js with 10 animals, 5 terrain types, 3 challenge presets, Canvas 2D rendering, opponent AI, terrain switching mechanic, and full HUD feedback system. Created website pages (index.html, game.html, process.html) with navigation and domain knowledge content.</p>
+          <p><strong>Files Changed:</strong> exhibition/assets/game.js, exhibition/assets/styles.css, exhibition/game.html, exhibition/index.html, exhibition/process.html, agent-development-log.md, README.md, THIRD_PARTY.md</p>
+          <p><strong>Test Result:</strong> Game runs in browser. Core loop (observe → judge → act → feedback → adjust) is functional. 3 challenge presets work with terrain switching.</p>
+        </div>
+
+        <!-- Interaction 02 -->
+        <div class="timeline-item">
+          <div class="time">Session 1 — 2026-07-20 (continued)</div>
+          <h4>Interaction 02: Major Game Redesign — Infinite Runner with Keyboard Control</h4>
+          <p><strong>Student Request:</strong> Make the animal controllable with left/right keys. 3 levels of increasing difficulty with random environments. Animal selection at terrain boundaries. Environments: ocean, grassland, forest, antarctic, arctic, mountain.</p>
+          <p><strong>Development Action:</strong> Full rewrite: vertical infinite runner with 3 lanes, ← → keyboard control, 7 terrains, 14 animals, obstacle dodge mechanic, bonus collection, progress bar, level progression system.</p>
+        </div>
+
+        <!-- Interaction 03 -->
+        <div class="timeline-item">
+          <div class="time">Session 1 — 2026-07-20 (continued)</div>
+          <h4>Interaction 03: Stamina/HP System + Time-Based Terrain + Visible Opponent</h4>
+          <p><strong>Student Request:</strong> Time-based terrain switching (every 3 minutes), stamina bar visible, opponent visible on track, stamina=0 means death, food restores stamina, obstacles reduce HP, adapted animals lose less HP.</p>
+          <p><strong>Development Action:</strong> Added HP system (separate from stamina), stamina constantly drains, obstacles reduce HP scaled by adaptation, food items spawn on road, opponent rendered on track at relative position, time-based terrain segments with countdown timer.</p>
+        </div>
+
+        <!-- Interaction 04 -->
+        <div class="timeline-item">
+          <div class="time">Session 1 — 2026-07-20 (continued)</div>
+          <h4>Interaction 04: Hide Adaptation + HP/Blood System + Boost + Progressive Difficulty</h4>
+          <p><strong>Student Request:</strong> Hide adaptation rating in animal selection (only show speed, stamina, HP). Game speed increases over time. Level 1 announces terrain, L2&3 don't. ↑ key for boost (faster stamina drain). Obstacles reduce HP — different animals have different blood thickness. HP=0 means death.</p>
+          <p><strong>Development Action:</strong> Removed adaptation display from selection panels. Added ↑ boost mechanic (speed ×1.5, stamina ×2.2 drain). Progressive acceleration. HP system with maxHP per animal. Adapted animals lose less HP from obstacles. Level-based difficulty: L1 announces, L2&3 don't.</p>
+        </div>
+
+        <!-- Interaction 05 (NEW) -->
+        <div class="timeline-item">
+          <div class="time">Session 1 — 2026-07-20 (continued)</div>
+          <h4>Interaction 05: Stronger Opponent + UI Fixes + Rename to Animal Dash + Rich Environments</h4>
+          <p><strong>Student Request:</strong> "Make the opponent stronger (dies too easily). Fix UI bugs (buttons misaligned, text overlapping). Rename to Animal Dash. Make environments more detailed."</p>
+          <p><strong>Development Action:</strong></p>
+          <ul>
+            <li><strong>Opponent buffs:</strong> 1.5× stamina, 1.3× HP, 70% drain rate, stamina regeneration (0.15/sec), ~0.8% obstacle hit rate with 25% damage, ~12% chance auto-boost</li>
+            <li><strong>UI fixes:</strong> Better HUD layout with separated panels, responsive mouse coordinate scaling (fixes button misalignment), proper spacing between text elements, no overlapping labels</li>
+            <li><strong>Rename:</strong> Game title changed from "Racing Animals" to "Animal Dash" everywhere — title screen, HUD, website pages, page titles, navigation</li>
+            <li><strong>Rich environments:</strong> Each terrain now has sky gradient + ground gradient (2-layer), ambient particle system (snow, sand, leaves, bubbles, mist, pollen), decorative side objects (terrain-specific emojis), scrolling ground pattern emoji, visual variety per biome</li>
+          </ul>
+          <p><strong>Files Changed:</strong> exhibition/assets/game.js (full rewrite v4), exhibition/game.html, exhibition/index.html, exhibition/process.html, source/src/game.js</p>
+          <p><strong>Key balance change:</strong> Opponent won't die easily anymore — winning by distance is the primary victory path, not waiting for opponent collapse.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section>
+      <h2>Key Design Decisions</h2>
+
+      <div class="card">
+        <h3>Why Track A (No Build Step)?</h3>
+        <p>Pure HTML/CSS/Canvas 2D with no npm, Vite, or external libraries. Exhibition works on an iMac without Node.js, npm install, or internet access.</p>
+      </div>
+
+      <div class="card">
+        <h3>Why 14 Animals with 7 Environments?</h3>
+        <p>Each animal has a unique adaptation profile across 7 terrain types. Dramatic feedback — a Cheetah is perfect on grassland but useless in the ocean. Adaptation is HIDDEN to force experiential learning.</p>
+      </div>
+
+      <div class="card">
+        <h3>Why Hidden Adaptation?</h3>
+        <p>Showing adaptation percentages would let beginners just pick the highest number — that's exactly the novice misconception the game is designed to correct. By hiding it, players must observe speed changes, stamina drain rates, and HP loss patterns to learn which animals fit which terrains.</p>
+      </div>
+
+      <div class="card">
+        <h3>Why Strong Opponent?</h3>
+        <p>The opponent has 1.5× stamina, 1.3× HP, slower drain, and stamina regeneration. This ensures the opponent won't die easily — the primary victory condition is outrunning them by distance, not waiting for them to collapse. This makes the game more competitive and pushes players to focus on their own animal choices and survival strategy.</p>
+      </div>
+
+      <div class="card">
+        <h3>Why Rich Environment Visuals?</h3>
+        <p>Each terrain now has layered sky/ground gradients, ambient particles (snow, sand, bubbles, leaves), and decorative side objects. This makes terrain transitions more obvious — especially important for Level 2 & 3 where terrain changes aren't announced. Players should be able to recognize environments visually, not just by reading text.</p>
+      </div>
+
+      <div class="card">
+        <h3>Why "Animal Dash"?</h3>
+        <p>The student chose the name "Animal Dash" for the project. It's punchier and more game-like than "Racing Animals."</p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>Animal Dash — Student: Chengxuan Zhang | AI Agent: WorkBuddy | Domain: Racing Animals</p>
+  </footer>
+</body>
+</html>

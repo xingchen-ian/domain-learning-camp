@@ -1,0 +1,404 @@
+/* Squint — shared stylesheet (Track A, no build step)
+ * Aesthetic: warm studio palette inspired by retro panel UIs.
+ * Defined borders, green tool accents, tactile buttons, simple depth. */
+:root {
+  --bg: #e8e2d6;
+  --bg-warm: #f0ebe0;
+  --panel: #faf7f1;
+  --ink: #2c2620;
+  --muted: #7a7368;
+  --line: #c9bfaa;
+  --line-dark: #9e9280;
+  --accent: #4a7c59;        /* muted forest green */
+  --accent-bright: #5d9a6f;  /* brighter green for hover/active */
+  --accent-soft: #dceadF;
+  --warm: #b8860b;           /* golden highlight */
+  --good: #3d8b4a;
+  --bad: #c0392b;
+  --shadow: 0 3px 12px rgba(44,38,32,.10);
+  --shadow-deep: 0 5px 20px rgba(44,38,32,.14);
+  --radius: 10px;
+  --border: 2px solid var(--line-dark);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", -apple-system, Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.58;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; font-weight: 600; }
+a:hover { text-decoration: underline; }
+
+/* ── Navigation ── */
+.nav {
+  display: flex; align-items: center; gap: 18px;
+  padding: 13px 28px;
+  background: var(--panel);
+  border-bottom: var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+.nav .brand {
+  font-weight: 800; font-size: 17px; letter-spacing: .4px;
+  color: var(--ink);
+}
+.nav .brand small {
+  color: var(--muted); font-weight: 500; margin-left: 8px; font-size: 12px;
+  letter-spacing: .2px;
+}
+.nav .links { margin-left: auto; display: flex; gap: 16px; }
+.nav .links a {
+  color: var(--muted); font-weight: 600; font-size: 14px;
+  padding: 5px 10px; border-radius: 6px;
+  transition: color .15s, background .15s;
+}
+.nav .links a:hover { color: var(--ink); background: var(--bg-warm); text-decoration: none; }
+.nav .links a.active {
+  color: var(--accent-bright); background: var(--accent-soft);
+}
+
+/* ── Layout ── */
+.wrap { max-width: 1160px; margin: 0 auto; padding: 30px 24px 72px; }
+.hero {
+  background: linear-gradient(145deg, #3d362e 0%, #5a4a3a 50%, #3d362e 100%);
+  color: #efe8dc; padding: 52px 28px 48px; text-align: center;
+  border-bottom: var(--border);
+}
+.hero h1 {
+  font-size: 44px; margin: 0 0 10px; letter-spacing: 1px;
+  font-weight: 900; text-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.hero p {
+  color: #d9d0c0; max-width: 700px; margin: 0 auto; font-size: 17px; line-height: 1.55;
+}
+.hero .tag {
+  display: inline-block; margin-top: 18px; padding: 6px 16px;
+  border: 1px solid rgba(255,255,255,.22); border-radius: 999px;
+  font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #c9bfaa;
+}
+
+section { margin: 38px 0; }
+h2 {
+  font-size: 25px; border-left: 5px solid var(--accent);
+  padding-left: 14px; margin: 0 0 16px; font-weight: 800; color: var(--ink);
+}
+h3 { font-size: 18px; margin: 18px 0 8px; font-weight: 700; color: var(--ink); }
+p { color: #4a4440; }
+.muted { color: var(--muted); font-size: 14px; }
+
+/* ── Cards (panels) ── */
+.card {
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  margin: 14px 0;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 880px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+table { width: 100%; border-collapse: collapse; background: var(--panel); border: var(--border); border-radius: var(--radius); overflow: hidden; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+th { background: #ede7db; font-weight: 700; color: var(--ink); font-size: 13px; text-transform: uppercase; letter-spacing: .4px; }
+
+/* ── CTA button ── */
+.cta {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  color: #fff;
+  padding: 13px 26px; border-radius: 8px;
+  font-weight: 800; font-size: 15px; margin-top: 8px;
+  box-shadow: 0 3px 10px rgba(74,124,89,.30);
+  letter-spacing: .3px;
+}
+.cta:hover { background: linear-gradient(135deg, var(--accent-bright), #6bab7e); text-decoration: none; transform: translateY(-1px); }
+
+.badge {
+  display: inline-block; background: var(--accent-soft); color: var(--accent);
+  padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 800;
+  letter-spacing: .3px;
+}
+
+/* ── Colour chips (colour levels) ── */
+.hue-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+.hue-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 2px solid var(--line-dark); background: var(--panel);
+  color: var(--ink); font-weight: 700; font-size: 12px;
+  padding: 5px 10px 5px 7px; border-radius: 999px; cursor: pointer;
+  transition: all .14s; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.hue-chip:hover { border-color: var(--accent); transform: translateY(-1px); }
+.hue-chip.sel {
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 2px 8px rgba(74,124,89,.2);
+}
+.hue-chip .hue-dot {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,.18); flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,.4);
+}
+
+/* ── Value swatches ── */
+.swatches { display: flex; gap: 6px; margin: 8px 0; }
+.swatch {
+  flex: 1 1 0; min-width: 0; aspect-ratio: 1 / 1; border-radius: 7px;
+  border: 2.5px solid transparent; cursor: pointer;
+  transition: transform .12s, border-color .15s, box-shadow .15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,.10);
+}
+.swatch:hover { transform: scale(1.08); }
+.swatch.sel {
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 3px 10px rgba(74,124,89,.22);
+}
+
+/* ── Game layout ──
+ * Three columns: interactable painting tools (left), canvas (center),
+ * observation + scoring (right). Keeps interactable controls on two sides
+ * and isolates informational elements for readability. */
+.game-shell { display: grid; grid-template-columns: 268px 1fr 340px; gap: 22px; align-items: start; }
+@media (max-width: 1080px) {
+  .game-shell { grid-template-columns: 1fr; }
+  .tools-col { order: 2; }
+  .canvas-col { order: 1; }
+  .side-col { order: 3; }
+}
+.tools-col .card, .side-col .card { margin-top: 0; margin-bottom: 16px; }
+.canvas-col {
+  background: var(--panel); border: var(--border); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow-deep);
+}
+.canvas-stage { position: relative; transition: transform .3s ease; transform-origin: center top; }
+.canvas-stage.stepback { transform: scale(.48); }
+canvas { display: block; background: #fff; border: 1px solid var(--line); border-radius: 7px; touch-action: none; }
+/* Reference reads as a smaller "thumbnail" — 70% of the painting canvas */
+#refCanvas { width: 294px; max-width: 100%; aspect-ratio: 1 / 1; margin: 0 auto; }
+
+/* Objective strip — uses the top space so the goal is obvious without scrolling */
+.objective-bar {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, var(--accent-soft), #cfe8da);
+  border: 2px solid var(--accent-bright);
+  border-radius: var(--radius);
+  padding: 12px 16px; margin: 4px 0 20px;
+  box-shadow: var(--shadow);
+}
+.obj-label {
+  flex-shrink: 0;
+  background: var(--accent); color: #fff; font-weight: 900; font-size: 12px;
+  letter-spacing: 1px; padding: 4px 10px; border-radius: 6px;
+}
+.obj-text { font-size: 14px; color: var(--ink); }
+.obj-text b { color: var(--accent); }
+
+/* Big obvious Submit — the way to "win", sits at the bottom of the canvas */
+.submit-big {
+  width: 100%; margin-top: 16px; padding: 17px 20px;
+  font-size: 18px; font-weight: 900; letter-spacing: .3px;
+  border-radius: 10px;
+}
+.submit-big:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(74,124,89,.35); }
+
+/* ── KPI counters ── */
+.kpis { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.kpi {
+  background: linear-gradient(135deg, #ede7db, #e5ddd0);
+  border-radius: 8px; padding: 9px 14px; min-width: 82px; text-align: center;
+  border: 1px solid var(--line);
+}
+.kpi b { display: block; font-size: 22px; font-weight: 900; color: var(--ink); }
+.kpi span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+
+/* ── Buttons ── */
+button.btn {
+  border: 2px solid var(--line-dark); background: var(--panel);
+  color: var(--ink);
+  padding: 9px 15px; border-radius: 8px; cursor: pointer;
+  font-weight: 700; font-size: 13px;
+  transition: all .15s; box-shadow: 0 2px 5px rgba(0,0,0,.06);
+}
+button.btn:hover {
+  border-color: var(--accent); background: var(--bg-warm);
+  transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.10);
+}
+button.btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  color: #fff; border-color: var(--accent);
+  font-weight: 800;
+}
+button.btn.primary:hover {
+  background: linear-gradient(135deg, var(--accent-bright), #6bab7e);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74,124,89,.30);
+}
+button.btn.on {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  color: #fff; border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(74,124,89,.25), inset 0 1px 0 rgba(255,255,255,.15);
+}
+button.btn.on:hover { box-shadow: 0 4px 14px rgba(74,124,89,.35); }
+.btn-row { display: flex; gap: 7px; flex-wrap: wrap; margin: 10px 0; }
+
+/* ── Tool buttons (iconic — squint / step-back / flip) ── */
+.tool-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 2px solid var(--accent) !important;
+  background: linear-gradient(135deg, var(--accent-soft), #d0e6dc) !important;
+  color: var(--accent) !important;
+  font-weight: 800 !important;
+  padding: 9px 14px !important;
+  border-radius: 8px !important;
+  transition: all .15s !important;
+  box-shadow: 0 2px 8px rgba(74,124,89,.15) !important;
+}
+/* In the left column, tool buttons are full-width and stacked so they are
+ * big, obvious, and fill the vertical space (no scrolling needed to see them). */
+.tools-col .tool-btn { width: 100%; justify-content: center; padding: 13px 14px !important; font-size: 15px; }
+.tools-col .tool-btn svg { width: 22px; height: 22px; }
+.tool-btn:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright)) !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(74,124,89,.30) !important;
+}
+.tool-btn svg { flex-shrink: 0; }
+.tool-btn.on {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright)) !important;
+  color: #fff !important;
+  box-shadow: 0 3px 12px rgba(74,124,89,.35), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+.tool-btn .tool-kbd {
+  display: inline-block; background: rgba(255,255,255,.35);
+  border: 1px solid rgba(255,255,255,.5);
+  border-bottom-width: 2px; border-radius: 4px;
+  padding: 0 5px; font-size: 11px; font-family: monospace; font-weight: 700;
+  margin-left: 2px;
+}
+.tool-btn.on .tool-kbd {
+  background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.25); color: rgba(255,255,255,.85);
+}
+
+/* Sub-divider labels inside the right "Check & Score" card */
+.section-label {
+  font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); margin: 16px 0 4px;
+  padding-bottom: 5px; border-bottom: 1px solid var(--line);
+}
+
+/* Level tabs */
+.level-tabs { display: flex; gap: 7px; margin-bottom: 12px; flex-wrap: wrap; }
+.level-tabs .btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  color: #fff; border-color: var(--accent);
+}
+
+/* Critique + result (now shown inside the result pop-up) */
+.result-win { color: var(--good); font-weight: 900; font-size: 16px; }
+.result-lose { color: var(--bad); font-weight: 900; font-size: 16px; }
+
+/* ── Result pop-up: semi-opaque modal over the canvas ──
+ * The backdrop dims the page; the panel sits centred over the canvas and is
+ * sized a little larger than the canvas (420px → 440px) so it covers it. */
+.result-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(44,38,32,.55);          /* semi-opaque backdrop */
+  animation: fadeIn .18s ease both;
+  padding: 20px;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.result-modal {
+  position: relative;
+  width: 440px; max-width: 92vw;
+  min-height: 440px;                        /* covers the 420px canvas + a little more */
+  background: rgba(250,247,241,.92);        /* semi-opaque panel */
+  border: 2px solid var(--line-dark);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(28,22,16,.42);
+  padding: 26px 28px 22px;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex; flex-direction: column;
+  animation: popIn .26s cubic-bezier(.2,.9,.3,1.25) both;
+}
+@keyframes popIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+.result-close {
+  position: absolute; top: 12px; right: 13px;
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--line-dark); background: var(--panel);
+  font-size: 20px; line-height: 1; cursor: pointer;
+  color: var(--muted); display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.result-close:hover { color: var(--ink); border-color: var(--accent); transform: translateY(-1px); }
+.result-head {
+  font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+}
+.result-score-big { font-size: 46px; font-weight: 900; line-height: 1.05; margin: 6px 0 2px; }
+.result-score-big small { font-size: 18px; font-weight: 800; color: var(--muted); margin-left: 4px; }
+.result-reason { font-size: 14.5px; color: var(--ink); margin: 8px 0 14px; line-height: 1.5; }
+.result-critique {
+  flex: 1 1 auto; overflow-y: auto; max-height: 196px;
+  white-space: pre-wrap; font-size: 13px; line-height: 1.55;
+  background: linear-gradient(135deg, #fbf7f0, #f5eddc);
+  border: 1px solid var(--line); border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0; padding: 12px 14px; margin-bottom: 16px;
+}
+.result-actions { display: flex; gap: 10px; }
+.result-actions .btn { flex: 1; justify-content: center; }
+
+/* Timeline */
+.timeline { border-left: 3px solid var(--line-dark); padding-left: 22px; }
+.timeline .entry { margin: 0 0 28px; position: relative; }
+.timeline .entry::before {
+  content: ""; position: absolute; left: -30px; top: 5px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--panel);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.timeline .entry h4 { margin: 0 0 5px; font-weight: 800; color: var(--ink); }
+.timeline .entry .meta { color: var(--muted); font-size: 13px; }
+.timeline .entry.reflection {
+  border-left: 3px dashed var(--accent); padding-left: 16px; margin-left: -4px;
+}
+
+footer {
+  text-align: center; color: var(--muted); padding: 28px; font-size: 12px;
+  border-top: var(--border); letter-spacing: .2px;
+}
+
+/* Brush control */
+.hint { font-size: 13px; color: var(--muted); }
+.brush-control { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 4px; }
+.brush-control b { font-size: 20px; min-width: 20px; text-align: center; font-weight: 900; color: var(--ink); }
+.brush-control .btn { padding: 5px 13px; font-size: 19px; line-height: 1; }
+
+.detail-banner {
+  margin-top: 12px; padding: 11px 16px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent-soft), #cfe8da);
+  color: var(--accent); font-weight: 800; font-size: 14px;
+  border: 1px solid var(--accent-bright);
+}
+
+kbd, .kbd {
+  display: inline-block;
+  background: linear-gradient(180deg, #f0ece2, #e5dfd2);
+  border: 1px solid var(--line-dark); border-bottom-width: 2.5px;
+  border-radius: 5px; padding: 1px 7px; font-size: 11.5px;
+  font-family: "SF Mono", "Consolas", "Courier New", monospace;
+  font-weight: 600; color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+/* Subtle entrance animation for page load */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.card, .game-shell > div { animation: fadeUp .35s ease both; }
+.game-shell > div:nth-child(1) { animation-delay: 0s; }
+.game-shell > div:nth-child(2) { animation-delay: .06s; }
+.game-shell > div:nth-child(3) { animation-delay: .12s; }

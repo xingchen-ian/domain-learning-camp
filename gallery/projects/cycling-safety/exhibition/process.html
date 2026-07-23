@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process | Cycling Safety</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="navbar">
+  <div class="logo"><span>Cycling Safety</span></div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#domain">Domain</a>
+    <a href="index.html#system">System</a>
+    <a href="process.html" class="active">Process</a>
+    <a href="game.html">Play</a>
+  </nav>
+</div>
+
+<div class="page">
+
+  <div class="card">
+    <h2>Development Process</h2>
+    <p>This timeline records the human-AI collaboration that built the Cycling Safety game. It is based on <code>agent-development-log.md</code> and reflects the actual development path — including decisions, changes, and open questions.</p>
+  </div>
+
+  <div class="card">
+    <h2>Timeline</h2>
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — Project Setup</div>
+        <h4>Reading the Brief and Planning</h4>
+        <p>The AI agent read the domain-learning brief and identified the core learning shift: rushing causes falls; experts control speed and direction. An implementation plan was created covering the observe-judge-act-feedback-adjust loop, the three data categories (environment, player-controlled, system-calculated), and the four challenge presets.</p>
+        <p><strong>Decision:</strong> Use Track A (no build step) — plain HTML, CSS, and Canvas 2D. This keeps the exhibition build simple and requires no npm or Node.js on the iMac.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — Structure</div>
+        <h4>Project Website and File Structure</h4>
+        <p>Created the project directory structure following the brief: <code>exhibition/</code> for the final static website, with <code>index.html</code> (home), <code>game.html</code> (playable game), <code>process.html</code> (this page), and shared <code>assets/css/</code> and <code>assets/js/</code>.</p>
+        <p><strong>Decision:</strong> All internal links use relative paths so the project works inside a Gallery subfolder.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — Core Implementation</div>
+        <h4>Building the Smallest Complete Game Loop</h4>
+        <p>Implemented the game engine in <code>game.js</code> with Canvas 2D rendering. The first version included: a scrolling top-down road, player bike with speed/steering control, obstacle collision, stability system, and win/lose conditions. The code clearly separates Environment Data, Player-Controlled Data, and System-Calculated Results as required by the brief.</p>
+        <p><strong>Key mechanic:</strong> Curves have a "safe speed" based on curve intensity and terrain grip. Exceeding it drops stability rapidly. This directly teaches the core learning shift.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — Feedback System</div>
+        <h4>Adding Visual and Audio Feedback</h4>
+        <p>Added screen shake when taking curves too fast or riding rough terrain, skid marks on slippery surfaces, dust particles on gravel, speed lines at high velocity, and a red vignette when stability is critical. Audio uses the Web Audio API to generate wind sound (volume scales with speed), crash sound, skidding sound, and a win jingle — no external audio files needed.</p>
+        <p><strong>Testing:</strong> Confirmed that feedback appears immediately for speed/terrain effects and with a slight delay for traction loss, matching the brief's feedback priority requirements.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — Challenge Presets</div>
+        <h4>Implementing Four Levels</h4>
+        <p>Created four levels that differ through variables and relationships, not just visuals: Level 1 (pavement, gentle curves, sticks), Level 2 (gravel reduces grip, rocks crash instantly), Level 3 (hills affect momentum, sharp curves), Level 4 (slippery surface causes skidding, dense obstacles, tight curves). Each level has different terrain distributions, curve intensities, obstacle densities, and time limits.</p>
+        <p><strong>Design choice:</strong> Rocks cause instant crash (teaching players to always avoid them), while sticks and branches reduce stability (graduated consequence). This creates a clear hierarchy of danger.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — HUD and UI</div>
+        <h4>Exposing Game Data on Screen</h4>
+        <p>Built a HUD showing all required data: Speed (number + slow/moderate/fast label), Stability (bar with color: green/yellow/red + percentage), Terrain Type (pavement/gravel/slippery/rough), Distance to Destination (number + progress bar), Time Remaining (countdown, turns red when low), and Obstacle Alert (warning when an obstacle is in the player's path). Also added a lean indicator and low-stability warning flash.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — Website Content</div>
+        <h4>Building the Project Website</h4>
+        <p>Created <code>index.html</code> with Game Idea, Domain Knowledge, and System Design sections. All content is based on the brief — no invented information. Navigation connects Home, Domain, System, Process, and Play pages. Styling is consistent across informational pages and the game.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">Session 1 — Testing</div>
+        <h4>Local Testing</h4>
+        <p>Started a local HTTP server and tested navigation links, all four levels, win condition, all three lose conditions (crash, fall, timeout), pause/resume, and restart. Confirmed the game runs without internet access and no external dependencies.</p>
+        <p><strong>Open question:</strong> Time limits and obstacle density may need tuning after playtesting with classmates. The current values are set to be challenging but achievable with careful play.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>How AI Helped</h2>
+    <div class="grid-2">
+      <div class="info-block">
+        <strong>Implementation</strong>
+        The AI agent wrote the game engine, road generation, physics, rendering, and audio systems based on the design brief. All code is commented for a high-school student to understand.
+      </div>
+      <div class="info-block blue">
+        <strong>Design Suggestions</strong>
+        The AI suggested the graduated obstacle consequence system (rocks = crash, branches = major damage, sticks = minor damage) and the lean-into-curve mechanic to reinforce the domain learning.
+      </div>
+      <div class="info-block green">
+        <strong>Structure</strong>
+        The AI created the file structure, README, development log, and manifest following the brief's requirements for Gallery compatibility.
+      </div>
+      <div class="info-block gold">
+        <strong>Student Decisions</strong>
+        The student chose the cycling domain based on personal experience, defined the core learning shift, and specified the four levels. Final tuning of difficulty and consent for public display are pending student confirmation.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Open Questions</h2>
+    <ul style="padding-left:20px; line-height:2;">
+      <li>Time limits and obstacle density need playtesting — are they too hard or too easy?</li>
+      <li>Student should confirm public display consent for the submission manifest.</li>
+      <li>System graph image needs to be exported and added to the project.</li>
+      <li>Preview screenshot (16:9) needs to be captured from the running game.</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <p>Cycling Safety | Student: Cici chen | AI Agent: WorkBuddy | Domain: cycling, riding a bike</p>
+  </div>
+
+</div>
+
+</body>
+</html>

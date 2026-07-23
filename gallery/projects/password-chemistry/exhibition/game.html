@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PASSWORD — 化学密室逃脱</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8fab'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%F0%9F%A7%AA%3C/text%3E%3C/svg%3E">
+</head>
+<body class="game-page">
+  <div class="game-shell">
+    <!-- Top bar -->
+    <div class="game-bar">
+      <div class="game-bar-left">
+        <a href="index.html" class="game-back">← 首页</a>
+        <span class="game-title">PASSWORD</span>
+      </div>
+      <div class="game-bar-right">
+        <a href="en/game.html" class="game-back" style="opacity:0.6;">EN</a>
+        <a href="domain.html" class="game-back">设计</a>
+        <a href="process.html" class="game-back">日志</a>
+      </div>
+    </div>
+
+    <!-- Game stage -->
+    <div class="game-stage" id="game-stage">
+      <canvas id="game-canvas" width="1024" height="640"></canvas>
+
+      <!-- HUD overlay -->
+      <div class="hud">
+        <div class="hud-panel">
+          <div class="hud-label" id="hud-level">第 1 关</div>
+          <div class="hud-value" id="hud-level-name" style="font-size: 16px;">—</div>
+          <div class="hud-label" style="margin-top: 10px;">生命</div>
+          <div class="hp-bar" id="hud-hp"></div>
+        </div>
+        <div class="hud-panel" style="text-align: center;">
+          <div class="hud-label">剩余时间</div>
+          <div class="hud-value" id="hud-time">—</div>
+        </div>
+        <div class="hud-panel" style="text-align: right;">
+          <div class="hud-label">化学品</div>
+          <div class="hud-value" id="hud-chem">0 / 0</div>
+          <div class="hud-label" style="margin-top: 6px; font-size: 10px;">配方所需</div>
+        </div>
+      </div>
+
+      <!-- Objective hint bar (brief contextual hints only) -->
+      <div class="objective-hint" id="objective-hint"></div>
+
+      <!-- Story intro cutscene (before game starts — timer NOT running) -->
+      <div class="story-intro" id="story-intro" hidden>
+        <div class="story-intro-bg" id="story-intro-bg"></div>
+        <video class="story-video" id="story-video-1" src="assets/videos/bg-hospital.mp4" muted loop playsinline preload="auto"></video>
+        <video class="story-video" id="story-video-2" src="assets/videos/bg-factory.mp4" muted loop playsinline preload="auto"></video>
+        <video class="story-video" id="story-video-3" src="assets/videos/bg-darkroom.mp4" muted loop playsinline preload="auto"></video>
+        <div class="story-particles" id="story-particles"></div>
+        <div class="story-intro-card">
+          <button class="story-skip" id="story-skip">跳过 →</button>
+          <div class="story-character">
+            <div class="story-char-head">
+              <div class="story-char-eye left"></div>
+              <div class="story-char-eye right"></div>
+              <div class="story-char-mouth"></div>
+            </div>
+            <div class="story-char-body"></div>
+            <div class="story-char-arm left"></div>
+            <div class="story-char-arm right"></div>
+            <div class="story-char-flask"></div>
+          </div>
+          <div class="story-title" id="story-title">任务简报</div>
+          <div class="story-scene" id="story-scene">加载中...</div>
+          <div class="story-body" id="story-body"></div>
+          <button class="story-begin hidden-btn" id="story-begin">开始任务 ▶</button>
+        </div>
+      </div>
+
+      <!-- Level announcement banner -->
+      <div class="banner" id="banner" hidden>
+        <h2 id="banner-title">Level 1</h2>
+        <p id="banner-sub">—</p>
+      </div>
+
+      <!-- SUCCEED celebration overlay -->
+      <div class="succeed-overlay" id="succeed-overlay" hidden>
+        <div class="succeed-text">SUCCEED!</div>
+        <div id="succeed-stars"></div>
+      </div>
+
+      <!-- Fullscreen toggle (mobile) -->
+      <button class="fullscreen-btn" id="fullscreen-btn" aria-label="全屏" title="全屏模式">
+        <span class="fullscreen-icon">⛶</span>
+      </button>
+
+      <!-- Controls hint (keyboard) -->
+      <div class="controls-hint">
+        <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> 移动</span>
+        <span><kbd>E</kbd>/<kbd>空格</kbd> 交互 / 阅读纸条</span>
+        <span><kbd>R</kbd> 重新开始</span>
+      </div>
+
+      <!-- Touch controls (mobile) — redesigned for easy control -->
+      <div class="touch-controls" id="touch-controls" style="display:none;">
+        <!-- Left: virtual D-pad joystick -->
+        <div class="touch-stick-area">
+          <div class="touch-stick" id="touch-stick">
+            <div class="touch-stick-base">
+              <!-- Directional guide marks -->
+              <svg class="touch-stick-guide" viewBox="0 0 160 160">
+                <!-- N -->
+                <polygon points="80,16 72,36 88,36" fill="rgba(255,255,255,0.15)"/>
+                <!-- S -->
+                <polygon points="80,144 72,124 88,124" fill="rgba(255,255,255,0.15)"/>
+                <!-- W -->
+                <polygon points="16,80 36,72 36,88" fill="rgba(255,255,255,0.15)"/>
+                <!-- E -->
+                <polygon points="144,80 124,72 124,88" fill="rgba(255,255,255,0.15)"/>
+                <!-- Center ring -->
+                <circle cx="80" cy="80" r="38" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-dasharray="4,6"/>
+                <circle cx="80" cy="80" r="58" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+              </svg>
+            </div>
+            <div class="touch-knob" id="touch-knob"></div>
+          </div>
+        </div>
+
+        <!-- Right: action buttons (column) -->
+        <div class="touch-buttons">
+          <button class="touch-btn touch-action" id="touch-action" aria-label="交互">
+            <span class="touch-btn-icon">👆</span>
+            <span class="touch-btn-label">交互</span>
+          </button>
+          <button class="touch-btn touch-lab" id="touch-lab" aria-label="实验台">
+            <span class="touch-btn-icon">⚗️</span>
+            <span class="touch-btn-label">实验台</span>
+          </button>
+          <button class="touch-btn touch-restart" id="touch-restart" aria-label="重新开始">
+            <span class="touch-btn-icon">🔄</span>
+            <span class="touch-btn-label">重来</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Orientation hint (portrait → landscape prompt) -->
+      <div class="orientation-hint" id="orientation-hint" hidden>
+        <div class="orientation-card">
+          <div class="orientation-icon">📱</div>
+          <p>旋转手机至<b>横屏</b>以获得最佳游戏体验</p>
+        </div>
+      </div>
+
+      <!-- Note reading modal -->
+      <div class="note-modal" id="note-modal" hidden>
+        <div class="note-card">
+          <div class="note-card-header">📝 纸条</div>
+          <div class="note-content" id="note-content"></div>
+          <button class="btn btn-primary" id="btn-close-note">知道了（E / Esc）</button>
+        </div>
+      </div>
+
+      <!-- Start / menu overlay -->
+      <div class="overlay" id="menu" hidden>
+        <video class="menu-video" id="menu-video" src="assets/videos/bg-hospital.mp4" muted loop playsinline preload="auto"></video>
+        <div class="overlay-card">
+          <div class="overlay-eyebrow">化学密室逃脱 — 硬核版</div>
+          <h2>PASSWORD</h2>
+          <p>在地上寻找纸条获取化学线索。收集正确的化学品——拿错了会扣生命。在实验台完成反应。在时间耗尽前逃脱。</p>
+          <div class="level-select" id="level-select"></div>
+          <div class="overlay-actions">
+            <a class="btn btn-secondary" href="index.html">返回首页</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Win / Lose overlay -->
+      <div class="overlay" id="overlay" hidden>
+        <div class="overlay-card">
+          <div class="overlay-eyebrow" id="overlay-eyebrow">结果</div>
+          <h2 id="overlay-title">结果</h2>
+          <p id="overlay-msg"></p>
+          <div class="overlay-stats">
+            <div class="overlay-stat">
+              <div class="overlay-stat-label">用时</div>
+              <div class="overlay-stat-value" id="stat-time">0s</div>
+            </div>
+            <div class="overlay-stat">
+              <div class="overlay-stat-label">错误次数</div>
+              <div class="overlay-stat-value" id="stat-deaths">0</div>
+            </div>
+            <div class="overlay-stat">
+              <div class="overlay-stat-label">化学品</div>
+              <div class="overlay-stat-value" id="stat-chem">0</div>
+            </div>
+          </div>
+          <div class="overlay-actions">
+            <button class="btn btn-secondary" id="btn-menu">关卡选择</button>
+            <button class="btn btn-primary" id="btn-retry">再来一次</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab modal (V4 — Hardcore, chemistry clues) -->
+      <div class="lab-modal" id="lab-modal" hidden>
+        <div class="lab-card">
+          <h2>⚗️ 实验台</h2>
+          <div class="lab-card-sub">运用你的化学知识。错误的化学品或错误的操作顺序 = 扣生命。</div>
+
+          <!-- Chemistry clue (reaction equation + type + clue text) -->
+          <div class="lab-clue" id="lab-clue"></div>
+
+          <!-- Notes the player has read -->
+          <div class="lab-section-title">已找到的纸条</div>
+          <div class="lab-notes" id="lab-notes"></div>
+
+          <!-- Progress bar (overall progress, no hints on what to do) -->
+          <div class="lab-progress">
+            <div class="lab-progress-track">
+              <div class="lab-progress-bar" id="lab-progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="lab-progress-text">
+              <span>进度</span>
+              <span id="lab-progress-pct">0%</span>
+            </div>
+          </div>
+
+          <!-- Chemicals (NO recipe/not-needed labels) -->
+          <div class="lab-section-title">你的化学品（点击加入烧杯）</div>
+          <div class="lab-chemicals" id="lab-chemicals"></div>
+
+          <!-- Tools (NO order hints — all shown equally) -->
+          <div class="lab-section-title">工具</div>
+          <div class="lab-tools" id="lab-tools"></div>
+
+          <!-- Status -->
+          <div class="lab-status info" id="lab-status">加载中...</div>
+
+          <!-- Footer -->
+          <div class="lab-footer">
+            <div class="lab-hint">⚠️ 错误化学品或错误操作顺序 = -1 生命。<kbd>1</kbd>–<kbd>4</kbd> 使用工具，<kbd>Esc</kbd> 关闭。</div>
+            <button class="btn btn-secondary" id="btn-close-lab">关闭（Esc）</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/game.js"></script>
+  <script>
+    (function () {
+      var cfg = {
+        1: { name: '急救中和', desc: 'HCl + NaOH → NaCl + H₂O | 60s | 3 生命', diff: '中等' },
+        2: { name: '废水处理', desc: 'CuSO₄ + NaOH → 沉淀 | 50s | 3 生命', diff: '困难' },
+        3: { name: '暗房银回收', desc: 'AgNO₃ + NaCl/KI → 盐 | 60s | 3 生命', diff: '极限' }
+      };
+      var el = document.getElementById('level-select');
+      el.innerHTML = Object.keys(cfg).map(function(id) {
+        return '<div class="level-pick" data-level="' + id + '">' +
+          '<div class="level-pick-num">' + id + '</div>' +
+          '<div class="level-pick-info">' +
+          '<div class="level-pick-name">第 ' + id + ' 关 — ' + cfg[id].name + '</div>' +
+          '<div class="level-pick-desc">' + cfg[id].desc + '</div>' +
+          '</div>' +
+          '<div class="level-pick-stats">' +
+          '<span class="level-pick-stat">' + cfg[id].diff + '</span>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+
+      el.querySelectorAll('.level-pick').forEach(function(pick) {
+        pick.addEventListener('click', function() {
+          startLevel(parseInt(pick.dataset.level, 10));
+        });
+      });
+
+      document.getElementById('btn-menu').addEventListener('click', function() { showMenu(); });
+      document.getElementById('btn-retry').addEventListener('click', function() { restartLevel(); });
+      document.getElementById('btn-close-lab').addEventListener('click', function() { closeLab(); });
+      document.getElementById('btn-close-note').addEventListener('click', function() { closeNoteModal(); });
+
+      // Story intro: Begin button → start game
+      document.getElementById('story-begin').addEventListener('click', function() {
+        var lv = parseInt(document.getElementById('story-intro').dataset.level, 10);
+        document.getElementById('story-intro').hidden = true;
+        window._beginGame(lv);
+      });
+      document.getElementById('story-skip').addEventListener('click', function() {
+        var lv = parseInt(document.getElementById('story-intro').dataset.level, 10);
+        document.getElementById('story-intro').hidden = true;
+        window._beginGame(lv);
+      });
+
+      // Esc key closes note modal
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.key === 'e' || e.key === 'E') {
+          var noteModal = document.getElementById('note-modal');
+          if (noteModal && !noteModal.hidden) {
+            closeNoteModal();
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+      }, true);
+
+      var params = new URLSearchParams(window.location.search);
+      var auto = parseInt(params.get('level'), 10);
+      if (auto >= 1 && auto <= 3) {
+        requestAnimationFrame(function() {
+          startLevel(auto);
+          if (params.get('lab') === '1') {
+            setTimeout(function() { openLab(); }, 200);
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

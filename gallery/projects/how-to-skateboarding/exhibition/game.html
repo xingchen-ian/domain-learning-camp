@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>how to skateboarding — Play</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="game-page">
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="game.html">Play Game</a>
+    <a href="process.html">Process</a>
+  </nav>
+
+  <main class="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <p class="controls-hint">
+      <strong>Keyboard:</strong> ↑ / ↓ adjust speed or core, <strong>1 / 2 / 3</strong> pick level, <strong>Space</strong> start / restart, <strong>N</strong> next level, <strong>ESC</strong> change level.
+      <strong>Mouse:</strong> drag the speed slider on start screen; move mouse up/down to control core during play.
+    </p>
+  </main>
+
+  <script src="assets/js/game.js?v=19"></script>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    skateboardGame.setCanvas(canvas);
+  </script>
+</body>
+</html>

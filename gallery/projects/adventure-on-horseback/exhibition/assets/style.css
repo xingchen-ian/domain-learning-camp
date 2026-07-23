@@ -1,0 +1,299 @@
+/* An Adventure on Horseback - Styles */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #1a2418;
+  color: #f3e5b8;
+  font-family: Georgia, 'Times New Roman', serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+a { color: #f3e5b8; text-decoration: none; }
+a:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.4); }
+
+/* ============ Game Page ============ */
+.game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+#gameCanvas {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #1a2418;
+  image-rendering: optimizeQuality;
+}
+
+.controls-hint {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  background: rgba(0,0,0,0.7);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #dcd0a8;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.controls-hint h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+/* ============ Landing Pages ============ */
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #2c3e2a 0%, #4a6040 50%, #1a2418 100%);
+  color: #f3e5b8;
+  padding: 60px 80px;
+}
+
+.page-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(243, 229, 184, 0.2);
+  margin-bottom: 40px;
+}
+
+.site-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #f3e5b8;
+  letter-spacing: 1px;
+}
+
+.site-nav {
+  display: flex;
+  gap: 28px;
+}
+
+.site-nav a {
+  font-size: 16px;
+  color: #dcd0a8;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.site-nav a:hover,
+.site-nav a.active {
+  color: #fff;
+  border-bottom-color: #f3e5b8;
+}
+
+h1 {
+  font-size: 56px;
+  margin: 30px 0 12px;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+h2 {
+  font-size: 32px;
+  color: #f3e5b8;
+  margin: 30px 0 12px;
+  border-bottom: 1px solid rgba(243, 229, 184, 0.25);
+  padding-bottom: 8px;
+}
+
+h3 {
+  font-size: 22px;
+  color: #f3e5b8;
+  margin: 20px 0 8px;
+}
+
+p, li {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #e8dcb4;
+}
+
+.lead {
+  font-size: 22px;
+  font-style: italic;
+  color: #dcd0a8;
+  margin: 0 0 24px;
+}
+
+.card {
+  background: rgba(20, 30, 15, 0.65);
+  border: 1px solid rgba(243, 229, 184, 0.2);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 16px 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin: 24px 0;
+}
+
+@media (max-width: 900px) {
+  .card-grid { grid-template-columns: 1fr; }
+  .page { padding: 30px; }
+  h1 { font-size: 36px; }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(243, 229, 184, 0.15);
+  font-size: 17px;
+}
+
+th {
+  background: rgba(20, 30, 15, 0.6);
+  color: #fff;
+  font-weight: bold;
+}
+
+.cta {
+  display: inline-block;
+  background: #5a8a3e;
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: 6px;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 20px 0;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.cta:hover {
+  background: #6a9a4e;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+.cta-secondary {
+  background: #3a4a2a;
+  border: 1px solid #a08868;
+}
+
+.cta-secondary:hover {
+  background: #4a5a3a;
+}
+
+.tag {
+  display: inline-block;
+  background: rgba(243, 229, 184, 0.15);
+  border: 1px solid rgba(243, 229, 184, 0.3);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #dcd0a8;
+  margin-right: 6px;
+}
+
+.timeline {
+  border-left: 2px solid rgba(243, 229, 184, 0.3);
+  margin: 20px 0 20px 8px;
+  padding-left: 24px;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -32px;
+  top: 8px;
+  width: 12px;
+  height: 12px;
+  background: #a08868;
+  border-radius: 50%;
+  border: 2px solid #2c3e2a;
+}
+
+.timeline-stage {
+  font-size: 14px;
+  color: #bda878;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.timeline-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.timeline-detail {
+  font-size: 16px;
+  color: #dcd0a8;
+  line-height: 1.6;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.system-graph-wrap {
+  background: rgba(20, 30, 15, 0.4);
+  border: 1px solid rgba(243, 229, 184, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.system-graph {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+footer {
+  margin-top: 60px;
+  padding: 20px 0;
+  border-top: 1px solid rgba(243, 229, 184, 0.2);
+  font-size: 14px;
+  color: #bda878;
+  text-align: center;
+}
+
+@media (min-width: 1600px) {
+  .page { padding: 80px 120px; }
+  h1 { font-size: 72px; }
+}

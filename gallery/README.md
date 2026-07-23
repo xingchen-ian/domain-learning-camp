@@ -53,7 +53,28 @@ projects/group-03/
 4. Add one entry per game to `projects.json` (paths must match the folder).
 5. Refresh the Gallery homepage. Visitors find games by title, not by group.
 
-Uneven group submissions are fine. Missing groups simply have empty folders; the homepage only lists games registered in `projects.json`.
+## Day 1 batch (2026-07)
+
+Student packages from `GameDesignFinal_Day1/` were ingested into flat folders:
+
+```text
+gallery/projects/<game-slug>/exhibition/...
+```
+
+- Spec packages: copied `exhibition/` (skipped trailer `.mp4`/`.mov`; kept in-game `assets/videos/`).
+- Single-HTML games: wrapped with a thin home page + `game.html`.
+- Re-run: `python3 gallery/intake_day1.py`
+
+`projects.json` lists all playable titles for the name cloud (including Sailer Game under `group-04/`).
+
+## Thursday batch (2026-07-23)
+
+Student packages from `gamedesignfinal-thu/` were ingested the same way:
+
+- Re-run: `python3 gallery/intake_thu.py`
+- Report: `gallery/intake_thu_summary.json`
+- Skipped non-static Next.js packages and one mistaken course-site ZIP (see summary JSON).
+
 
 ## `projects.json` entry schema
 

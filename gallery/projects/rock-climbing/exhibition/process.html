@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Climbing — Development Process</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">🧗 Rock Climbing</a>
+  <div class="navbar-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#domain">Domain</a>
+    <a href="index.html#system">System</a>
+    <a href="process.html" class="active">Process</a>
+    <a href="game.html">Play</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <h2 class="section-header"><span class="accent">Development Process</span></h2>
+  <p style="font-size:14px;line-height:1.7;color:var(--text-dim);max-width:800px;">
+    This page tracks how the Rock Climbing game was built through human-AI collaboration.
+    It is based on the chronological development log and records both successes and failures honestly.
+  </p>
+
+  <!-- Timeline -->
+  <div class="timeline">
+
+    <div class="timeline-item">
+      <div class="time">Session 1 — Project Setup</div>
+      <h4>Read the brief and created the implementation plan</h4>
+      <p>
+        The AI agent read the full development brief and system graph. It restated the core
+        learning shift (beginners think climbing = grab and pull; experts know it = read holds,
+        position body, manage energy) and identified the key game variables: stamina, stability,
+        hold types, grip force, and rest positions. The agent chose Track A (no build step)
+        because the game is 2D and Canvas 2D is sufficient.
+      </p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Session 1 — Project Setup</div>
+      <h4>Created project structure and website skeleton</h4>
+      <p>
+        Set up the <code>exhibition/</code> folder with <code>index.html</code> (home),
+        <code>game.html</code> (playable game), <code>process.html</code> (this page), and
+        <code>assets/</code> (CSS + JavaScript). Created shared navigation and styling.
+        Initialized <code>agent-development-log.md</code> with project metadata.
+      </p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Session 1 — Core Implementation</div>
+      <h4>Built the core game loop: observe → judge → act → feedback → adjust</h4>
+      <p>
+        Implemented the game engine in <code>game.js</code> with Canvas 2D. The engine
+        separates data into three clearly labeled sections: Environment (holds, wall, route),
+        Player-controlled (stamina, stability, position), and System-calculated results
+        (height, shake, lean). The player clicks on highlighted reachable holds to climb.
+        Each move goes through a grip meter that teaches grip force management.
+      </p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Session 1 — Core Implementation</div>
+      <h4>Implemented stamina, stability, and feedback systems</h4>
+      <p>
+        Stamina depletes with each move based on hold type, quality, grip force, and stability.
+        Rest holds recover stamina with diminishing returns. Stability drops on wobbly holds
+        and can be recovered with the "Adjust" action. Visual feedback includes arm shaking
+        (red color + shake lines when stamina &lt; 50%), body leaning (when stability &lt; 40%),
+        and chalk particle effects on successful moves.
+      </p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Session 1 — Core Implementation</div>
+      <h4>Created 3 challenge presets with different system variables</h4>
+      <p>
+        <b>First Ascent:</b> 14 holds, 40% jugs, 25% rests, 8% wobbly, large grip zone (58%).
+        <b>Crux Master:</b> 18 holds, 28% crimps, 32% wobbly, small grip zone (52%).
+        <b>The Marathon:</b> 22 holds, 1.15× stamina drain, 14% rests, longer gaps between holds.
+        Each route changes actual game variables — not just visual decoration.
+      </p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Session 1 — Polish & Testing</div>
+      <h4>Added fall/win conditions, personal best tracking, and UI polish</h4>
+      <p>
+        Fall condition: stamina = 0 and not on a rest hold → fall animation → game over screen
+        showing height reached. Win condition: reach the top hold → victory screen. Personal best
+        tracked per-route in localStorage. Menu overlay with route selection, how-to-play guide,
+        and best score display. Tested at 1920×1080 resolution.
+      </p>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Session 1 — Website</div>
+      <h4>Built the project website with all required content</h4>
+      <p>
+        Home page covers game idea, domain knowledge (novice vs expert comparison), system
+        design (core loop, data model, feedback, success/failure, challenge presets), and
+        just-right ranges. Development process page (this page) mirrors the development log.
+        Navigation connects Home, Domain, System, Process, and Play pages.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- AI Influence -->
+  <div class="subsection">How AI Helped</div>
+  <ul class="info-list">
+    <li>Translated the design brief into a concrete implementation plan with clear variable names</li>
+    <li>Separated environment data, player-controlled data, and calculated results in the code</li>
+    <li>Designed the grip meter mechanic to teach "just-right" grip force (a key domain concept)</li>
+    <li>Generated deterministic route layouts using seeded random for consistent challenge presets</li>
+    <li>Implemented visual feedback systems (shaking, leaning, particles) from the brief's feedback priorities</li>
+  </ul>
+
+  <div class="subsection">Student Decisions</div>
+  <ul class="info-list">
+    <li>Chose Track A (no build step) — keeps the exhibition simple, no Node.js or npm required</li>
+    <li>Approved the grip meter as the core skill mechanic for teaching grip force management</li>
+    <li>Selected 3 routes with escalating difficulty: beginner, technical, endurance</li>
+  </ul>
+
+  <div class="subsection">Relationship to the Core Learning Shift</div>
+  <p style="font-size:14px;line-height:1.7;color:var(--text-dim);max-width:800px;">
+    The game directly teaches the shift from "grab and pull" to "read, position, and manage."
+    Players who rush up the wall without resting will run out of stamina and fall — exactly
+    the novice mistake described in the brief. Players who read hold types, use rests, and
+    control their grip force will climb higher. The feedback systems (shaking, leaning,
+    grip results) make the cause-and-effect relationship visible and learnable.
+  </p>
+
+  <div class="subsection">Problems / Open Questions</div>
+  <ul class="info-list">
+    <li>The grip meter appears on every move — could be made optional or contextual in a future version</li>
+    <li>Wind conditions are mentioned in the brief but not yet implemented as a gameplay variable</li>
+    <li>No audio feedback yet — could add chalk sounds, grip sounds, and fatigue breathing</li>
+    <li>Foot placement is abstracted (previous hold = feet) rather than independently controlled</li>
+  </ul>
+
+  <!-- CTA -->
+  <div style="text-align:center;margin:40px 0 30px;">
+    <a href="game.html" class="hero-cta">▶ Play the Game</a>
+  </div>
+
+</div>
+
+</body>
+</html>

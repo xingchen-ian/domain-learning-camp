@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>开发过程 — PASSWORD</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8fab'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%F0%9F%A7%AA%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-mark">🧪</span>
+      PASSWORD
+    </a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="domain.html">领域与系统</a>
+      <a href="process.html" class="active">开发过程</a>
+      <a href="game.html">试玩</a>
+      <a href="en/process.html" style="font-size:0.85em;opacity:0.6;">EN</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">人类 × AI 日志</div>
+        <h1 class="section-title">开发过程</h1>
+        <p class="section-lead">
+          一份真实的项目构建时间线——包括失误、修改，以及 AI 建议被接受、
+          修改或拒绝的决策。本页是项目根目录中 <code>agent-development-log.md</code> 
+          的网页摘要版。
+        </p>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · 第一步</div>
+            <div class="timeline-title">确定项目身份</div>
+            <div class="timeline-body">
+              学生：<strong>ELSA ZHANGYIQING</strong>。项目标题：<strong>PASSWORD</strong>。
+              领域：<em>化学与密室逃脱</em>。工具：AI 编程助手
+              （赛道 A — 无构建步骤，纯 HTML/CSS/JS + Canvas 2D）。
+              核心学习转变记录：<em>"新手认为密室逃脱就是走出去；专家知道是读懂
+              环境、发展逻辑、全面运用工具。"</em>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · 第二步</div>
+            <div class="timeline-title">设计纲要与系统图锁定</div>
+            <div class="timeline-body">
+              编写了 <em>开发纲要</em>，涵盖身份、设计摘要、观察→判断→行动→阅读反馈→
+              调整循环、环境/玩家/系统数据模型、规则、三个挑战预设、网页游戏
+              技术依赖、集成项目网站需求，以及人机日志协议。系统图（来自 Canva）
+              被导出到设计摘要中，使实现有了明确的方向。
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · 第三步</div>
+            <div class="timeline-title">搭建项目结构</div>
+            <div class="timeline-body">
+              根据纲要创建了预期文件结构：<code>exhibition/</code> 用于最终静态站点
+              （<code>index.html</code>、<code>game.html</code>、<code>domain.html</code>、
+              <code>process.html</code>、<code>assets/</code> 存放 CSS、JS 和图片），
+              <code>source/</code> 作为可编辑源码的镜像。初始化了
+              <code>agent-development-log.md</code>，包含必填的头部和交互记录 01。
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · 第四步</div>
+            <div class="timeline-title">游戏引擎实现（赛道 A）</div>
+            <div class="timeline-body">
+              用纯 HTML + CSS + Canvas 2D + 原生 JS 构建了可玩游戏——
+              无构建步骤，无 CDN 依赖。游戏实现了完整的
+              观察→判断→行动→反馈→调整循环：
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li>四方向移动 + 圆形碰撞检测</li>
+                <li>3 个挑战预设，不同时间/精灵数量/配方复杂度</li>
+                <li>实验台：明确的混合→过滤→加热→蒸发步骤</li>
+                <li>精灵 AI：巡逻（第一关）和追击（第二、三关）</li>
+                <li>生命条、倒计时器、化学品计数器、屏幕震动</li>
+                <li>反应成功/失败的紫色烟雾和闪光粒子效果</li>
+                <li>胜利/失败画面，含生命损失、用时、化学品统计</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · 第五步</div>
+            <div class="timeline-title">围绕游戏构建网站</div>
+            <div class="timeline-body">
+              使用相同赛道 A 静态风格构建了四个必选网页：
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li><strong>首页</strong> — 游戏理念、核心学习转变、关卡总览</li>
+                <li><strong>领域与系统</strong> — 领域知识、新手误区、系统图、反馈转换</li>
+                <li><strong>开发过程</strong> — 本时间线，开发日志摘要</li>
+                <li><strong>试玩</strong> — 直接进入可玩游戏，含关卡选择</li>
+              </ul>
+              所有导航和资源使用相对路径，使构建产物可以直接放入展区子文件夹。
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-15 · 第六步</div>
+            <div class="timeline-title">视觉风格重塑 — 超现实可爱风</div>
+            <div class="timeline-body">
+              学生反馈：原有的暗黑科幻风格不太对。将整个视觉语言重新设计为
+              <strong>超现实可爱</strong>：柔和薰衣草/薄荷/粉色色调、圆润糖果墙壁、
+              棋盘格地板、猫耳主角带腮红、大眼紫色幽灵精灵、带星星标识的药水瓶、
+              魔法传送门出口、爱心/星星/泡泡粒子特效、浮动背景装饰。同时降低了
+              NPC 速度，添加了目标提示栏，重建了实验台弹窗（含编号配方步骤和进度条）。
+              四个网站页面同步更新。
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-20 · 第七步</div>
+            <div class="timeline-title">音频、视觉润色与故事沉浸</div>
+            <div class="timeline-body">
+              学生要求多项增强以提升游戏吸引力和可读性：
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li><strong>BGM 背景音乐：</strong>Web Audio API 合成 8-bit 旋律，灵感来自贪吃蛇游戏。欢快的 C 大调五声音阶循环，游戏和实验台中播放，菜单和结束画面停止。</li>
+                <li><strong>道具放大 2.5 倍：</strong>化学瓶和纸条放大，使玩家在展览分辨率（1920×1080）下也能看清公式标签。</li>
+                <li><strong>实验台可爱化：</strong>改为暖色木桌实验台风格，浮动器材装饰（🧪⚗️🔬🧫），圆角按钮，渐变背景，悬停动效。</li>
+                <li><strong>庆祝系统：</strong>实验成功触发特殊庆祝音效（三角波上升和弦）+ 满屏"SUCCEED!"动画（彩虹渐变闪烁）、30 颗星星 emoji、60 个彩色纸屑粒子。</li>
+                <li><strong>故事开场动画：</strong>每关前播放故事过场——包含 CSS 绘制的化学家主角（圆头、护目镜、白大褂、烧瓶，含眨眼、摆臂、漂浮动画）。文本以打字机效果呈现。倒计时在玩家点击"开始任务"后才启动。每关有专属主题场景粒子（医院💊🩺、工厂💧🏭、暗房📷🎞️）。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-07-21 · 第八步</div>
+            <div class="timeline-title">Bug 修复与最终提交审查</div>
+            <div class="timeline-body">
+              <ul style="margin: 12px 0 0 20px; color: #7b6b8a;">
+                <li><strong>严重 Bug 修复：</strong><code>addChemical()</code> 函数存在运算符优先级错误——<code>!arr.indexOf(key) >= 0</code> 在 JavaScript 中始终为 <code>true</code>，导致每次化学添加都被当作错误。已修复为 <code>indexOf(key) === -1</code>。</li>
+                <li><strong>数据一致性扫描：</strong>统一了 4 个文件中所有的关卡名称、时间和描述（game.html、game.js、README.md、故事开场文本）。修复了第三关时间不一致（部分地方显示 40s，实际为 60s）。</li>
+                <li><strong>文档更新：</strong>更新了 README 挑战预设表、THIRD_PARTY.md（澄清 Web Audio API 合成）、submission-manifest.json（移除过时的"无音效"问题，添加 Bug 修复记录和功能摘要）、agent-development-log.md（添加交互记录 04）。</li>
+                <li><strong>第三关时间：</strong>从 40s 延长至 60s，以提升 4 个 NPC 和复杂 4 步反应的可玩性。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">下一步</div>
+            <div class="timeline-title">学生反思与提交</div>
+            <div class="timeline-body">
+              学生应体验包含所有增强功能的完整游戏，
+              确认公开展示授权，并撰写最终反思：
+              当前游戏是否仍然帮助玩家体验预期的领域学习转变？
+              哪些 AI 建议被学生接受、拒绝或修改——为什么？
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="section-eyebrow">文件与来源</div>
+        <h2 class="section-title">真相在哪里</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>📄 development-brief.md</h3>
+            <p>完整设计纲要——领域、学习转变、数据模型、规则、技术依赖、日志协议、提交审查。</p>
+          </div>
+          <div class="card">
+            <h3>📓 agent-development-log.md</h3>
+            <p>按时间顺序的交互/反思日志。完整版（含原始学生请求和 AI 回复）位于项目根目录。</p>
+          </div>
+          <div class="card">
+            <h3>📊 system-graph</h3>
+            <p>来自 Canva 的原始设计白板，在领域与系统页面以表格形式呈现。</p>
+          </div>
+          <div class="card">
+            <h3>📦 submission-manifest.json</h3>
+            <p>小组、项目标题、入口页面、游戏页面、已知问题、展览分辨率、公开展示授权。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      IMA Summer Program · Group 1 · ELSA ZHANGYIQING · 2026
+    </footer>
+  </main>
+</body>
+</html>

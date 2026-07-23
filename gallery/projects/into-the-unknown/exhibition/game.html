@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play — Into the Unknown</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-icon"></span>
+      Into the Unknown
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="domain.html">Domain & Design</a></li>
+      <li><a href="process.html">Process</a></li>
+      <li><a href="game.html" class="active">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+    <div class="page" style="padding-top: 20px; padding-bottom: 20px; max-width: 900px;">
+
+      <h1 style="text-align: center; font-size: 32px;">Play the Game</h1>
+      <p style="text-align: center; color: var(--text-dim); margin-bottom: 24px;">
+        Click the game screen and press START. Use WASD or Arrow Keys to move.
+      </p>
+
+      <!-- Game Canvas -->
+      <div class="game-container" style="margin: 0 auto; width: 800px; max-width: 100%;">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+      </div>
+
+      <!-- Controls Reference -->
+      <div class="game-info">
+        <h2>Controls</h2>
+        <div class="controls-grid">
+          <div class="control-item">
+            <span class="control-key">W A S D</span>
+            <span class="control-desc">Move (or Arrow Keys)</span>
+          </div>
+          <div class="control-item">
+            <span class="control-key">F</span>
+            <span class="control-desc">Toggle Flashlight</span>
+          </div>
+          <div class="control-item">
+            <span class="control-key">P / ESC</span>
+            <span class="control-desc">Pause / Resume</span>
+          </div>
+          <div class="control-item">
+            <span class="control-key">Click</span>
+            <span class="control-desc">Click buttons on screen</span>
+          </div>
+        </div>
+
+        <h2>How to Play</h2>
+        <div class="info-box">
+          <h4>Objective</h4>
+          <p>
+            Navigate through the cave to find the missing explorer (red SOS beacon) and reach the
+            exit (green glowing tile). You must find the explorer before you can escape on Levels 2 and 3.
+          </p>
+        </div>
+
+        <div class="info-box safe">
+          <h4>Survival Tips</h4>
+          <ul style="margin-bottom: 0;">
+            <li><strong>Follow footprints</strong> — they mark safer paths through the cave.</li>
+            <li><strong>Conserve battery</strong> — turn off your flashlight when you don't need it. The battery drains faster while moving.</li>
+            <li><strong>Watch for hazards</strong> — bats (fluttering shapes), water (blue shimmer), and traps (subtle cracks) all damage your health.</li>
+            <li><strong>Collect supplies</strong> — batteries (yellow) restore power; medkits (white with red cross) restore health.</li>
+            <li><strong>Listen for rumbles</strong> — in Level 3, the screen will shake and dust will fall when the ceiling is unstable. Keep moving!</li>
+            <li><strong>Don't rush</strong> — observe your surroundings before choosing a path. Instinct leads to traps; careful observation leads to success.</li>
+          </ul>
+        </div>
+
+        <div class="info-box danger">
+          <h4>Game Over Conditions</h4>
+          <ul style="margin-bottom: 0;">
+            <li>Time runs out</li>
+            <li>Battery reaches zero and you get lost in darkness</li>
+            <li>Health reaches zero from hazards</li>
+          </ul>
+        </div>
+
+        <h2>Hazard Reference</h2>
+        <table class="data-table">
+          <thead>
+            <tr><th>Hazard</th><th>Damage</th><th>How to Spot</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Bats</strong></td><td>-15 HP</td><td>Dark fluttering shapes</td></tr>
+            <tr><td><strong>Water</strong></td><td>-25 HP</td><td>Blue shimmering tiles</td></tr>
+            <tr><td><strong>Trap</strong></td><td>-30 HP</td><td>Subtle dark cracks (very hard to see!)</td></tr>
+            <tr><td><strong>Unstable Ceiling</strong></td><td>Screen shake + warning</td><td>Orange cracks on ceiling tiles</td></tr>
+          </tbody>
+        </table>
+
+        <div class="text-center mt-40">
+          <a href="index.html" class="btn btn-secondary">← Back to Home</a>
+          <a href="domain.html" class="btn btn-secondary">Learn the Design</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Into the Unknown — A Cave Exploration Game by Hawinate | Built with WorkBuddy</p>
+  </footer>
+
+  <!-- Game Engine -->
+  <script src="assets/js/game.js"></script>
+
+</body>
+</html>

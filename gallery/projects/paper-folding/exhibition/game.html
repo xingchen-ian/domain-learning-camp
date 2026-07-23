@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>折·Fold — 精度折纸 | Play</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">折·Fold <small>精度折纸</small></div>
+  <div class="links">
+    <a href="index.html">首页</a>
+    <a href="index.html#domain">领域知识</a>
+    <a href="index.html#system">系统设计</a>
+    <a href="process.html">开发过程</a>
+    <a href="game.html" class="active">玩游戏</a>
+  </div>
+</nav>
+
+<div class="game-shell">
+  <div class="level-select" id="levelSelect">
+    <div class="diff-tabs" id="diffTabs"></div>
+    <div class="lvl-panel" id="lvlPanel"></div>
+  </div>
+
+  <div class="game-stage" id="stageWrap">
+    <canvas id="stage"></canvas>
+    <div id="donePanel" style="position:absolute;left:0;right:0;bottom:18px;display:none;justify-content:center;gap:12px;z-index:5;">
+      <button class="btn ghost" id="retryBtn">重试本关</button>
+      <button class="btn accent" id="nextBtn">下一关</button>
+    </div>
+  </div>
+
+  <div class="hud">
+    <div>
+      <div class="lvl" id="levelName">方寸 · Square</div>
+      <div class="intro" id="levelIntro"></div>
+      <div class="count">第 <span id="foldCount">1 / 3</span> 折</div>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="meter">
+      <span class="label">本折精度</span>
+      <span class="val teal" id="precision">—</span>
+    </div>
+    <div class="meter">
+      <span class="label">累计精度</span>
+      <span class="val accent" id="cumulative">100%</span>
+    </div>
+    <div class="hint" id="hint">把左半边折向右边，左边缘对齐右边缘。</div>
+    <div class="actions">
+      <button class="btn ghost" id="restartBtn">重置</button>
+    </div>
+  </div>
+
+  <div class="card" style="width:min(900px,96vw);margin-top:18px;">
+    <h2>怎么玩</h2>
+    <p><strong>拖动青色圆点</strong>（折角手柄）到 <strong>红色目标环</strong>，纸张会实时翻折。对齐越精确，本折精度越高。</p>
+    <p><strong>累计精度 = 各折精度的连乘</strong>——这正是折纸的核心：每一步的小误差都会在后面被放大。越往后越要小心。</p>
+    <p>评级：S ≥ 95% · A ≥ 85% · B ≥ 70% · C 其他。松手即完成本折，可随时重试。</p>
+  </div>
+</div>
+
+<script src="assets/game.js"></script>
+<script>
+(function(){
+  const canvas = document.getElementById('stage');
+  const hud = {
+    levelName: document.getElementById('levelName'),
+    levelIntro: document.getElementById('levelIntro'),
+    foldCount: document.getElementById('foldCount'),
+    precision: document.getElementById('precision'),
+    cumulative: document.getElementById('cumulative'),
+    dots: document.getElementById('dots'),
+    hint: document.getElementById('hint'),
+  };
+  const game = new FoldGame(canvas, hud);
+  game.start();
+
+  const donePanel = document.getElementById('donePanel');
+  const nextBtn = document.getElementById('nextBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const restartBtn = document.getElementById('restartBtn');
+
+  // 难度标签切换：点击某难度只显示该级别的关卡
+  const DIFF_LABELS = { E:'入门', M:'进阶', H:'高级', X:'极限', Z:'宗师' };
+  const DIFF_ORDER = ['E','M','H','X','Z'];
+  const diffTabs = document.getElementById('diffTabs');
+  const lvlPanel = document.getElementById('lvlPanel');
+  let curDiff = 'E';
+  const lvlBtns = [];
+  // 生成难度标签
+  DIFF_ORDER.forEach(diff => {
+    const cnt = LEVELS.filter(lv => lv.diff === diff).length;
+    const tab = document.createElement('button');
+    tab.className = 'diff-tab' + (diff === curDiff ? ' active' : '');
+    tab.dataset.diff = diff;
+    tab.innerHTML = DIFF_LABELS[diff] + '<span class="cnt">' + cnt + '</span>';
+    tab.addEventListener('click', () => {
+      curDiff = diff;
+      diffTabs.querySelectorAll('.diff-tab').forEach(t => t.classList.toggle('active', t.dataset.diff === diff));
+      renderLevelPanel();
+    });
+    diffTabs.appendChild(tab);
+  });
+  function renderLevelPanel() {
+    lvlPanel.innerHTML = '';
+    const label = document.createElement('span');
+    label.className = 'grp-label';
+    label.textContent = DIFF_LABELS[curDiff];
+    lvlPanel.appendChild(label);
+    LEVELS.forEach((lv, i) => {
+      if (lv.diff !== curDiff) return;
+      const btn = document.createElement('button');
+      btn.className = 'lvl-btn' + (i === game.levelIndex ? ' active' : '');
+      btn.dataset.lvl = i;
+      btn.textContent = lv.name + ' · ' + lv.en;
+      btn.addEventListener('click', () => {
+        lvlBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        game.resetLevel(i);
+        donePanel.style.display = 'none';
+      });
+      lvlBtns.length = i; // keep index sync not needed; we re-query below
+      lvlPanel.appendChild(btn);
+    });
+    // 重新收集当前面板的按钮
+    lvlBtns.length = 0;
+    lvlPanel.querySelectorAll('.lvl-btn').forEach(b => lvlBtns.push(b));
+  }
+  renderLevelPanel();
+
+  // 切换关卡时同步高亮（下一关/重试）
+  function syncActive() {
+    const cur = LEVELS[game.levelIndex];
+    if (cur && cur.diff !== curDiff) {
+      curDiff = cur.diff;
+      diffTabs.querySelectorAll('.diff-tab').forEach(t => t.classList.toggle('active', t.dataset.diff === curDiff));
+      renderLevelPanel();
+    }
+    lvlPanel.querySelectorAll('.lvl-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.lvl,10) === game.levelIndex));
+  }
+  restartBtn.addEventListener('click', () => { game.resetLevel(game.levelIndex); donePanel.style.display='none'; syncActive(); });
+  retryBtn.addEventListener('click', () => { game.retry(); donePanel.style.display='none'; });
+  nextBtn.addEventListener('click', () => {
+    if (game.levelIndex + 1 < LEVELS.length) {
+      game.nextLevel();
+      syncActive();
+      donePanel.style.display = 'none';
+    } else {
+      game.resetLevel(0);
+      syncActive();
+      donePanel.style.display = 'none';
+    }
+  });
+
+  // 轮询游戏状态，显示/隐藏完成按钮
+  function poll() {
+    const isDone = game.state === 'levelDone' || game.state === 'allDone';
+    donePanel.style.display = isDone ? 'flex' : 'none';
+    if (isDone) {
+      nextBtn.textContent = (game.levelIndex + 1 < LEVELS.length) ? '下一关' : '再玩一次';
+    }
+    requestAnimationFrame(poll);
+  }
+  poll();
+})();
+</script>
+</body>
+</html>

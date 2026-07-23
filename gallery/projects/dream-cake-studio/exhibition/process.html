@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dream Cake STUDIO — Development Process</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .nav-bar { background: #fff8f0; padding: 10px 20px; display: flex; justify-content: center; gap: 12px; border-bottom: 2px solid #e8a87c; }
+    .nav-bar a { color: #e8a87c; font-weight: bold; text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.15s; }
+    .nav-bar a:hover, .nav-bar a.active { background: #e8a87c; color: #fff; }
+    .process-container { max-width: 700px; margin: 30px auto; padding: 20px; }
+    .process-container h1 { font-size: 28px; color: #5c3d2e; margin-bottom: 20px; text-align: center; }
+    .timeline-item { border-left: 3px solid #e8a87c; padding: 12px 20px; margin-left: 10px; }
+    .timeline-item .time { font-size: 12px; color: #8b6914; }
+    .timeline-item h3 { font-size: 16px; color: #5c3d2e; margin: 4px 0; }
+    .timeline-item p { font-size: 14px; color: #5c3d2e; }
+    .timeline-item .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
+    .tag-setup { background: #fff3cd; color: #856404; }
+    .tag-code { background: #d4edda; color: #155724; }
+    .tag-design { background: #cce5ff; color: #004085; }
+    .tag-test { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+  <a href="index.html">Home</a>
+  <a href="game.html">Play Game</a>
+  <a href="process.html" class="active">Process</a>
+</nav>
+
+<div class="process-container">
+  <h1>Development Process</h1>
+
+  <div class="timeline-item">
+    <span class="time">2026-07-15 11:52</span>
+    <h3>Project Initialization <span class="tag tag-setup">Setup</span></h3>
+    <p>Student provided development brief and system graph. Agent restated core design elements, proposed Track A (HTML+CSS+Canvas 2D, no build step). Student confirmed: Group 04, public display=yes, 3 toppings (visual only), medium-burn rescuable with score downgrade.</p>
+  </div>
+
+  <div class="timeline-item">
+    <span class="time">2026-07-15 11:55</span>
+    <h3>Scaffold Created <span class="tag tag-setup">Setup</span></h3>
+    <p>Created project directory structure. Copied brief and system graph. Initialized agent-development-log.md, README.md, THIRD_PARTY.md, submission-manifest.json. Created exhibition/ skeleton pages.</p>
+  </div>
+
+  <div class="timeline-item">
+    <span class="time">2026-07-15 (ongoing)</span>
+    <h3>L1 Core Game Loop <span class="tag tag-code">Code</span> <span class="tag tag-design">Design</span></h3>
+    <p>Implementing 5-step baking game: Mix & Proportion → Pour & Mold → Oven Baking → Check Result → Decoration. Canvas 2D rendering, HTML controls, three difficulty presets. Core observe→judge→act→feedback→adjust loop validated.</p>
+  </div>
+
+  <!-- More timeline entries will be added as development progresses -->
+
+</div>
+
+</body>
+</html>

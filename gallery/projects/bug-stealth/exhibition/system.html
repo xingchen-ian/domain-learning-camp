@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bug Stealth — System Design</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <span class="brand">Bug Stealth</span>
+    <a href="index.html">Home</a>
+    <a href="domain.html">Domain</a>
+    <a href="system.html">System</a>
+    <a href="process.html">Process</a>
+    <a href="game.html">Play</a>
+  </nav>
+
+  <main class="page">
+    <h1>System Design</h1>
+
+    <div class="graph-block">
+      <img src="../system-graph.png" alt="Bug Stealth system graph">
+      <p style="color:#6b7d4b; font-size:0.85rem;">The system graph — the primary reference for every variable, level and feedback rule below.</p>
+    </div>
+
+    <h2>Data model</h2>
+    <p>The system graph splits every piece of game state into three kinds of data. The code keeps them visibly separated (<code>levels.js</code> = environment, <code>main.js</code> = player-controlled + calculated).</p>
+
+    <h3>Environment data (set by the level, not by the player)</h3>
+    <table>
+      <tr><th>Variable</th><th>Type</th><th>Meaning</th></tr>
+      <tr><td>insectPatrolPosition</td><td>Vector3[]</td><td>Waypoints each insect patrols between.</td></tr>
+      <tr><td>insectMovingSpeed</td><td>Float</td><td>Patrol speed; a separate (faster) diveSpeed is used once the player is spotted.</td></tr>
+      <tr><td>mirrorReflectionRange</td><td>Float</td><td>Effective angle range inside which a mirror will reflect sunlight.</td></tr>
+      <tr><td>itemPlacementJudgementRange</td><td>Fixed value</td><td>Radius inside which the player can pick up or place an item.</td></tr>
+      <tr><td>sunlightReflectionPath</td><td>Vector3[]</td><td>Series of points the sun beam bounces through to reach the plant.</td></tr>
+      <tr><td>wallTopDestinationPosition</td><td>Vector3</td><td>Where the player must arrive after climbing the plant.</td></tr>
+      <tr><td>gameRunningTime</td><td>Float</td><td>Countdown timer for the level.</td></tr>
+    </table>
+
+    <h3>Player-controlled data (input)</h3>
+    <table>
+      <tr><th>Input</th><th>Effect</th></tr>
+      <tr><td>A / D</td><td>Walk left / right.</td></tr>
+      <tr><td>W</td><td>Move forward; climb a fully-grown plant to the wall top.</td></tr>
+      <tr><td>S</td><td>Hide in a shadow area — insects cannot detect you.</td></tr>
+      <tr><td>E</td><td>Pick up / place / drop supplies.</td></tr>
+      <tr><td>Mouse left-drag</td><td>Rotate the nearest mirror.</td></tr>
+      <tr><td>Mouse right-drag</td><td>Adjust the viewing perspective.</td></tr>
+    </table>
+
+    <h3>System-calculated results</h3>
+    <ul>
+      <li>The plant grows taller each time water, fertilizer or sunlight reaches it.</li>
+      <li>The sunlight reflection path is recomputed every frame from the current mirror angles; it is only "valid" when the final ray hits the plant.</li>
+      <li>Insect state (patrol → alert → dive) is computed from the player's distance and whether the player is hidden.</li>
+    </ul>
+
+    <h2>Feedback</h2>
+    <h3>Immediate</h3>
+    <p>Several shadow areas, a few flying insects, several mirrors, a beam of light, a water bottle and a bag of fertilizer are all visible on screen at once.</p>
+    <h3>Discovered over time</h3>
+    <p>Light cannot shine on the plant directly — you must reposition mirrors to bounce light from one to the next in sequence, and the plant only grows after the light finishes passing through all mirrors. This is delayed feedback.</p>
+    <h3>State-based</h3>
+    <p>A red border pulses around the screen when an insect has spotted you. The plant visibly grows taller. Carried items attach to the player. HUD shows the remaining time, the placed-item checklist and the light-path validity.</p>
+
+    <h2>Win / lose conditions</h2>
+    <table>
+      <tr><th>Condition</th><th>Rule (from the system graph)</th></tr>
+      <tr><td>Win</td><td>Never touched by insects during the whole process, finish the placement requirements for the level, climb the fully-grown plant and arrive at the wall-top destination.</td></tr>
+      <tr><td>Game over</td><td>Collide with an insect, OR head for the destination without finishing the item-placement requirements, OR run out of time.</td></tr>
+    </table>
+
+    <h2>Challenge presets (3 levels)</h2>
+    <p>Each level changes system variables and relationships, not only visual decoration.</p>
+    <table>
+      <tr><th>Level</th><th>Placement tier</th><th>Environment</th></tr>
+      <tr>
+        <td>1 · Seedling</td>
+        <td>Water only</td>
+        <td>Single insect patrol route, one mirror, no complex obstacles.</td>
+      </tr>
+      <tr>
+        <td>2 · Sprout</td>
+        <td>Water + fertilizer</td>
+        <td>Two insect patrol routes, two mirrors, a small amount of wall-blocking.</td>
+      </tr>
+      <tr>
+        <td>3 · Hunter</td>
+        <td>Water + fertilizer + valid sunlight reflection</td>
+        <td>Multiple crossing-patrol insects, fast dive-speed, multi-mirrors, lots of barriers.</td>
+      </tr>
+    </table>
+
+    <h2>Just-right ranges &amp; thresholds</h2>
+    <p>The mirror rotation angle has an exact effective range (<code>mirrorReflectionRange</code>). If the angle is too large or too small, sunlight cannot reflect onto the plant. In the hardest tier this is the difference between a growing plant and a dead one.</p>
+
+    <p style="margin-top:2rem;"><a class="btn" href="game.html">Play the game →</a></p>
+  </main>
+
+  <footer>© 2026 Bug Stealth — plant-care learning game by 陈晴晴, built with WorkBuddy.</footer>
+</body>
+</html>

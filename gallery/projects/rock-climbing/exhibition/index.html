@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Climbing — Project</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">🧗 Rock Climbing</a>
+  <div class="navbar-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="#domain">Domain</a>
+    <a href="#system">System</a>
+    <a href="process.html">Process</a>
+    <a href="game.html">Play</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <h1>Rock Climbing</h1>
+    <p class="tagline">
+      A web game that teaches the real skill behind climbing: reading the rock,
+      managing your stamina, and finding rest — not just pulling yourself up as fast as you can.
+    </p>
+    <a href="game.html" class="hero-cta">▶ Play the Game</a>
+  </section>
+
+  <!-- ===== Game Idea ===== -->
+  <h2 class="section-header"><span class="accent">Game Idea</span></h2>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Concept</h3>
+      <p>
+        You are a rock climber on a vertical wall. Your goal is to climb as high as you can
+        without running out of stamina. The wall has different types of holds — some are easy
+        to grip, others are small or wobbly. You must read each hold, choose your path, and
+        decide when to push forward and when to rest.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Player Goal</h3>
+      <p>
+        Reach the top of the wall — or climb higher than your previous best. There is no
+        single "win." Instead, you improve through better technique: smarter hold selection,
+        better grip control, and wiser energy management.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Core Learning Shift</h3>
+      <p>
+        <span class="highlight">Novice:</span> Climbing means grabbing the next hold and
+        pulling yourself up as fast as possible.<br><br>
+        <span class="highlight">Expert:</span> Climbing means reading the rock's shape and
+        texture, positioning the body efficiently, finding rests, and managing energy.
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== Domain Knowledge ===== -->
+  <h2 class="section-header" id="domain"><span class="accent">Domain Knowledge</span></h2>
+
+  <div class="subsection">The Real Experience</div>
+  <p style="font-size:14px;line-height:1.7;color:var(--text-dim);max-width:800px;">
+    Rock climbing is difficult because reaching a destination depends on the environment —
+    rock structure, rock texture, and wind intensity. A beginner who joined a climbing lesson
+    quickly realizes that climbing is not about speed. It is about making the right decisions
+    under physical and mental pressure.
+  </p>
+
+  <div class="comparison">
+    <div class="comparison-box novice">
+      <h4>Novice Misconception</h4>
+      <p>
+        Beginners think they should climb as fast as possible. They reach for the next obvious
+        hold and pull up immediately, even when their arms are tired. They ignore rest positions,
+        use their arms too much instead of their legs, and keep climbing straight up without
+        checking the quality or shape of holds first.
+      </p>
+    </div>
+    <div class="comparison-box expert">
+      <h4>Expert Judgment</h4>
+      <p>
+        Experts read the rock's shape and texture before committing. They position their body
+        efficiently to save energy. They identify and use resting positions. They plan short
+        sequences rather than climbing move-by-move. They make calmer decisions under fatigue
+        and know when to push through versus when to recover.
+      </p>
+    </div>
+  </div>
+
+  <div class="subsection">Why This Becomes Playable</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Hold Types as Decisions</h3>
+      <p>
+        Each hold type (jug, crimp, sloper, pinch, rest) has a different stamina cost and
+        stability impact. The player must learn to read holds visually and choose paths that
+        balance difficulty with energy conservation.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Grip Force as Skill</h3>
+      <p>
+        A grip meter challenges the player to find the "just-right" tension: gripping too
+        lightly risks slipping, gripping too hard wastes energy. This directly mirrors the
+        real-world skill of optimal grip force.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Stamina as the Core Constraint</h3>
+      <p>
+        Every move costs stamina. Rest holds recover it. The player learns that skipping rests
+        early leads to getting pumped and falling later — even if each individual move felt fine.
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== System Design ===== -->
+  <h2 class="section-header" id="system"><span class="accent">System Design</span></h2>
+
+  <div class="subsection">Core Player Loop: Observe → Judge → Act → Feedback → Adjust</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Observe</h3>
+      <p>
+        Rock shape, texture, and orientation. Wall features. Possible foot placements.
+        Current body position. How pumped the arms feel. Potential resting spots. Distance
+        and difficulty to the next hold or rest.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Judge</h3>
+      <p>
+        Is a hold reliable enough to use? Is the current body position efficient? Can I reach
+        the next hold without overextending? Should I rest now? Is my planned sequence still
+        good given my current fatigue?
+      </p>
+    </div>
+    <div class="card">
+      <h3>Act</h3>
+      <p>
+        Move hands and feet to different holds. Adjust body position. Rest to recover energy.
+        Choose when to push through a section or slow down. Set grip force on each move.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Read Feedback</h3>
+      <p>
+        Body position (shaky or stable). Grip security (hold wobbles or hand slips). Successful
+        vs. failed moves with clear animation. Smooth vs. unstable movement flow.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Adjust</h3>
+      <p>
+        If arms shake → find a rest. If body feels unstable → adjust foot placement. If a move
+        fails → try a different hold, body posture, or path. Learn from each attempt.
+      </p>
+    </div>
+  </div>
+
+  <div class="subsection">Data Model</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Environment Data</h3>
+      <p>
+        Hold type (jug, crimp, sloper, pinch, rest), hold quality (solid, wobbly), hold
+        position, wall height, route configuration, wind conditions.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Player-Controlled Data</h3>
+      <p>
+        Which hold to move to, grip force level, when to rest, when to adjust position,
+        pace of climbing, route selection.
+      </p>
+    </div>
+    <div class="card">
+      <h3>System-Calculated Results</h3>
+      <p>
+        Stamina level, stability level, current height, body shake intensity, lean amount,
+        grip success/failure, movement smoothness, fall/summit state.
+      </p>
+    </div>
+  </div>
+
+  <div class="subsection">Feedback Translation</div>
+  <ul class="info-list">
+    <li><span class="highlight">Fatigue signal:</span> Visible forearm shaking, slower movement, declining green energy bar. Tells the player they are not resting enough.</li>
+    <li><span class="highlight">Stability signal:</span> Character leans backward, feet slip. Tells the player their position is inefficient and wasting energy.</li>
+    <li><span class="highlight">Efficiency signal:</span> Smooth flowing animation when good, versus stopping and struggling when inefficient. Tells the player whether their sequence is working.</li>
+  </ul>
+
+  <div class="subsection">Success & Failure</div>
+  <div class="comparison">
+    <div class="comparison-box expert">
+      <h4>Success</h4>
+      <p>
+        Reach the top hold, or climb higher than your previous best. Success improves through
+        better technique — not just raw speed.
+      </p>
+    </div>
+    <div class="comparison-box novice">
+      <h4>Failure</h4>
+      <p>
+        Stamina reaches zero while NOT on a rest hold. If you are on a rest when exhausted, you
+        can still recover. But if you get fully pumped in an exposed position with no rest
+        nearby, you fall. Your highest point is still recorded.
+      </p>
+    </div>
+  </div>
+
+  <div class="subsection">Challenge Presets (3 Routes)</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>🟢 First Ascent</h3>
+      <p>
+        Beginner-friendly. Mostly jug holds, several rest spots, few wobbly holds. Larger
+        optimal grip zone. Standard stamina drain. Teaches basic stamina management and
+        grip control.
+      </p>
+    </div>
+    <div class="card">
+      <h3>🟡 Crux Master</h3>
+      <p>
+        Technical route. Mix of crimps, slopers, and pinches. 32% of holds are wobbly. Fewer
+        rests. Standard stamina drain. Smaller optimal grip zone. Teaches reading holds and
+        choosing efficient paths.
+      </p>
+    </div>
+    <div class="card">
+      <h3>🔴 The Marathon</h3>
+      <p>
+        Endurance test. 22 holds, long route, few rests. 15% faster stamina drain. Forces the
+        player to manage pace carefully — moving too fast burns out before the next rest.
+      </p>
+    </div>
+  </div>
+
+  <div class="subsection">Just-Right Ranges</div>
+  <ul class="info-list">
+    <li><span class="highlight">Grip force:</span> Too light → slip risk. Too hard → 1.7× stamina cost. Optimal → 0.75× cost. There is a sweet spot.</li>
+    <li><span class="highlight">Pace:</span> Moving too fast burns stamina before the next rest. Moving too slowly wastes energy holding position. A good rhythm exists.</li>
+    <li><span class="highlight">Rest timing:</span> Resting too early wastes time. Resting too late means you fall. Each rest has diminishing returns.</li>
+  </ul>
+
+  <!-- ===== CTA ===== -->
+  <div style="text-align:center;margin:50px 0 30px;">
+    <a href="game.html" class="hero-cta">▶ Play the Game</a>
+  </div>
+
+</div>
+
+</body>
+</html>

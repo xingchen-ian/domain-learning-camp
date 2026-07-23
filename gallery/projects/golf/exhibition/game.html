@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Play Golf</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-title">Golf<span class="dot"> · </span><span style="font-weight:400;color:var(--ink-soft);font-size:14px;">by Zoe</span></div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="design.html">Domain &amp; System</a>
+      <a href="process.html">Development</a>
+      <a href="game.html" class="active">Play</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Play</h1>
+    <p class="lede">
+      3D golf. Pick a club, aim, set power, swing. The camera sits behind your
+      ball looking toward the flag. Finish the hole in
+      <strong>par + 5</strong> or fewer, or it is game over on that hole.
+    </p>
+
+    <div class="game-wrap">
+      <div>
+        <canvas id="game-canvas" width="900" height="480"></canvas>
+        <div id="message" class="message">Welcome! Pick a club, then take your first swing.</div>
+      </div>
+
+      <aside>
+        <div class="panel">
+          <h3>Hole</h3>
+          <div class="stat-row"><span class="label">Level</span><span class="value" id="hud-level">1</span></div>
+          <div class="stat-row"><span class="label">Par</span><span class="value" id="hud-par">3</span></div>
+          <div class="stat-row"><span class="label">Stroke</span><span class="value" id="hud-stroke">0</span></div>
+          <div class="stat-row"><span class="label">Distance to flag</span><span class="value" id="hud-distance">100 yds</span></div>
+        </div>
+
+        <div class="panel">
+          <h3>Club</h3>
+          <div class="club-list" id="club-list"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Aim &amp; power</h3>
+          <div class="stat-row"><span class="label">Aim</span><span class="value" id="hud-aim">0°</span></div>
+          <div class="stat-row"><span class="label">Power</span><span class="value" id="hud-power">0%</span></div>
+          <div class="bar"><div id="power-bar" style="width:0%"></div></div>
+          <button id="swing-btn" class="btn-primary">Swing (Space)</button>
+        </div>
+
+        <div class="panel controls-hint">
+          <strong>Controls</strong><br>
+          <span class="kbd">A</span> / <span class="kbd">D</span> aim<br>
+          <span class="kbd">W</span> / <span class="kbd">S</span> power<br>
+          <span class="kbd">Space</span> swing<br>
+          Click a club to switch
+        </div>
+
+        <div class="panel">
+          <h3>Pick a hole</h3>
+          <div class="club-list" id="level-list"></div>
+        </div>
+
+        <div class="panel">
+          <button id="reset-btn" class="btn-primary" style="background:var(--ink-soft);">Reset hole (R)</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>Golf · 3D Edition · Built with HTML, CSS, JavaScript &amp; Three.js (WebGL)</footer>
+  <script src="assets/three.min.js"></script>
+  <script src="assets/game.js"></script>
+</body>
+</html>

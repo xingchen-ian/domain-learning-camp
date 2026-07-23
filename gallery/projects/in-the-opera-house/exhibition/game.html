@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>In the Opera House — Game</title>
+  <link rel="stylesheet" href="assets/game.css">
+</head>
+<body>
+  <!-- Introduction screen -->
+  <div id="intro-screen" class="intro-screen">
+    <div class="intro-card">
+      <div class="intro-emblem">🎭</div>
+      <h1 class="intro-title">In the Opera House</h1>
+      <div class="intro-rule"></div>
+      <p class="intro-story">
+        The final curtain has fallen and the audience has gone home — yet the opera singer
+        remains inside the great opera house, locked in by mistake as the stagehands bolted
+        the heavy doors for the night. The corridors are dark, the chandeliers dim, and no one
+        is coming to let her out.
+      </p>
+      <p class="intro-mission">
+        <strong>Your mission:</strong> guide the opera singer from the dressing room out onto the
+        stage. Uncover the hidden clues, mend the broken spotlight, and find the golden key that
+        opens the side door — then help her escape before the theatre is sealed for good.
+      </p>
+      <button id="btn-start" class="intro-start-btn">Begin the Escape</button>
+      <p class="intro-controls">◀ ▶ / A&nbsp;D to move · INTERACT near objects · Click items to inspect</p>
+    </div>
+  </div>
+
+  <div id="game-wrapper">
+    <header>
+      <div class="branding">In the Opera House</div>
+      <div class="hud">
+        <span id="level-display">Level 1</span>
+        <span id="timer-display">10:00</span>
+      </div>
+    </header>
+
+    <main id="stage">
+      <!-- Single golden wooden door connecting the two rooms -->
+      <div id="room-door" class="room-door">
+        <div class="door-leaf">
+          <div class="door-panel p-top"></div>
+          <div class="door-panel p-bottom"></div>
+          <div class="door-handle"></div>
+        </div>
+        <div class="door-sparkle s1"></div>
+        <div class="door-sparkle s2"></div>
+        <div class="door-sparkle s3"></div>
+        <div class="door-sparkle s4"></div>
+        <div class="door-label" id="room-door-label"></div>
+      </div>
+
+      <!-- Left: Dressing Room -->
+      <section id="dressing-room" class="room active">
+        <div class="room-label">Dressing Room</div>
+
+        <div class="wallpaper"></div>
+
+        <!-- 3D perspective floor -->
+        <div class="perspective-floor">
+          <div class="floor-vanish"></div>
+          <div class="floor-plank p1"></div>
+          <div class="floor-plank p2"></div>
+          <div class="floor-plank p3"></div>
+          <div class="floor-plank p4"></div>
+          <div class="floor-plank p5"></div>
+        </div>
+
+        <div class="crown-molding"></div>
+        <div class="chandelier chandelier-left">
+          <div class="chain"></div>
+          <div class="candle-holders">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="chandelier-sparkles">
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+          </div>
+        </div>
+
+        <div class="wall-sconce sconce-1"><div class="sconce-flame"></div></div>
+        <div class="wall-sconce sconce-2"><div class="sconce-flame"></div></div>
+
+        <div class="portrait-frame">
+          <div class="portrait-inner">
+            <div class="portrait-bg"></div>
+            <div class="portrait-singer">
+              <div class="portrait-hair-back"></div>
+              <div class="portrait-head"></div>
+              <div class="portrait-hair-front"></div>
+              <div class="portrait-body"></div>
+              <div class="portrait-bouquet"></div>
+            </div>
+            <div class="portrait-plaque"></div>
+          </div>
+        </div>
+
+        <div class="rug"></div>
+
+        <div id="wardrobe" class="prop wardrobe" title="Wardrobe">
+          <div class="wardrobe-body"></div>
+          <div class="wardrobe-door left"></div>
+          <div class="wardrobe-door right"></div>
+        </div>
+
+        <div class="coat-rack">
+          <div class="rack-pole"></div>
+          <div class="rack-base"></div>
+          <div class="fur-stole"></div>
+        </div>
+
+        <div class="storage-trunk"></div>
+
+        <!-- Gramophone on storage trunk -->
+        <div class="gramophone">
+          <div class="gramophone-base"></div>
+          <div class="gramophone-horn"></div>
+        </div>
+
+        <!-- Bust statue on pedestal -->
+        <div class="bust-pedestal">
+          <div class="pedestal"></div>
+          <div class="bust"></div>
+        </div>
+
+        <!-- Velvet drape on left wall -->
+        <div class="wall-drape"></div>
+
+        <!-- Rose petals on floor -->
+        <div class="rose-petals">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+
+        <!-- Ornate wall clock -->
+        <div class="wall-clock">
+          <div class="clock-face"></div>
+          <div class="clock-pendulum"></div>
+        </div>
+
+        <div id="vanity-chair" class="prop vanity-chair" title="Velvet stool">
+          <div class="seat"></div>
+          <div class="legs"></div>
+        </div>
+
+        <div id="mirror" class="prop mirror inspectable" title="Ornate mirror">
+          <div class="bulbs">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="frame"></div>
+          <div class="glass">
+            <div class="sticker red" data-color="red"></div>
+            <div class="sticker blue" data-color="blue"></div>
+            <div class="sticker gold" data-color="gold"></div>
+          </div>
+        </div>
+
+        <div id="dressing-table" class="prop dressing-table" title="Dressing table">
+          <div class="table-top"></div>
+          <div id="drawer" class="drawer inspectable" title="Locked drawer">
+            <div class="lock"></div>
+          </div>
+          <div id="drawer-contents" class="drawer-contents hidden">
+            <div id="lens" class="item lens" title="Spotlight lens"></div>
+            <div id="poem" class="item poem" title="Torn poem"></div>
+          </div>
+          <div class="decor">
+            <div class="perfume"></div>
+            <div class="pearl-strand"></div>
+            <div class="compact"></div>
+            <div class="love-letter"></div>
+            <div class="lace-fan"></div>
+          </div>
+        </div>
+
+        <div id="flower-vase" class="prop flower-vase" title="Roses">
+          <div class="vase"></div>
+          <div class="flowers">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div id="side-table" class="prop side-table" title="Side table">
+          <div class="top"></div>
+          <div class="leg"></div>
+          <div class="table-lamp"></div>
+        </div>
+
+        <div id="singer" class="singer" title="The opera singer">
+          <div class="hair-back"></div>
+          <div class="legs">
+            <div class="leg left-leg"></div>
+            <div class="leg right-leg"></div>
+          </div>
+          <div class="body">
+            <div class="arm left-arm"></div>
+            <div class="arm right-arm"></div>
+            <div class="necklace"></div>
+            <div class="dress-detail"></div>
+          </div>
+          <div class="head"></div>
+          <div class="hair-front"></div>
+        </div>
+
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+
+        <div class="exit-zone right" data-target="stage-area" title="Walk to the stage"></div>
+      </section>
+
+      <!-- Right: Stage -->
+      <section id="stage-area" class="room unrevealed">
+        <div class="room-label">The Stage</div>
+        <div class="stage-overlay">
+          <p>A dark curtain hides the stage. Walk the opera singer here to step into the light.</p>
+        </div>
+
+        <div class="stage-backdrop">
+          <div class="grand-curtain left"></div>
+          <div class="grand-curtain right"></div>
+        </div>
+
+        <!-- 3D perspective stage floor -->
+        <div class="perspective-floor stage-perspective">
+          <div class="floor-vanish stage-vanish"></div>
+          <div class="floor-plank p1"></div>
+          <div class="floor-plank p2"></div>
+          <div class="floor-plank p3"></div>
+          <div class="floor-plank p4"></div>
+          <div class="floor-plank p5"></div>
+        </div>
+
+        <div class="curtain-rope left-rope"></div>
+        <div class="curtain-rope right-rope"></div>
+
+        <div class="stage-chandelier">
+          <div class="chain"></div>
+          <div class="crystal-holders">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="stage-sparkles">
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+          </div>
+        </div>
+
+        <div class="stage-footlights">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+
+        <div class="music-stand">
+          <div class="stand-pole"></div>
+          <div class="stand-tray"></div>
+          <div class="stand-sheets"></div>
+        </div>
+
+        <!-- Harp silhouette -->
+        <div class="harp">
+          <div class="harp-frame"></div>
+          <div class="harp-strings"></div>
+          <div class="harp-pillar"></div>
+        </div>
+
+        <!-- Gold tassels on curtain -->
+        <div class="curtain-tassel tassel-left"></div>
+        <div class="curtain-tassel tassel-right"></div>
+
+        <!-- Velvet rope barriers -->
+        <div class="velvet-rope rope-left">
+          <div class="rope-cord"></div>
+        </div>
+        <div class="velvet-rope rope-right">
+          <div class="rope-cord"></div>
+        </div>
+
+        <!-- Star decorations on ceiling -->
+        <div class="ceiling-stars">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+
+        <!-- Pedestal with flowers -->
+        <div class="stage-pedestal">
+          <div class="pedestal-base"></div>
+          <div class="pedestal-flowers">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Stage mask decorations (comedy & tragedy) -->
+        <div class="stage-mask mask-left"></div>
+        <div class="stage-mask mask-right"></div>
+
+        <div id="ladder" class="prop ladder" title="Wooden ladder">
+          <div class="ladder-rail left"></div>
+          <div class="ladder-rail right"></div>
+          <div class="ladder-rung r1"></div>
+          <div class="ladder-rung r2"></div>
+          <div class="ladder-rung r3"></div>
+          <div class="ladder-rung r4"></div>
+          <div class="ladder-rung r5"></div>
+          <div class="ladder-rung r6"></div>
+        </div>
+
+        <div id="spotlight" class="prop spotlight inspectable" title="Broken spotlight">
+          <div class="spotlight-mount"></div>
+          <div class="spotlight-body"></div>
+          <div id="spotlight-beam" class="spotlight-beam hidden"></div>
+          <div id="spotlight-controls" class="spotlight-controls hidden">
+            <button id="angle-left" title="Rotate left">◀</button>
+            <span id="angle-display">0°</span>
+            <button id="angle-right" title="Rotate right">▶</button>
+          </div>
+        </div>
+
+        <div id="curtain" class="curtain">
+          <div class="curtain-panel left"></div>
+          <div class="curtain-panel right"></div>
+        </div>
+
+        <div id="chair" class="prop chair hidden" title="Empty chair"></div>
+        <div id="key" class="item key hidden" title="Golden key"></div>
+
+        <!-- Spotlight control panel on the ground (appears after spotlight is fixed) -->
+        <div id="spotlight-panel" class="spotlight-panel hidden">
+          <div class="panel-lever"></div>
+          <div class="panel-base"></div>
+        </div>
+
+        <div class="exit-sign">EXIT</div>
+
+        <div id="side-door" class="prop side-door" title="Side door (locked)">
+          <div class="door-frame"></div>
+          <div class="door-panel"></div>
+          <div class="exit-glow hidden"></div>
+        </div>
+
+        <div id="singer-stage" class="singer" title="The opera singer">
+          <div class="hair-back"></div>
+          <div class="legs">
+            <div class="leg left-leg"></div>
+            <div class="leg right-leg"></div>
+          </div>
+          <div class="body">
+            <div class="arm left-arm"></div>
+            <div class="arm right-arm"></div>
+            <div class="necklace"></div>
+            <div class="dress-detail"></div>
+          </div>
+          <div class="head"></div>
+          <div class="hair-front"></div>
+        </div>
+
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+
+        <div class="exit-zone left" data-target="dressing-room" title="Return to dressing room"></div>
+      </section>
+    </main>
+
+    <aside id="inventory">
+      <h3>Inventory</h3>
+      <div id="inventory-slots">
+        <div class="slot" data-item=""></div>
+        <div class="slot" data-item=""></div>
+        <div class="slot" data-item=""></div>
+      </div>
+    </aside>
+
+    <footer id="message-area">
+      <p id="message">The opera singer is trapped after the show. Use arrow keys or WASD to move. Help her escape before the theatre locks.</p>
+      <div class="controls-hint">◀ ▶ or A/D to move · INTERACT near objects · ◀ ▶ or Q/E to aim spotlight · Click items to inspect</div>
+    </footer>
+
+    <!-- Spotlight adjustment mode indicator -->
+    <div id="adjust-mode" class="adjust-mode hidden">
+      <div class="adjust-title">✦ Adjusting Spotlight ✦</div>
+      <div class="adjust-angle">Beam: <span id="adjust-angle-val">-25°</span></div>
+      <div class="adjust-hint">◀ ▶ to aim · INTERACT to exit</div>
+    </div>
+
+    <!-- D-pad and Interact controls overlay -->
+    <div id="touch-controls">
+      <div id="interact-hint"></div>
+      <div class="dpad">
+        <button id="btn-up" class="dpad-btn dpad-up" title="Move Up">▲</button>
+        <button id="btn-left" class="dpad-btn dpad-left" title="Move Left">◀</button>
+        <div class="dpad-center">
+          <button id="btn-interact" class="interact-btn" title="Interact">
+            <span class="interact-icon-normal">🔍</span>
+            <span class="interact-icon-active">!</span>
+            <span class="interact-label">ACT</span>
+          </button>
+        </div>
+        <button id="btn-right" class="dpad-btn dpad-right" title="Move Right">▶</button>
+        <button id="btn-down" class="dpad-btn dpad-down" title="Move Down">▼</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code entry modal -->
+  <div id="code-modal" class="modal hidden">
+    <div class="modal-panel vintage-card">
+      <h2>Enter the color code</h2>
+      <div id="code-slots">
+        <button class="code-slot" data-index="0" data-value="">?</button>
+        <button class="code-slot" data-index="1" data-value="">?</button>
+        <button class="code-slot" data-index="2" data-value="">?</button>
+      </div>
+      <div class="color-buttons">
+        <button class="color-btn red" data-color="red">Red</button>
+        <button class="color-btn orange" data-color="orange">Orange</button>
+        <button class="color-btn gold" data-color="gold">Gold</button>
+        <button class="color-btn green" data-color="green">Green</button>
+        <button class="color-btn turquoise" data-color="turquoise">Turquoise</button>
+        <button class="color-btn blue" data-color="blue">Blue</button>
+        <button class="color-btn purple" data-color="purple">Purple</button>
+      </div>
+      <div class="modal-actions">
+        <button id="submit-code">Unlock</button>
+        <button id="cancel-code">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Poem modal -->
+  <div id="poem-modal" class="modal hidden">
+    <div class="modal-panel vintage-card">
+      <h2>A Torn Poem</h2>
+      <p class="poem-text">
+        Red marks the opera's grand opening.<br>
+        Blue tints the spotlight when it's dimmed.<br>
+        Golden sunbeams brush the seat.
+      </p>
+      <button class="close-modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Clue modal (click-to-inspect) -->
+  <div id="clue-modal" class="modal hidden">
+    <div class="modal-panel vintage-card clue-card">
+      <div class="clue-icon-wrap" id="clue-icon"></div>
+      <h2 id="clue-title">Inspection</h2>
+      <p class="clue-text" id="clue-text"></p>
+      <button class="close-modal" id="close-clue">Close</button>
+    </div>
+  </div>
+
+  <!-- End screens -->
+  <div id="win-screen" class="end-screen hidden">
+    <div class="vintage-card">
+      <h1>Escape!</h1>
+      <p>The opera singer slipped out through the side door before the theatre locked.</p>
+      <p id="win-time"></p>
+      <button id="play-again-win">Play Again</button>
+    </div>
+  </div>
+
+  <div id="lose-screen" class="end-screen hidden">
+    <div class="vintage-card">
+      <h1>The Lights Go Down</h1>
+      <p>The theatre doors are locked. The opera singer must spend the night inside.</p>
+      <button id="play-again-lose">Try Again</button>
+    </div>
+  </div>
+
+  <script src="assets/game.js"></script>
+</body>
+</html>

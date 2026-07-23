@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process — Into the Unknown</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-icon"></span>
+      Into the Unknown
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="domain.html">Domain & Design</a></li>
+      <li><a href="process.html" class="active">Process</a></li>
+      <li><a href="game.html">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <div class="page">
+
+    <h1>Development Process</h1>
+    <p>A chronological timeline of how the game was built through human-AI collaboration.</p>
+
+    <div class="info-box info">
+      <h4>Development Overview</h4>
+      <p>
+        <strong>Student / Team:</strong> Hawinate<br>
+        <strong>AI Agent:</strong> WorkBuddy<br>
+        <strong>Domain:</strong> Cave Exploration<br>
+        <strong>Dependency Track:</strong> Track A — No build step (HTML, CSS, plain JavaScript, Canvas 2D)<br>
+        <strong>Core Learning Shift:</strong> From exploring by instinct → making careful decisions and resource management
+      </p>
+    </div>
+
+    <h2>Development Timeline</h2>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">Session 1 — Planning</div>
+        <div class="timeline-title">Reading the brief and understanding the domain</div>
+        <div class="timeline-desc">
+          The development brief was provided as a Markdown file. The AI Agent read the full brief,
+          including the design summary, core learning loop, data model, rules, feedback priorities,
+          and technical requirements. The core learning shift (instinct → careful decisions) was
+          identified as the guiding principle for all gameplay decisions.
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Session 1 — Architecture</div>
+        <div class="timeline-title">Choosing the technology track</div>
+        <div class="timeline-desc">
+          Based on the brief's guidance to "choose the lowest necessary dependency track," Track A
+          (no build step) was selected: plain HTML, CSS, and JavaScript with Canvas 2D. This ensures
+          the exhibition build runs on any static HTTP server without npm, Node.js, or a development
+          server. All code is self-contained with no external dependencies.
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Session 2 — Game Engine</div>
+        <div class="timeline-title">Building the core game engine</div>
+        <div class="timeline-desc">
+          The game engine was implemented in a single JavaScript file (game.js) using Canvas 2D.
+          Key systems built: tile-based cave rendering, player movement with WASD/arrow keys,
+          flashlight cone with directional illumination, fog-of-war darkness, battery drain system,
+          health system, timer, collision detection, and screen shake effects. Data was separated
+          into Environment Data, Player-Controlled Data, and System-Calculated Results as specified
+          in the brief.
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Session 2 — Level Design</div>
+        <div class="timeline-title">Designing three challenge presets</div>
+        <div class="timeline-desc">
+          Three levels were designed as grid-based maps, each changing system variables and
+          relationships: Level 1 (The Entrance) teaches basics with bats only; Level 2 (The Depths)
+          adds water and trap hazards plus the rescue objective; Level 3 (The Escape) adds unstable
+          ceiling collapse events and tighter time/battery constraints. Footprints were placed on
+          safer paths to reward observation.
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Session 2 — Feedback Systems</div>
+        <div class="timeline-title">Implementing feedback translation</div>
+        <div class="timeline-desc">
+          Invisible game data was translated into readable feedback: flashlight flickering when
+          battery is low, screen shake and dust particles for collapse warnings, footprint marks
+          on the floor as path clues, a red vignette overlay when danger level is critical, and
+          a Web Audio API sound system for pickup, hurt, bat, splash, rumble, and victory effects.
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Session 3 — Website</div>
+        <div class="timeline-title">Building the integrated project website</div>
+        <div class="timeline-desc">
+          Four HTML pages were created with shared CSS: Home (game idea), Domain & Design (domain
+          knowledge, system design, feedback mappings, challenge presets), Process (this timeline),
+          and Play Game (the playable game embedded in the page). Navigation is consistent across
+          all pages, and all links use relative paths for Gallery compatibility.
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Session 3 — Testing</div>
+        <div class="timeline-title">Testing and verification</div>
+        <div class="timeline-desc">
+          The game was tested through a local static HTTP server. Navigation links, gameplay
+          controls, all three levels, win/lose conditions, and restart functionality were verified.
+          The layout was checked at 1920×1080. All assets are local — no internet access required.
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Key Design Decisions</h2>
+
+    <div class="info-box">
+      <h4>1. Flashlight as the Core Resource</h4>
+      <p>
+        The flashlight is both the player's primary tool and their most limited resource. It drains
+        faster when moving, encouraging the player to think about whether exploration is worth the
+        battery cost. When it runs out, the player is nearly blind — directly teaching the
+        consequence of poor resource management.
+      </p>
+    </div>
+
+    <div class="info-box">
+      <h4>2. Footprints as Teaching Feedback</h4>
+      <p>
+        Footprints appear on the safer path, rewarding players who observe their surroundings.
+        This directly addresses the novice misconception of "rushing forward without carefully
+        observing." A player who follows footprints succeeds; one who ignores them may hit hazards.
+      </p>
+    </div>
+
+    <div class="info-box">
+      <h4>3. Progressive Hazard Introduction</h4>
+      <p>
+        Level 1 introduces only bats (low damage, easy to understand). Level 2 adds water and traps
+        (medium-high damage, requiring caution). Level 3 adds unstable ceilings with periodic
+        collapse warnings (environmental pressure). This progression teaches the player to predict
+        dangers through repetition.
+      </p>
+    </div>
+
+    <div class="info-box">
+      <h4>4. Visible Feedback Over Numbers</h4>
+      <p>
+        Per the brief's feedback priorities, invisible data is shown through visual and audio
+        effects rather than just numbers: flickering light instead of just a battery percentage,
+        screen shake instead of a "danger score," footprint marks instead of a directional arrow.
+        The HUD bars exist for quick reference, but the primary feedback is experiential.
+      </p>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>AI Influence on Design Direction</h2>
+    <p>
+      The AI Agent (WorkBuddy) contributed the following design directions, all of which were
+      accepted by the student:
+    </p>
+    <ul>
+      <li><strong>Track A technology choice:</strong> Recommended plain HTML/CSS/JS over npm/Vite/Three.js to keep the exhibition build simple and Gallery-compatible.</li>
+      <li><strong>Flashlight cone mechanic:</strong> Suggested a directional cone of light rather than a circular radius, making the facing direction meaningful and increasing tension.</li>
+      <li><strong>Three-level progression:</strong> Proposed gradually introducing hazards (bats → water/traps → collapse) rather than all at once, matching the learning loop.</li>
+      <li><strong>Web Audio API for sound:</strong> Suggested generating sounds programmatically instead of loading audio files, keeping the build self-contained.</li>
+      <li><strong>Red vignette for danger:</strong> Proposed a visual danger indicator that appears when health/battery/time is critically low, rather than relying only on HUD numbers.</li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <h2>Files & Structure</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th>File</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>exhibition/index.html</code></td><td>Home page — game idea, overview, level summaries</td></tr>
+        <tr><td><code>exhibition/domain.html</code></td><td>Domain knowledge, system design, feedback, challenge presets</td></tr>
+        <tr><td><code>exhibition/process.html</code></td><td>This page — development timeline and decisions</td></tr>
+        <tr><td><code>exhibition/game.html</code></td><td>Playable game page</td></tr>
+        <tr><td><code>exhibition/assets/css/style.css</code></td><td>Shared website styling</td></tr>
+        <tr><td><code>exhibition/assets/js/game.js</code></td><td>Complete game engine (Canvas 2D, no dependencies)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="text-center mt-40">
+      <a href="game.html" class="btn btn-primary">▶ Play the Game</a>
+      <a href="domain.html" class="btn btn-secondary">View System Design</a>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>Into the Unknown — A Cave Exploration Game by Hawinate | Built with WorkBuddy</p>
+  </footer>
+
+</body>
+</html>

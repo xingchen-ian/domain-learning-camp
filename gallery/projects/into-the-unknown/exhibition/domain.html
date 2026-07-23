@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain & System Design — Into the Unknown</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-icon"></span>
+      Into the Unknown
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="domain.html" class="active">Domain & Design</a></li>
+      <li><a href="process.html">Process</a></li>
+      <li><a href="game.html">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <div class="page">
+
+    <h1>Domain Knowledge & System Design</h1>
+    <p>How real-world cave exploration knowledge becomes a playable game system.</p>
+
+    <!-- Domain Knowledge -->
+    <h2>Domain: Cave Exploration</h2>
+
+    <div class="info-box">
+      <h4>Real-World Domain</h4>
+      <p>
+        Cave exploration combines adventure and problem-solving skills in an unusual environment.
+        Explorers explore nature and navigate unknown places while getting used to the unexpected
+        obstacles they may encounter.
+      </p>
+    </div>
+
+    <div class="info-box danger">
+      <h4>Novice Misconception</h4>
+      <p>
+        Beginners often underestimate the importance of navigation and managing resources. They may
+        think that every random tunnel they find will lead to success and collect items that are not
+        useful to complete the task. Beginners make the mistake of rushing forward without carefully
+        observing their surroundings — they choose the closest path, ignore warning signs, or use
+        their resources too early without thinking about future challenges.
+      </p>
+    </div>
+
+    <div class="info-box safe">
+      <h4>Expert Judgment</h4>
+      <p>
+        The biggest challenge is making decisions in an unpredictable and strange environment while
+        taking different factors into consideration. The player must account for the energy required
+        to perform certain tasks and manage their depleted resources (flashlight, harnesses to climb
+        inside the cave). Experts observe carefully, read environmental clues, and conserve resources
+        for when they are truly needed.
+      </p>
+    </div>
+
+    <div class="info-box info">
+      <h4>Core Learning Shift</h4>
+      <p>
+        Moving from <strong>exploring by instinct</strong> to making <strong>careful decisions and
+        resource management</strong>. This shift becomes playable through the game's observe-judge-act
+        loop, where rushing forward leads to failure and careful observation leads to success.
+      </p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- System Design -->
+    <h2>System Design</h2>
+    <p>The game separates data into three categories as specified in the design brief:</p>
+
+    <h3>Environment Data</h3>
+    <p>The cave world itself — what the player observes and interacts with:</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>Element</th><th>Description</th><th>Game Representation</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Cave Layout</strong></td><td>Tunnels, walls, junctions</td><td>Grid-based tile map</td></tr>
+        <tr><td><strong>Footprints</strong></td><td>Clues left by previous explorers</td><td>F tiles — visual indicator on floor</td></tr>
+        <tr><td><strong>Bats</strong></td><td>Hazard — bat colony attack</td><td>A tiles — damage on contact</td></tr>
+        <tr><td><strong>Water</strong></td><td>Hazard — underground water, drowning risk</td><td>W tiles — damage on contact</td></tr>
+        <tr><td><strong>Traps</strong></td><td>Hazard — hidden traps</td><td>T tiles — hard to spot, high damage</td></tr>
+        <tr><td><strong>Unstable Ceiling</strong></td><td>Hazard — cave collapse warning</td><td>U tiles — triggers shake + dust</td></tr>
+        <tr><td><strong>Batteries</strong></td><td>Resource — restores flashlight power</td><td>B tiles — +35% battery</td></tr>
+        <tr><td><strong>Medkits</strong></td><td>Resource — restores health</td><td>M tiles — +40 health</td></tr>
+        <tr><td><strong>Missing Explorer</strong></td><td>Rescue target</td><td>R tiles — must find before escaping</td></tr>
+        <tr><td><strong>Exit</strong></td><td>Escape point</td><td>X tiles — level completion</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Player-Controlled Data</h3>
+    <p>What the player directly controls through their actions:</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>Action</th><th>Input</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Move</strong></td><td>WASD / Arrow Keys</td><td>Explore tunnels, face direction for flashlight</td></tr>
+        <tr><td><strong>Toggle Flashlight</strong></td><td>F key</td><td>Turn light on/off to conserve battery</td></tr>
+        <tr><td><strong>Pause</strong></td><td>P / ESC</td><td>Pause the game</td></tr>
+        <tr><td><strong>Choose Path</strong></td><td>Movement at junctions</td><td>Decide which tunnel to explore</td></tr>
+        <tr><td><strong>Collect Items</strong></td><td>Walk over items</td><td>Auto-pickup batteries and medkits</td></tr>
+        <tr><td><strong>Interact</strong></td><td>Walk onto levers/objects</td><td>Open doors, trigger events</td></tr>
+      </tbody>
+    </table>
+
+    <h3>System-Calculated Results</h3>
+    <p>Values the game computes based on player actions and environment:</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>Variable</th><th>Range</th><th>How It Changes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Health</strong></td><td>0–100</td><td>Decreases from hazards; increases with medkits</td></tr>
+        <tr><td><strong>Battery</strong></td><td>0–100</td><td>Drains over time (faster when moving); restores with batteries</td></tr>
+        <tr><td><strong>Time Left</strong></td><td>0–150s</td><td>Counts down continuously</td></tr>
+        <tr><td><strong>Danger Level</strong></td><td>0–2</td><td>Calculated from health, battery, and time thresholds</td></tr>
+        <tr><td><strong>Rescue Status</strong></td><td>Yes/No</td><td>Set to true when explorer is found</td></tr>
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+
+    <!-- Feedback Translation -->
+    <h2>Feedback Translation</h2>
+    <p>Invisible game data is translated into readable feedback for the player:</p>
+
+    <div class="feedback-item">
+      <div class="feedback-icon danger">🔦</div>
+      <div class="feedback-content">
+        <h4>Flashlight Flickering</h4>
+        <p><strong>Invisible data:</strong> Battery is low. <strong>Visible feedback:</strong> The flashlight light becomes dimmer and flickers randomly. Battery bar color shifts from green → yellow → red.</p>
+      </div>
+    </div>
+
+    <div class="feedback-item">
+      <div class="feedback-icon danger">💥</div>
+      <div class="feedback-content">
+        <h4>Loud Rumbling + Screen Shake</h4>
+        <p><strong>Invisible data:</strong> Cave may collapse soon. <strong>Visible feedback:</strong> The screen shakes and dust particles fall from the ceiling while a low rumbling sound plays.</p>
+      </div>
+    </div>
+
+    <div class="feedback-item">
+      <div class="feedback-icon safe">👣</div>
+      <div class="feedback-content">
+        <h4>Footprints on the Floor</h4>
+        <p><strong>Invisible data:</strong> The player may be close to a safe route or the exit. <strong>Visible feedback:</strong> Footprint marks appear on the floor, hinting at a direction to explore.</p>
+      </div>
+    </div>
+
+    <div class="feedback-item">
+      <div class="feedback-icon info">🦇</div>
+      <div class="feedback-content">
+        <h4>Bat Sounds & Dark Shapes</h4>
+        <p><strong>Invisible data:</strong> A bat colony is nearby. <strong>Visible feedback:</strong> Fluttering dark shapes and high-pitched sounds warn of the hazard before contact.</p>
+      </div>
+    </div>
+
+    <div class="feedback-item">
+      <div class="feedback-icon danger">🩸</div>
+      <div class="feedback-content">
+        <h4>Red Vignette Overlay</h4>
+        <p><strong>Invisible data:</strong> Health, battery, or time is critically low (danger level 2). <strong>Visible feedback:</strong> A pulsing red vignette appears around the screen edges.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Success & Failure -->
+    <h2>Success & Failure Conditions</h2>
+
+    <div class="info-box safe">
+      <h4>✓ Success Condition</h4>
+      <p>The player succeeds if they reach the exit of the cave within the time limit while still being able to get through obstacles and rescuing the missing explorer.</p>
+    </div>
+
+    <div class="info-box danger">
+      <h4>✗ Failure Conditions</h4>
+      <ul>
+        <li><strong>Out of time:</strong> The timer reaches zero before escaping.</li>
+        <li><strong>Out of light:</strong> Flashlight battery reaches zero and the player gets lost in darkness.</li>
+        <li><strong>Out of health:</strong> Health reaches zero from hazards (bats, water, traps, collapse).</li>
+        <li><strong>Drowning:</strong> Stepping into underground water without enough health.</li>
+        <li><strong>Hidden traps:</strong> Falling for a trap that deals lethal damage.</li>
+        <li><strong>Cave collapse:</strong> Getting caught in a collapse.</li>
+      </ul>
+    </div>
+
+    <div class="info-box info">
+      <h4>Just-Right Ranges & Thresholds</h4>
+      <p>
+        Moving too quickly increases the risk of triggering hazards, but moving too slowly wastes time.
+        Using the flashlight too much wastes energy, but using too little makes navigation dangerous.
+        The game rewards balanced, deliberate play.
+      </p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Challenge Presets -->
+    <h2>Challenge Presets</h2>
+    <p>Each level changes system variables and relationships — not just visual decoration:</p>
+
+    <div class="challenge-card">
+      <h3>Preset 1: The Entrance <span class="challenge-badge">Level 1</span></h3>
+      <p><strong>What changes:</strong> Generous time (120s) and battery (80%) give room to learn. Only one hazard type (bats). Footprints clearly mark the safe path. No rescue objective — just escape.</p>
+      <div class="variables">
+        <strong>Variables:</strong> time=120, battery=80, health=100, hazards=[bats], rescueRequired=false<br>
+        <strong>Relationships:</strong> battery_drain=normal, hazard_damage=low, clue_visibility=high
+      </div>
+    </div>
+
+    <div class="challenge-card">
+      <h3>Preset 2: The Depths <span class="challenge-badge">Level 2</span></h3>
+      <p><strong>What changes:</strong> More time (150s) but less battery (70%) and a larger map. Two new hazards (water, traps) with higher damage. Rescue objective introduced — must find explorer before escaping. Footprints guide but dead ends exist.</p>
+      <div class="variables">
+        <strong>Variables:</strong> time=150, battery=70, health=100, hazards=[water, traps], rescueRequired=true<br>
+        <strong>Relationships:</strong> battery_drain=normal, hazard_damage=high, clue_visibility=medium, map_complexity=high
+      </div>
+    </div>
+
+    <div class="challenge-card">
+      <h3>Preset 3: The Escape <span class="challenge-badge">Level 3</span></h3>
+      <p><strong>What changes:</strong> Tightest time (100s) and lowest battery (60%). Unstable ceiling introduces periodic collapse warnings (screen shake + dust). All hazard types active. Must rescue and escape under maximum pressure.</p>
+      <div class="variables">
+        <strong>Variables:</strong> time=100, battery=60, health=100, hazards=[bats, water, unstable], rescueRequired=true<br>
+        <strong>Relationships:</strong> battery_drain=normal, hazard_damage=high, collapse_events=periodic, clue_visibility=medium
+      </div>
+    </div>
+
+    <div class="text-center mt-40">
+      <a href="game.html" class="btn btn-primary">▶ Play the Game</a>
+      <a href="process.html" class="btn btn-secondary">View Development Process</a>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>Into the Unknown — A Cave Exploration Game by Hawinate | Built with WorkBuddy</p>
+  </footer>
+
+</body>
+</html>

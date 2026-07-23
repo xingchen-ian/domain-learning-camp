@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>how to skateboarding — Development Process</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-body">
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="game.html">Play Game</a>
+    <a href="process.html">Process</a>
+  </nav>
+
+  <div class="content">
+    <h1>Development Process</h1>
+    <p>This page is a concise timeline of how the game was built through human–AI collaboration. The full chronological log is in <code>agent-development-log.md</code>.</p>
+
+    <h2>Timeline</h2>
+    <ul class="timeline">
+      <li>
+        <time>2026-07-15 — Session 1</time>
+        <h3>Project Brief &amp; Planning</h3>
+        <p>The student shared the game design brief (<code>how-to-skateboarding.md</code>) and the system graph. The AI agent read the brief, restated the core learning shift, core loop, main variables, and challenge presets, and proposed an implementation plan using <strong>Track A</strong> (plain HTML + CSS + Canvas 2D, no build step).</p>
+        <p><strong>Decision:</strong> Track A chosen because the game is a 2D side-view and does not need 3D or complex dependencies. This keeps the exhibition build simple — a static folder with no <code>npm install</code> required.</p>
+      </li>
+      <li>
+        <time>2026-07-15 — Session 1</time>
+        <h3>Project Structure Created</h3>
+        <p>Created the directory layout required by the brief: <code>exhibition/</code> for the final static website, <code>source/</code> for editable source, and root-level files (<code>development-brief.md</code>, <code>system-graph.png</code>, <code>README.md</code>, <code>THIRD_PARTY.md</code>, <code>submission-manifest.json</code>).</p>
+      </li>
+      <li>
+        <time>2026-07-15 — Session 1</time>
+        <h3>Core Game Loop Implemented</h3>
+        <p>The AI agent wrote <code>game.js</code> with clearly separated sections: <strong>Environment Data</strong> (level definitions, terrain functions), <strong>Player-Controlled Data</strong> (initial speed, core height), and <strong>System-Calculated Results</strong> (speed, energy, balance, position). The physics engine models friction, gravity, core efficiency on uphill, and balance loss on downhill. Three challenge presets were defined with different friction values, wheel types, terrains, and an energy pad in Level 3.</p>
+        <p><strong>Test result:</strong> Game loads in the browser, start screen displays terrain preview and speed slider, all three levels are selectable, win/lose conditions trigger correctly.</p>
+      </li>
+      <li>
+        <time>2026-07-15 — Session 1</time>
+        <h3>Rendering &amp; HUD</h3>
+        <p>Canvas rendering was implemented: sky gradient, parallax mountains, smooth terrain fill with grass, skateboard with wheels, stick-figure character with a color-coded core dot (green = good, yellow = warning, red = danger), and a HUD showing speed, energy, balance, core height vs. ideal core, slope indicator, and distance progress.</p>
+      </li>
+      <li>
+        <time>2026-07-15 — Session 1</time>
+        <h3>Project Website Built</h3>
+        <p>Created <code>index.html</code> (game idea, domain knowledge, system design), <code>game.html</code> (playable game with touch controls), <code>process.html</code> (this page), and shared <code>style.css</code>. Navigation links use relative paths so the project works inside a Gallery subfolder.</p>
+      </li>
+    </ul>
+
+    <h2>Core Loop Validation</h2>
+    <div class="card">
+      <h3>Observe → Judge → Act → Feedback → Adjust</h3>
+      <ul>
+        <li><strong>Observe:</strong> The player sees the terrain ahead, their speed, energy, and core position.</li>
+        <li><strong>Judge:</strong> "Is my core too high for this downhill? Do I have enough speed to climb the next hill?"</li>
+        <li><strong>Act:</strong> Press ↑ or ↓ to shift the core height.</li>
+        <li><strong>Read feedback:</strong> The core dot changes color, the balance bar drops or recovers, the board climbs or gets stuck.</li>
+        <li><strong>Adjust:</strong> On the next attempt, the player picks a different initial speed or adjusts the core earlier.</li>
+      </ul>
+    </div>
+
+    <h2>AI Influence on Design Direction</h2>
+    <div class="card">
+      <ul>
+        <li>The AI agent proposed using <strong>sin²(πt)</strong> smooth hills so terrain slopes are continuous (no sharp kinks that would make physics jitter).</li>
+        <li>The AI agent suggested separating <strong>uphill energy penalty</strong> (wrong core = more speed loss) from <strong>downhill balance penalty</strong> (wrong core = fall risk), matching the brief's description of expert vs. novice behavior.</li>
+        <li>The AI agent added a <strong>speed-amplifies-balance-error</strong> rule so that "too fast makes player fall down" from the brief is mechanically enforced.</li>
+        <li>The AI agent introduced a <strong>control factor</strong> per wheel type: ice recovers balance slowly (slippery), cake recovers quickly (grippy) — making each level feel distinct beyond just friction numbers.</li>
+      </ul>
+    </div>
+
+    <h2>Open Questions / Known Issues</h2>
+    <div class="card">
+      <ul>
+        <li>Wind direction was mentioned in the brief's observe step but is not yet implemented. It may be added in a future iteration as a visual arrow that slightly affects balance.</li>
+        <li>The game has not yet been playtested by classmates. Balance tuning (friction values, balance recovery rates) may need adjustment after real playtesting.</li>
+        <li>Sound effects (skateboard movement, falling) are not yet added. The brief mentions sound as feedback but the first playable version prioritizes visual feedback.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="footer">
+    IMA Summer Program — Game Design — Wang Yiran — Built with WorkBuddy
+  </footer>
+</body>
+</html>

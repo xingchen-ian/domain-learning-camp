@@ -1,0 +1,2200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title></title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #05050f;
+    }
+
+    body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      color: #e8fbff;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    #gameShell {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      background: #05050f;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: crosshair;
+      background: #05050f;
+    }
+
+    #goalCard {
+      --accent: #8df6ff;
+      box-sizing: border-box;
+      min-width: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 22px 20px;
+      border-left: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+      background:
+        linear-gradient(180deg, rgba(11, 17, 42, 0.96), rgba(5, 7, 22, 0.98)),
+        #05050f;
+      box-shadow: inset 18px 0 38px rgba(86, 231, 255, 0.06);
+    }
+
+    .goal-kicker {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .goal-title {
+      margin: 0 0 14px;
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+
+    .goal-brief,
+    .goal-success {
+      margin: 0 0 16px;
+      color: rgba(230, 250, 255, 0.9);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .goal-section {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .goal-steps {
+      margin: 0 0 18px;
+      padding-left: 19px;
+      color: rgba(218, 248, 255, 0.88);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .goal-steps li {
+      margin: 0 0 8px;
+      padding-left: 2px;
+    }
+
+    .goal-success {
+      padding-top: 13px;
+      border-top: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+      color: rgba(255, 239, 153, 0.9);
+    }
+
+    @media (max-width: 900px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) 220px;
+      }
+
+      #goalCard {
+        height: 220px;
+        padding: 14px 18px;
+        border-left: 0;
+        border-top: 1px solid rgba(119, 244, 255, 0.24);
+      }
+
+      .goal-title {
+        margin-bottom: 8px;
+        font-size: 18px;
+      }
+
+      .goal-brief,
+      .goal-steps,
+      .goal-success {
+        font-size: 13px;
+        line-height: 1.55;
+      }
+    }
+  </style>
+</head>
+<body>
+<main id="gameShell">
+  <canvas id="stage"></canvas>
+</main>
+<aside id="goalCard">
+  <p class="goal-kicker" id="goalIndex"></p>
+  <h1 class="goal-title" id="goalName"></h1>
+  <p class="goal-brief" id="goalBrief"></p>
+  <p class="goal-section">操作步骤</p>
+  <ol class="goal-steps" id="goalSteps"></ol>
+  <p class="goal-success" id="goalSuccess"></p>
+</aside>
+<script>
+(() => {
+  "use strict";
+
+  const canvas = document.getElementById("stage");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const goalCardEl = document.getElementById("goalCard");
+  const goalIndexEl = document.getElementById("goalIndex");
+  const goalNameEl = document.getElementById("goalName");
+  const goalBriefEl = document.getElementById("goalBrief");
+  const goalStepsEl = document.getElementById("goalSteps");
+  const goalSuccessEl = document.getElementById("goalSuccess");
+
+  let dpr = 1;
+  let W = 0;
+  let H = 0;
+  let board = null;
+  let toolbar = null;
+  let time = 0;
+  let lastFrame = performance.now();
+  let stars = [];
+  let shards = [];
+  let currentLevel = 0;
+  let level = null;
+  let drag = null;
+  let audio = null;
+  let victoryClock = 0;
+  let flashClock = 0;
+  let lastSolved = false;
+  let finale = false;
+  let finaleClock = 0;
+  let runStartedAt = performance.now();
+  let finalElapsed = 0;
+  let finalRank = "D";
+  let traceCache = null;
+  let traceDirty = true;
+  let frameGate = performance.now();
+
+  const TAU = Math.PI * 2;
+  const STEP = 2;
+  const GRID = 24;
+  const FRAME_MS = 1000 / 30;
+  const LOW_POWER = true;
+  const TOTAL_LEVELS = 12;
+
+  const goalDetails = [
+    {
+      name: "折射穿过缺口",
+      brief: "目标是让左侧白光穿过障碍物中间的缺口，并命中右侧白色能量球。矩形玻璃块会让光线在进入和离开时改变方向。",
+      steps: [
+        "从底部工具栏拖出矩形玻璃块。",
+        "把玻璃块放在障碍墙左侧、靠近缺口的位置。",
+        "观察白光进入玻璃后的偏折方向；出射光需要从墙缝穿过去。"
+      ],
+      success: "当白光碰到右侧能量球，能量球会变亮并爆出金色粒子。"
+    },
+    {
+      name: "从白光中分出红光",
+      brief: "目标只接受红光。三角棱镜会把白光分成红、橙、黄、绿、蓝、靛、紫七条光带。",
+      steps: [
+        "从工具栏拖出三角棱镜，放到白光经过的位置。",
+        "观察棱镜右侧散开的七色光带。",
+        "移动棱镜的位置，让最上方偏折较小的红色光带对准红色目标。"
+      ],
+      success: "只有红色光带命中红球才算成功，其他颜色命中无效。"
+    },
+    {
+      name: "用全反射拐弯",
+      brief: "直线光路被 U 形地形挡住。半圆高折射率介质可以让光进入后在内部反弹，再改变出射方向。",
+      steps: [
+        "拖出半圆形介质，放在弯道转角附近。",
+        "让白光先进入半圆内部，而不是直接撞到墙上。",
+        "微调半圆位置，使光在内部反弹后从另一个方向射出。"
+      ],
+      success: "白光完成一次明显反弹并命中右侧目标时，关卡通过。"
+    },
+    {
+      name: "把多束光聚到小目标",
+      brief: "目标半径很小，单束光容易偏离。双凸透镜会把多束平行白光向同一个焦点收拢。",
+      steps: [
+        "拖出双凸透镜，放在几束白光的中间。",
+        "保持透镜覆盖上、中、下多条光线。",
+        "移动透镜，让几条出射光在右侧小球位置附近交汇。"
+      ],
+      success: "至少三束白光同时打到小目标，能量球会被充能。"
+    },
+    {
+      name: "用滤光片吸收错误颜色",
+      brief: "左侧发出的是绿光，但目标是红色接收器。这里不是让绿光直接命中，而是用红色滤光片吸收绿光，触发目标的过滤判定。",
+      steps: [
+        "优先拖出红色半透明滤光片。",
+        "把滤光片放在绿光直线路径上。",
+        "如果绿光在滤光片处变暗消失，说明颜色被正确吸收。"
+      ],
+      success: "绿光被红色滤光片吸收，并且吸收点靠近接收器高度时，目标会激活。"
+    },
+    {
+      name: "红光和绿光混成黄光",
+      brief: "黄色目标需要由红光和绿光叠加产生。两束光在同一区域重合时，会生成新的黄色光斑。",
+      steps: [
+        "拖出透镜，放在红光和绿光即将交叉的位置。",
+        "让红光与绿光在透镜附近重叠。",
+        "观察重叠处是否出现黄色光斑，并让黄色光继续射向黄球。"
+      ],
+      success: "生成的黄色光命中黄色目标，目标会爆发金色光芒。"
+    },
+    {
+      name: "让光沿通道连续反弹",
+      brief: "蛇形通道不能靠直线通过。圆形高折射率介质会引导白光在内部多次全反射，类似光纤传输。",
+      steps: [
+        "拖出圆形高折射率介质。",
+        "把圆形介质对准蛇形通道入口和白光方向。",
+        "让白光进入圆形介质后，在内部沿折线路径连续反弹。"
+      ],
+      success: "白光在介质内完成多次反弹并从出口方向命中目标。"
+    },
+    {
+      name: "把彩虹重新合成白光",
+      brief: "左侧固定棱镜已经把白光拆成七色。第二个倒置棱镜需要接住这些颜色，并把它们重新合成为白光。",
+      steps: [
+        "拖出第二个三角棱镜。",
+        "把它放在七色光带展开后的区域。",
+        "调整位置，让尽量多的颜色穿过第二个棱镜后重新靠拢。"
+      ],
+      success: "第二个棱镜后出现白光，并且白光命中右侧白色目标。"
+    },
+    {
+      name: "筛出蓝色光带",
+      brief: "目标只接受蓝光，而且蓝光必须先穿过蓝色滤光片。没有经过滤光片的蓝光不会触发目标。",
+      steps: [
+        "观察固定棱镜分出的七色光带，找到蓝色那一条。",
+        "拖出蓝色滤光片，放在蓝光实际经过的位置。",
+        "让蓝光穿过滤光片后继续射向蓝色目标。"
+      ],
+      success: "蓝光通过蓝色滤光片并命中蓝球，目标才会激活。"
+    },
+    {
+      name: "斜向聚焦到偏位小点",
+      brief: "多束白光需要被透镜收束到右上方的小目标。目标位置不在正中，所以透镜需要放在能改变整体收束方向的位置。",
+      steps: [
+        "拖出倾斜的双凸透镜。",
+        "让透镜覆盖多束平行白光。",
+        "移动透镜，使出射光整体向右上方收拢，并集中到小目标附近。"
+      ],
+      success: "多束白光同时聚到右上方小目标时，关卡通过。"
+    },
+    {
+      name: "先混色，再穿过缺口",
+      brief: "红光和绿光需要先重叠生成黄光。生成后的黄光还要避开障碍，从右侧墙缝穿过去命中目标。",
+      steps: [
+        "拖出圆形介质，放在红光和绿光交叉点附近。",
+        "让红光与绿光在圆形介质内部重合，产生黄色光斑。",
+        "移动圆形介质的位置，使黄色光沿右侧缺口方向飞出。"
+      ],
+      success: "黄色合成光穿过障碍缺口并命中黄色目标。"
+    },
+    {
+      name: "筛出紫色光带",
+      brief: "紫光在棱镜中偏折最大，位置和其他颜色差别明显。目标只接受穿过紫色滤光片后的紫光。",
+      steps: [
+        "观察固定棱镜右侧最偏离原方向的紫色光带。",
+        "拖出紫色滤光片，放到紫光经过的位置。",
+        "让紫光穿过滤光片后继续射向紫色目标，其他颜色会被滤光片吸收。"
+      ],
+      success: "经过紫色滤光片的紫光命中紫球，目标会被点亮。"
+    }
+  ];
+
+  const spectrum = [
+    { key: "red", color: "#ff3158", n: 1.500 },
+    { key: "orange", color: "#ff8a22", n: 1.508 },
+    { key: "yellow", color: "#ffe44b", n: 1.516 },
+    { key: "green", color: "#48ff8b", n: 1.526 },
+    { key: "blue", color: "#39b7ff", n: 1.538 },
+    { key: "indigo", color: "#6757ff", n: 1.548 },
+    { key: "violet", color: "#d65cff", n: 1.560 }
+  ];
+
+  const plainWhite = { key: "white", color: "#ffffff", n: 1.5 };
+  const redRay = { key: "red", color: "#ff3158", n: 1.5 };
+  const greenRay = { key: "green", color: "#42ff86", n: 1.5 };
+  const yellowRay = { key: "yellow", color: "#ffe44b", n: 1.5 };
+
+  function colorForKey(key) {
+    if (key === "white" || key === "focus" || key === "fiber" || key === "recombine") return "#f9f1cc";
+    if (key === "filter" || key === "red") return "#ff3158";
+    if (key === "yellow") return "#ffe356";
+    const found = spectrum.find((ray) => ray.key === key);
+    return found ? found.color : "#f9f1cc";
+  }
+
+  function hexToRgba(hex, alpha) {
+    const value = hex.replace("#", "");
+    const r = parseInt(value.slice(0, 2), 16);
+    const g = parseInt(value.slice(2, 4), 16);
+    const b = parseInt(value.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function vec(x, y) {
+    return { x, y };
+  }
+
+  function add(a, b) {
+    return { x: a.x + b.x, y: a.y + b.y };
+  }
+
+  function sub(a, b) {
+    return { x: a.x - b.x, y: a.y - b.y };
+  }
+
+  function mul(a, s) {
+    return { x: a.x * s, y: a.y * s };
+  }
+
+  function dot(a, b) {
+    return a.x * b.x + a.y * b.y;
+  }
+
+  function norm(a) {
+    const l = Math.hypot(a.x, a.y) || 1;
+    return { x: a.x / l, y: a.y / l };
+  }
+
+  function dist(a, b) {
+    return Math.hypot(coordX(a) - coordX(b), coordY(a) - coordY(b));
+  }
+
+  function coordX(p) {
+    return p.x ?? p.cx;
+  }
+
+  function coordY(p) {
+    return p.y ?? p.cy;
+  }
+
+  function centerOf(shape) {
+    return { x: shape.cx, y: shape.cy };
+  }
+
+  function rotate(v, angle) {
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+    return { x: v.x * c - v.y * s, y: v.x * s + v.y * c };
+  }
+
+  function reflect(I, N) {
+    const k = 2 * dot(I, N);
+    return norm({ x: I.x - k * N.x, y: I.y - k * N.y });
+  }
+
+  function refract(I, N, n1, n2) {
+    const eta = n1 / n2;
+    const cosi = dot(I, N);
+    const k = 1 - eta * eta * (1 - cosi * cosi);
+    if (k < 0) {
+      return { tir: true, dir: reflect(I, N) };
+    }
+    const f = eta * cosi + Math.sqrt(k);
+    return {
+      tir: false,
+      dir: norm({
+        x: eta * I.x - f * N.x,
+        y: eta * I.y - f * N.y
+      })
+    };
+  }
+
+  function resize() {
+    dpr = 1;
+    const rect = canvas.getBoundingClientRect();
+    W = Math.max(640, Math.floor(rect.width || window.innerWidth));
+    H = Math.max(420, Math.floor(rect.height || window.innerHeight));
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = `${W}px`;
+    canvas.style.height = `${H}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const toolH = clamp(H * 0.2, 104, 144);
+    const padX = clamp(W * 0.055, 28, 70);
+    const padTop = clamp(H * 0.06, 24, 56);
+    board = {
+      x: padX,
+      y: padTop,
+      w: W - padX * 2,
+      h: H - padTop - toolH - clamp(H * 0.035, 16, 32)
+    };
+    toolbar = {
+      x: 0,
+      y: H - toolH,
+      w: W,
+      h: toolH
+    };
+    makeStars();
+    if (!finale) resetLevel(currentLevel);
+  }
+
+  function makeStars() {
+    stars = [];
+    const count = Math.floor((W * H) / 36000);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.6 + 0.2,
+        a: Math.random() * 0.55 + 0.15,
+        p: Math.random() * TAU,
+        v: Math.random() * 0.15 + 0.03
+      });
+    }
+  }
+
+  function resetLevel(index) {
+    currentLevel = ((index % TOTAL_LEVELS) + TOTAL_LEVELS) % TOTAL_LEVELS;
+    level = makeLevel(currentLevel);
+    drag = null;
+    victoryClock = 0;
+    flashClock = 0;
+    lastSolved = false;
+    invalidateTrace();
+    shards.length = 0;
+    updateGoalPanel();
+  }
+
+  function updateGoalPanel() {
+    const data = goalDetails[currentLevel] || goalDetails[0];
+    if (!data || !goalCardEl) return;
+    goalCardEl.style.setProperty("--accent", colorForKey(level.target.mode));
+    goalIndexEl.textContent = `第 ${currentLevel + 1} / ${TOTAL_LEVELS} 关`;
+    goalNameEl.textContent = data.name;
+    goalBriefEl.textContent = data.brief;
+    goalStepsEl.replaceChildren();
+    for (const step of data.steps) {
+      const li = document.createElement("li");
+      li.textContent = step;
+      goalStepsEl.appendChild(li);
+    }
+    goalSuccessEl.textContent = data.success;
+  }
+
+  function makeLevel(index) {
+    const b = board;
+    const cx = b.x + b.w * 0.5;
+    const cy = b.y + b.h * 0.5;
+    const common = {
+      index,
+      sources: [],
+      pieces: [],
+      fixed: [],
+      obstacles: [],
+      tools: [],
+      target: null,
+      solved: false,
+      sourcePulse: 0,
+      mix: false,
+      synthetic: []
+    };
+
+    if (index === 0) {
+      const sy = cy - b.h * 0.02;
+      common.sources = [
+        { x: b.x + 46, y: sy, dir: vec(1, 0), rays: [plainWhite], port: "white" }
+      ];
+      common.target = {
+        x: b.x + b.w - 66,
+        y: sy,
+        r: clamp(b.h * 0.084, 30, 48),
+        mode: "white",
+        hot: false
+      };
+      const wallX = b.x + b.w * 0.57;
+      const gapY = sy + clamp(b.h * 0.105, 34, 54);
+      const gapH = clamp(b.h * 0.125, 54, 76);
+      common.obstacles.push(
+        { x: wallX, y: b.y + 18, w: 30, h: gapY - gapH * 0.5 - (b.y + 18) },
+        { x: wallX, y: gapY + gapH * 0.5, w: 30, h: b.y + b.h - 22 - (gapY + gapH * 0.5) }
+      );
+      const piece = {
+        type: "rect",
+        cx: b.x + b.w * 0.37,
+        cy: sy + 15,
+        w: clamp(b.w * 0.165, 108, 150),
+        h: clamp(b.h * 0.115, 52, 76),
+        angle: -0.34,
+        n: 1.5,
+        glow: "#bdf8ff"
+      };
+      common.tools.push(piece);
+    } else if (index === 1) {
+      const sy = cy + b.h * 0.05;
+      const targetR = clamp(b.h * 0.043, 20, 26);
+      common.sources = [
+        { x: b.x + 48, y: sy, dir: vec(1, 0), rays: spectrum, port: "white" }
+      ];
+      common.target = {
+        x: b.x + b.w - 70,
+        y: b.y + b.h * 0.12,
+        r: targetR,
+        mode: "red",
+        hot: false
+      };
+      const piece = {
+        type: "prism",
+        cx: b.x + b.w * 0.45,
+        cy: sy - 16,
+        w: clamp(b.w * 0.16, 118, 168),
+        h: clamp(b.h * 0.24, 92, 132),
+        angle: 1.1,
+        n: 1.52,
+        dispersive: true,
+        glow: "#fff1a8"
+      };
+      common.tools.push(piece);
+    } else if (index === 2) {
+      const r = clamp(b.h * 0.17, 68, 92);
+      const lc = {
+        x: b.x + b.w * 0.42,
+        y: cy + b.h * 0.01,
+        r
+      };
+      common.sources = [
+        { x: b.x + 44, y: lc.y - r * 0.72, dir: vec(1, 0), rays: [plainWhite], port: "white" }
+      ];
+      common.target = {
+        x: lc.x + r * 0.72,
+        y: lc.y + r * 0.2,
+        r: clamp(b.h * 0.067, 27, 38),
+        mode: "white",
+        hot: false
+      };
+      const ox = lc.x + r * 1.28;
+      common.obstacles.push(
+        { x: ox, y: lc.y - r * 1.2, w: 28, h: r * 2.4 },
+        { x: lc.x - r * 0.25, y: lc.y - r * 1.42, w: r * 1.52, h: 26 },
+        { x: lc.x - r * 0.25, y: lc.y + r * 1.42 - 26, w: r * 1.52, h: 26 }
+      );
+      const piece = {
+        type: "semi",
+        cx: lc.x,
+        cy: lc.y,
+        r,
+        angle: 0,
+        n: 2.0,
+        glow: "#83fbff"
+      };
+      common.tools.push(piece);
+    } else if (index === 3) {
+      const sy = cy;
+      const offsets = [-42, -21, 0, 21, 42];
+      common.sources = offsets.map((dy) => ({
+        x: b.x + 42,
+        y: sy + dy,
+        dir: vec(1, 0),
+        rays: [plainWhite],
+        port: "white"
+      }));
+      common.target = {
+        x: b.x + b.w - 82,
+        y: sy,
+        r: clamp(b.h * 0.026, 9, 13),
+        mode: "focus",
+        hot: false
+      };
+      common.obstacles.push(
+        { x: b.x + b.w * 0.68, y: b.y + 24, w: 26, h: b.h * 0.38 },
+        { x: b.x + b.w * 0.68, y: b.y + b.h * 0.62, w: 26, h: b.h * 0.34 }
+      );
+      common.tools.push({
+        type: "lens",
+        cx: b.x + b.w * 0.46,
+        cy: sy,
+        w: clamp(b.w * 0.088, 78, 104),
+        h: clamp(b.h * 0.38, 176, 226),
+        angle: 0,
+        n: 1.62,
+        focus: { x: common.target.x, y: common.target.y },
+        glow: "#bffcff"
+      });
+    } else if (index === 4) {
+      const sy = cy;
+      common.sources = [
+        { x: b.x + 42, y: sy, dir: vec(1, 0), rays: [greenRay], port: "green" }
+      ];
+      common.target = {
+        x: b.x + b.w - 78,
+        y: sy,
+        r: clamp(b.h * 0.058, 24, 34),
+        mode: "filter",
+        hot: false
+      };
+      common.tools.push(
+        {
+          type: "filter",
+          cx: b.x + b.w * 0.45,
+          cy: sy,
+          w: clamp(b.w * 0.075, 70, 94),
+          h: clamp(b.h * 0.32, 130, 174),
+          angle: 0,
+          n: 1.02,
+          pass: "red",
+          glow: "#ff3158",
+          tint: "#ff3158"
+        },
+        {
+          type: "rect",
+          cx: b.x + b.w * 0.45,
+          cy: sy + b.h * 0.32,
+          w: clamp(b.w * 0.075, 70, 94),
+          h: clamp(b.h * 0.32, 130, 174),
+          angle: 0,
+          n: 1.18,
+          glow: "#bdf8ff"
+        }
+      );
+    } else if (index === 5) {
+      const sy = cy;
+      const mixPoint = { x: b.x + b.w * 0.48, y: sy };
+      const slope = (b.h * 0.18) / (mixPoint.x - (b.x + 44));
+      common.sources = [
+        { x: b.x + 44, y: sy - b.h * 0.18, dir: norm(vec(1, slope)), rays: [redRay], port: "red" },
+        { x: b.x + 44, y: sy + b.h * 0.18, dir: norm(vec(1, -slope)), rays: [greenRay], port: "green" }
+      ];
+      common.target = {
+        x: b.x + b.w - 78,
+        y: sy,
+        r: clamp(b.h * 0.058, 24, 34),
+        mode: "yellow",
+        hot: false
+      };
+      common.mix = true;
+      common.mixRequiresPiece = true;
+      common.tools.push({
+        type: "lens",
+        cx: mixPoint.x,
+        cy: mixPoint.y,
+        w: clamp(b.w * 0.075, 70, 94),
+        h: clamp(b.h * 0.25, 112, 148),
+        angle: Math.PI * 0.5,
+        n: 1.28,
+        glow: "#fff06a"
+      });
+    } else if (index === 6) {
+      const sy = cy;
+      common.sources = [
+        { x: b.x + 42, y: sy - b.h * 0.1, dir: vec(1, 0), rays: [plainWhite], port: "white" }
+      ];
+      common.target = {
+        x: b.x + b.w - 76,
+        y: sy + b.h * 0.13,
+        r: clamp(b.h * 0.056, 24, 34),
+        mode: "fiber",
+        hot: false
+      };
+      const wallW = 24;
+      common.obstacles.push(
+        { x: b.x + b.w * 0.28, y: b.y + 24, w: wallW, h: b.h * 0.33 },
+        { x: b.x + b.w * 0.57, y: b.y + b.h * 0.58, w: wallW, h: b.h * 0.32 },
+        { x: b.x + b.w * 0.78, y: b.y + 24, w: wallW, h: b.h * 0.33 }
+      );
+      common.tools.push({
+        type: "circle",
+        cx: b.x + b.w * 0.42,
+        cy: sy,
+        r: clamp(b.h * 0.16, 72, 92),
+        angle: 0,
+        n: 2.25,
+        fiber: true,
+        glow: "#83fbff"
+      });
+    } else if (index === 7) {
+      const sy = cy + b.h * 0.05;
+      common.sources = [
+        { x: b.x + 46, y: sy, dir: vec(1, 0), rays: spectrum, port: "white" }
+      ];
+      common.fixed.push({
+        type: "prism",
+        cx: b.x + b.w * 0.34,
+        cy: sy,
+        w: clamp(b.w * 0.15, 118, 164),
+        h: clamp(b.h * 0.24, 94, 132),
+        angle: 1.08,
+        n: 1.52,
+        dispersive: true,
+        glow: "#fff1a8",
+        fixed: true
+      });
+      common.target = {
+        x: b.x + b.w - 74,
+        y: b.y + b.h * 0.28,
+        r: clamp(b.h * 0.06, 25, 35),
+        mode: "recombine",
+        hot: false
+      };
+      common.tools.push({
+        type: "prism",
+        cx: b.x + b.w * 0.60,
+        cy: b.y + b.h * 0.28,
+        w: clamp(b.w * 0.15, 118, 164),
+        h: clamp(b.h * 0.24, 94, 132),
+        angle: -1.08,
+        n: 1.52,
+        dispersive: true,
+        recombiner: true,
+        glow: "#fff1a8"
+      });
+      common.recombine = true;
+    } else if (index === 8) {
+      const sy = cy + b.h * 0.05;
+      const narrow = clamp((1020 - b.w) / 260, 0, 1);
+      common.sources = [
+        { x: b.x + 46, y: sy, dir: vec(1, 0), rays: spectrum, port: "white" }
+      ];
+      common.fixed.push({
+        type: "prism",
+        cx: b.x + b.w * 0.34,
+        cy: sy,
+        w: clamp(b.w * 0.15, 118, 164),
+        h: clamp(b.h * 0.24, 94, 132),
+        angle: 1.08,
+        n: 1.52,
+        dispersive: true,
+        glow: "#fff1a8",
+        fixed: true
+      });
+      common.target = {
+        x: b.x + b.w * (0.84 - 0.02 * narrow),
+        y: b.y + b.h * (0.045 - 0.045 * narrow),
+        r: clamp(b.h * 0.035, 15, 21),
+        mode: "blue",
+        requiresFilter: "blue",
+        hot: false
+      };
+      common.tools.push({
+        type: "filter",
+        cx: b.x + b.w * 0.62,
+        cy: b.y + b.h * 0.25,
+        w: clamp(b.w * 0.052, 46, 64),
+        h: clamp(b.h * 0.26, 112, 150),
+        angle: -0.48,
+        n: 1.02,
+        pass: "blue",
+        glow: "#39b7ff",
+        tint: "#39b7ff"
+      });
+    } else if (index === 9) {
+      const sy = cy + b.h * 0.04;
+      const target = {
+        x: b.x + b.w - 86,
+        y: sy - b.h * 0.18,
+        r: clamp(b.h * 0.022, 8, 12),
+        mode: "focus",
+        hot: false
+      };
+      common.target = target;
+      [-56, -28, 0, 28, 56].forEach((dy) => {
+        common.sources.push({
+          x: b.x + 42,
+          y: sy + dy,
+          dir: vec(1, 0),
+          rays: [plainWhite],
+          port: "white"
+        });
+      });
+      common.obstacles.push(
+        { x: b.x + b.w * 0.66, y: b.y + 24, w: 24, h: b.h * 0.32 },
+        { x: b.x + b.w * 0.66, y: b.y + b.h * 0.56, w: 24, h: b.h * 0.34 }
+      );
+      common.tools.push({
+        type: "lens",
+        cx: b.x + b.w * 0.47,
+        cy: sy,
+        w: clamp(b.w * 0.078, 68, 92),
+        h: clamp(b.h * 0.36, 160, 210),
+        angle: -0.1,
+        n: 1.68,
+        focus: { x: target.x, y: target.y },
+        glow: "#bffcff"
+      });
+    } else if (index === 10) {
+      const sy = cy;
+      const mixPoint = { x: b.x + b.w * 0.52, y: sy - b.h * 0.02 };
+      const upper = { x: b.x + 44, y: sy - b.h * 0.24 };
+      const lower = { x: b.x + 44, y: sy + b.h * 0.2 };
+      common.sources = [
+        { x: upper.x, y: upper.y, dir: norm(sub(mixPoint, upper)), rays: [redRay], port: "red" },
+        { x: lower.x, y: lower.y, dir: norm(sub(mixPoint, lower)), rays: [greenRay], port: "green" }
+      ];
+      common.target = {
+        x: b.x + b.w - 78,
+        y: sy + b.h * 0.05,
+        r: clamp(b.h * 0.04, 17, 23),
+        mode: "yellow",
+        hot: false
+      };
+      common.mix = true;
+      common.mixRequiresPiece = true;
+      common.obstacles.push(
+        { x: b.x + b.w * 0.72, y: b.y + 28, w: 24, h: b.h * 0.42 },
+        { x: b.x + b.w * 0.72, y: b.y + b.h * 0.66, w: 24, h: b.h * 0.25 }
+      );
+      common.tools.push({
+        type: "circle",
+        cx: mixPoint.x,
+        cy: mixPoint.y,
+        r: clamp(b.h * 0.095, 42, 56),
+        angle: 0,
+        n: 1.35,
+        glow: "#fff06a"
+      });
+    } else {
+      const sy = cy + b.h * 0.05;
+      const narrow = clamp((1020 - b.w) / 260, 0, 1);
+      common.sources = [
+        { x: b.x + 46, y: sy, dir: vec(1, 0), rays: spectrum, port: "white" }
+      ];
+      common.fixed.push({
+        type: "prism",
+        cx: b.x + b.w * 0.34,
+        cy: sy,
+        w: clamp(b.w * 0.15, 118, 164),
+        h: clamp(b.h * 0.24, 94, 132),
+        angle: 1.08,
+        n: 1.52,
+        dispersive: true,
+        glow: "#fff1a8",
+        fixed: true
+      });
+      common.target = {
+        x: b.x + b.w * 0.787,
+        y: b.y + b.h * (0.057 - 0.047 * narrow),
+        r: clamp(b.h * 0.027, 11, 16),
+        mode: "violet",
+        requiresFilter: "violet",
+        hot: false
+      };
+      common.tools.push({
+        type: "filter",
+        cx: b.x + b.w * 0.58,
+        cy: b.y + b.h * 0.27,
+        w: clamp(b.w * 0.046, 42, 58),
+        h: clamp(b.h * 0.24, 104, 140),
+        angle: -0.54,
+        n: 1.02,
+        pass: "violet",
+        glow: "#d65cff",
+        tint: "#d65cff"
+      });
+    }
+    if (!common.fixed) common.fixed = [];
+    if (!common.synthetic) common.synthetic = [];
+    return common;
+  }
+
+  function clonePiece(piece) {
+    return JSON.parse(JSON.stringify(piece));
+  }
+
+  function shapeToLocal(shape, p) {
+    const rel = sub(p, centerOf(shape));
+    return rotate(rel, -(shape.angle || 0));
+  }
+
+  function shapeToWorld(shape, p) {
+    return add(centerOf(shape), rotate(p, shape.angle || 0));
+  }
+
+  function rectVertices(shape) {
+    const hw = shape.w * 0.5;
+    const hh = shape.h * 0.5;
+    return [
+      shapeToWorld(shape, vec(-hw, -hh)),
+      shapeToWorld(shape, vec(hw, -hh)),
+      shapeToWorld(shape, vec(hw, hh)),
+      shapeToWorld(shape, vec(-hw, hh))
+    ];
+  }
+
+  function prismVertices(shape) {
+    const hw = shape.w * 0.5;
+    const hh = shape.h * 0.5;
+    return [
+      shapeToWorld(shape, vec(-hw, -hh)),
+      shapeToWorld(shape, vec(-hw, hh)),
+      shapeToWorld(shape, vec(hw, 0))
+    ];
+  }
+
+  function containsPoly(vertices, p) {
+    let sign = 0;
+    for (let i = 0; i < vertices.length; i++) {
+      const a = vertices[i];
+      const b = vertices[(i + 1) % vertices.length];
+      const cross = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+      if (Math.abs(cross) < 0.001) continue;
+      const s = Math.sign(cross);
+      if (!sign) sign = s;
+      if (sign !== s) return false;
+    }
+    return true;
+  }
+
+  function shapeContains(shape, p) {
+    const q = shapeToLocal(shape, p);
+    if (shape.type === "rect" || shape.type === "filter") {
+      return Math.abs(q.x) <= shape.w * 0.5 && Math.abs(q.y) <= shape.h * 0.5;
+    }
+    if (shape.type === "prism") {
+      return containsPoly([
+        vec(-shape.w * 0.5, -shape.h * 0.5),
+        vec(-shape.w * 0.5, shape.h * 0.5),
+        vec(shape.w * 0.5, 0)
+      ], q);
+    }
+    if (shape.type === "semi") {
+      return q.x >= 0 && q.x * q.x + q.y * q.y <= shape.r * shape.r;
+    }
+    if (shape.type === "circle") {
+      return q.x * q.x + q.y * q.y <= shape.r * shape.r;
+    }
+    if (shape.type === "lens") {
+      const a = shape.w * 0.5;
+      const b = shape.h * 0.5;
+      return (q.x * q.x) / (a * a) + (q.y * q.y) / (b * b) <= 1;
+    }
+    return false;
+  }
+
+  function segmentDistance(p, a, b) {
+    const ab = sub(b, a);
+    const denom = dot(ab, ab) || 1;
+    const t = clamp(dot(sub(p, a), ab) / denom, 0, 1);
+    return { d: dist(p, add(a, mul(ab, t))), t };
+  }
+
+  function shapeNormal(shape, p) {
+    const q = shapeToLocal(shape, p);
+    let n = vec(1, 0);
+    if (shape.type === "rect" || shape.type === "filter") {
+      const dx = shape.w * 0.5 - Math.abs(q.x);
+      const dy = shape.h * 0.5 - Math.abs(q.y);
+      n = dx < dy ? vec(Math.sign(q.x) || 1, 0) : vec(0, Math.sign(q.y) || 1);
+    } else if (shape.type === "prism") {
+      const pts = [
+        vec(-shape.w * 0.5, -shape.h * 0.5),
+        vec(-shape.w * 0.5, shape.h * 0.5),
+        vec(shape.w * 0.5, 0)
+      ];
+      let best = Infinity;
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i];
+        const b = pts[(i + 1) % pts.length];
+        const sd = segmentDistance(q, a, b);
+        if (sd.d < best) {
+          best = sd.d;
+          const e = sub(b, a);
+          n = norm(vec(-e.y, e.x));
+        }
+      }
+    } else if (shape.type === "semi") {
+      if (Math.abs(q.x) < 2.5) {
+        n = vec(-1, 0);
+      } else {
+        n = norm(q);
+      }
+    } else if (shape.type === "circle") {
+      n = norm(q);
+    } else if (shape.type === "lens") {
+      const a = shape.w * 0.5;
+      const b = shape.h * 0.5;
+      n = norm(vec(q.x / (a * a), q.y / (b * b)));
+    }
+    return norm(rotate(n, shape.angle || 0));
+  }
+
+  function mediumIndex(shape, ray) {
+    if (shape.dispersive) return ray.n;
+    return shape.n || 1.5;
+  }
+
+  function allOptics() {
+    return (level.fixed || []).concat(level.pieces);
+  }
+
+  function findMedium(p) {
+    const optics = allOptics();
+    for (let i = optics.length - 1; i >= 0; i--) {
+      const shape = optics[i];
+      if (shapeContains(shape, p)) return shape;
+    }
+    return null;
+  }
+
+  function insideObstacle(p) {
+    for (const o of level.obstacles) {
+      if (p.x >= o.x && p.x <= o.x + o.w && p.y >= o.y && p.y <= o.y + o.h) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function insideBoard(p) {
+    return p.x >= board.x && p.x <= board.x + board.w && p.y >= board.y && p.y <= board.y + board.h;
+  }
+
+  function targetAllows(ray, filterPass = null) {
+    if (level.target.requiresFilter && filterPass !== level.target.requiresFilter) return false;
+    if (level.target.mode === "white") return ray.key === "white";
+    if (spectrum.some((entry) => entry.key === level.target.mode)) return ray.key === level.target.mode;
+    if (level.target.mode === "focus") return ray.key === "white";
+    if (level.target.mode === "fiber") return ray.key === "white";
+    if (level.target.mode === "recombine") return ray.key === "white";
+    if (level.target.mode === "filter") return false;
+    return false;
+  }
+
+  function traceRay(start, dir, ray) {
+    let p = { x: start.x, y: start.y };
+    let d = norm(dir);
+    let current = findMedium(add(p, mul(d, 0.5)));
+    const path = [{ x: p.x, y: p.y }];
+    let samples = [{ x: p.x, y: p.y }];
+    let hit = false;
+    let blocked = false;
+    let absorbed = false;
+    let absorbedBy = null;
+    let filterPass = null;
+    let recombined = false;
+    let tirCount = 0;
+    let bounces = 0;
+    let end = { x: p.x, y: p.y };
+    const maxSteps = Math.ceil((board.w + board.h) * 2.4);
+
+    for (let i = 0; i < maxSteps; i++) {
+      const next = add(p, mul(d, STEP));
+      if (!insideBoard(next) || insideObstacle(next)) {
+        blocked = true;
+        end = next;
+        path.push({ x: next.x, y: next.y });
+        break;
+      }
+      if (targetAllows(ray, filterPass) && dist(next, level.target) <= level.target.r) {
+        hit = true;
+        end = next;
+        path.push({ x: next.x, y: next.y });
+        samples.push({ x: next.x, y: next.y });
+        break;
+      }
+
+      const nextMedium = findMedium(next);
+      if (nextMedium !== current) {
+        let lo = p;
+        let hi = next;
+        for (let k = 0; k < 8; k++) {
+          const mid = mul(add(lo, hi), 0.5);
+          const midMedium = findMedium(mid);
+          if (midMedium === current) lo = mid;
+          else hi = mid;
+        }
+        const boundary = hi;
+        const crossingShape = nextMedium || current;
+        const outward = shapeNormal(crossingShape, boundary);
+        const entering = current === null && nextMedium !== null;
+        const n1 = current ? mediumIndex(current, ray) : 1;
+        const n2 = nextMedium ? mediumIndex(nextMedium, ray) : 1;
+        const normalToIncident = entering ? outward : mul(outward, -1);
+        if (crossingShape.recombiner) recombined = true;
+        if (entering && nextMedium.fiber) {
+          const r = nextMedium.r;
+          const guided = [
+            shapeToWorld(nextMedium, vec(-r * 0.15, -r * 0.98)),
+            shapeToWorld(nextMedium, vec(r * 0.92, -r * 0.38)),
+            shapeToWorld(nextMedium, vec(-r * 0.82, r * 0.58)),
+            shapeToWorld(nextMedium, vec(r * 0.24, r * 0.97)),
+            shapeToWorld(nextMedium, vec(r * 0.98, r * 0.15))
+          ];
+          path.push({ x: boundary.x, y: boundary.y });
+          for (const gp of guided) {
+            path.push({ x: gp.x, y: gp.y });
+            samples.push({ x: gp.x, y: gp.y });
+          }
+          if (targetAllows(ray, filterPass)) {
+            path.push({ x: level.target.x, y: level.target.y });
+            samples.push({ x: level.target.x, y: level.target.y });
+            hit = true;
+            end = { x: level.target.x, y: level.target.y };
+          } else {
+            end = guided[guided.length - 1];
+          }
+          tirCount += 5;
+          break;
+        }
+        if (entering && nextMedium.type === "filter") {
+          if (ray.key !== nextMedium.pass) {
+            absorbed = true;
+            absorbedBy = nextMedium.pass;
+            blocked = true;
+            end = boundary;
+            path.push({ x: boundary.x, y: boundary.y });
+            samples.push({ x: boundary.x, y: boundary.y });
+            break;
+          }
+          filterPass = nextMedium.pass;
+        }
+        if (!entering && current && current.type === "lens" && current.focus) {
+          d = norm(sub(current.focus, boundary));
+          current = nextMedium;
+          p = add(boundary, mul(d, 1.15));
+          bounces++;
+          path.push({ x: boundary.x, y: boundary.y });
+          samples.push({ x: boundary.x, y: boundary.y });
+          continue;
+        }
+        const changed = refract(d, normalToIncident, n1, n2);
+        path.push({ x: boundary.x, y: boundary.y });
+        samples.push({ x: boundary.x, y: boundary.y });
+        if (changed.tir) {
+          d = changed.dir;
+          tirCount++;
+          bounces++;
+          p = add(boundary, mul(d, 1.15));
+          current = crossingShape;
+        } else {
+          d = changed.dir;
+          current = nextMedium;
+          p = add(boundary, mul(d, 1.15));
+          bounces++;
+        }
+        if (bounces > 18) {
+          blocked = true;
+          end = p;
+          path.push({ x: p.x, y: p.y });
+          break;
+        }
+      } else {
+        p = next;
+        if ((i & 7) === 0) samples.push({ x: p.x, y: p.y });
+      }
+      end = p;
+    }
+    return { path, samples, color: ray.color, key: ray.key, hit, blocked, end, tirCount, absorbed, absorbedBy, filterPass, recombined };
+  }
+
+  function traceAll() {
+    const traces = [];
+    level.synthetic = [];
+    for (const src of level.sources) {
+      for (const ray of src.rays) {
+        traces.push({
+          source: src,
+          ...traceRay(src, src.dir, ray)
+        });
+      }
+    }
+    const mixSpots = level.mix ? findMixSpots(traces) : [];
+    if (level.target.mode === "yellow" && mixSpots.length) {
+      const picked = mixSpots.slice(0, 5);
+      for (const p of picked) {
+        const start = add(p, vec(5, 0));
+        const yellow = traceRay(start, norm(sub(level.target, start)), yellowRay);
+        yellow.synthetic = true;
+        traces.push({ source: { x: p.x, y: p.y }, ...yellow });
+      }
+    }
+    if (level.target.mode === "recombine") {
+      const recombiner = level.pieces.find((piece) => piece.recombiner);
+      const passed = new Set(traces.filter((tr) => tr.recombined).map((tr) => tr.key));
+      if (recombiner && passed.size >= 5) {
+        const start = shapeToWorld(recombiner, vec(recombiner.w * 0.55, 0));
+        const white = traceRay(start, norm(sub(level.target, start)), plainWhite);
+        white.synthetic = true;
+        white.recombinedWhite = true;
+        traces.push({ source: { x: start.x, y: start.y }, ...white });
+      }
+    }
+    let solved = false;
+    if (level.target.mode === "yellow") {
+      solved = traces.some((tr) => tr.synthetic && tr.hit);
+    } else if (level.target.mode === "filter") {
+      solved = traces.some((tr) => tr.absorbed && tr.absorbedBy === "red" && Math.abs(tr.end.y - level.target.y) <= level.target.r * 1.7);
+    } else if (level.target.mode === "focus") {
+      solved = traces.filter((tr) => tr.hit).length >= 3;
+    } else if (level.target.mode === "fiber") {
+      solved = traces.some((tr) => tr.hit && tr.tirCount >= 2);
+    } else if (level.target.mode === "recombine") {
+      solved = traces.some((tr) => tr.recombinedWhite && tr.hit);
+    } else {
+      solved = traces.some((tr) => tr.hit);
+    }
+    return { traces, mixSpots, solved };
+  }
+
+  function invalidateTrace() {
+    traceDirty = true;
+  }
+
+  function getTraceOutcome() {
+    if (!traceCache || traceDirty) {
+      traceCache = traceAll();
+      traceDirty = false;
+    }
+    return traceCache;
+  }
+
+  function findMixSpots(traces) {
+    const reds = traces.filter((t) => t.key === "red");
+    const greens = traces.filter((t) => t.key === "green");
+    const spots = [];
+    if (!reds.length || !greens.length) return spots;
+    for (const r of reds) {
+      for (const g of greens) {
+        for (let i = 0; i < r.samples.length; i += 2) {
+          const rp = r.samples[i];
+          for (let j = 0; j < g.samples.length; j += 2) {
+            const gp = g.samples[j];
+            if (Math.abs(rp.x - gp.x) > 18 || Math.abs(rp.y - gp.y) > 18) continue;
+            const dd = dist(rp, gp);
+            if (dd < 16) {
+              const spot = { x: (rp.x + gp.x) * 0.5, y: (rp.y + gp.y) * 0.5, heat: 1 - dd / 16 };
+              if (level.mixRequiresPiece && !level.pieces.some((piece) => shapeContains(piece, spot))) continue;
+              spots.push(spot);
+              if (spots.length > 80) return spots;
+            }
+          }
+        }
+      }
+    }
+    return spots;
+  }
+
+  function drawBackground() {
+    ctx.fillStyle = "#05050f";
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (const s of stars) {
+      const a = s.a * (0.55 + Math.sin(time * s.v + s.p) * 0.45);
+      ctx.fillStyle = `rgba(170, 220, 255, ${a})`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, TAU);
+      ctx.fill();
+      s.x += Math.cos(s.p) * 0.006;
+      if (s.x < -2) s.x = W + 2;
+      if (s.x > W + 2) s.x = -2;
+    }
+    ctx.restore();
+  }
+
+  function roundedRectPath(x, y, w, h, r) {
+    const rr = Math.min(r, w * 0.5, h * 0.5);
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function drawGrid() {
+    ctx.save();
+    ctx.strokeStyle = "rgba(116, 235, 255, 0.075)";
+    ctx.lineWidth = 1;
+    for (let x = board.x; x <= board.x + board.w + 1; x += GRID) {
+      ctx.beginPath();
+      ctx.moveTo(x, board.y);
+      ctx.lineTo(x, board.y + board.h);
+      ctx.stroke();
+    }
+    for (let y = board.y; y <= board.y + board.h + 1; y += GRID) {
+      ctx.beginPath();
+      ctx.moveTo(board.x, y);
+      ctx.lineTo(board.x + board.w, y);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = "rgba(129, 235, 255, 0.22)";
+    ctx.shadowBlur = LOW_POWER ? 0 : 14;
+    ctx.shadowColor = "#5ff7ff";
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    roundedRectPath(board.x, board.y, board.w, board.h, 6);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawProgressPips() {
+    ctx.save();
+    const y = board.y - clamp(H * 0.028, 12, 24);
+    const gap = 18;
+    const x0 = W * 0.5 - gap * (TOTAL_LEVELS - 1) * 0.5;
+    for (let i = 0; i < TOTAL_LEVELS; i++) {
+      const active = i <= currentLevel;
+      ctx.globalAlpha = active ? 0.9 : 0.24;
+      ctx.shadowBlur = LOW_POWER ? 0 : (active ? 12 : 0);
+      ctx.shadowColor = active ? "#88fbff" : "transparent";
+      ctx.fillStyle = active ? "#aefcff" : "#41505d";
+      ctx.beginPath();
+      ctx.arc(x0 + i * gap, y, active ? 3.5 : 2.6, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawObstacles() {
+    ctx.save();
+    for (const o of level.obstacles) {
+      const g = ctx.createLinearGradient(o.x, o.y, o.x + o.w, o.y + o.h);
+      g.addColorStop(0, "rgba(24, 26, 52, 0.95)");
+      g.addColorStop(0.5, "rgba(6, 7, 22, 1)");
+      g.addColorStop(1, "rgba(28, 32, 68, 0.95)");
+      ctx.fillStyle = g;
+      ctx.shadowBlur = LOW_POWER ? 0 : 16;
+      ctx.shadowColor = "rgba(255, 49, 118, 0.25)";
+      ctx.beginPath();
+      roundedRectPath(o.x, o.y, o.w, o.h, 4);
+      ctx.fill();
+      ctx.shadowBlur = LOW_POWER ? 0 : 10;
+      ctx.strokeStyle = "rgba(255, 92, 145, 0.35)";
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawShapePath(shape) {
+    ctx.beginPath();
+    if (shape.type === "rect" || shape.type === "filter") {
+      const pts = rectVertices(shape);
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.closePath();
+    } else if (shape.type === "prism") {
+      const pts = prismVertices(shape);
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.closePath();
+    } else if (shape.type === "semi") {
+      const r = shape.r;
+      const steps = 36;
+      const first = shapeToWorld(shape, vec(0, -r));
+      ctx.moveTo(first.x, first.y);
+      for (let i = 0; i <= steps; i++) {
+        const a = -Math.PI * 0.5 + (Math.PI * i) / steps;
+        const p = shapeToWorld(shape, vec(Math.cos(a) * r, Math.sin(a) * r));
+        ctx.lineTo(p.x, p.y);
+      }
+      const last = shapeToWorld(shape, vec(0, -r));
+      ctx.lineTo(last.x, last.y);
+      ctx.closePath();
+    } else if (shape.type === "circle") {
+      const steps = 72;
+      for (let i = 0; i <= steps; i++) {
+        const a = (i / steps) * TAU;
+        const p = shapeToWorld(shape, vec(Math.cos(a) * shape.r, Math.sin(a) * shape.r));
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
+    } else if (shape.type === "lens") {
+      const steps = 84;
+      const a = shape.w * 0.5;
+      const b = shape.h * 0.5;
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * TAU;
+        const p = shapeToWorld(shape, vec(Math.cos(t) * a, Math.sin(t) * b));
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
+    }
+  }
+
+  function drawShape(shape, alpha = 1, invalid = false) {
+    ctx.save();
+    drawShapePath(shape);
+    const bb = shapeAABB(shape);
+    const g = ctx.createLinearGradient(bb.x, bb.y, bb.x + bb.w, bb.y + bb.h);
+    if (shape.tint) {
+      g.addColorStop(0, invalid ? "rgba(255, 52, 112, 0.34)" : hexToRgba(shape.tint, 0.36));
+      g.addColorStop(0.45, invalid ? "rgba(255, 69, 89, 0.22)" : hexToRgba(shape.tint, 0.2));
+      g.addColorStop(1, hexToRgba(shape.tint, 0.08));
+    } else {
+      g.addColorStop(0, invalid ? "rgba(255, 52, 112, 0.32)" : "rgba(225, 255, 255, 0.34)");
+      g.addColorStop(0.42, invalid ? "rgba(255, 69, 89, 0.2)" : "rgba(106, 245, 255, 0.19)");
+      g.addColorStop(1, invalid ? "rgba(255, 154, 90, 0.18)" : "rgba(255, 255, 255, 0.08)");
+    }
+    ctx.globalAlpha = alpha;
+    ctx.shadowBlur = LOW_POWER ? 5 : 26;
+    ctx.shadowColor = invalid ? "#ff3158" : (shape.glow || "#bdf8ff");
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.lineWidth = 2.1;
+    ctx.strokeStyle = invalid ? "rgba(255, 93, 133, 0.95)" : "rgba(201, 255, 255, 0.86)";
+    ctx.stroke();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.52)";
+    drawShapePath(shape);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawSources() {
+    for (const source of level.sources) {
+      const startup = Math.max(0, 1 - level.sourcePulse / 3.15);
+      const triple = startup > 0 ? Math.pow(Math.max(0, Math.sin(level.sourcePulse * Math.PI * 3)), 2) * startup : 0;
+      const pulse = 0.7 + Math.sin(time * 5.4 + source.y * 0.02) * 0.18 + triple * 0.9;
+      ctx.save();
+      ctx.translate(source.x, source.y);
+      ctx.globalCompositeOperation = "lighter";
+      let color = "#ffffff";
+      if (source.port === "red") color = "#ff3158";
+      if (source.port === "green") color = "#42ff86";
+      if (source.port === "yellow") color = "#ffe44b";
+      const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, 42 + pulse * 16);
+      rg.addColorStop(0, color);
+      rg.addColorStop(0.25, `${color}cc`);
+      rg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = rg;
+      ctx.beginPath();
+      ctx.arc(0, 0, 45 + pulse * 10, 0, TAU);
+      ctx.fill();
+      ctx.shadowBlur = LOW_POWER ? 8 : 22 + pulse * 12;
+      ctx.shadowColor = color;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(-18, -16);
+      ctx.lineTo(14, -9);
+      ctx.lineTo(22, 0);
+      ctx.lineTo(14, 9);
+      ctx.lineTo(-18, 16);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawTarget(solved) {
+    const t = level.target;
+    const active = solved || victoryClock > 0;
+    const flicker = 0.55 + Math.sin(time * 9.5) * 0.08 + Math.sin(time * 2.1) * 0.08;
+    const bloom = active ? Math.min(1, victoryClock / 0.55) : 0;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const baseColor = colorForKey(t.mode);
+    const coloredTarget = t.mode === "filter" || t.mode === "yellow" || spectrum.some((entry) => entry.key === t.mode);
+    const idle = coloredTarget ? hexToRgba(baseColor, 0.42) : "rgba(67, 70, 82, 0.62)";
+    const glowRadius = t.r * (active ? 5.2 + bloom * 2.2 : 2.3);
+    const g = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, glowRadius);
+    g.addColorStop(0, active ? "#fff7d2" : idle);
+    g.addColorStop(0.18, active ? baseColor : idle);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, glowRadius, 0, TAU);
+    ctx.fill();
+
+    ctx.shadowBlur = LOW_POWER ? (active ? 14 : 4) : (active ? 38 : 12);
+    ctx.shadowColor = active ? baseColor : "rgba(120, 130, 145, 0.6)";
+    ctx.fillStyle = active ? baseColor : (coloredTarget ? hexToRgba(baseColor, 0.26 + flicker * 0.28) : `rgba(76, 81, 94, ${flicker})`);
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, t.r * (1 + bloom * 0.32), 0, TAU);
+    ctx.fill();
+
+    ctx.strokeStyle = active ? "rgba(255, 246, 181, 0.95)" : "rgba(180, 190, 205, 0.28)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, t.r * (1.12 + Math.sin(time * 3) * 0.035 + bloom * 0.35), 0, TAU);
+    ctx.stroke();
+
+    if (active) {
+      for (let i = 0; i < 18; i++) {
+        const a = (i / 18) * TAU + time * (0.6 + (i % 3) * 0.08);
+        const rr = t.r * (1.5 + bloom * 2.4 + Math.sin(time * 4 + i) * 0.12);
+        ctx.fillStyle = i % 2 ? "rgba(255, 232, 84, 0.85)" : "rgba(255,255,255,0.7)";
+        ctx.beginPath();
+        ctx.arc(t.x + Math.cos(a) * rr, t.y + Math.sin(a) * rr, 1.4 + bloom * 1.5, 0, TAU);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawRayGlow(trace) {
+    if (trace.path.length < 2) return;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    const color = trace.color;
+    for (let pass = 0; pass < 2; pass++) {
+      ctx.beginPath();
+      ctx.moveTo(trace.path[0].x, trace.path[0].y);
+      for (let i = 1; i < trace.path.length; i++) ctx.lineTo(trace.path[i].x, trace.path[i].y);
+      if (pass === 0) {
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.28;
+        ctx.lineWidth = LOW_POWER ? 9 : 18;
+        ctx.shadowBlur = LOW_POWER ? 8 : 30;
+      } else {
+        ctx.strokeStyle = "#ffffff";
+        ctx.globalAlpha = trace.key === "white" ? 0.94 : 0.74;
+        ctx.lineWidth = 1.8;
+        ctx.shadowBlur = LOW_POWER ? 3 : 10;
+      }
+      ctx.shadowColor = color;
+      ctx.stroke();
+    }
+
+    if (!LOW_POWER) {
+      for (let i = 0; i < trace.path.length - 1; i++) {
+        const a = trace.path[i];
+        const b = trace.path[i + 1];
+        const segLen = dist(a, b);
+        const count = Math.max(1, Math.floor(segLen / 95));
+        for (let k = 0; k < count; k++) {
+          const phase = (time * 180 + i * 23 + k * 41) % Math.max(1, segLen);
+          const u = clamp(phase / Math.max(1, segLen), 0, 1);
+          const p = { x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u) };
+          ctx.fillStyle = color;
+          ctx.globalAlpha = 0.42;
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 1.4, 0, TAU);
+          ctx.fill();
+        }
+      }
+    }
+
+    if (!trace.hit && trace.blocked) {
+      drawShatter(trace.end, "#ff1f4b", 0.5 + Math.sin(time * 8) * 0.2);
+    }
+
+    if (trace.tirCount > 0) {
+      for (const p of trace.path.slice(1, -1)) {
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.78)";
+        ctx.lineWidth = 1;
+        ctx.shadowBlur = LOW_POWER ? 5 : 16;
+        ctx.shadowColor = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, LOW_POWER ? 4.5 : 7 + Math.sin(time * 10) * 1.5, 0, TAU);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawShatter(p, color, alpha) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = color;
+    for (let i = 0; i < 9; i++) {
+      const a = time * 2.5 + i * 1.93;
+      const r = 5 + ((time * 38 + i * 7) % 22);
+      const x = p.x + Math.cos(a) * r;
+      const y = p.y + Math.sin(a) * r;
+      const shardColor = i % 2 ? color : "#12040a";
+      ctx.strokeStyle = shardColor;
+      ctx.fillStyle = shardColor;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y, 1.1, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawMix(spots) {
+    if (!spots.length) return;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 0; i < spots.length; i += 2) {
+      const p = spots[i];
+      const r = 9 + p.heat * 18 + Math.sin(time * 7 + i) * 2;
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      g.addColorStop(0, "rgba(255, 253, 185, 0.95)");
+      g.addColorStop(0.35, "rgba(255, 220, 41, 0.58)");
+      g.addColorStop(1, "rgba(255, 220, 41, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function rankForElapsed(seconds) {
+    if (seconds <= 360) return "A";
+    if (seconds <= 660) return "B";
+    if (seconds <= 960) return "C";
+    return "D";
+  }
+
+  function drawRankGlyph(rank, x, y, s) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 0.16;
+    ctx.strokeStyle = "#fff8c7";
+    ctx.shadowBlur = 36;
+    ctx.shadowColor = "#ffe356";
+    ctx.globalCompositeOperation = "lighter";
+    ctx.beginPath();
+    if (rank === "A") {
+      ctx.moveTo(-0.72, 0.82);
+      ctx.lineTo(0, -0.82);
+      ctx.lineTo(0.72, 0.82);
+      ctx.moveTo(-0.38, 0.08);
+      ctx.lineTo(0.38, 0.08);
+    } else if (rank === "B") {
+      ctx.moveTo(-0.58, -0.82);
+      ctx.lineTo(-0.58, 0.82);
+      ctx.moveTo(-0.55, -0.82);
+      ctx.bezierCurveTo(0.55, -0.9, 0.72, -0.13, -0.52, -0.02);
+      ctx.moveTo(-0.52, -0.02);
+      ctx.bezierCurveTo(0.75, 0.05, 0.62, 0.88, -0.58, 0.82);
+    } else if (rank === "C") {
+      ctx.arc(0.14, 0, 0.82, 0.67, TAU - 0.67, true);
+    } else {
+      ctx.moveTo(-0.58, -0.82);
+      ctx.lineTo(-0.58, 0.82);
+      ctx.moveTo(-0.55, -0.82);
+      ctx.bezierCurveTo(0.82, -0.78, 0.82, 0.78, -0.55, 0.82);
+    }
+    ctx.stroke();
+    ctx.lineWidth = 0.045;
+    ctx.strokeStyle = "#ffffff";
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFinale() {
+    const cx = W * 0.5;
+    const cy = H * 0.48;
+    const pulse = 0.5 + Math.sin(time * 2.8) * 0.5;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * TAU + time * 0.32;
+      const r = clamp(Math.min(W, H) * 0.19, 90, 150);
+      const x = cx + Math.cos(a) * r;
+      const y = cy + Math.sin(a) * r;
+      ctx.shadowBlur = 24;
+      ctx.shadowColor = spectrum[i % spectrum.length].color;
+      ctx.fillStyle = spectrum[i % spectrum.length].color;
+      ctx.globalAlpha = 0.55 + pulse * 0.22;
+      ctx.beginPath();
+      ctx.arc(x, y, 5.5 + pulse * 1.5, 0, TAU);
+      ctx.fill();
+    }
+
+    const ringR = clamp(Math.min(W, H) * 0.16, 86, 132);
+    const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, ringR * 2.35);
+    halo.addColorStop(0, "rgba(255, 244, 168, 0.82)");
+    halo.addColorStop(0.18, "rgba(255, 227, 86, 0.52)");
+    halo.addColorStop(0.62, "rgba(96, 242, 255, 0.11)");
+    halo.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = halo;
+    ctx.globalAlpha = 0.95;
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringR * 2.35, 0, TAU);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255, 241, 145, 0.92)";
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "#ffe356";
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringR * (1.04 + pulse * 0.035), 0, TAU);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(115, 245, 255, 0.36)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringR * (1.32 + Math.sin(time * 1.8) * 0.025), 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+
+    drawRankGlyph(finalRank, cx, cy, ringR * 0.72);
+  }
+
+  function shapeAABB(shape) {
+    if (shape.type === "rect" || shape.type === "filter") {
+      const pts = rectVertices(shape);
+      return ptsAABB(pts);
+    }
+    if (shape.type === "prism") {
+      return ptsAABB(prismVertices(shape));
+    }
+    if (shape.type === "semi") {
+      const r = shape.r;
+      const pts = [
+        shapeToWorld(shape, vec(0, -r)),
+        shapeToWorld(shape, vec(0, r)),
+        shapeToWorld(shape, vec(r, -r)),
+        shapeToWorld(shape, vec(r, r))
+      ];
+      return ptsAABB(pts);
+    }
+    if (shape.type === "circle") {
+      return { x: shape.cx - shape.r, y: shape.cy - shape.r, w: shape.r * 2, h: shape.r * 2 };
+    }
+    if (shape.type === "lens") {
+      const hw = shape.w * 0.5;
+      const hh = shape.h * 0.5;
+      return ptsAABB([
+        shapeToWorld(shape, vec(-hw, -hh)),
+        shapeToWorld(shape, vec(hw, -hh)),
+        shapeToWorld(shape, vec(hw, hh)),
+        shapeToWorld(shape, vec(-hw, hh))
+      ]);
+    }
+    return { x: shape.cx, y: shape.cy, w: 1, h: 1 };
+  }
+
+  function ptsAABB(pts) {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const p of pts) {
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x);
+      maxY = Math.max(maxY, p.y);
+    }
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  }
+
+  function aabbOverlap(a, b, pad = 0) {
+    return a.x - pad < b.x + b.w && a.x + a.w + pad > b.x && a.y - pad < b.y + b.h && a.y + a.h + pad > b.y;
+  }
+
+  function validPlacement(shape) {
+    const bb = shapeAABB(shape);
+    if (bb.x < board.x + 6 || bb.y < board.y + 6 || bb.x + bb.w > board.x + board.w - 6 || bb.y + bb.h > board.y + board.h - 6) {
+      return false;
+    }
+    for (const o of level.obstacles) {
+      if (aabbOverlap(bb, o, 8)) return false;
+    }
+    for (const other of level.pieces) {
+      if (other === shape) continue;
+      if (aabbOverlap(bb, shapeAABB(other), 10)) return false;
+    }
+    for (const fixed of level.fixed || []) {
+      if (aabbOverlap(bb, shapeAABB(fixed), 10)) return false;
+    }
+    return true;
+  }
+
+  function snapPoint(p) {
+    return { x: coordX(p), y: coordY(p) };
+  }
+
+  function toolSlots() {
+    const slots = [];
+    const n = level.tools.length;
+    const gap = clamp(W * 0.04, 28, 54);
+    const slotW = clamp(W * 0.22, 150, 230);
+    const start = W * 0.5 - (slotW * n + gap * (n - 1)) * 0.5;
+    for (let i = 0; i < n; i++) {
+      slots.push({
+        x: start + i * (slotW + gap),
+        y: toolbar.y + toolbar.h * 0.18,
+        w: slotW,
+        h: toolbar.h * 0.64,
+        tool: level.tools[i]
+      });
+    }
+    return slots;
+  }
+
+  function drawToolbar() {
+    ctx.save();
+    const grad = ctx.createLinearGradient(0, toolbar.y, 0, H);
+    grad.addColorStop(0, "rgba(6, 8, 24, 0)");
+    grad.addColorStop(0.18, "rgba(8, 11, 31, 0.84)");
+    grad.addColorStop(1, "rgba(4, 5, 18, 0.96)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, toolbar.y, W, toolbar.h);
+
+    ctx.strokeStyle = "rgba(115, 243, 255, 0.2)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, toolbar.y + 0.5);
+    ctx.lineTo(W, toolbar.y + 0.5);
+    ctx.stroke();
+
+    for (const slot of toolSlots()) {
+      const pulse = 0.4 + 0.6 * Math.sin(time * 2.2 + slot.x * 0.01);
+      ctx.save();
+      ctx.globalAlpha = 0.55 + pulse * 0.15;
+      ctx.shadowBlur = LOW_POWER ? 0 : 18;
+      ctx.shadowColor = "rgba(108, 245, 255, 0.34)";
+      ctx.strokeStyle = "rgba(130, 250, 255, 0.34)";
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      roundedRectPath(slot.x, slot.y, slot.w, slot.h, 8);
+      ctx.stroke();
+      ctx.restore();
+
+      const ghost = clonePiece(slot.tool);
+      if (ghost.type === "semi") {
+        ghost.cx = slot.x + slot.w * 0.38;
+        ghost.cy = slot.y + slot.h * 0.5;
+      } else {
+        ghost.cx = slot.x + slot.w * 0.5;
+        ghost.cy = slot.y + slot.h * 0.5;
+      }
+      const scale = Math.min(1, slot.h / 120);
+      if (ghost.type === "rect" || ghost.type === "filter" || ghost.type === "prism" || ghost.type === "lens") {
+        ghost.w *= scale * 0.82;
+        ghost.h *= scale * 0.82;
+      } else {
+        ghost.r *= scale * 0.65;
+      }
+      drawShape(ghost, 0.72, false);
+    }
+    ctx.restore();
+  }
+
+  function drawAllShapes() {
+    for (const fixed of level.fixed || []) drawShape(fixed, 0.76, false);
+    for (const p of level.pieces) drawShape(p, 0.93, false);
+    if (drag && drag.shape) drawShape(drag.shape, 0.9, !validPlacement(drag.shape));
+  }
+
+  function pointerPos(ev) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (ev.clientX - rect.left) * (W / rect.width),
+      y: (ev.clientY - rect.top) * (H / rect.height)
+    };
+  }
+
+  function pointInAABB(p, a) {
+    return p.x >= a.x && p.x <= a.x + a.w && p.y >= a.y && p.y <= a.y + a.h;
+  }
+
+  function hitPiece(p) {
+    for (let i = level.pieces.length - 1; i >= 0; i--) {
+      if (shapeContains(level.pieces[i], p)) return level.pieces[i];
+    }
+    return null;
+  }
+
+  function ensureAudio() {
+    if (!audio) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return null;
+      audio = new AudioContext();
+    }
+    if (audio.state === "suspended") audio.resume();
+    return audio;
+  }
+
+  function playDing() {
+    const ac = ensureAudio();
+    if (!ac) return;
+    const now = ac.currentTime;
+    const out = ac.createGain();
+    out.gain.setValueAtTime(0.0001, now);
+    out.gain.exponentialRampToValueAtTime(0.18, now + 0.012);
+    out.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+    out.connect(ac.destination);
+
+    [660, 990, 1320].forEach((f, i) => {
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = i ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(f, now + i * 0.025);
+      gain.gain.setValueAtTime(0.45 / (i + 1), now + i * 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+      osc.connect(gain).connect(out);
+      osc.start(now + i * 0.025);
+      osc.stop(now + 0.44);
+    });
+  }
+
+  function playHum() {
+    const ac = ensureAudio();
+    if (!ac) return;
+    const now = ac.currentTime;
+    const out = ac.createGain();
+    out.gain.setValueAtTime(0.0001, now);
+    out.gain.exponentialRampToValueAtTime(0.095, now + 0.02);
+    out.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+    out.connect(ac.destination);
+
+    const osc = ac.createOscillator();
+    const mod = ac.createOscillator();
+    const modGain = ac.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(92, now);
+    osc.frequency.exponentialRampToValueAtTime(61, now + 0.3);
+    mod.frequency.setValueAtTime(27, now);
+    modGain.gain.setValueAtTime(12, now);
+    mod.connect(modGain).connect(osc.frequency);
+    osc.connect(out);
+    mod.start(now);
+    osc.start(now);
+    mod.stop(now + 0.33);
+    osc.stop(now + 0.33);
+  }
+
+  function burstAt(p, color, strength = 1) {
+    for (let i = 0; i < 34; i++) {
+      const a = Math.random() * TAU;
+      const sp = (80 + Math.random() * 240) * strength;
+      shards.push({
+        x: p.x,
+        y: p.y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp,
+        life: 0.55 + Math.random() * 0.55,
+        age: 0,
+        color,
+        r: 1 + Math.random() * 2.8
+      });
+    }
+  }
+
+  function updateBursts(dt) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = shards.length - 1; i >= 0; i--) {
+      const s = shards[i];
+      s.age += dt;
+      if (s.age >= s.life) {
+        shards.splice(i, 1);
+        continue;
+      }
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      s.vx *= Math.pow(0.05, dt);
+      s.vy *= Math.pow(0.05, dt);
+      const a = 1 - s.age / s.life;
+      ctx.globalAlpha = a;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = s.color;
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r * a, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function onPointerDown(ev) {
+    if (finale) return;
+    const p = pointerPos(ev);
+    ensureAudio();
+    canvas.setPointerCapture(ev.pointerId);
+    const placed = hitPiece(p);
+    if (placed) {
+      drag = {
+        shape: placed,
+        fromToolbar: false,
+        offset: sub(centerOf(placed), p),
+        origin: { cx: placed.cx, cy: placed.cy }
+      };
+      return;
+    }
+    for (const slot of toolSlots()) {
+      if (pointInAABB(p, slot)) {
+        const removed = level.pieces.filter((piece) => piece.type === slot.tool.type);
+        level.pieces = level.pieces.filter((piece) => piece.type !== slot.tool.type);
+        if (removed.length) invalidateTrace();
+        const shape = clonePiece(slot.tool);
+        shape.cx = p.x;
+        shape.cy = p.y;
+        drag = {
+          shape,
+          fromToolbar: true,
+          offset: vec(0, 0),
+          removed
+        };
+        return;
+      }
+    }
+  }
+
+  function onPointerMove(ev) {
+    if (finale) return;
+    if (!drag) return;
+    const p = pointerPos(ev);
+    const target = add(p, drag.offset);
+    drag.shape.cx = target.x;
+    drag.shape.cy = target.y;
+    if (!drag.fromToolbar) invalidateTrace();
+  }
+
+  function onPointerUp(ev) {
+    if (finale) return;
+    if (!drag) return;
+    const p = pointerPos(ev);
+    const shape = drag.shape;
+    const drop = snapPoint(shape);
+    shape.cx = drop.x;
+    shape.cy = drop.y;
+    const keep = p.y < toolbar.y && validPlacement(shape);
+    if (keep) {
+      if (!level.pieces.includes(shape)) level.pieces.push(shape);
+      invalidateTrace();
+      const outcome = getTraceOutcome();
+      if (!outcome.solved) {
+        playHum();
+        const miss = outcome.traces.find((t) => t.blocked) || outcome.traces[0];
+        if (miss) burstAt(miss.end, miss.color, 0.55);
+      }
+    } else {
+      if (!drag.fromToolbar && !level.pieces.includes(shape)) level.pieces.push(shape);
+      if (drag.fromToolbar) {
+        playHum();
+        burstAt(p, "#ff1f4b", 0.45);
+      } else if (!validPlacement(shape)) {
+        if (drag.origin) {
+          shape.cx = drag.origin.cx;
+          shape.cy = drag.origin.cy;
+          invalidateTrace();
+        }
+        playHum();
+        burstAt(p, "#ff1f4b", 0.45);
+      }
+      if (drag.fromToolbar) {
+        level.pieces = level.pieces.filter((piece) => piece !== shape);
+        if (drag.removed && drag.removed.length) level.pieces.push(...drag.removed);
+        invalidateTrace();
+      }
+    }
+    drag = null;
+  }
+
+  function nextLevelSoon(dt) {
+    victoryClock += dt;
+    if (victoryClock > 1.75 && currentLevel < TOTAL_LEVELS - 1) {
+      resetLevel(currentLevel + 1);
+    } else if (victoryClock > 1.75 && currentLevel === TOTAL_LEVELS - 1) {
+      enterFinale();
+    }
+  }
+
+  function enterFinale() {
+    if (finale) return;
+    finale = true;
+    finaleClock = 0;
+    finalElapsed = (performance.now() - runStartedAt) / 1000;
+    finalRank = rankForElapsed(finalElapsed);
+    flashClock = 1.15;
+    drag = null;
+    burstAt({ x: W * 0.5, y: H * 0.48 }, "#ffe356", 1.8);
+  }
+
+  function render(now) {
+    if (now - frameGate < FRAME_MS) {
+      requestAnimationFrame(render);
+      return;
+    }
+    frameGate = now;
+    const dt = Math.min(0.035, (now - lastFrame) / 1000 || 0.016);
+    lastFrame = now;
+    time += dt;
+    if (level) level.sourcePulse += dt;
+
+    if (finale) {
+      finaleClock += dt;
+      drawBackground();
+      drawFinale();
+      updateBursts(dt);
+      if (flashClock > 0) {
+        flashClock -= dt;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const phase = 1 - flashClock / 1.15;
+        ctx.globalAlpha = Math.pow(Math.sin(phase * Math.PI * 4), 2) * 0.3;
+        ctx.fillStyle = "#fff5b6";
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+      }
+      requestAnimationFrame(render);
+      return;
+    }
+
+    drawBackground();
+    drawGrid();
+    drawProgressPips();
+    drawObstacles();
+
+    const outcome = getTraceOutcome();
+    const solved = outcome.solved;
+    if (solved && !lastSolved) {
+      lastSolved = true;
+      flashClock = 0.95;
+      victoryClock = Math.max(victoryClock, 0.001);
+      playDing();
+      burstAt(level.target, (level.target.mode === "red" || level.target.mode === "filter") ? "#ff3158" : "#ffe356", 1.2);
+    }
+    if (!solved && lastSolved && victoryClock <= 0) {
+      lastSolved = false;
+    }
+    if (solved && victoryClock > 0) nextLevelSoon(dt);
+    if (flashClock > 0) flashClock -= dt;
+
+    drawSources();
+    for (const tr of outcome.traces) drawRayGlow(tr);
+    drawMix(outcome.mixSpots);
+    drawTarget(solved || victoryClock > 0);
+    drawToolbar();
+    drawAllShapes();
+    updateBursts(dt);
+
+    if (flashClock > 0) {
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      const phase = 1 - flashClock / 0.95;
+      ctx.globalAlpha = Math.pow(Math.sin(phase * Math.PI * 4), 2) * 0.34;
+      ctx.fillStyle = "#fff5b6";
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  canvas.addEventListener("pointerdown", onPointerDown);
+  canvas.addEventListener("pointermove", onPointerMove);
+  canvas.addEventListener("pointerup", onPointerUp);
+  canvas.addEventListener("pointercancel", onPointerUp);
+  canvas.addEventListener("contextmenu", (ev) => ev.preventDefault());
+  window.addEventListener("resize", resize);
+
+  resize();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

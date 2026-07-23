@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Squint — Play the Game</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">Squint <small>Painting &amp; Light</small></div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="index.html#system">System Design</a>
+      <a href="process.html">Development Process</a>
+      <a href="game.html" class="active">Play Game</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <h2>Play <em>Squint</em></h2>
+    <p class="muted">Paint the light you see, cell by cell, into 5 objective values. Don't copy the object — read the value masses. Win a level to unlock a free Detail Mode.</p>
+
+    <div class="level-tabs">
+      <button class="btn active" data-level="0">L1 · Grayscale</button>
+      <button class="btn" data-level="1">L2 · Moving Light</button>
+      <button class="btn" data-level="2">L3 · Colour</button>
+      <button class="btn" data-level="3">Apple</button>
+      <button class="btn" data-level="4">Bird</button>
+      <button class="btn" data-level="5">Dragon</button>
+    </div>
+    <p id="levelDesc" class="muted"></p>
+
+    <div class="objective-bar">
+      <span class="obj-label">GOAL</span>
+      <span class="obj-text">Read the light into 5 values and block in the masses — then press <b>Submit</b> to be critiqued. You <b>pass at 80%</b>.</span>
+    </div>
+
+    <div class="game-shell">
+
+      <!-- LEFT: interactable painting controls + tools + actions -->
+      <div class="tools-col">
+        <div class="card">
+          <h3>Palette</h3>
+
+          <div id="colorWrap" style="display:none;">
+            <p class="hint">Pick a <b>colour</b>, then a <b>value</b>. Shadows can lean cool — that's a painter's trick.</p>
+            <div class="hue-chips" id="hueChips"></div>
+          </div>
+
+          <p class="hint" id="valueHint">Pick a value (1 lightest → 5 darkest), then click / drag on the canvas to paint.</p>
+          <div class="swatches" id="palette"></div>
+
+          <h3 style="margin-top:18px;">Brush</h3>
+          <div class="brush-control">
+            <button class="btn" id="brushMinus" title="Shrink brush ([)">−</button>
+            <b id="brushSize">5</b><span class="hint">&nbsp;cells Ø</span>
+            <button class="btn" id="brushPlus" title="Grow brush (])">+</button>
+          </div>
+          <p class="hint">Shrink to 1 for detail, grow to block masses.</p>
+        </div>
+
+        <div class="card">
+          <h3>Tools &amp; Actions</h3>
+          <div class="section-label">Painter's tools</div>
+          <div class="btn-row">
+            <button class="btn tool-btn" id="squintBtn" title="Blur both canvases to check value masses (Q)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Squint<span class="tool-kbd">Q</span>
+            </button>
+            <button class="btn tool-btn" id="stepBtn" title="Shrink canvas to see the whole from a distance (E)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              Step Back<span class="tool-kbd">E</span>
+            </button>
+            <button class="btn tool-btn" id="flipBtn" title="Overlay reference over your painting (F)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              Flip<span class="tool-kbd">F</span>
+            </button>
+          </div>
+
+          <div class="section-label">Actions</div>
+          <div class="btn-row">
+            <button class="btn" id="undoBtn">Undo</button>
+            <button class="btn" id="resetBtn">Reset</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="detailBtn" style="display:none;">Enter Detail Mode</button>
+            <button class="btn" id="exitDetailBtn" style="display:none;">Exit Detail</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: the canvas -->
+      <div class="canvas-col">
+        <div class="canvas-stage" id="canvasStage">
+          <canvas id="playerCanvas" width="420" height="420"></canvas>
+        </div>
+        <button class="btn primary submit-big" id="submitBtn">Submit for Critique</button>
+        <div id="detailBanner" class="detail-banner" style="display:none;">
+          Detail Mode — refine freely with any brush. No scoring. Press <b>Exit Detail</b> when done.
+        </div>
+        <div id="flash" class="hint" style="opacity:0; transition:opacity .3s; color:var(--bad);"></div>
+      </div>
+
+      <!-- RIGHT: observation + scoring (informational, separated) -->
+      <div class="side-col">
+        <div class="card">
+          <h3>Reference</h3>
+          <p class="hint">Observe the light, big shapes, and how shadow divides each form.</p>
+          <canvas id="refCanvas" width="420" height="420"></canvas>
+        </div>
+
+        <div class="card">
+          <h3>Score</h3>
+          <div class="kpis">
+            <div class="kpi"><b id="budget">20</b><span>Strokes left</span></div>
+            <div class="kpi"><b id="strokes">0</b><span>Strokes used</span></div>
+            <div class="kpi"><b id="scoreKpi">—</b><span>AI score</span></div>
+          </div>
+          <p class="hint">Press <b>Submit</b> to see your AI critique as a pop-up over the canvas.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result pop-up: semi-opaque modal that covers the canvas (a bit larger) -->
+    <div class="result-overlay" id="resultOverlay" style="display:none;">
+      <div class="result-modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultHead">
+        <button class="result-close" id="resultClose" title="Close (Esc)" aria-label="Close">&times;</button>
+        <div class="result-head" id="resultHead"></div>
+        <div class="result-score-big" id="resultScore"></div>
+        <div class="result-reason" id="resultReason"></div>
+        <div class="result-critique" id="resultCritique"></div>
+        <div class="result-actions">
+          <button class="btn primary" id="resultContinue">Keep Painting</button>
+          <button class="btn" id="resultDetail" style="display:none;">Enter Detail Mode</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint" style="margin-top:16px;">
+      <b>Painter's tools:</b> <span class="kbd">Q</span> squint (check masses) ·
+      <span class="kbd">E</span> step back (see from distance) ·
+      <span class="kbd">F</span> flip compare. &nbsp;
+      <b>Painting:</b> <span class="kbd">1</span>–<span class="kbd">5</span> pick value ·
+      <span class="kbd">[</span> <span class="kbd">]</span> brush size.
+      Click/drag to paint; grow your brush to block in big shapes fast.
+    </p>
+  </div>
+
+  <footer>Squint — NYU Shanghai IMA Game Design Summer Camp · Track A (no build) · Student: Charlie. S</footer>
+
+  <script src="assets/js/scene.js"></script>
+  <script src="assets/js/game.js"></script>
+</body>
+</html>

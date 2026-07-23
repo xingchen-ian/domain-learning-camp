@@ -236,8 +236,8 @@
 
     .cloud-shell {
       position: relative;
-      width: min(980px, 100%);
-      height: min(68vh, 620px);
+      width: min(1240px, 100%);
+      height: min(78vh, 720px);
       touch-action: none;
       cursor: grab;
     }
@@ -254,10 +254,14 @@
       position: absolute;
       left: 50%;
       top: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15em;
       border: 0;
-      padding: 10px 14px;
+      padding: 6px 10px;
       background: transparent;
-      color: #edf2ef;
+      color: var(--name-color, #edf2ef);
       font: inherit;
       font-weight: 800;
       letter-spacing: 0;
@@ -265,15 +269,37 @@
       cursor: pointer;
       text-decoration: none;
       text-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-      transition: color 160ms ease, text-shadow 160ms ease;
+      transition: filter 160ms ease, text-shadow 160ms ease, opacity 160ms ease;
       pointer-events: auto;
+      line-height: 1.05;
+    }
+
+    .cloud-name .cloud-title {
+      display: block;
+      font-weight: 800;
+      color: inherit;
+    }
+
+    .cloud-name .cloud-author {
+      display: block;
+      font-size: 0.42em;
+      font-weight: 550;
+      letter-spacing: 0.02em;
+      color: rgba(168, 181, 177, 0.62);
+      text-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
     }
 
     .cloud-name:hover,
     .cloud-name:focus-visible {
-      color: #fff;
-      text-shadow: 0 0 18px rgba(226, 123, 109, 0.55), 0 10px 30px rgba(0, 0, 0, 0.65);
+      filter: brightness(1.18);
+      text-shadow: 0 0 18px color-mix(in srgb, var(--name-color, #e27b6d) 55%, transparent), 0 10px 30px rgba(0, 0, 0, 0.65);
       outline: none;
+    }
+
+    .cloud-name:hover .cloud-author,
+    .cloud-name:focus-visible .cloud-author {
+      color: rgba(210, 180, 139, 0.78);
+      filter: none;
     }
 
     .cloud-name.is-placeholder {
@@ -409,7 +435,7 @@
     @media (max-width: 720px) {
       body { overflow: auto; }
       .stage { min-height: 100vh; height: auto; }
-      .cloud-shell { height: 58vh; min-height: 360px; }
+      .cloud-shell { height: 62vh; min-height: 380px; }
       .brand-subtitle { display: none; }
       .footer-bar { flex-direction: column; align-items: flex-start; }
     }
@@ -428,6 +454,7 @@
     </div>
     <div class="top-actions">
       <a class="ghost-link" href="../index.html"><span class="zh">课程</span><span class="en">Course</span></a>
+      <a class="ghost-link" href="../summary/index.html"><span class="zh">总结</span><span class="en">Summary</span></a>
       <button type="button" class="lang" data-lang="zh">中文</button>
       <button type="button" class="lang active" data-lang="en">English</button>
       <button type="button" class="find-toggle" id="findToggle" aria-expanded="false" aria-controls="findPanel">
@@ -487,7 +514,8 @@
     let lang = localStorage.getItem(languageKey) || "en";
     let projects = [];
     let nodes = [];
-    let radius = 220;
+    let radiusX = 320;
+    let radiusY = 260;
     let rotX = -12;
     let rotY = 18;
     let targetRotX = rotX;
@@ -556,18 +584,65 @@
       return points;
     }
 
+    function themeColor(project) {
+      const key = [
+        project?.domain,
+        project?.domainZh,
+        project?.title,
+        project?.titleZh,
+        project?.id
+      ].filter(Boolean).join(" ").toLowerCase();
+
+      const rules = [
+        { re: /sail|tide|sea|ocean|shark|diving|dive|潮|海|帆|鲨|潜水/, color: "#78bcb6" },
+        { re: /ski|curling|skat|冰|滑|雪/, color: "#9ec5e8" },
+        { re: /cycl|bike|drone|flight|light|spectrum|光|骑|无人机|光谱/, color: "#86a9c9" },
+        { re: /golf|climb|horse|trail|run|攀|马|跑|越野/, color: "#a8c686" },
+        { re: /race|rush|animal|dash|beast|竞|冲|动物/, color: "#e27b6d" },
+        { re: /bake|cake|cook|kitchen|knead|bread|烤|蛋糕|厨|揉|面/, color: "#d2b48b" },
+        { re: /plant|succulent|bug|insect|多肉|虫/, color: "#7dba8a" },
+        { re: /art|paint|squint|hue|color|callig|美术|画|色|描/, color: "#e8a090" },
+        { re: /archery|射/, color: "#c85243" },
+        { re: /opera|dream|stage|梦|歌剧|舞台/, color: "#c4a4c8" },
+        { re: /cube|chem|password|puzzle|魔方|化学|密室/, color: "#7eb8c9" },
+        { re: /stealth|潜行/, color: "#8fa896" }
+      ];
+
+      for (const rule of rules) {
+        if (rule.re.test(key)) return rule.color;
+      }
+      // Stable fallback from id hash so untitled themes still differ.
+      const palette = ["#78bcb6", "#d2b48b", "#e27b6d", "#86a9c9", "#a8c686", "#e8a090"];
+      let hash = 0;
+      const seed = project?.id || project?.title || "game";
+      for (let i = 0; i < seed.length; i += 1) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+      return palette[hash % palette.length];
+    }
+
     function resizeRadius() {
-      const bound = Math.min(cloudShell.clientWidth, cloudShell.clientHeight);
-      radius = Math.max(140, Math.floor(bound * 0.34));
+      const w = cloudShell.clientWidth;
+      const h = cloudShell.clientHeight;
+      // Spread titles across most of the stage; keep a small margin for labels.
+      radiusX = Math.max(200, Math.floor(w * 0.44));
+      radiusY = Math.max(160, Math.floor(h * 0.40));
+    }
+
+    function displayAuthor(project) {
+      if (!project) return "";
+      const name = (project.teamDisplay || project.team || "").trim();
+      if (!name || /^anonymous$/i.test(name)) return "";
+      // Soften "Group 04 · Xiao" → keep as-is; strip redundant "Group" noise only if needed
+      return name;
     }
 
     function buildCloud() {
       const playable = playableProjects();
       const usingPlaceholders = playable.length === 0;
       const items = usingPlaceholders
-        ? placeholderNames[lang].map((title) => ({ title, placeholder: true }))
+        ? placeholderNames[lang].map((title) => ({ title, author: "", placeholder: true }))
         : playable.map((project) => ({
             title: displayTitle(project),
+            author: displayAuthor(project),
             href: project.entryPage || project.gamePage,
             placeholder: false,
             project
@@ -578,10 +653,29 @@
       nodes = items.map((item, index) => {
         const el = document.createElement(item.placeholder ? "span" : "a");
         el.className = "cloud-name" + (item.placeholder ? " is-placeholder" : "");
-        el.textContent = item.title;
+
+        const titleEl = document.createElement("span");
+        titleEl.className = "cloud-title";
+        titleEl.textContent = item.title;
+        el.appendChild(titleEl);
+
+        if (item.author) {
+          const authorEl = document.createElement("span");
+          authorEl.className = "cloud-author";
+          authorEl.textContent = item.author;
+          el.appendChild(authorEl);
+        }
+
+        const color = item.placeholder ? "rgba(168, 181, 177, 0.55)" : themeColor(item.project);
+        el.style.setProperty("--name-color", color);
+        el.style.color = color;
         if (!item.placeholder) {
           el.href = item.href;
-          el.setAttribute("aria-label", lang === "zh" ? `打开 ${item.title} 项目首页` : `Open ${item.title} project home`);
+          const who = item.author ? ` · ${item.author}` : "";
+          el.setAttribute(
+            "aria-label",
+            lang === "zh" ? `打开 ${item.title}${who} 项目首页` : `Open ${item.title}${who} project home`
+          );
           el.addEventListener("click", (event) => {
             // Ignore clicks that were actually short drags on the cloud.
             if (dragMoved) {
@@ -591,10 +685,12 @@
           });
         }
         cloudSphere.appendChild(el);
+        const len = item.title.length;
+        const baseSize = item.placeholder ? 15 : (len > 18 ? 17 : len > 12 ? 20 : 24);
         return {
           el,
           base: points[index],
-          size: item.placeholder ? 15 : 22 + (item.title.length > 14 ? 0 : 8)
+          size: baseSize
         };
       });
 
@@ -627,7 +723,7 @@
         node.el.style.opacity = String(opacity);
         node.el.style.zIndex = String(Math.round(1000 + z2 * 1000));
         // Project to 2D so the clickable box matches the visible label.
-        node.el.style.transform = `translate(-50%, -50%) translate(${x2 * radius}px, ${y1 * radius}px)`;
+        node.el.style.transform = `translate(-50%, -50%) translate(${x2 * radiusX}px, ${y1 * radiusY}px)`;
         node.el.style.pointerEvents = z2 < -0.15 ? "none" : "auto";
       });
     }

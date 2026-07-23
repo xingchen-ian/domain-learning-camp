@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>how to skateboarding — Home</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-body">
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="game.html">Play Game</a>
+    <a href="process.html">Process</a>
+  </nav>
+
+  <div class="content">
+    <!-- Hero -->
+    <section class="hero">
+      <h1>How to Skateboarding</h1>
+      <p>A web game that teaches the real skill behind skateboarding: reading the landform and adjusting your speed, core, and balance — not just standing on the board.</p>
+      <a href="game.html" class="button">▶ Play the Game</a>
+    </section>
+
+    <!-- Game Idea -->
+    <section>
+      <h2>Game Idea</h2>
+      <div class="card">
+        <h3>Concept</h3>
+        <p>When I got my skateboard as a present from my mother many years ago, I found that riding on the skateboard successfully isn't a beginner-friendly thing. It is all about adjusting my motion and changing my core from time to time, which depends on speed, angle, and landform.</p>
+        <p><strong>Player Goal:</strong> Reach the destination without falling off the skateboard or running out of energy.</p>
+      </div>
+      <div class="card">
+        <h3>Core Learning Shift</h3>
+        <p><strong>Beginners think:</strong> skateboarding means standing on the board and moving as far as possible without falling down.</p>
+        <p><strong>Experts know:</strong> skateboarding means reading the landforms and adjusting the speed, core, and balance in relation to it.</p>
+      </div>
+    </section>
+
+    <!-- Domain Knowledge -->
+    <section>
+      <h2>Domain Knowledge</h2>
+      <div class="card">
+        <h3>Real-World Domain: Skateboarding</h3>
+        <p>Keeping balance on a skateboard depends on the relationship between <strong>friction</strong>, <strong>landform</strong>, <strong>gravity</strong>, <strong>speed</strong>, and the position of your body's <strong>core</strong> (center of gravity).</p>
+      </div>
+      <div class="card">
+        <h3>Novice Misconception</h3>
+        <p>Beginners often ignore the impact of gravity or friction on keeping balance. They tend to think they can keep balance as long as they are on the board.</p>
+      </div>
+      <div class="card">
+        <h3>Expert Judgment</h3>
+        <p>Experts read the terrain ahead and shift their core proactively: <strong>raise the core when climbing uphill</strong> (lean forward for efficiency), and <strong>lower the core when going downhill</strong> (lean back for stability). They also choose an initial speed that matches the energy needed for the entire route.</p>
+      </div>
+      <div class="card">
+        <h3>Why This Becomes Playable</h3>
+        <p>The invisible physics of skateboarding — gravity pulling you back on hills, friction slowing your wheels, the instability of a high center of mass — are translated into visible game variables the player can see, judge, and act on.</p>
+      </div>
+    </section>
+
+    <!-- System Design -->
+    <section>
+      <h2>System Design</h2>
+      <img src="../system-graph.png" alt="Game System Graph" class="graph-img">
+      <div class="grid">
+        <div class="card">
+          <h3>Environment Data</h3>
+          <ul>
+            <li><strong>Landform</strong> — the shape of the ground (flat, hills)</li>
+            <li><strong>Friction</strong> — how much the wheels resist motion</li>
+            <li><strong>Wheel type</strong> — normal, ice (low friction), cake (high friction)</li>
+            <li><strong>Energy pads</strong> — boost zones that restore speed</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Player-Controlled Data</h3>
+          <ul>
+            <li><strong>Initial speed</strong> — chosen before starting</li>
+            <li><strong>Core height</strong> — raised or lowered during play (↑ / ↓)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>System-Calculated Results</h3>
+          <ul>
+            <li><strong>Speed</strong> — changes with friction, gravity, and core efficiency</li>
+            <li><strong>Energy</strong> — derived from current speed</li>
+            <li><strong>Balance</strong> — drops when core doesn't match the terrain</li>
+            <li><strong>Position</strong> — how far along the route</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Feedback Mapping</h3>
+      <div class="card">
+        <ul>
+          <li><strong>Speed</strong> → movement of the board + speed bar on HUD</li>
+          <li><strong>Energy</strong> → energy bar (derived from speed)</li>
+          <li><strong>Balance</strong> → character wobble + balance bar + core dot color (green / yellow / red)</li>
+          <li><strong>Landform</strong> → visible terrain shape ahead + slope indicator</li>
+        </ul>
+      </div>
+
+      <h3>Success &amp; Failure</h3>
+      <div class="card">
+        <ul>
+          <li><strong style="color:#2E7D32;">Success:</strong> Reach the destination with balance above zero.</li>
+          <li><strong style="color:#C62828;">Failure — Fall:</strong> Balance drops to zero (wrong core position, especially on downhill).</li>
+          <li><strong style="color:#C62828;">Failure — Stuck:</strong> Speed drops to zero before reaching the destination (not enough initial energy, or inefficient core on uphill).</li>
+        </ul>
+      </div>
+
+      <h3>Challenge Presets</h3>
+      <div class="card">
+        <p><strong>Level 1 — Flat Ground:</strong> Normal wheels, normal friction. Learn to keep the core centered and pick a reasonable speed.</p>
+        <p><strong>Level 2 — Ice Hill:</strong> Ice wheels with very low friction. Speed is easy to keep, but balance is slippery and hard to recover. One hill to climb.</p>
+        <p><strong>Level 3 — Cake Mountains:</strong> Cake wheels with strong friction. Speed is hard to keep across multiple hills, but balance is stable. An energy pad helps refill speed mid-route.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer">
+    IMA Summer Program — Game Design — Wang Yiran — Built with WorkBuddy
+  </footer>
+</body>
+</html>

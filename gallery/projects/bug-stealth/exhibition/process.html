@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bug Stealth — Development Process</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <span class="brand">Bug Stealth</span>
+    <a href="index.html">Home</a>
+    <a href="domain.html">Domain</a>
+    <a href="system.html">System</a>
+    <a href="process.html">Process</a>
+    <a href="game.html">Play</a>
+  </nav>
+
+  <main class="page">
+    <h1>Development Process</h1>
+    <p>This timeline is a faithful summary of <code>agent-development-log.md</code>. It records what was built, what failed, and how the human–AI collaboration shaped the project.</p>
+
+    <div class="timeline-entry">
+      <h3>Interaction 01 — Initialization</h3>
+      <time>2026-07-15</time>
+      <p><strong>Stage:</strong> Project setup.</p>
+      <p><strong>Goal:</strong> Read the development brief + system graph and build the first playable version of Bug Stealth.</p>
+      <p><strong>What happened:</strong> The student dropped the brief (<code>plant-care.md</code>), the spec (<code>Bug Stealth.docx</code>) and the system graph screenshot into the workspace. WorkBuddy read all three, summarized the core learning shift, the three difficulty tiers, the variable list and the HUD requirements.</p>
+      <p><strong>AI influence:</strong> WorkBuddy chose Track A (no build step — plain HTML + CSS + Canvas 2D + JavaScript) because the brief mandates a build that runs from a teacher-hosted static server with no <code>npm install</code> and no internet. Three.js was not necessary for the gameplay the system graph actually describes.</p>
+      <p><strong>Result:</strong> Project skeleton created, system graph and brief copied into the project root, <code>agent-development-log.md</code> initialized.</p>
+    </div>
+
+    <div class="timeline-entry">
+      <h3>Interaction 02 — Game engine &amp; levels</h3>
+      <time>2026-07-15</time>
+      <p><strong>Stage:</strong> First playable loop.</p>
+      <p><strong>Goal:</strong> Implement the smallest complete observe → judge → act → feedback → adjust loop.</p>
+      <p><strong>What happened:</strong> Wrote <code>levels.js</code> (the 3 challenge presets as pure data) and <code>main.js</code> (the engine: input, player movement, insect AI with patrol/alert/dive states, mirror rotation, ray–mirror reflection, plant growth, win/lose detection, HUD, overlays). <code>game.html</code> hosts the canvas and the control legend.</p>
+      <p><strong>Key mechanic — light reflection:</strong> the sun emits a ray; for each mirror in the path the engine tests ray–segment intersection, computes the reflected direction <code>r = d − 2(d·n)n</code>, and only accepts the bounce when the angle of incidence is inside <code>mirrorReflectionRange</code>. The plant receives sunlight only when the final ray hits it.</p>
+      <p><strong>Test &amp; immediate result:</strong> Loaded locally — canvas renders, player walks and hides, insects patrol and dive, mirrors rotate, light path recomputes. Partially working: climb-to-win animation needs polish (see open questions).</p>
+      <p><strong>Student decision / follow-up:</strong> Pending student confirmation of project title "Bug Stealth" and difficulty wording.</p>
+    </div>
+
+    <div class="timeline-entry">
+      <h3>Interaction 03 — Project website</h3>
+      <time>2026-07-15</time>
+      <p><strong>Stage:</strong> Website + docs.</p>
+      <p><strong>Goal:</strong> Build the integrated project website required by brief §9 and the root deliverable docs (README, THIRD_PARTY, manifest).</p>
+      <p><strong>What happened:</strong> Created <code>index.html</code> (home), <code>domain.html</code> (domain knowledge), <code>system.html</code> (system graph + data model + win/lose + presets), <code>process.html</code> (this page), <code>README.md</code>, <code>THIRD_PARTY.md</code> and <code>submission-manifest.json</code>. All internal links use relative paths so the project works inside a Gallery subfolder.</p>
+    </div>
+
+    <h2>Open questions / known issues</h2>
+    <ul>
+      <li>Climb-to-win transition is functional but visually simple — a dedicated climbing animation could be added later.</li>
+      <li>Audio (BGM, footsteps, wing sounds) is intentionally omitted in the first playable version to keep the file count low; it can be layered in via the Web Audio API without changing mechanics.</li>
+      <li>The student has not yet confirmed the public-display consent field for the submission manifest.</li>
+    </ul>
+
+    <p style="margin-top:2rem;"><a class="btn" href="game.html">Play the game →</a></p>
+  </main>
+
+  <footer>© 2026 Bug Stealth — plant-care learning game by 陈晴晴, built with WorkBuddy.</footer>
+</body>
+</html>

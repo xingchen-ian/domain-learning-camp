@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sailing Adventure — Project Home</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <a href="index.html" class="logo"><span class="icon">&#9975;</span> Sailing Adventure</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="index.html#domain">Domain Knowledge</a></li>
+    <li><a href="index.html#system">System Design</a></li>
+    <li><a href="process.html">Development Process</a></li>
+    <li><a href="game.html">Play Game</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Sailing Adventure</h1>
+    <p class="tagline">Read the wind. Adjust your sail. Find your route.<br>Not every destination is reached by pointing at it.</p>
+    <a href="game.html" class="play-btn">Play the Game &#9658;</a>
+  </div>
+
+  <!-- Game Idea -->
+  <section id="idea" class="card">
+    <h2>Game Idea</h2>
+    <p><strong>Concept:</strong> A top-down 2D sailing game where the player navigates a small boat to a target buoy across wind, currents, and rocks. The boat cannot sail directly into the wind — the player must learn to read wind direction, trim the sail to the correct angle, and plan a route (including tacking) to reach the target before time runs out.</p>
+    <p><strong>Player Goal:</strong> Reach the target buoy before time expires, while maintaining boat stability and avoiding rocks.</p>
+
+    <div class="learning-shift">
+      <div class="novice">
+        <span class="label">Novice Thinking</span>
+        <div class="text">"Sailing means steering toward the target."</div>
+      </div>
+      <div class="arrow">&#8594;</div>
+      <div class="expert">
+        <span class="label">Expert Thinking</span>
+        <div class="text">"Sailing means reading the wind and adjusting the boat, sail, and route in relation to it."</div>
+      </div>
+    </div>
+
+    <p><strong>Core Learning Shift:</strong> The game teaches that you cannot simply point your boat at the destination. The wind direction creates a "no-go zone" — an area about 45 degrees on either side of the wind source where the sail cannot catch wind. To reach a target that lies upwind, the player must <em>tack</em>: sail at an angle to the wind in one direction, then turn and sail at an angle in the other direction, zig-zagging toward the goal. This is the single most important skill the game aims to teach.</p>
+  </section>
+
+  <!-- Domain Knowledge -->
+  <section id="domain" class="card">
+    <h2>Domain Knowledge: Sailing</h2>
+
+    <h3>The Real-World Domain</h3>
+    <p>Sailing is the art of using wind to propel a boat across water. A sailboat has three key controls: the <strong>rudder</strong> (which direction the boat points), the <strong>sail trim</strong> (the angle of the sail relative to the boat), and the <strong>route</strong> (the path chosen to reach the destination). The wind is the engine — but it only provides power when the sail is set at the right angle relative to where the wind is coming from.</p>
+
+    <div class="misconception">
+      <strong>Novice Misconception:</strong> Beginners believe that to reach a destination, you simply point the boat at it. They don't realize that wind direction creates zones where the boat cannot sail, and that the sail must be continuously adjusted as the wind angle changes.
+    </div>
+
+    <div class="expert">
+      <strong>Expert Judgment:</strong> An experienced sailor first reads the wind direction, then chooses a <em>point of sail</em> (the boat's angle relative to the wind). They adjust the sail to the optimal angle for that point of sail, and plan a route that works <em>with</em> the wind rather than against it. When the target is upwind, they tack back and forth — accepting a longer path to maintain speed, rather than fighting the wind and going nowhere.
+    </div>
+
+    <h3>Points of Sail</h3>
+    <p>The relationship between wind direction and boat heading determines speed and behavior:</p>
+    <table class="data-table">
+      <tr><th>Point of Sail</th><th>Angle to Wind</th><th>Speed</th><th>Sail Position</th></tr>
+      <tr><td>In Irons (No-Go Zone)</td><td>0 – 45 degrees</td><td>None — sail flaps</td><td>Sail cannot catch wind</td></tr>
+      <tr><td>Close-Hauled</td><td>45 – 60 degrees</td><td>Moderate</td><td>Sail pulled in tight</td></tr>
+      <tr><td>Beam Reach</td><td>90 degrees</td><td>Fastest</td><td>Sail at ~45 degrees</td></tr>
+      <tr><td>Broad Reach</td><td>135 degrees</td><td>Fast</td><td>Sail let out further</td></tr>
+      <tr><td>Running (Downwind)</td><td>180 degrees</td><td>Moderate</td><td>Sail fully out</td></tr>
+    </table>
+
+    <h3>Why This Knowledge Becomes Playable</h3>
+    <p>Time pressure forces the player to find the most efficient route. The wind direction is visible at all times. The sail angle is directly controlled. Speed responds immediately to trim changes. This means the player can <em>feel</em> the relationship between wind angle, sail trim, and boat speed — and learn through experimentation that tacking is not optional, it is the only way upwind.</p>
+  </section>
+
+  <!-- System Design -->
+  <section id="system" class="card">
+    <h2>System Design</h2>
+
+    <h3>Environment Data (set per challenge)</h3>
+    <table class="data-table">
+      <tr><th>Variable</th><th>Description</th></tr>
+      <tr><td>Wind direction</td><td>Where the wind comes from (shown by the blue arrow indicator)</td></tr>
+      <tr><td>Wind strength</td><td>How hard the wind blows (affects maximum speed)</td></tr>
+      <tr><td>Water current</td><td>A constant drift applied to the boat's position (shown by green arrow)</td></tr>
+      <tr><td>Rock positions</td><td>Obstacles that damage stability on collision</td></tr>
+      <tr><td>Target position</td><td>The buoy the player must reach</td></tr>
+      <tr><td>Game time</td><td>Countdown timer — reaching zero means failure</td></tr>
+    </table>
+
+    <h3>Player-Controlled Data</h3>
+    <table class="data-table">
+      <tr><th>Variable</th><th>Control</th></tr>
+      <tr><td>Boat heading</td><td>Left / Right arrow keys — steer the boat</td></tr>
+      <tr><td>Sail angle</td><td>Up / Down arrow keys — trim sail in or out</td></tr>
+      <tr><td>Route choice</td><td>Emerges from heading decisions over time</td></tr>
+      <tr><td>Turning timing</td><td>When to tack — a judgment the player develops</td></tr>
+    </table>
+
+    <h3>System-Calculated Results</h3>
+    <table class="data-table">
+      <tr><th>Result</th><th>How it's computed</th></tr>
+      <tr><td>Boat speed</td><td>From angle-to-wind (polar curve) × wind strength × sail trim efficiency</td></tr>
+      <tr><td>Sideways drift</td><td>Leeward drift when sailing close-hauled with poor trim</td></tr>
+      <tr><td>Stability</td><td>Decreases on rock collisions or high-speed poor trim</td></tr>
+      <tr><td>Distance to target</td><td>Euclidean distance from boat to target buoy</td></tr>
+      <tr><td>Time remaining</td><td>Countdown from challenge time limit</td></tr>
+      <tr><td>Collision risk</td><td>Proximity check against all rocks</td></tr>
+    </table>
+
+    <h3>Feedback Translation</h3>
+    <p>The game translates invisible system data into readable feedback:</p>
+    <div class="feedback-item">
+      <div class="icon">&#127763;</div>
+      <div class="text"><strong>Sail flaps (wavy line)</strong><br><span>Sail angle is inefficient or boat is in the no-go zone — adjust your heading or trim</span></div>
+    </div>
+    <div class="feedback-item">
+      <div class="icon">&#8776;</div>
+      <div class="text"><strong>Wake becomes shorter</strong><br><span>Speed is dropping — your angle to wind or sail trim has worsened</span></div>
+    </div>
+    <div class="feedback-item">
+      <div class="icon">&#8593;</div>
+      <div class="text"><strong>Wind arrow changes</strong><br><span>The target may not be directly reachable — consider a different route</span></div>
+    </div>
+    <div class="feedback-item">
+      <div class="icon">&#9888;</div>
+      <div class="text"><strong>Red warning rings on rocks</strong><br><span>Collision risk — steer away immediately</span></div>
+    </div>
+    <div class="feedback-item">
+      <div class="icon">&#128202;</div>
+      <div class="text"><strong>HUD bars (speed, trim, stability)</strong><br><span>Immediate numerical feedback on boat state</span></div>
+    </div>
+    <div class="feedback-item">
+      <div class="icon">&#128172;</div>
+      <div class="text"><strong>"Good trim!" / "Sail is flapping!" messages</strong><br><span>Direct text feedback guides the learning loop</span></div>
+    </div>
+
+    <h3>Success &amp; Failure Conditions</h3>
+    <div class="expert">
+      <strong>Success:</strong> Reach the target buoy before time expires. Achieved by reading the wind, setting an efficient sail angle, and choosing a route that works with the wind direction.
+    </div>
+    <div class="misconception">
+      <strong>Failure:</strong> Run out of time, or lose all stability (from rock collisions or sustained poor trim at speed).
+    </div>
+  </section>
+
+  <!-- Challenge Presets -->
+  <section class="card">
+    <h2>Challenge Presets</h2>
+    <p>Each challenge changes system variables and relationships — not just visual decoration:</p>
+    <div class="challenge-grid">
+      <div class="challenge-card">
+        <div class="stars">&#9733;&#9734;&#9734;</div>
+        <h3>Downwind Run</h3>
+        <p>Weaker wind pushes from behind. A cross-current drifts you east, and four rocks block your path. Teaches basic sail trim while steering around obstacles. 35 seconds.</p>
+      </div>
+      <div class="challenge-card">
+        <div class="stars">&#9733;&#9733;&#9734;</div>
+        <h3>Beam Reach</h3>
+        <p>Target lies perpendicular to the wind. A strong current pushes you south and west — away from the target. Five rocks block the optimal path. 38 seconds.</p>
+      </div>
+      <div class="challenge-card">
+        <div class="stars">&#9733;&#9733;&#9733;</div>
+        <h3>Upwind Challenge</h3>
+        <p>Target is directly upwind. Six rocks create a narrow slalom channel. A current pushes you back toward the wind source, fighting your progress. <strong>Requires tacking</strong> — the core learning shift. 60 seconds.</p>
+      </div>
+    </div>
+  </section>
+
+  <div style="text-align: center; margin: 40px 0;">
+    <a href="game.html" class="play-btn">Play the Game &#9658;</a>
+  </div>
+
+</div>
+
+<div class="footer">
+  Sailing Adventure &mdash; A domain-learning game about reading the wind.<br>
+  Student: Alina Zaigralova &mdash; Domain: Sailing &mdash; Built with HTML, CSS, and Canvas 2D (Track A).
+</div>
+
+</body>
+</html>

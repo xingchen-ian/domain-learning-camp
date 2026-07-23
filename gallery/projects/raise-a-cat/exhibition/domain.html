@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain Knowledge & System Design — Raise a Cat Successfully</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="cat-icon">🐱</span> Raise a Cat Successfully
+    </a>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="domain.html" class="active">Domain & System</a></li>
+      <li><a href="process.html">Process</a></li>
+      <li><a href="game.html">Play Game</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <!-- ===== Domain Knowledge ===== -->
+    <div class="section">
+      <h2>Domain Knowledge: Cat Keeping</h2>
+
+      <h3>Real-World Experience</h3>
+      <p>I have four cats at home, and one of them was discovered homeless on the street. It's really difficult to keep pets healthy, especially when raising a previously homeless cat — it depends on various factors like feeding, caring, medical examining, and illness preventing.</p>
+
+      <div class="misconception-box">
+        <span class="label">Novice Misconception:</span>
+        Many people keep pets on impulse without thinking about costs and time. They often feed pets too much food and ignore accompanying them. They always interact with cats regardless of their character and health condition.
+      </div>
+
+      <div class="misconception-box">
+        <span class="label">Expert Judgment:</span>
+        The most important domain challenge is the owner's judgement on the food they feed the cat and understanding the different cats' characters. Experts change their methods depending on the cat's physical condition and personality — they don't treat all cats the same way.
+      </div>
+
+      <h3>Why This Knowledge Becomes Playable</h3>
+      <p>In the game, players must <strong>observe</strong> each cat's stats and behavior, <strong>judge</strong> what the cat needs, <strong>act</strong> by choosing the right care action, <strong>read feedback</strong> from the cat's reactions, and <strong>adjust</strong> their strategy. Different cat personalities require different approaches — exactly like real pet keeping.</p>
+    </div>
+
+    <!-- ===== System Design ===== -->
+    <div class="section">
+      <h2>System Design</h2>
+
+      <h3>System Graph</h3>
+      <p>The diagram below shows how player actions, cat stats, and feedback connect in the game system:</p>
+      <img src="assets/img/system-graph.svg" alt="System Graph: Player actions → Cat stats → Feedback → Player adjustment" style="width: 100%; max-width: 900px; border-radius: 12px; border: 1px solid var(--border); margin: 1rem 0;">
+
+      <h3>Environment Data (Cat State)</h3>
+      <table class="data-table">
+        <tr><th>Variable</th><th>Range</th><th>Description</th></tr>
+        <tr><td>Fullness</td><td>0–100</td><td>Hunger level. Too low = hungry, too high = uncomfortable/overweight.</td></tr>
+        <tr><td>Health</td><td>0–100</td><td>Physical condition. Drops from neglect, poor food, sickness. 0 = death.</td></tr>
+        <tr><td>Affection</td><td>0–100</td><td>Bond with owner. Increases through proper interaction. 0 = cat runs away.</td></tr>
+        <tr><td>Energy</td><td>0–100</td><td>Activity level. Decreases with play, restored by sleep.</td></tr>
+        <tr><td>Cleanliness</td><td>0–100</td><td>Hygiene. Decreases over time, restored by washing.</td></tr>
+        <tr><td>Water</td><td>0–100</td><td>Hydration. Decreases over time. Essential for survival.</td></tr>
+        <tr><td>Age</td><td>years</td><td>Increases over time. Success = reach 15+ years.</td></tr>
+      </table>
+
+      <h3>Player-Controlled Data (Actions)</h3>
+      <table class="data-table">
+        <tr><th>Action</th><th>Effect</th></tr>
+        <tr><td>Add Food / Reduce Food</td><td>Adjusts food amount in bowl. Choose food type: Dry, Wet, or Special Diet.</td></tr>
+        <tr><td>Add Water</td><td>Refills the water bowl.</td></tr>
+        <tr><td>Pet / Play / Hug</td><td>Interaction that increases affection. Play also uses energy.</td></tr>
+        <tr><td>Wash / Clean Ears</td><td>Restores cleanliness. Washing slightly reduces affection (cats dislike water).</td></tr>
+        <tr><td>Vet Visit</td><td>Significantly restores health. Use when cat is sick.</td></tr>
+        <tr><td>Vaccinate</td><td>Preventive health boost. Increases illness resistance.</td></tr>
+        <tr><td>Take Out / Stay Home</td><td>Take the cat outdoors (boosts affection, but gets dirty) or keep it inside.</td></tr>
+      </table>
+
+      <h3>System-Calculated Results</h3>
+      <p>Stats change over time based on the cat's personality and player actions. Health is calculated from other stats — if fullness, water, or cleanliness drop too low, health degrades. If the cat is well-fed, hydrated, and clean, health slowly recovers.</p>
+
+      <h3>Feedback Translation</h3>
+      <table class="data-table">
+        <tr><th>Signal</th><th>Source Data</th><th>Player Feedback</th></tr>
+        <tr><td>Hunger Signal</td><td>Fullness &lt; 30</td><td>Cat meows (audio) and shows "hungry" animation. Affection decreases if ignored.</td></tr>
+        <tr><td>Sickness Signal</td><td>Health &lt; 30</td><td>Room light dims (visual). Cat stops moving and stays silent. Urgent vet visit needed.</td></tr>
+        <tr><td>Playfulness Signal</td><td>No interaction for 8+ seconds</td><td>Soft glow highlights the cat. Signals the cat wants attention. Boosts affection when addressed.</td></tr>
+      </table>
+
+      <h3>Success & Failure Conditions</h3>
+      <table class="data-table">
+        <tr><th>Condition</th><th>Trigger</th></tr>
+        <tr><td style="color: var(--success); font-weight: 700;">Success</td><td>Cat reaches age 15 years with health > 0 and affection > 0.</td></tr>
+        <tr><td style="color: var(--danger); font-weight: 700;">Failure — Death</td><td>Health drops to 0 (from illness, hunger, or dehydration).</td></tr>
+        <tr><td style="color: var(--danger); font-weight: 700;">Failure — Abandoned</td><td>Affection drops to 0 (cat feels neglected and runs away).</td></tr>
+      </table>
+
+      <h3>Just-Right Ranges</h3>
+      <p>Too little food: the cat grows hungry easily and risks poor health.<br>
+      Too much food: the cat feels uncomfortable and may get ill.<br>
+      The player must find and maintain the right balance for each cat.</p>
+    </div>
+
+    <!-- ===== Challenge Presets ===== -->
+    <div class="section">
+      <h2>Challenge Presets</h2>
+      <p>Each preset changes system variables and relationships, not just visual decoration:</p>
+
+      <h3>1. Mimi — Balanced House Cat</h3>
+      <ul>
+        <li><strong>Affection rate:</strong> 1.0× (normal growth from interaction)</li>
+        <li><strong>Fullness decay:</strong> 1.0× (standard hunger rate)</li>
+        <li><strong>Food preference:</strong> Accepts any food type</li>
+        <li><strong>Interaction tolerance:</strong> Unlimited (won't get overwhelmed)</li>
+        <li><strong>Illness resistance:</strong> 1.0× (normal immunity)</li>
+        <li><strong>Starting stats:</strong> Health 80, Affection 50, Energy 70</li>
+      </ul>
+
+      <h3>2. Shadow — Formerly Stray</h3>
+      <ul>
+        <li><strong>Affection rate:</strong> 0.5× (grows HALF as fast — needs patience)</li>
+        <li><strong>Depression rate:</strong> 1.2× (loses affection faster when neglected)</li>
+        <li><strong>Food preference:</strong> Sensitive stomach — wet food causes health damage. Must use Special Diet.</li>
+        <li><strong>Interaction tolerance:</strong> 3 (too many rapid interactions → gets scared → affection drops)</li>
+        <li><strong>Illness resistance:</strong> 0.8× (weaker immune system)</li>
+        <li><strong>Starting stats:</strong> Health 65, Affection 15, Energy 60</li>
+      </ul>
+
+      <h3>3. Bounce — High Energy</h3>
+      <ul>
+        <li><strong>Affection rate:</strong> 1.3× (extra affection from play specifically)</li>
+        <li><strong>Fullness decay:</strong> 1.6× (burns food 60% faster — needs frequent feeding)</li>
+        <li><strong>Energy decay:</strong> 1.5× (uses energy quickly)</li>
+        <li><strong>Depression rate:</strong> 1.5× (gets depressed fast without attention)</li>
+        <li><strong>Food preference:</strong> Accepts any food type</li>
+        <li><strong>Illness resistance:</strong> 1.1× (slightly stronger immunity)</li>
+        <li><strong>Starting stats:</strong> Health 85, Affection 40, Energy 90</li>
+      </ul>
+    </div>
+
+    <!-- ===== Important States ===== -->
+    <div class="section">
+      <h2>Important Cat States</h2>
+      <table class="data-table">
+        <tr><th>State Pair</th><th>Low Extreme</th><th>High Extreme</th></tr>
+        <tr><td>Hunger</td><td>Hungry (fullness low)</td><td>Full (fullness high)</td></tr>
+        <tr><td>Energy</td><td>Depressed (energy low)</td><td>Energetic (energy high)</td></tr>
+        <tr><td>Health</td><td>Sick (health low)</td><td>Healthy (health high)</td></tr>
+        <tr><td>Affection</td><td>Distant (affection low)</td><td>Affectionate (affection high)</td></tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

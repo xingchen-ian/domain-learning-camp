@@ -1,0 +1,251 @@
+/* Animal Dash — Shared Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #1a1a2e;
+  color: #ecf0f1;
+  line-height: 1.6;
+}
+
+a {
+  color: #3498DB;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: #5DADE2;
+}
+
+/* Navigation */
+nav {
+  background: #16213e;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  border-bottom: 2px solid #0f3460;
+}
+nav .logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #FFD700;
+  margin-right: 40px;
+}
+nav a {
+  color: #BDC3C7;
+  padding: 14px 20px;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+nav a:hover, nav a.active {
+  color: #FFD700;
+  background: rgba(255, 215, 0, 0.1);
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 40px;
+}
+
+/* Hero section */
+.hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 60px 40px;
+  text-align: center;
+  border-bottom: 3px solid #FFD700;
+}
+.hero h1 {
+  font-size: 42px;
+  color: #FFD700;
+  margin-bottom: 12px;
+}
+.hero .subtitle {
+  font-size: 20px;
+  color: #BDC3C7;
+  margin-bottom: 20px;
+}
+.hero .cta-btn {
+  display: inline-block;
+  background: #27AE60;
+  color: #FFF;
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.hero .cta-btn:hover {
+  background: #2ECC71;
+  color: #FFF;
+}
+
+/* Section styling */
+section {
+  margin-bottom: 40px;
+}
+section h2 {
+  font-size: 28px;
+  color: #FFD700;
+  margin-bottom: 16px;
+  border-left: 4px solid #FFD700;
+  padding-left: 12px;
+}
+section h3 {
+  font-size: 20px;
+  color: #3498DB;
+  margin: 16px 0 10px;
+}
+
+/* Cards */
+.card {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: #3498DB;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Info boxes */
+.info-box {
+  background: #0f3460;
+  border-left: 4px solid #3498DB;
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin: 12px 0;
+}
+.info-box.warning {
+  border-left-color: #E74C3C;
+  background: rgba(231, 76, 60, 0.1);
+}
+.info-box.success {
+  border-left-color: #27AE60;
+  background: rgba(39, 174, 96, 0.1);
+}
+
+/* Data table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+.data-table th, .data-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #0f3460;
+}
+.data-table th {
+  background: #0f3460;
+  color: #FFD700;
+  font-weight: bold;
+}
+.data-table tr:hover {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+/* Tag/badge */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+.badge-green { background: #27AE60; color: #FFF; }
+.badge-yellow { background: #F39C12; color: #FFF; }
+.badge-red { background: #E74C3C; color: #FFF; }
+.badge-blue { background: #3498DB; color: #FFF; }
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #0f3460;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 12px 20px;
+  background: #16213e;
+  border-radius: 8px;
+  border: 1px solid #0f3460;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -25px;
+  top: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FFD700;
+  border: 2px solid #16213e;
+}
+.timeline-item .time {
+  font-size: 13px;
+  color: #7F8C8D;
+  margin-bottom: 4px;
+}
+.timeline-item h4 {
+  color: #3498DB;
+  margin-bottom: 6px;
+}
+
+/* Game canvas container */
+.game-container {
+  width: 100%;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+  background: #1a1a2e;
+}
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* Footer */
+footer {
+  background: #16213e;
+  padding: 20px;
+  text-align: center;
+  color: #7F8C8D;
+  font-size: 13px;
+  border-top: 1px solid #0f3460;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 28px; }
+  .container { padding: 20px; }
+  nav { flex-wrap: wrap; height: auto; padding: 10px; }
+  nav a { padding: 8px 12px; font-size: 13px; }
+}

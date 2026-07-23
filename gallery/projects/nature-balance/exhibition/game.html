@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然平衡模拟器 - Nature's Balance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 40%, #fff8e1 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 720px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 4px;
+            font-size: 26px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #78909c;
+            margin-bottom: 18px;
+            font-size: 13px;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .grid-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 3px;
+            background: #455a64;
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+        }
+
+        .tile {
+            width: 78px;
+            height: 78px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 6px;
+            cursor: default;
+            transition: box-shadow 0.2s ease, transform 0.15s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .tile.grass {
+            background: linear-gradient(180deg, #7cc468 0%, #5a9e48 55%, #3d7a32 100%);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.15);
+        }
+        .tile.grass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 2px 10px at 20% 25%, rgba(90,160,70,0.7) 0%, transparent 100%),
+                radial-gradient(ellipse 2px 9px at 40% 35%, rgba(100,175,80,0.6) 0%, transparent 100%),
+                radial-gradient(ellipse 2px 11px at 60% 22%, rgba(80,145,60,0.7) 0%, transparent 100%),
+                radial-gradient(ellipse 1px 7px at 30% 50%, rgba(95,165,75,0.5) 0%, transparent 100%),
+                radial-gradient(ellipse 2px 10px at 75% 42%, rgba(85,150,65,0.6) 0%, transparent 100%),
+                radial-gradient(ellipse 1px 6px at 50% 60%, rgba(100,175,80,0.4) 0%, transparent 100%),
+                radial-gradient(ellipse 2px 9px at 15% 68%, rgba(80,145,60,0.5) 0%, transparent 100%),
+                radial-gradient(ellipse 1px 8px at 82% 58%, rgba(95,165,75,0.4) 0%, transparent 100%),
+                radial-gradient(ellipse 2px 7px at 68% 72%, rgba(85,150,65,0.4) 0%, transparent 100%),
+                radial-gradient(circle at 25% 85%, rgba(70,130,50,0.3) 3px, transparent 3px),
+                radial-gradient(circle at 55% 80%, rgba(75,140,55,0.25) 2px, transparent 2px);
+            border-radius: 6px;
+        }
+
+        .tile.dirt {
+            background: linear-gradient(180deg, #c4ada5 0%, #a58b80 45%, #8d6e63 100%);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+        }
+        .tile.dirt::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(125,100,75,0.3) 4px, transparent 4px),
+                radial-gradient(circle at 45% 18%, rgba(140,110,85,0.25) 2px, transparent 2px),
+                radial-gradient(circle at 68% 30%, rgba(110,85,60,0.3) 3px, transparent 3px),
+                radial-gradient(circle at 30% 55%, rgba(130,105,80,0.2) 3px, transparent 3px),
+                radial-gradient(circle at 55% 60%, rgba(115,90,65,0.3) 2px, transparent 2px),
+                radial-gradient(circle at 75% 50%, rgba(135,108,82,0.2) 4px, transparent 4px),
+                radial-gradient(circle at 12% 42%, rgba(120,95,70,0.25) 2px, transparent 2px),
+                radial-gradient(circle at 42% 75%, rgba(110,85,60,0.3) 3px, transparent 3px),
+                radial-gradient(circle at 85% 68%, rgba(130,105,80,0.2) 2px, transparent 2px),
+                radial-gradient(circle at 22% 88%, rgba(140,110,85,0.2) 4px, transparent 4px),
+                radial-gradient(circle at 65% 85%, rgba(120,95,70,0.25) 2px, transparent 2px),
+                radial-gradient(circle at 48% 42%, rgba(145,115,90,0.15) 3px, transparent 3px);
+            border-radius: 6px;
+        }
+
+        .tile.hole {
+            background: radial-gradient(ellipse at center, #2a1f14 20%, #1a0f08 60%, #0a0502 100%);
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8), 0 0 0 2px rgba(139,90,43,0.4);
+        }
+        .tile.hole::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at 40% 35%, rgba(80,60,40,0.3) 0%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.9) 100%);
+            border: 2px solid rgba(100,70,40,0.3);
+        }
+
+        .tile-icon {
+            position: relative;
+            z-index: 2;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .eating-tag {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 13px;
+            line-height: 1;
+            z-index: 3;
+            pointer-events: none;
+            animation: eatPulse 0.6s ease-in-out infinite;
+        }
+
+        @keyframes eatPulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50%      { transform: scale(1.3); opacity: 1; }
+        }
+
+        .hole-count {
+            position: absolute;
+            bottom: 3px;
+            right: 4px;
+            font-size: 9px;
+            color: #fff;
+            background: rgba(0,0,0,0.65);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .animal-count {
+            position: absolute;
+            top: 3px;
+            left: 4px;
+            font-size: 9px;
+            color: #fff;
+            background: rgba(0,0,0,0.5);
+            padding: 0 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .tile.planting {
+            cursor: crosshair;
+        }
+
+        .tile.planting:hover {
+            box-shadow: 0 0 0 3px #ffeb3b, inset 0 0 10px rgba(255,235,59,0.4);
+            transform: scale(1.06);
+        }
+
+        .tile.planting:hover::after {
+            content: '🌱';
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.6;
+        }
+
+        .stats-panel {
+            background: #fff;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            min-width: 210px;
+        }
+
+        .stats-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #607d8b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eceff1;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #546e7a;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #37474f;
+            font-size: 15px;
+            font-family: monospace;
+        }
+
+        .stat-value.danger {
+            color: #e53935;
+            animation: pulse-text 0.8s infinite;
+        }
+
+        @keyframes pulse-text {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-grass {
+            background: linear-gradient(135deg, #66bb6a, #388e3c);
+        }
+
+        .btn-rabbit {
+            background: linear-gradient(135deg, #42a5f5, #1565c0);
+        }
+
+        .btn-fox {
+            background: linear-gradient(135deg, #ff7043, #d84315);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #42a5f5, #1565c0);
+        }
+
+        .btn-next:hover {
+            background: linear-gradient(135deg, #64b5f6, #1976d2);
+        }
+
+        button.active {
+            box-shadow: 0 0 0 3px #ffeb3b, 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* ===== 食物链样式 ===== */
+        .food-chain {
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .food-chain-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fff;
+            border-radius: 14px;
+            padding: 12px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            min-width: 90px;
+            transition: transform 0.2s ease;
+        }
+
+        .food-chain-node:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+        }
+
+        .food-chain-node .fc-icon {
+            font-size: 36px;
+            margin-bottom: 4px;
+        }
+
+        .food-chain-node .fc-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #546e7a;
+        }
+
+        .food-chain-node .fc-role {
+            font-size: 10px;
+            color: #90a4ae;
+            margin-top: 1px;
+        }
+
+        .food-chain-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #b0bec5;
+            font-size: 22px;
+            padding: 0 2px;
+        }
+
+        .food-chain-arrow .arrow-label {
+            font-size: 9px;
+            color: #90a4ae;
+            white-space: nowrap;
+        }
+
+        .food-chain-title {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #607d8b;
+            letter-spacing: 1px;
+            margin-top: 24px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 12px;
+            color: #90a4ae;
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: #607d8b;
+        }
+
+        /* Warning overlay */
+        .warning-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            display: none;
+            pointer-events: none;
+        }
+
+        .warning-overlay.active {
+            display: block;
+        }
+
+        .warning-text {
+            background: rgba(244, 67, 54, 0.92);
+            color: white;
+            padding: 18px 36px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            animation: blink 0.7s infinite;
+            box-shadow: 0 4px 25px rgba(244, 67, 54, 0.5);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; transform: scale(1); }
+            51%, 100% { opacity: 0.35; transform: scale(0.97); }
+        }
+
+        /* Game over overlay */
+        .gameover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .gameover-overlay.active {
+            display: flex;
+        }
+
+        .gameover-content {
+            background: #fff;
+            padding: 40px 50px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+            animation: slide-in 0.4s ease;
+        }
+
+        @keyframes slide-in {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .gameover-content h2 {
+            color: #c62828;
+            margin-bottom: 8px;
+            font-size: 26px;
+        }
+
+        .gameover-content p {
+            color: #78909c;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .gameover-content button {
+            background: linear-gradient(135deg, #66bb6a, #388e3c);
+            padding: 12px 32px;
+            font-size: 16px;
+        }
+
+        /* Win overlay */
+        .win-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .win-overlay.active {
+            display: flex;
+        }
+
+        .win-content {
+            background: linear-gradient(135deg, #e8f5e9, #fff);
+            padding: 40px 50px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+            animation: slide-in 0.4s ease;
+        }
+
+        .win-content h2 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+            font-size: 26px;
+        }
+
+        .win-content p {
+            color: #78909c;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .win-content button {
+            background: linear-gradient(135deg, #66bb6a, #388e3c);
+            padding: 12px 32px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .tile {
+                width: 58px;
+                height: 58px;
+            }
+            .tile-icon {
+                font-size: 22px;
+            }
+            .game-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 自然平衡模拟器</h1>
+        <p class="subtitle" id="subtitleText">Nature's Balance — 维持生态系统的平衡</p>
+
+        <div class="game-area">
+            <div class="grid-wrapper">
+                <div class="grid" id="gameGrid"></div>
+            </div>
+
+            <div class="stats-panel">
+                <div class="stats-title">📊 生态数据</div>
+                <div class="stat-item">
+                    <span class="stat-label">🌿 草地数量</span>
+                    <span class="stat-value" id="grassCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🐇 兔子总数</span>
+                    <span class="stat-value" id="rabbitCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🦊 狐狸数量</span>
+                    <span class="stat-value" id="foxCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🏆 通关进度</span>
+                    <span class="stat-value" id="winProgress">0/6 回合</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-grass" id="plantGrassBtn">🌱 手动种草</button>
+            <button class="btn-rabbit" id="addRabbitBtn">🐇 增加兔子</button>
+            <button class="btn-fox" id="addFoxBtn">🦊 增加狐狸</button>
+            <button class="btn-next" id="nextTurnBtn">▶️ 继续</button>
+        </div>
+
+        <div class="food-chain-title">🔗 生态食物链</div>
+        <div class="food-chain">
+            <div class="food-chain-node">
+                <span class="fc-icon">🌿</span>
+                <span class="fc-label">草地</span>
+                <span class="fc-role">生产者</span>
+            </div>
+            <div class="food-chain-arrow">
+                <span>➡️</span>
+                <span class="arrow-label">被吃</span>
+            </div>
+            <div class="food-chain-node">
+                <span class="fc-icon">🐇</span>
+                <span class="fc-label">兔子</span>
+                <span class="fc-role">初级消费者</span>
+            </div>
+            <div class="food-chain-arrow">
+                <span>➡️</span>
+                <span class="arrow-label">被吃</span>
+            </div>
+            <div class="food-chain-node">
+                <span class="fc-icon">🦊</span>
+                <span class="fc-label">狐狸</span>
+                <span class="fc-role">次级消费者</span>
+            </div>
+        </div>
+
+        <p class="instructions">
+            点击 <strong>手动种草</strong> 进入种植模式，再点击土地格种草 | 点击 <strong>继续</strong> 推进一个回合<br>
+            兔子吃草繁殖，狐狸吃兔子繁殖 — 维持两者的平衡！
+        </p>
+    </div>
+
+    <div class="warning-overlay" id="warningOverlay">
+        <div class="warning-text" id="warningText"></div>
+    </div>
+
+    <div class="gameover-overlay" id="gameoverOverlay">
+        <div class="gameover-content">
+            <h2>💀 生态系统彻底崩溃</h2>
+            <p>生态链断裂，无法自我修复…</p>
+            <button id="restartBtn">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-content">
+            <h2>🎉 恭喜通关！</h2>
+            <p>生态系统在你没有干预的情况下，成功平稳运行了 <strong id="winTurnDisplay">6</strong> 个回合！</p>
+            <button id="restartWinBtn">🔄 再来一局</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 游戏配置 ====================
+        const GRID_SIZE       = 5;
+        const MAX_HOLE_RABBITS= 5;      // 兔子洞最大容量
+        const HOLE_X          = 2;      // 兔子洞 X 坐标
+        const HOLE_Y          = 2;      // 兔子洞 Y 坐标
+        const HUNGER_DECREASE = 25;     // 每回合饥饿值下降
+        const GRASS_SPREAD    = 0.10;   // 草地蔓延概率 10%
+        const RABBIT_REPRO    = 0.10;   // 兔子繁殖概率 10%
+        const FOX_REPRO       = 0.02;   // 狐狸繁殖概率 2%
+        const HOLE_LEAVE      = 0.20;   // 洞内兔子离开概率 20%
+        const HOLE_ENTER      = 0.35;   // 兔子进洞概率
+        const HUNGER_MOVE_MIN = 10;     // 低于此值无法移动
+        const HUNGER_REPRO_MIN= 80;     // 繁殖所需最低饥饿值
+        const FLEE_RANGE      = 2;      // 兔子感知狐狸的范围
+        const WIN_TURNS       = 6;      // 无干预平稳运行 N 回合即通关
+
+        // ==================== 游戏状态 ====================
+        let grid            = [];   // 2D 数组: 'dirt' | 'grass'
+        let rabbits         = [];   // {x, y, hunger, inHole, eating}
+        let foxes           = [];   // {x, y, hunger, eating}
+        let plantingMode    = false;
+        let gameRunning     = true;
+        let turnNumber      = 0;
+        let turnsNoIntervene= 0;   // 玩家无干预的连续回合数
+        let turnsWithPlace   = 0;   // 玩家放置过动物的回合数
+        let rabbitsThisTurn = 0;   // 本回合已放置兔子数（上限 2）
+        let foxesThisTurn   = 0;   // 本回合已放置狐狸数（上限 1）
+
+        // ==================== SVG 动物精灵 ====================
+        const RABBIT_SVG = `<svg viewBox="0 0 64 56" width="44" height="38">
+            <!-- Tail (small round poof) -->
+            <circle cx="10" cy="30" r="5.5" fill="#fefcf8"/>
+            <!-- Hind leg (visible but smaller than body) -->
+            <ellipse cx="20" cy="42" rx="7" ry="5" fill="#c4986a"/>
+            <ellipse cx="22" cy="43" rx="5" ry="3.5" fill="#b08050"/>
+            <!-- Body (main mass — largest shape) -->
+            <ellipse cx="32" cy="30" rx="14" ry="10" fill="#c4986a"/>
+            <ellipse cx="34" cy="32" rx="9" ry="6" fill="#faf0e6"/>
+            <!-- Front legs (thin and short) -->
+            <rect x="36" y="37" width="4.5" height="9" rx="2.2" fill="#c4986a"/>
+            <rect x="31" y="37" width="4.5" height="9" rx="2.2" fill="#c4986a"/>
+            <!-- Head (smaller than body) -->
+            <circle cx="48" cy="19" r="8" fill="#c4986a"/>
+            <ellipse cx="50" cy="20" rx="6" ry="6.5" fill="#faf0e6"/>
+            <!-- Ears (long, narrow — signature rabbit feature) -->
+            <ellipse cx="40" cy="2" rx="3.5" ry="13" fill="#c4986a"/>
+            <ellipse cx="40" cy="2" rx="2" ry="11" fill="#f5c8d8"/>
+            <ellipse cx="48" cy="1" rx="3.5" ry="13" fill="#c4986a"/>
+            <ellipse cx="48" cy="1" rx="2" ry="11" fill="#f5c8d8"/>
+            <!-- Eye (large, expressive) -->
+            <circle cx="51" cy="17" r="2" fill="#2a1a0a"/>
+            <circle cx="51.3" cy="16.7" r="0.6" fill="#fff"/>
+            <!-- Nose -->
+            <ellipse cx="56.5" cy="20.5" rx="1.5" ry="1" fill="#e89898"/>
+            <!-- Whiskers -->
+            <line x1="56.5" y1="19.5" x2="62" y2="17.5" stroke="#b08050" stroke-width="0.6"/>
+            <line x1="56.5" y1="21" x2="62" y2="21.5" stroke="#b08050" stroke-width="0.6"/>
+        </svg>`;
+
+        const FOX_SVG = `<svg viewBox="0 0 64 56" width="44" height="38">
+            <!-- Bushy tail (large, flowing behind) -->
+            <path d="M10,28 Q-3,12 12,4 Q22,3 22,18 Q20,26 14,30 Z" fill="#e07020"/>
+            <path d="M12,26 Q4,14 14,9 Q19,8 18,17" fill="#fefcf8"/>
+            <!-- Body (main mass — largest shape) -->
+            <ellipse cx="34" cy="28" rx="13" ry="9" fill="#e07020"/>
+            <ellipse cx="36" cy="30" rx="8" ry="5.5" fill="#fef8f0"/>
+            <!-- Back legs (thin) -->
+            <rect x="25" y="35" width="4" height="10" rx="1.5" fill="#c05518"/>
+            <rect x="30" y="35" width="4" height="10" rx="1.5" fill="#c05518"/>
+            <!-- Front legs (thin) -->
+            <rect x="39" y="35" width="4" height="10" rx="1.5" fill="#c05518"/>
+            <rect x="44" y="35" width="4" height="10" rx="1.5" fill="#c05518"/>
+            <!-- Paws (dark tips on feet) -->
+            <ellipse cx="27" cy="46" rx="2.2" ry="1.2" fill="#1a0a00"/>
+            <ellipse cx="32" cy="46" rx="2.2" ry="1.2" fill="#1a0a00"/>
+            <ellipse cx="41" cy="46" rx="2.2" ry="1.2" fill="#1a0a00"/>
+            <ellipse cx="46" cy="46" rx="2.2" ry="1.2" fill="#1a0a00"/>
+            <!-- Head (medium, fox-shaped) -->
+            <ellipse cx="52" cy="20" rx="7.5" ry="7" fill="#e07020"/>
+            <ellipse cx="53.5" cy="21" rx="5" ry="4.5" fill="#fef8f0"/>
+            <!-- Snout (pointed, extends forward) -->
+            <polygon points="58,18 63.5,21 58,24" fill="#e07020"/>
+            <!-- Ears (triangular, pointed — signature fox feature) -->
+            <polygon points="43,10 45,-2 49,11" fill="#e07020"/>
+            <polygon points="44,10 45.5,1 48,11" fill="#fad8c0"/>
+            <polygon points="50,8 52,-2 54,11" fill="#e07020"/>
+            <polygon points="50.5,8 52,1 53,11" fill="#fad8c0"/>
+            <!-- Eye (sharp, focused) -->
+            <circle cx="52" cy="18" r="1.7" fill="#1a0a00"/>
+            <circle cx="52.3" cy="17.7" r="0.5" fill="#fff"/>
+            <!-- Nose (black tip of snout) -->
+            <circle cx="63" cy="21" r="1.4" fill="#1a0a00"/>
+        </svg>`;
+
+        // ==================== 初始化 ====================
+        function initGame() {
+            // 全部初始化为土地
+            grid = [];
+            for (let y = 0; y < GRID_SIZE; y++) {
+                grid[y] = [];
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    grid[y][x] = 'dirt';
+                }
+            }
+
+            rabbits = [];
+            foxes   = [];
+
+            // 放置 4 只兔子 + 2 只狐狸（避开兔子洞）
+            for (let i = 0; i < 4; i++) spawnRabbit();
+            for (let i = 0; i < 2; i++) spawnFox();
+
+            // 重置状态
+            gameRunning    = true;
+            plantingMode    = false;
+            turnNumber       = 0;
+            turnsNoIntervene = 0;
+            turnsWithPlace    = 0;
+            rabbitsThisTurn  = 0;
+            foxesThisTurn    = 0;
+
+            // 隐藏遮罩
+            document.getElementById('warningOverlay').classList.remove('active');
+            document.getElementById('gameoverOverlay').classList.remove('active');
+            document.getElementById('winOverlay').classList.remove('active');
+            document.getElementById('plantGrassBtn').classList.remove('active');
+
+            render();
+        }
+
+        // ==================== 工具函数 ====================
+        function getRandomEmptyPos() {
+            let positions = [];
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (x === HOLE_X && y === HOLE_Y) continue;
+                    if (isPosOccupied(x, y)) continue;
+                    positions.push({ x, y });
+                }
+            }
+            if (positions.length === 0) return null;
+            return positions[Math.floor(Math.random() * positions.length)];
+        }
+
+        function isPosOccupied(x, y) {
+            for (let r of rabbits) {
+                if (!r.inHole && r.x === x && r.y === y) return true;
+            }
+            for (let f of foxes) {
+                if (f.x === x && f.y === y) return true;
+            }
+            return false;
+        }
+
+        function spawnRabbit() {
+            let pos = getRandomEmptyPos();
+            if (pos) rabbits.push({ x: pos.x, y: pos.y, hunger: 100, inHole: false, eating: false });
+        }
+
+        function spawnFox() {
+            let pos = getRandomEmptyPos();
+            if (pos) foxes.push({ x: pos.x, y: pos.y, hunger: 100, eating: false });
+        }
+
+        function getAdjacent(x, y) {
+            let tiles = [];
+            if (x > 0)              tiles.push({ x: x - 1, y: y });
+            if (x < GRID_SIZE - 1)  tiles.push({ x: x + 1, y: y });
+            if (y > 0)              tiles.push({ x: x, y: y - 1 });
+            if (y < GRID_SIZE - 1)  tiles.push({ x: x, y: y + 1 });
+            return tiles;
+        }
+
+        function isAdjacent(x1, y1, x2, y2) {
+            return Math.abs(x1 - x2) + Math.abs(y1 - y2) === 1;
+        }
+
+        function findNearestGrass(x, y) {
+            let nearest = null;
+            let minDist = Infinity;
+            for (let ty = 0; ty < GRID_SIZE; ty++) {
+                for (let tx = 0; tx < GRID_SIZE; tx++) {
+                    if (tx === HOLE_X && ty === HOLE_Y) continue;
+                    if (grid[ty][tx] === 'grass') {
+                        let d = Math.abs(tx - x) + Math.abs(ty - y);
+                        if (d < minDist) {
+                            minDist = d;
+                            nearest = { x: tx, y: ty };
+                        }
+                    }
+                }
+            }
+            return nearest;
+        }
+
+        function findNearestOutsideRabbit(x, y) {
+            let nearest = null;
+            let minDist = Infinity;
+            for (let r of rabbits) {
+                if (r.inHole) continue;
+                let d = Math.abs(r.x - x) + Math.abs(r.y - y);
+                if (d < minDist) {
+                    minDist = d;
+                    nearest = { x: r.x, y: r.y };
+                }
+            }
+            return nearest;
+        }
+
+        function findNearestFox(x, y) {
+            let nearest = null;
+            let minDist = Infinity;
+            for (let f of foxes) {
+                let d = Math.abs(f.x - x) + Math.abs(f.y - y);
+                if (d < minDist) {
+                    minDist = d;
+                    nearest = { x: f.x, y: f.y, dist: d };
+                }
+            }
+            return nearest;
+        }
+
+        function getHoleRabbitCount() {
+            return rabbits.filter(r => r.inHole).length;
+        }
+
+        function getOutsideRabbitCount() {
+            return rabbits.filter(r => !r.inHole).length;
+        }
+
+        function isFoxNearby(x, y, range) {
+            for (let f of foxes) {
+                if (Math.abs(f.x - x) + Math.abs(f.y - y) <= range) return true;
+            }
+            return false;
+        }
+
+        // 朝目标移动 1 格
+        function moveToward(animal, tx, ty, isRabbit) {
+            let dx = tx - animal.x;
+            let dy = ty - animal.y;
+            let options = [];
+
+            // 优先沿差距较大的轴移动
+            if (Math.abs(dx) >= Math.abs(dy)) {
+                if (dx > 0) options.push({ x: animal.x + 1, y: animal.y });
+                if (dx < 0) options.push({ x: animal.x - 1, y: animal.y });
+                if (dy > 0) options.push({ x: animal.x, y: animal.y + 1 });
+                if (dy < 0) options.push({ x: animal.x, y: animal.y - 1 });
+            } else {
+                if (dy > 0) options.push({ x: animal.x, y: animal.y + 1 });
+                if (dy < 0) options.push({ x: animal.x, y: animal.y - 1 });
+                if (dx > 0) options.push({ x: animal.x + 1, y: animal.y });
+                if (dx < 0) options.push({ x: animal.x - 1, y: animal.y });
+            }
+
+            for (let opt of options) {
+                if (opt.x < 0 || opt.x >= GRID_SIZE) continue;
+                if (opt.y < 0 || opt.y >= GRID_SIZE) continue;
+                if (opt.x === HOLE_X && opt.y === HOLE_Y) continue;
+                if (isCellBlocked(opt.x, opt.y, isRabbit)) continue;
+                animal.x = opt.x;
+                animal.y = opt.y;
+                return true;
+            }
+            return false;
+        }
+
+        // 远离目标移动 1 格
+        function moveAway(animal, fx, fy, isRabbit) {
+            let dx = animal.x - fx;
+            let dy = animal.y - fy;
+            let options = [];
+
+            if (Math.abs(dx) >= Math.abs(dy)) {
+                if (dx >= 0) options.push({ x: animal.x + 1, y: animal.y });
+                if (dx <= 0) options.push({ x: animal.x - 1, y: animal.y });
+                if (dy >= 0) options.push({ x: animal.x, y: animal.y + 1 });
+                if (dy <= 0) options.push({ x: animal.x, y: animal.y - 1 });
+            } else {
+                if (dy >= 0) options.push({ x: animal.x, y: animal.y + 1 });
+                if (dy <= 0) options.push({ x: animal.x, y: animal.y - 1 });
+                if (dx >= 0) options.push({ x: animal.x + 1, y: animal.y });
+                if (dx <= 0) options.push({ x: animal.x - 1, y: animal.y });
+            }
+
+            for (let opt of options) {
+                if (opt.x < 0 || opt.x >= GRID_SIZE) continue;
+                if (opt.y < 0 || opt.y >= GRID_SIZE) continue;
+                if (opt.x === HOLE_X && opt.y === HOLE_Y) continue;
+                if (isCellBlocked(opt.x, opt.y, isRabbit)) continue;
+                animal.x = opt.x;
+                animal.y = opt.y;
+                return true;
+            }
+            return false;
+        }
+
+        // 随机游荡
+        function wander(animal, isRabbit) {
+            let adj = getAdjacent(animal.x, animal.y);
+            let valid = adj.filter(p =>
+                !(p.x === HOLE_X && p.y === HOLE_Y) &&
+                !isCellBlocked(p.x, p.y, isRabbit)
+            );
+            if (valid.length > 0) {
+                let m = valid[Math.floor(Math.random() * valid.length)];
+                animal.x = m.x;
+                animal.y = m.y;
+            }
+        }
+
+        // 检查格子是否被同种动物占据
+        function isCellBlocked(x, y, isRabbit) {
+            if (isRabbit) {
+                for (let r of rabbits) {
+                    if (!r.inHole && r.x === x && r.y === y) return true;
+                }
+            } else {
+                for (let f of foxes) {
+                    if (f.x === x && f.y === y) return true;
+                }
+            }
+            return false;
+        }
+
+        // 狐狸吃兔子后 → 脚下及四周生成草地
+        function spawnGrassAround(x, y) {
+            // 脚下 100% 变草地（如果不是兔子洞）
+            if (!(x === HOLE_X && y === HOLE_Y) && grid[y][x] === 'dirt') {
+                grid[y][x] = 'grass';
+            }
+            // 四周各 80% 概率变草地
+            let adj = getAdjacent(x, y);
+            for (let a of adj) {
+                if (a.x === HOLE_X && a.y === HOLE_Y) continue;
+                if (grid[a.y][a.x] === 'dirt' && Math.random() < 0.80) {
+                    grid[a.y][a.x] = 'grass';
+                }
+            }
+        }
+
+        // 尝试在相邻空地繁殖
+        function tryReproduce(animal, isRabbit) {
+            let chance = isRabbit ? RABBIT_REPRO : FOX_REPRO;
+            if (Math.random() < chance) {
+                let adj = getAdjacent(animal.x, animal.y);
+                let empty = adj.filter(p =>
+                    !(p.x === HOLE_X && p.y === HOLE_Y) && !isPosOccupied(p.x, p.y)
+                );
+                if (empty.length > 0) {
+                    let s = empty[Math.floor(Math.random() * empty.length)];
+                    if (isRabbit) {
+                        rabbits.push({ x: s.x, y: s.y, hunger: 100, inHole: false, eating: false });
+                    } else {
+                        foxes.push({ x: s.x, y: s.y, hunger: 100, eating: false });
+                    }
+                }
+            }
+        }
+
+        // ==================== 核心回合逻辑 ====================
+        function advanceTurn() {
+            if (!gameRunning) return;
+            turnNumber++;
+            rabbitsThisTurn = 0;
+            foxesThisTurn   = 0;
+
+            // ---------- 1. 草地蔓延 (10%) ----------
+            let newGrid = grid.map(row => row.slice());
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (grid[y][x] === 'grass') {
+                        if (Math.random() < GRASS_SPREAD) {
+                            let adj = getAdjacent(x, y);
+                            let dirtAdj = adj.filter(p =>
+                                newGrid[p.y][p.x] === 'dirt' &&
+                                !(p.x === HOLE_X && p.y === HOLE_Y)
+                            );
+                            if (dirtAdj.length > 0) {
+                                let t = dirtAdj[Math.floor(Math.random() * dirtAdj.length)];
+                                newGrid[t.y][t.x] = 'grass';
+                            }
+                        }
+                    }
+                }
+            }
+            grid = newGrid;
+
+            // ---------- 2. 洞内兔子尝试离开 (20%) ----------
+            for (let rabbit of rabbits) {
+                if (rabbit.inHole) {
+                    if (Math.random() < HOLE_LEAVE) {
+                        let adj = getAdjacent(HOLE_X, HOLE_Y);
+                        let empty = adj.filter(p => !isPosOccupied(p.x, p.y));
+                        if (empty.length > 0) {
+                            let exit = empty[Math.floor(Math.random() * empty.length)];
+                            rabbit.x = exit.x;
+                            rabbit.y = exit.y;
+                            rabbit.inHole = false;
+                            rabbit.eating = false;
+                        }
+                    }
+                }
+            }
+
+            // ---------- 3. 狐狸移动 ----------
+            for (let fox of foxes) {
+                if (fox.hunger >= HUNGER_MOVE_MIN) {
+                    let target = findNearestOutsideRabbit(fox.x, fox.y);
+                    if (target) {
+                        moveToward(fox, target.x, target.y, false);
+                    } else {
+                        wander(fox, false);
+                    }
+                }
+            }
+
+            // ---------- 4. 同格捕食：狐狸先吃掉同一格上的兔子（在兔子吃草之前） ----------
+            for (let fox of foxes) {
+                for (let i = rabbits.length - 1; i >= 0; i--) {
+                    if (!rabbits[i].inHole && rabbits[i].x === fox.x && rabbits[i].y === fox.y) {
+                        rabbits.splice(i, 1);
+                        fox.hunger = 100;
+                        spawnGrassAround(fox.x, fox.y);
+                    }
+                }
+            }
+
+            // 狐狸繁殖
+            for (let fox of foxes) {
+                if (fox.hunger > HUNGER_REPRO_MIN) {
+                    tryReproduce(fox, false);
+                }
+            }
+
+            // ---------- 5. 洞外兔子移动 ----------
+            for (let rabbit of rabbits) {
+                if (rabbit.inHole) continue;
+
+                // 站在草地上 → 先吃草（100%，立即），吃完再考虑移动
+                let ateGrass = false;
+                if (grid[rabbit.y][rabbit.x] === 'grass') {
+                    grid[rabbit.y][rabbit.x] = 'dirt';
+                    rabbit.hunger = 100;
+                    rabbit.eating = false;
+                    ateGrass = true;
+                    // 吃草占用整个回合，不移动
+                }
+
+                if (!ateGrass && rabbit.hunger >= HUNGER_MOVE_MIN) {
+                    let foxAdj   = isFoxNearby(rabbit.x, rabbit.y, 1);
+                    let foxClose = isFoxNearby(rabbit.x, rabbit.y, FLEE_RANGE);
+                    let nearGrass= findNearestGrass(rabbit.x, rabbit.y);
+                    let holeFull = getHoleRabbitCount() >= MAX_HOLE_RABBITS;
+                    let adjHole  = isAdjacent(rabbit.x, rabbit.y, HOLE_X, HOLE_Y);
+
+                    if (foxAdj && !holeFull && adjHole) {
+                        if (Math.random() < HOLE_ENTER) {
+                            rabbit.inHole = true;
+                            continue;
+                        } else {
+                            let nf = findNearestFox(rabbit.x, rabbit.y);
+                            if (nf) moveAway(rabbit, nf.x, nf.y, true);
+                        }
+                    } else if (foxAdj) {
+                        let nf = findNearestFox(rabbit.x, rabbit.y);
+                        if (nf) moveAway(rabbit, nf.x, nf.y, true);
+                        else   wander(rabbit, true);
+                    } else if (foxClose && !holeFull && adjHole) {
+                        if (Math.random() < HOLE_ENTER * 0.5) {
+                            rabbit.inHole = true;
+                            continue;
+                        } else if (nearGrass) {
+                            moveToward(rabbit, nearGrass.x, nearGrass.y, true);
+                        } else {
+                            moveToward(rabbit, HOLE_X, HOLE_Y, true);
+                        }
+                    } else if (nearGrass) {
+                        moveToward(rabbit, nearGrass.x, nearGrass.y, true);
+                    } else if (!holeFull) {
+                        if (adjHole) {
+                            if (Math.random() < HOLE_ENTER * 0.4) {
+                                rabbit.inHole = true;
+                                continue;
+                            } else {
+                                wander(rabbit, true);
+                            }
+                        } else {
+                            moveToward(rabbit, HOLE_X, HOLE_Y, true);
+                        }
+                    } else {
+                        wander(rabbit, true);
+                    }
+                }
+            }
+
+            // 兔子繁殖 (洞外 + 饥饿 > 80)
+            for (let rabbit of rabbits) {
+                if (!rabbit.inHole && rabbit.hunger > HUNGER_REPRO_MIN) {
+                    tryReproduce(rabbit, true);
+                }
+            }
+
+            // ---------- 6. 饥饿值下降 ----------
+            for (let rabbit of rabbits) {
+                rabbit.hunger -= HUNGER_DECREASE;
+                if (rabbit.hunger < 0) rabbit.hunger = 0;
+            }
+            for (let fox of foxes) {
+                fox.hunger -= HUNGER_DECREASE;
+                if (fox.hunger < 0) fox.hunger = 0;
+            }
+
+            // ---------- 7. 移除死亡动物 ----------
+            rabbits = rabbits.filter(r => r.hunger > 0);
+            foxes   = foxes.filter(f => f.hunger > 0);
+
+            // ---------- 8. 检查灭绝 ----------
+            checkExtinction();
+
+            // ---------- 9. 检查通关 ----------
+            if (gameRunning) {
+                turnsNoIntervene++;
+                if (turnsNoIntervene >= WIN_TURNS && rabbits.length > 0 && foxes.length > 0) {
+                    gameWin();
+                    return;
+                }
+            }
+
+            // ---------- 10. 渲染 ----------
+            render();
+        }
+
+        // ==================== 濒危警告与游戏结束 ====================
+        // 新规则：某个种群只剩 1 只时出现警报；降为 0 时游戏结束
+        function countGrass() {
+            let c = 0;
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (grid[y][x] === 'grass') c++;
+                }
+            }
+            return c;
+        }
+
+        function checkExtinction() {
+            let rc = rabbits.length;
+            let fc = foxes.length;
+            let maxGrass = GRID_SIZE * GRID_SIZE - 1; // 兔子洞不可种草，最大 24
+
+            // 任意种群降为 0 → 游戏结束
+            if (rc === 0) {
+                gameOver('兔子');
+                return;
+            }
+            if (fc === 0) {
+                gameOver('狐狸');
+                return;
+            }
+
+            // 草地溢出 → 警报
+            if (countGrass() >= maxGrass) {
+                showWarning('⚠️ 草地过度蔓延！生态系统失衡…');
+                return;
+            }
+
+            // 种群只剩 1 只 → 濒危警报
+            if (rc === 1) {
+                showWarning('⚠️ 兔子种群濒危！仅剩 1 只…');
+            } else if (fc === 1) {
+                showWarning('⚠️ 狐狸种群濒危！仅剩 1 只…');
+            } else {
+                // 安全
+                hideWarning();
+            }
+        }
+
+        function showWarning(text) {
+            turnsNoIntervene = 0;
+            document.getElementById('warningText').textContent = text;
+            document.getElementById('warningOverlay').classList.add('active');
+        }
+
+        function hideWarning() {
+            document.getElementById('warningOverlay').classList.remove('active');
+        }
+
+        function gameOver(extinctName) {
+            gameRunning = false;
+            hideWarning();
+            // 恢复原始副标题
+            document.getElementById('subtitleText').textContent = "Nature's Balance — 维持生态系统的平衡";
+            let msg = document.querySelector('.gameover-content h2');
+            let desc = document.querySelector('.gameover-content p');
+            if (extinctName) {
+                msg.textContent = '💀 ' + extinctName + '种群彻底消失';
+                desc.textContent = extinctName + '已从生态系统中灭绝，平衡被打破…';
+            } else {
+                msg.textContent = '💀 生态系统彻底崩溃';
+                desc.textContent = '生态链断裂，无法自我修复…';
+            }
+            document.getElementById('gameoverOverlay').classList.add('active');
+            render();
+        }
+
+        function gameWin() {
+            gameRunning = false;
+            hideWarning();
+            // 恢复原始副标题
+            document.getElementById('subtitleText').textContent = "Nature's Balance — 维持生态系统的平衡";
+            document.getElementById('winTurnDisplay').textContent = turnNumber;
+            document.getElementById('winOverlay').classList.add('active');
+            render();
+        }
+
+        // ==================== 渲染 ====================
+        function render() {
+            let gridEl = document.getElementById('gameGrid');
+            gridEl.innerHTML = '';
+
+            // 统计每个格子上的动物
+            let posData = {};
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    posData[x + ',' + y] = { r: 0, f: 0, eating: false };
+                }
+            }
+            for (let r of rabbits) {
+                if (!r.inHole) {
+                    posData[r.x + ',' + r.y].r++;
+                    if (r.eating) posData[r.x + ',' + r.y].eating = true;
+                }
+            }
+            for (let f of foxes) {
+                posData[f.x + ',' + f.y].f++;
+                if (f.eating) posData[f.x + ',' + f.y].eating = true;
+            }
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    let tile = document.createElement('div');
+                    tile.className = 'tile';
+                    let isHole = (x === HOLE_X && y === HOLE_Y);
+
+                    if (isHole) {
+                        tile.classList.add('hole');
+                        let badge = document.createElement('span');
+                        badge.className = 'hole-count';
+                        badge.textContent = getHoleRabbitCount() + '/' + MAX_HOLE_RABBITS;
+                        tile.appendChild(badge);
+                    } else if (grid[y][x] === 'grass') {
+                        tile.classList.add('grass');
+                    } else {
+                        tile.classList.add('dirt');
+                    }
+
+                    // 显示动物
+                    if (!isHole) {
+                        let d = posData[x + ',' + y];
+                        if (d.r > 0) {
+                            let svg = document.createElement('div');
+                            svg.className = 'tile-icon';
+                            svg.innerHTML = RABBIT_SVG;
+                            tile.appendChild(svg);
+                        }
+                        if (d.f > 0) {
+                            let svg = document.createElement('div');
+                            svg.className = 'tile-icon';
+                            svg.innerHTML = FOX_SVG;
+                            tile.appendChild(svg);
+                        }
+                        if (d.eating) {
+                            let eatTag = document.createElement('span');
+                            eatTag.className = 'eating-tag';
+                            eatTag.textContent = '🍴';
+                            tile.appendChild(eatTag);
+                        }
+                        let total = d.r + d.f;
+                        if (total > 1) {
+                            let cnt = document.createElement('span');
+                            cnt.className = 'animal-count';
+                            cnt.textContent = '×' + total;
+                            tile.appendChild(cnt);
+                        }
+                    }
+
+                    // 种植模式
+                    if (plantingMode && !isHole && grid[y][x] === 'dirt') {
+                        tile.classList.add('planting');
+                        (function(cx, cy) {
+                            tile.addEventListener('click', function() {
+                                if (gameRunning && grid[cy][cx] === 'dirt') {
+                                    grid[cy][cx] = 'grass';
+                                    turnsNoIntervene = 0;
+                                    render();
+                                }
+                            });
+                        })(x, y);
+                    }
+
+                    gridEl.appendChild(tile);
+                }
+            }
+
+            // 更新统计
+            let grassCount = countGrass();
+
+            let rc = rabbits.length;
+            let fc = foxes.length;
+
+            document.getElementById('grassCount').textContent   = grassCount;
+            document.getElementById('rabbitCount').textContent  = rc;
+            document.getElementById('foxCount').textContent     = fc;
+            document.getElementById('winProgress').textContent  = turnsNoIntervene + '/' + WIN_TURNS + ' 回合';
+
+            // 玩家干预过多时，改变副标题
+            let subEl = document.getElementById('subtitleText');
+            if (turnsWithPlace >= 3) {
+                subEl.textContent = '生态平衡好像不用上帝的干预吧？';
+            }
+
+            // 灭绝时标红
+            let maxGrass = GRID_SIZE * GRID_SIZE - 1;
+            let rEl = document.getElementById('rabbitCount');
+            let fEl = document.getElementById('foxCount');
+            let gEl = document.getElementById('grassCount');
+            rEl.classList.toggle('danger', rc <= 1);
+            fEl.classList.toggle('danger', fc <= 1);
+            gEl.classList.toggle('danger', grassCount >= maxGrass);
+
+            // 按钮状态
+            let btns = document.querySelectorAll('.controls button');
+            btns.forEach(b => b.disabled = !gameRunning);
+            if (gameRunning) {
+                document.getElementById('plantGrassBtn').disabled = false;
+            }
+        }
+
+        // ==================== 按钮事件 ====================
+        document.getElementById('plantGrassBtn').addEventListener('click', function() {
+            if (!gameRunning) return;
+            plantingMode = !plantingMode;
+            this.classList.toggle('active', plantingMode);
+            render();
+        });
+
+        document.getElementById('addRabbitBtn').addEventListener('click', function() {
+            if (!gameRunning) return;
+            if (rabbitsThisTurn >= 2) return; // 每回合最多 2 只
+            if (rabbitsThisTurn === 0 && foxesThisTurn === 0) turnsWithPlace++;
+            turnsNoIntervene = 0;
+            rabbitsThisTurn++;
+            spawnRabbit();
+            checkExtinction();
+            render();
+        });
+
+        document.getElementById('addFoxBtn').addEventListener('click', function() {
+            if (!gameRunning) return;
+            if (foxesThisTurn >= 1) return; // 每回合最多 1 只
+            if (rabbitsThisTurn === 0 && foxesThisTurn === 0) turnsWithPlace++;
+            turnsNoIntervene = 0;
+            foxesThisTurn++;
+            spawnFox();
+            checkExtinction();
+            render();
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', function() {
+            initGame();
+        });
+
+        document.getElementById('restartWinBtn').addEventListener('click', function() {
+            initGame();
+        });
+
+        document.getElementById('nextTurnBtn').addEventListener('click', function() {
+            advanceTurn();
+        });
+
+        // ==================== 启动 ====================
+        initGame();
+    </script>
+</body>
+</html>

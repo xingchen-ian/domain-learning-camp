@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play — Shark Bite</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/game.css">
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand"><span class="mark">SB</span> Shark Bite</div>
+      <nav class="main">
+        <a href="index.html">Home</a>
+        <a href="domain.html">Domain &amp; System</a>
+        <a href="process.html">Process</a>
+        <a href="game.html" class="active">Play Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="game-screen">
+    <div class="canvas-wrap">
+      <canvas id="game-canvas"></canvas>
+
+      <!-- Challenge menu -->
+      <div class="overlay" id="menu-screen">
+        <h2>Choose a dive</h2>
+        <p>Swim through a living coral reef. Discover creatures hiding in the coral, clean pollution, and keep the ecosystem healthy. Start with Reef Welcome.</p>
+        <div id="challenge-cards"></div>
+        <p class="controls-hint" style="margin-top:18px;">
+          <b>Arrow keys / WASD</b> swim · <b>Click</b> or <b>Space</b> to scan &amp; discover · swim through pollution to <b>clean</b> it · <b>F</b> defend · <b>Shift</b> sprint · <b>P</b> pause
+        </p>
+      </div>
+
+      <!-- Pause -->
+      <div class="overlay hidden" id="pause-overlay">
+        <h2>Paused</h2>
+        <p>Press <span class="kbd">P</span> to resume.</p>
+      </div>
+
+      <!-- End screen -->
+      <div class="overlay hidden" id="end-screen">
+        <h2 id="end-title">Dive Complete</h2>
+        <p id="end-msg"></p>
+        <p id="end-stats" style="font-size:13px;color:#9FB4C7;margin-top:10px;"></p>
+        <div class="btn-row">
+          <button class="btn" onclick="SB.backToMenu()">Choose another dive</button>
+          <button class="btn ghost" onclick="SB.togglePause()">—</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="stat"><label>Oxygen</label><div class="bar"><i id="hud-oxygen"></i></div></div>
+      <div class="stat"><label>Equipment</label><div class="bar"><i id="hud-equip"></i></div></div>
+      <div class="stat"><label>Health</label><div class="bar"><i id="hud-health"></i></div></div>
+      <div class="stat eco-stat"><label>Eco-Health</label><div class="bar"><i id="hud-eco"></i></div></div>
+      <div class="stat"><label>Depth</label><div class="readout" id="hud-depth">0 m</div></div>
+      <div class="stat"><label>Pressure</label><div class="readout" id="hud-pressure">1.0 atm</div></div>
+      <div class="stat"><label>Catalog</label><div class="readout" id="hud-catalog">0 / 3</div></div>
+      <div class="stat"><label>Eco %</label><div class="readout" id="hud-eco-readout">75%</div></div>
+      <div class="stat"><label>Cleaned</label><div class="readout" id="hud-cleaned">0</div></div>
+      <div class="stat"><label>Status</label><div class="readout" id="hud-status">SAFE</div></div>
+    </div>
+
+    <p class="controls-hint">
+      <b>Goal:</b> discover species by scanning creatures near coral, and keep eco-health above the target.
+      Coral <span style="color:#E0C44A;">glows</span> when a creature is hiding inside — swim close to reveal it.
+      <span style="color:#6B5D4F;">Pollution</span> drifts in the water — swim through it to clean it and restore reef health.
+      Coral turns <span style="color:#E8E6E0;">white/bleached</span> when the ecosystem is sick.
+    </p>
+  </main>
+
+  <script src="assets/game.js"></script>
+</body>
+</html>

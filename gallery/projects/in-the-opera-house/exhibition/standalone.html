@@ -1,0 +1,5731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>In the Opera House — Game</title>
+  <style>
+/* =========================================
+   In the Opera House — Vintage Game Styles
+   ========================================= */
+
+:root {
+  --bg-dark: #140a0a;
+  --velvet-red: #5a0f0f;
+  --velvet-red-light: #7a1f1f;
+  --velvet-pink: #8a2a3a;
+  --gold: #c9a227;
+  --gold-light: #e8c869;
+  --gold-dark: #8f7018;
+  --cream: #f3e9d2;
+  --cream-pink: #f5e3d8;
+  --ink: #2b1a1a;
+  --wood: #3e2723;
+  --wood-light: #5a3a2a;
+  --stage-floor: #2a1a15;
+  --stage-wood: #4a3025;
+  --spotlight: #fffce6;
+  --wallpaper-mint: #9fb5a8;
+  --wallpaper-cream: #d9cfc0;
+  --skin: #f5dcb5;
+  --hair: #e8cf94;
+  --dress: #c9a7a8;
+  --dress-deep: #9e7c7d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  background: var(--bg-dark);
+  color: var(--cream);
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  width: 100dvw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+#game-wrapper {
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 1920px;
+  display: grid;
+  grid-template-rows: 64px 1fr 120px 100px;
+  background: radial-gradient(circle at 50% 30%, #2a1616 0%, #140a0a 80%);
+  overflow: hidden;
+}
+
+/* Header / HUD */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.6), transparent);
+  border-bottom: 2px solid var(--gold);
+  z-index: 20;
+}
+
+.branding {
+  font-family: Georgia, serif;
+  font-size: 1.8rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 10px rgba(201, 162, 39, 0.5), 0 2px 2px rgba(0,0,0,0.8);
+}
+
+.hud {
+  display: flex;
+  gap: 32px;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+}
+
+#timer-display {
+  font-family: Georgia, serif;
+  color: var(--gold);
+  min-width: 80px;
+  text-align: right;
+}
+
+#timer-display.warning {
+  color: #ff5a5a;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* Main Stage Area */
+#stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 24px 0;
+  position: relative;
+}
+
+.room {
+  position: relative;
+  border: 3px solid var(--gold);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.5);
+}
+
+#dressing-room {
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255,255,255,0.08) 0%, transparent 35%),
+    linear-gradient(180deg, rgba(159,181,168,0.35) 0%, rgba(130,110,100,0.55) 100%),
+    repeating-linear-gradient(90deg, transparent 0, transparent 18px, rgba(201,162,39,0.05) 18px, rgba(201,162,39,0.05) 20px),
+    var(--wallpaper-cream);
+}
+
+#dressing-room .wallpaper {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0, transparent 46px, rgba(139, 118, 90, 0.12) 46px, rgba(139, 118, 90, 0.12) 48px),
+    repeating-linear-gradient(0deg, transparent 0, transparent 46px, rgba(139, 118, 90, 0.12) 46px, rgba(139, 118, 90, 0.12) 48px);
+  pointer-events: none;
+}
+
+#stage-area {
+  background:
+    radial-gradient(circle at 50% 25%, rgba(255,252,230,0.06) 0%, transparent 45%),
+    linear-gradient(180deg, rgba(30,20,20,0.9) 0%, rgba(15,10,8,0.98) 100%),
+    linear-gradient(90deg,
+      var(--stage-wood) 0, var(--stage-wood) 16%,
+      rgba(60,40,30,0.5) 16%, rgba(60,40,30,0.5) 16.5%,
+      var(--stage-wood) 16.5%, var(--stage-wood) 32%,
+      rgba(60,40,30,0.5) 32%, rgba(60,40,30,0.5) 32.5%,
+      var(--stage-wood) 32.5%, var(--stage-wood) 48%,
+      rgba(60,40,30,0.5) 48%, rgba(60,40,30,0.5) 48.5%,
+      var(--stage-wood) 48.5%, var(--stage-wood) 64%,
+      rgba(60,40,30,0.5) 64%, rgba(60,40,30,0.5) 64.5%,
+      var(--stage-wood) 64.5%, var(--stage-wood) 80%,
+      rgba(60,40,30,0.5) 80%, rgba(60,40,30,0.5) 80.5%,
+      var(--stage-wood) 80.5%
+    );
+}
+
+#stage-area.unrevealed {
+  background: #0a0505;
+}
+
+#stage-area.unrevealed .stage-overlay {
+  display: flex;
+}
+
+.stage-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 12;
+  background: rgba(0,0,0,0.85);
+  color: var(--gold-light);
+  text-align: center;
+  padding: 40px;
+  pointer-events: none;
+}
+
+.stage-overlay p {
+  max-width: 280px;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+.room-label {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+  color: var(--gold);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 10;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* Props: shared interactive behavior */
+.prop, .item {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.prop:hover, .item:hover {
+  filter: brightness(1.15);
+  transform: scale(1.02);
+}
+
+.prop.glow, .item.glow {
+  filter: drop-shadow(0 0 10px var(--gold-light));
+  animation: goldPulse 1.5s infinite;
+}
+
+@keyframes goldPulse {
+  0%, 100% { filter: drop-shadow(0 0 5px var(--gold)); }
+  50% { filter: drop-shadow(0 0 18px var(--gold-light)); }
+}
+
+/* Chandeliers */
+.chandelier {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 90px;
+  height: 80px;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.chandelier-left {
+  left: 28%;
+  transform: translateX(-50%) scale(0.85);
+}
+
+.chandelier .chain {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 22px;
+  background: linear-gradient(180deg, var(--gold-dark), var(--gold));
+}
+
+.chandelier .candle-holders {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 40px;
+}
+
+.chandelier .candle-holders span {
+  position: absolute;
+  width: 5px;
+  height: 16px;
+  background: var(--gold-light);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(232, 200, 105, 0.6);
+}
+
+.chandelier .candle-holders span:nth-child(1) { left: 0; bottom: 5px; transform: rotate(-35deg); }
+.chandelier .candle-holders span:nth-child(2) { left: 15px; bottom: 18px; transform: rotate(-15deg); }
+.chandelier .candle-holders span:nth-child(3) { left: 50%; bottom: 25px; transform: translateX(-50%); }
+.chandelier .candle-holders span:nth-child(4) { right: 15px; bottom: 18px; transform: rotate(15deg); }
+.chandelier .candle-holders span:nth-child(5) { right: 0; bottom: 5px; transform: rotate(35deg); }
+
+.chandelier::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, rgba(255,252,230,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.stage-chandelier {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 140px;
+  height: 120px;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.stage-chandelier .chain {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 30px;
+  background: linear-gradient(180deg, var(--gold-dark), var(--gold));
+}
+
+.stage-chandelier .crystal-holders {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 60px;
+}
+
+.stage-chandelier .crystal-holders span {
+  position: absolute;
+  width: 6px;
+  height: 22px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(232, 200, 105, 0.7);
+}
+
+.stage-chandelier .crystal-holders span::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 8px;
+  background: rgba(255,255,255,0.6);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+.stage-chandelier .crystal-holders span:nth-child(1) { left: 0; bottom: 8px; transform: rotate(-45deg); }
+.stage-chandelier .crystal-holders span:nth-child(2) { left: 22px; bottom: 28px; transform: rotate(-25deg); }
+.stage-chandelier .crystal-holders span:nth-child(3) { left: 45px; bottom: 42px; transform: rotate(-8deg); }
+.stage-chandelier .crystal-holders span:nth-child(4) { left: 50%; bottom: 48px; transform: translateX(-50%); }
+.stage-chandelier .crystal-holders span:nth-child(5) { right: 45px; bottom: 42px; transform: rotate(8deg); }
+.stage-chandelier .crystal-holders span:nth-child(6) { right: 22px; bottom: 28px; transform: rotate(25deg); }
+.stage-chandelier .crystal-holders span:nth-child(7) { right: 0; bottom: 8px; transform: rotate(45deg); }
+
+.stage-chandelier::after {
+  content: '';
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle, rgba(255,252,230,0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Crown molding (ceiling trim) */
+.crown-molding {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: linear-gradient(180deg,
+    var(--gold) 0, var(--gold-dark) 2px,
+    var(--wood-light) 2px, var(--wood-light) 6px,
+    var(--gold-dark) 6px, var(--gold-dark) 8px,
+    var(--wood) 8px, var(--wood) 12px,
+    var(--gold) 12px, var(--gold) 14px,
+    transparent 14px
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Wall sconces */
+.wall-sconce {
+  position: absolute;
+  top: 22%;
+  width: 18px;
+  height: 40px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.wall-sconce::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 14px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.wall-sconce::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 12px;
+  background: var(--gold);
+  clip-path: polygon(20% 100%, 50% 30%, 80% 100%);
+}
+
+.sconce-1 { left: 24%; }
+.sconce-2 { right: 22%; }
+
+.sconce-flame {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 14px;
+  background: radial-gradient(ellipse at 50% 30%, #fffce6 0%, #f0c040 40%, #e08020 80%, transparent 100%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: flicker 2s infinite alternate;
+  box-shadow: 0 0 12px rgba(240, 192, 64, 0.7);
+}
+
+@keyframes flicker {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.9; }
+  20% { transform: translateX(-50%) scale(0.85, 1.1); opacity: 0.7; }
+  50% { transform: translateX(-50%) scale(1.05, 0.9); opacity: 1; }
+  70% { transform: translateX(-50%) scale(0.9, 1.05); opacity: 0.8; }
+}
+
+/* Portrait frame */
+.portrait-frame {
+  position: absolute;
+  left: 26%;
+  top: 24%;
+  width: 70px;
+  height: 90px;
+  border: 6px solid var(--gold);
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px var(--gold-dark), 0 4px 12px rgba(0,0,0,0.5);
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, #3a2518 0%, #1a0f08 100%);
+}
+
+.portrait-inner {
+  position: absolute;
+  inset: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+/* Stage backdrop inside portrait */
+.portrait-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 25%, rgba(232, 200, 105, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #1e0a2e 0%, #100618 55%, #080308 100%);
+}
+
+.portrait-bg::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+  background: linear-gradient(180deg, transparent 0%, rgba(90, 15, 15, 0.3) 100%);
+}
+
+/* Singer figure in portrait */
+.portrait-singer {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 46px;
+}
+
+/* Hair back */
+.portrait-hair-back {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 22px;
+  background: var(--hair);
+  border-radius: 50% 50% 40% 40%;
+  z-index: 1;
+}
+
+/* Head */
+.portrait-head {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 14px;
+  background: var(--skin);
+  border-radius: 50% 50% 45% 45%;
+  z-index: 3;
+  box-shadow: inset -1px -1px 0 rgba(0,0,0,0.06);
+}
+
+/* Hair front */
+.portrait-hair-front {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 10px;
+  background: var(--hair);
+  border-radius: 60% 60% 30% 30%;
+  z-index: 4;
+  box-shadow: -6px 3px 0 -2px var(--hair), 6px 3px 0 -2px var(--hair);
+}
+
+/* Body — blue dress */
+.portrait-body {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 30px;
+  background: linear-gradient(180deg, #4a8fcf 0%, #2a6daf 40%, #1a4d8a 80%, #0f3060 100%);
+  border-radius: 45% 45% 8% 8%;
+  border-left: 1px solid var(--gold);
+  border-right: 1px solid var(--gold);
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* Dress neckline */
+.portrait-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 6px;
+  background: var(--skin);
+  clip-path: polygon(0 0, 100% 0, 70% 100%, 30% 100%);
+}
+
+/* Gold belt on dress */
+.portrait-body::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gold);
+  opacity: 0.8;
+}
+
+/* Bouquet of flowers */
+.portrait-bouquet {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 14px;
+  z-index: 5;
+}
+
+/* Stems */
+.portrait-bouquet::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: #2a4a2a;
+  border-radius: 1px;
+}
+
+/* Flowers */
+.portrait-bouquet::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -1px;
+  width: 20px;
+  height: 12px;
+  background:
+    radial-gradient(circle at 15% 60%, #e74c3c 0%, #e74c3c 22%, transparent 23%),
+    radial-gradient(circle at 40% 30%, #f0c040 0%, #f0c040 18%, transparent 19%),
+    radial-gradient(circle at 65% 55%, #f5dcb5 0%, #f5dcb5 18%, transparent 19%),
+    radial-gradient(circle at 88% 35%, #c0392b 0%, #c0392b 18%, transparent 19%),
+    radial-gradient(circle at 28% 80%, #e8555a 0%, #e8555a 15%, transparent 16%),
+    radial-gradient(circle at 75% 80%, #f0c040 0%, #f0c040 15%, transparent 16%);
+}
+
+/* Name plaque at bottom of portrait */
+.portrait-plaque {
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 7px;
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border-radius: 2px;
+  opacity: 0.85;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Coat rack */
+.coat-rack {
+  position: absolute;
+  left: 16%;
+  top: 14%;
+  width: 30px;
+  height: 160px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.rack-pole {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 120px;
+  background: linear-gradient(90deg, var(--wood), var(--wood-light), var(--wood));
+  border-radius: 2px;
+}
+
+.rack-pole::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: -6px;
+  width: 18px;
+  height: 3px;
+  background: var(--wood-light);
+  border-radius: 2px;
+}
+
+.rack-pole::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: -6px;
+  width: 18px;
+  height: 3px;
+  background: var(--wood-light);
+  border-radius: 2px;
+}
+
+.rack-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 40px;
+  background: radial-gradient(ellipse at 50% 30%, var(--wood-light), var(--wood));
+  clip-path: polygon(30% 0, 70% 0, 100% 40%, 90% 100%, 10% 100%, 0 40%);
+}
+
+.fur-stole {
+  position: absolute;
+  top: 16px;
+  left: -8px;
+  width: 36px;
+  height: 80px;
+  background:
+    linear-gradient(180deg, rgba(220, 200, 170, 0.9) 0%, rgba(200, 175, 145, 0.85) 50%, rgba(180, 155, 130, 0.8) 100%);
+  border-radius: 8px 12px 20px 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transform: rotate(5deg);
+}
+
+.fur-stole::after {
+  content: '';
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 30px;
+  background: rgba(180, 150, 120, 0.7);
+  border-radius: 3px;
+  box-shadow: -6px -4px 0 rgba(190, 160, 130, 0.6), 6px -8px 0 rgba(170, 140, 110, 0.5);
+}
+
+/* Storage trunk */
+.storage-trunk {
+  position: absolute;
+  left: 6%;
+  bottom: 8%;
+  width: 65px;
+  height: 38px;
+  background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood) 70%, #2a1810 100%);
+  border: 2px solid var(--gold-dark);
+  border-radius: 4px 4px 3px 3px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.storage-trunk::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: var(--gold);
+  opacity: 0.6;
+}
+
+.storage-trunk::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 8px;
+  border: 2px solid var(--gold);
+  border-radius: 2px;
+}
+
+/* Love letter on dressing table */
+.love-letter {
+  position: absolute;
+  left: 70px;
+  top: 2px;
+  width: 24px;
+  height: 18px;
+  background: var(--cream);
+  border: 1px solid #c9a88c;
+  transform: rotate(12deg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.love-letter::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-top: 6px solid #e8d5c0;
+}
+
+/* Lace fan */
+.lace-fan {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  width: 28px;
+  height: 18px;
+  background:
+    repeating-conic-gradient(rgba(255,255,255,0.5) 0deg 3deg, rgba(200,180,160,0.3) 3deg 6deg);
+  clip-path: polygon(0 0, 100% 20%, 70% 100%, 0 100%);
+  border-radius: 2px;
+  transform: rotate(-8deg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Table lamp */
+.table-lamp {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 26px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.table-lamp::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 10px;
+  background: var(--gold);
+  border-radius: 40% 40% 2px 2px;
+}
+
+.table-lamp::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 12px;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255,250,220,0.7) 0%, rgba(220,200,150,0.4) 60%, transparent 100%);
+  border-radius: 50% 50% 40% 40%;
+  border: 1px solid rgba(201, 162, 39, 0.6);
+}
+
+/* Curtain ropes (stage) */
+.curtain-rope {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 30%, var(--gold) 60%, var(--gold-dark) 100%);
+}
+
+.left-rope { left: 24%; }
+.right-rope { right: 24%; }
+
+.curtain-rope::after {
+  content: '';
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(201, 162, 39, 0.5);
+}
+
+/* Stage footlights */
+.stage-footlights {
+  position: absolute;
+  bottom: 4%;
+  left: 5%;
+  right: 25%;
+  height: 10px;
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  gap: 6px;
+}
+
+.stage-footlights span {
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, rgba(255,250,220,0.9) 0%, rgba(240,200,100,0.6) 40%, rgba(200,150,50,0.3) 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(255, 250, 200, 0.7);
+  animation: footlightPulse 3s infinite alternate;
+}
+
+.stage-footlights span:nth-child(odd) { animation-delay: 0s; }
+.stage-footlights span:nth-child(even) { animation-delay: 1.5s; }
+
+@keyframes footlightPulse {
+  0% { opacity: 0.5; box-shadow: 0 0 2px rgba(255,250,200,0.4); }
+  100% { opacity: 1; box-shadow: 0 0 8px rgba(255,250,200,0.9); }
+}
+
+/* Music stand */
+.music-stand {
+  position: absolute;
+  left: 10%;
+  bottom: 18%;
+  width: 30px;
+  height: 80px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.stand-pole {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 60px;
+  background: linear-gradient(90deg, #222, #444, #222);
+  border-radius: 1px;
+}
+
+.stand-tray {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 22px;
+  background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+  border: 1px solid #555;
+  border-radius: 2px 2px 6px 6px;
+}
+
+.stand-sheets {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 16px;
+  background: var(--cream);
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.stand-sheets::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  height: 1px;
+  background: rgba(0,0,0,0.15);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.1), 0 6px 0 rgba(0,0,0,0.1), 0 9px 0 rgba(0,0,0,0.1);
+}
+
+/* Exit sign */
+.exit-sign {
+  position: absolute;
+  right: 6%;
+  top: 12%;
+  padding: 3px 10px;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid var(--gold);
+  border-radius: 3px;
+  color: var(--cream);
+  font-family: Georgia, serif;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  z-index: 5;
+  pointer-events: none;
+  animation: exitGlow 2s infinite alternate;
+}
+
+@keyframes exitGlow {
+  0% { box-shadow: 0 0 4px rgba(201, 162, 39, 0.4); }
+  100% { box-shadow: 0 0 10px rgba(201, 162, 39, 0.7); }
+}
+
+/* ===================================
+   Sparkle & Glitter Effects
+   =================================== */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  20% { opacity: 1; transform: scale(1) rotate(45deg); }
+  40% { opacity: 0.5; transform: scale(0.8) rotate(90deg); }
+  60% { opacity: 0.9; transform: scale(1.1) rotate(135deg); }
+  80% { opacity: 0.2; transform: scale(0.5) rotate(180deg); }
+}
+
+@keyframes glitter {
+  0%, 100% { opacity: 0.3; filter: brightness(1); }
+  50% { opacity: 1; filter: brightness(1.8); }
+}
+
+@keyframes sparkleFloat {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-60px) rotate(180deg); opacity: 0; }
+}
+
+/* Glass / crystal sparkle dots */
+.sparkle-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  animation: sparkle 2s infinite;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.9), 0 0 8px rgba(232, 200, 105, 0.6);
+}
+
+.sparkle-dot:nth-child(2) { animation-delay: 0.4s; }
+.sparkle-dot:nth-child(3) { animation-delay: 0.8s; }
+.sparkle-dot:nth-child(4) { animation-delay: 1.2s; }
+.sparkle-dot:nth-child(5) { animation-delay: 0.2s; }
+.sparkle-dot:nth-child(6) { animation-delay: 0.6s; }
+.sparkle-dot:nth-child(7) { animation-delay: 1.0s; }
+.sparkle-dot:nth-child(8) { animation-delay: 1.4s; }
+
+/* Sparkles on chandelier (dressing room) */
+.chandelier-sparkles {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 60px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.chandelier-sparkles .sparkle-dot:nth-child(1) { top: 12px; left: 8px; animation-delay: 0s; }
+.chandelier-sparkles .sparkle-dot:nth-child(2) { top: 5px; left: 30px; animation-delay: 0.5s; }
+.chandelier-sparkles .sparkle-dot:nth-child(3) { top: 8px; right: 12px; animation-delay: 1.0s; }
+.chandelier-sparkles .sparkle-dot:nth-child(4) { top: 18px; right: 24px; animation-delay: 0.3s; }
+.chandelier-sparkles .sparkle-dot:nth-child(5) { top: 15px; left: 18px; animation-delay: 0.7s; }
+
+/* Sparkles on stage chandelier */
+.stage-sparkles {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 90px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.stage-sparkles .sparkle-dot:nth-child(1) { top: 20px; left: 10px; animation-delay: 0s; }
+.stage-sparkles .sparkle-dot:nth-child(2) { top: 8px; left: 38px; animation-delay: 0.6s; }
+.stage-sparkles .sparkle-dot:nth-child(3) { top: 12px; right: 10px; animation-delay: 1.2s; }
+.stage-sparkles .sparkle-dot:nth-child(4) { top: 30px; right: 30px; animation-delay: 0.3s; }
+.stage-sparkles .sparkle-dot:nth-child(5) { top: 35px; left: 30px; animation-delay: 0.9s; }
+.stage-sparkles .sparkle-dot:nth-child(6) { top: 22px; left: 60px; animation-delay: 0.4s; }
+.stage-sparkles .sparkle-dot:nth-child(7) { top: 16px; right: 55px; animation-delay: 1.5s; }
+.stage-sparkles .sparkle-dot:nth-child(8) { top: 28px; left: 50px; animation-delay: 0.8s; }
+
+/* Gold shimmer on frame edges */
+@keyframes goldShimmer {
+  0%, 100% { 
+    background-position: 0% 50%;
+    box-shadow: 0 0 6px rgba(201, 162, 39, 0.4);
+  }
+  50% { 
+    background-position: 100% 50%;
+    box-shadow: 0 0 14px rgba(232, 200, 105, 0.8);
+  }
+}
+
+/* Glitter on mirror frame */
+.mirror .frame {
+  animation: goldShimmer 3s ease-in-out infinite;
+}
+
+/* Glitter on dressing-table gold trim */
+.dressing-table .table-top::after {
+  animation: glitter 2.5s ease-in-out infinite;
+}
+
+/* Sparkle on necklaces */
+.singer .necklace {
+  animation: glitter 3s ease-in-out infinite;
+}
+
+/* Crystal drops on stage chandelier shimmer */
+.stage-chandelier .crystal-holders span {
+  animation: glitter 2s ease-in-out infinite;
+}
+
+.stage-chandelier .crystal-holders span:nth-child(odd) { animation-delay: 0s; }
+.stage-chandelier .crystal-holders span:nth-child(even) { animation-delay: 1s; }
+
+/* Floating diamond sparkles (scattered across room) */
+.floating-sparkle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 11;
+  animation: sparkleFloat 3s infinite ease-in-out;
+}
+
+.floating-sparkle::before {
+  content: '✦';
+  font-size: 10px;
+  color: var(--gold-light);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+
+.floating-sparkle:nth-child(1) { left: 15%; bottom: 50%; animation-delay: 0s; }
+.floating-sparkle:nth-child(2) { left: 45%; bottom: 65%; animation-delay: 1.2s; }
+.floating-sparkle:nth-child(3) { left: 75%; bottom: 40%; animation-delay: 2.4s; }
+.floating-sparkle:nth-child(4) { left: 30%; bottom: 75%; animation-delay: 0.8s; }
+.floating-sparkle:nth-child(5) { left: 60%; bottom: 55%; animation-delay: 1.8s; }
+.floating-sparkle:nth-child(6) { left: 85%; bottom: 70%; animation-delay: 0.4s; }
+
+/* Pearl strand shimmer */
+.dressing-table .pearl-strand {
+  animation: glitter 2.8s ease-in-out infinite;
+}
+
+/* Perfume bottle sparkle */
+.dressing-table .perfume {
+  animation: glitter 2.2s ease-in-out infinite;
+}
+
+/* Compact glint */
+.dressing-table .compact {
+  animation: glitter 3.5s ease-in-out infinite;
+}
+
+/* Wall sconce flame sparkle */
+.wall-sconce .sconce-flame::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 14px;
+  height: 18px;
+  background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, transparent 50%);
+  border-radius: 50%;
+  animation: sparkle 1.5s infinite;
+}
+
+/* Grand curtain gold border shimmer */
+.grand-curtain {
+  animation: goldShimmer 4s ease-in-out infinite;
+}
+
+.grand-curtain.left { animation-delay: 0s; }
+.grand-curtain.right { animation-delay: 2s; }
+.rug {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 78%;
+  height: 38%;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(90,15,15,0.85) 0%, rgba(60,10,10,0.95) 100%),
+    repeating-linear-gradient(90deg,
+      transparent 0,
+      transparent 16px,
+      rgba(201,162,39,0.18) 16px,
+      rgba(201,162,39,0.18) 20px
+    ),
+    repeating-linear-gradient(0deg,
+      transparent 0,
+      transparent 28px,
+      rgba(201,162,39,0.08) 28px,
+      rgba(201,162,39,0.08) 30px
+    );
+  border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+  border-top: 4px solid var(--gold);
+  box-shadow: inset 0 20px 40px rgba(0,0,0,0.3);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rug::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: var(--gold);
+  opacity: 0.5;
+  border-radius: 2px;
+}
+
+.rug::after {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45%;
+  height: 3px;
+  background: var(--gold);
+  opacity: 0.3;
+  border-radius: 2px;
+}
+
+/* Wardrobe */
+.wardrobe {
+  left: 5%;
+  top: 18%;
+  width: 110px;
+  height: 180px;
+  z-index: 4;
+}
+
+.wardrobe-body {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood) 100%);
+  border: 3px solid var(--gold);
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+.wardrobe-body::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 6px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.wardrobe-door {
+  position: absolute;
+  top: 22px;
+  width: 46%;
+  height: 150px;
+  background: linear-gradient(90deg, var(--wood) 0%, var(--wood-light) 50%, var(--wood) 100%);
+  border: 1px solid var(--gold);
+}
+
+.wardrobe-door.left { left: 4%; }
+.wardrobe-door.right { right: 4%; }
+
+.wardrobe-door::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 18px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+/* Vanity chair */
+.vanity-chair {
+  left: 32%;
+  bottom: 22%;
+  width: 60px;
+  height: 70px;
+  z-index: 4;
+}
+
+.vanity-chair .seat {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 18px;
+  background: radial-gradient(ellipse at 50% 30%, var(--velvet-pink) 0%, var(--velvet-red) 100%);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.vanity-chair .legs {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 48px;
+  background: linear-gradient(90deg, transparent 0, var(--gold) 15%, transparent 35%, var(--gold) 50%, transparent 65%, var(--gold) 85%, transparent 100%);
+}
+
+/* Mirror */
+.mirror {
+  right: 4%;
+  top: 12%;
+  width: 100px;
+  height: 140px;
+  z-index: 5;
+}
+
+.mirror .frame {
+  position: absolute;
+  inset: 0;
+  border: 10px solid var(--gold);
+  border-radius: 70px 70px 50px 50px;
+  background: var(--gold);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 0 12px rgba(0,0,0,0.3);
+}
+
+.mirror .frame::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 2px solid var(--gold-light);
+  border-radius: 74px 74px 54px 54px;
+  pointer-events: none;
+}
+
+.mirror .glass {
+  position: absolute;
+  inset: 12px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.22) 100%);
+  border-radius: 58px 58px 38px 38px;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.15);
+}
+
+.mirror .bulbs {
+  position: absolute;
+  inset: -4px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.mirror .bulbs span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--cream);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 250, 230, 0.8);
+}
+
+.mirror .bulbs span:nth-child(1) { top: 18%; left: -2px; }
+.mirror .bulbs span:nth-child(2) { top: 4%; left: 25%; }
+.mirror .bulbs span:nth-child(3) { top: 0; left: 50%; transform: translateX(-50%); }
+.mirror .bulbs span:nth-child(4) { top: 4%; right: 25%; }
+.mirror .bulbs span:nth-child(5) { top: 18%; right: -2px; }
+.mirror .bulbs span:nth-child(6) { top: 45%; right: -4px; }
+
+.sticker {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.3);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.sticker.red {
+  background: radial-gradient(circle at 30% 30%, #e74c3c, #c0392b);
+  top: 22px;
+  left: 18px;
+}
+
+.sticker.blue {
+  background: radial-gradient(circle at 30% 30%, #3498db, #2980b9);
+  top: 46px;
+  right: 16px;
+}
+
+.sticker.gold {
+  background: radial-gradient(circle at 30% 30%, #f1c40f, #d4af37);
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Dressing table */
+.dressing-table {
+  right: 11%;
+  bottom: 8%;
+  width: 200px;
+  height: 150px;
+  z-index: 4;
+}
+
+.table-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood) 100%);
+  border: 2px solid var(--gold);
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+}
+
+.table-top::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gold);
+  border-radius: 3px 3px 0 0;
+}
+
+.drawer {
+  position: absolute;
+  bottom: 0;
+  left: 8%;
+  width: 84%;
+  height: 90px;
+  background: linear-gradient(180deg, var(--wood) 0%, #2e1a15 100%);
+  border: 2px solid var(--gold);
+  border-radius: 0 0 6px 6px;
+  transition: transform 0.4s ease;
+}
+
+.drawer.open {
+  transform: translateY(60px);
+  background: #2e1a15;
+}
+
+.lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  background: var(--gold);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.lock::before {
+  content: '';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 13px;
+  height: 15px;
+  border: 3px solid var(--gold);
+  border-radius: 50% 50% 0 0;
+  background: transparent;
+}
+
+.drawer-contents {
+  position: absolute;
+  bottom: 42px;
+  left: 8%;
+  width: 84%;
+  height: 56px;
+  z-index: 6;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 28px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  background: linear-gradient(180deg, #1a0f08 0%, #2e1a15 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 4px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.drawer-contents.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dressing-table .decor {
+  position: absolute;
+  top: -14px;
+  left: 10px;
+  right: 10px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.dressing-table .perfume {
+  position: absolute;
+  left: 15px;
+  top: 0;
+  width: 16px;
+  height: 28px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,200,210,0.4) 100%);
+  border: 1px solid var(--gold);
+  border-radius: 30% 30% 40% 40%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.dressing-table .perfume::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 2px 2px 0 0;
+}
+
+.dressing-table .pearl-strand {
+  position: absolute;
+  left: 50px;
+  top: 6px;
+  width: 38px;
+  height: 14px;
+  border: 2px dotted var(--cream);
+  border-radius: 50%;
+  transform: rotate(-10deg);
+  opacity: 0.85;
+}
+
+.dressing-table .compact {
+  position: absolute;
+  right: 20px;
+  top: 2px;
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle, var(--gold-light) 0%, var(--gold) 100%);
+  border-radius: 50%;
+  border: 2px solid var(--gold-dark);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.lens {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(180,210,255,0.75) 40%, rgba(255,255,255,0.35) 70%);
+  border: 3px solid #6a6a6a;
+  box-shadow: 0 0 14px rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.3);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.lens::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  width: 10px;
+  height: 6px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 50%;
+  transform: rotate(-20deg);
+}
+
+.poem {
+  width: 38px;
+  height: 52px;
+  background: var(--cream);
+  border: 2px solid #bfa36f;
+  color: var(--ink);
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.poem::before {
+  content: 'poem';
+  font-family: Georgia, serif;
+  color: #6b4a3a;
+}
+
+/* Flower vase */
+.flower-vase {
+  left: 4%;
+  bottom: 8%;
+  width: 40px;
+  height: 70px;
+  z-index: 4;
+}
+
+.flower-vase .vase {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 45px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(200,220,230,0.4) 100%);
+  border: 1px solid var(--gold);
+  border-radius: 10px 10px 20px 20px;
+}
+
+.flower-vase .flowers span {
+  position: absolute;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, #e74c3c 0%, #c0392b 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.5);
+}
+
+.flower-vase .flowers span:nth-child(1) { left: 2px; top: 2px; }
+.flower-vase .flowers span:nth-child(2) { left: 50%; top: -2px; transform: translateX(-50%); }
+.flower-vase .flowers span:nth-child(3) { right: 2px; top: 4px; }
+
+/* Side table */
+.side-table {
+  left: 50%;
+  bottom: 18%;
+  width: 55px;
+  height: 65px;
+  z-index: 4;
+}
+
+.side-table .top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background: var(--wood-light);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+}
+
+.side-table .leg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 50px;
+  background: linear-gradient(90deg, var(--wood) 0%, var(--wood-light) 50%, var(--wood) 100%);
+  border-radius: 0 0 4px 4px;
+}
+
+/* Opera Singer */
+.singer {
+  position: absolute;
+  left: 12%;
+  bottom: 18%;
+  width: 55px;
+  height: 120px;
+  z-index: 50;
+  cursor: pointer;
+  --flip: 1;
+  --depth-scale: 1;
+  transform: scaleX(var(--flip)) scale(var(--depth-scale));
+  transition: transform 0.1s ease;
+  pointer-events: none;
+}
+
+/* Singer legs */
+.singer .legs {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 18px;
+  z-index: 1;
+}
+
+.singer .leg {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 15px;
+  background: linear-gradient(180deg, var(--skin) 0%, #ddc090 100%);
+  border-radius: 2px 2px 3px 3px;
+  transform-origin: top center;
+}
+
+.singer .leg::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: -2px;
+  width: 10px;
+  height: 6px;
+  background: linear-gradient(180deg, var(--gold-dark) 0%, #5a4515 100%);
+  border-radius: 3px 3px 5px 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.singer .leg.left-leg { left: 1px; }
+.singer .leg.right-leg { right: 1px; }
+
+/* Singer arms */
+.singer .arm {
+  position: absolute;
+  top: 5px;
+  width: 5px;
+  height: 32px;
+  background: linear-gradient(180deg, var(--dress) 0%, var(--dress-deep) 100%);
+  border-radius: 3px;
+  transform-origin: top center;
+}
+
+.singer .arm::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: -1px;
+  width: 7px;
+  height: 7px;
+  background: var(--skin);
+  border-radius: 50%;
+}
+
+.singer .arm.left-arm { left: -5px; }
+.singer .arm.right-arm { right: -5px; }
+
+/* Walk animations */
+.singer.walking {
+  animation: walkBob 0.36s infinite alternate ease-in-out;
+}
+
+@keyframes walkBob {
+  0% { transform: translateY(0) scaleX(var(--flip)) scale(var(--depth-scale)); }
+  100% { transform: translateY(-4px) scaleX(var(--flip)) scale(var(--depth-scale)); }
+}
+
+.singer.walking .leg.left-leg {
+  animation: walkLegL 0.36s infinite alternate ease-in-out;
+}
+
+.singer.walking .leg.right-leg {
+  animation: walkLegR 0.36s infinite alternate ease-in-out;
+}
+
+@keyframes walkLegL {
+  0% { transform: rotate(-25deg) translateY(0); }
+  100% { transform: rotate(25deg) translateY(-2px); }
+}
+
+@keyframes walkLegR {
+  0% { transform: rotate(25deg) translateY(-2px); }
+  100% { transform: rotate(-25deg) translateY(0); }
+}
+
+.singer.walking .arm.left-arm {
+  animation: walkArmL 0.36s infinite alternate ease-in-out;
+}
+
+.singer.walking .arm.right-arm {
+  animation: walkArmR 0.36s infinite alternate ease-in-out;
+}
+
+@keyframes walkArmL {
+  0% { transform: rotate(18deg); }
+  100% { transform: rotate(-18deg); }
+}
+
+@keyframes walkArmR {
+  0% { transform: rotate(-18deg); }
+  100% { transform: rotate(18deg); }
+}
+
+.singer.walking .body {
+  animation: walkBodySway 0.36s infinite alternate ease-in-out;
+}
+
+@keyframes walkBodySway {
+  0% { transform: translateX(-50%) rotate(-2deg); }
+  100% { transform: translateX(-50%) rotate(2deg); }
+}
+
+.singer.walking .head {
+  animation: walkHeadBob 0.36s infinite alternate ease-in-out;
+}
+
+@keyframes walkHeadBob {
+  0% { transform: translateX(-50%) rotate(-3deg) translateY(0); }
+  100% { transform: translateX(-50%) rotate(3deg) translateY(-1px); }
+}
+
+.singer.walking .hair-front {
+  animation: walkHairBounce 0.36s infinite alternate ease-in-out;
+}
+
+@keyframes walkHairBounce {
+  0% { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-50%) translateY(-1px); }
+}
+
+.singer .head {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 32px;
+  background: var(--skin);
+  border-radius: 50% 50% 45% 45%;
+  box-shadow: inset -3px -2px 0 rgba(0,0,0,0.08);
+  z-index: 4;
+}
+
+.singer .head::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 8px;
+  background: rgba(200, 120, 120, 0.25);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.singer .head::after {
+  /* lips */
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 3px;
+  background: rgba(180, 50, 60, 0.7);
+  border-radius: 50%;
+}
+
+.singer .hair-front {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 24px;
+  background: var(--hair);
+  border-radius: 50% 50% 40% 40%;
+  z-index: 5;
+  box-shadow: inset -3px -2px 0 rgba(0,0,0,0.08);
+}
+
+.singer .hair-front::before {
+  /* curls detail */
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: -6px;
+  width: 14px;
+  height: 18px;
+  background: var(--hair);
+  border-radius: 50%;
+  transform: rotate(-20deg);
+  box-shadow: 4px 0 0 var(--hair), 8px 2px 0 var(--hair);
+}
+
+.singer .hair-front::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: -6px;
+  width: 14px;
+  height: 18px;
+  background: var(--hair);
+  border-radius: 50%;
+  transform: rotate(20deg);
+  box-shadow: -4px 0 0 var(--hair), -8px 2px 0 var(--hair);
+}
+
+.singer .hair-back {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 42px;
+  background: var(--hair);
+  border-radius: 45% 45% 50% 50%;
+  z-index: 1;
+}
+
+.singer .hair-back::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 20px;
+  background: var(--hair);
+  border-radius: 0 0 50% 50%;
+}
+
+.singer .body {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 88px;
+  background: linear-gradient(180deg, var(--dress) 0%, var(--dress-deep) 100%);
+  border-radius: 45% 45% 10% 10%;
+  border-left: 2px solid var(--gold);
+  border-right: 2px solid var(--gold);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+
+.singer .body::before {
+  /* neckline / décolletage */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 36px;
+  background: linear-gradient(180deg, var(--cream-pink) 0%, var(--cream) 100%);
+  clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+  border-bottom: 1px solid var(--gold);
+}
+
+.singer .necklace {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 8px;
+  border: 2px dotted var(--cream);
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.singer .dress-detail {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 40px;
+  border-left: 2px solid var(--gold);
+  border-right: 2px solid var(--gold);
+  opacity: 0.6;
+}
+
+.singer .dress-detail::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  background: var(--gold);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  opacity: 0.8;
+}
+
+/* Spotlight */
+.spotlight {
+  left: 50%;
+  top: 9%;
+  width: 90px;
+  height: 80px;
+  z-index: 6;
+  transform: translateX(-50%);
+}
+
+.spotlight-mount {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 30px;
+  background: linear-gradient(180deg, #1a1a1a, #333);
+  border-radius: 2px;
+}
+
+.spotlight-body {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 52px;
+  background: linear-gradient(180deg, #3a3a3a 0%, #111 100%);
+  border-radius: 12px 12px 45% 45%;
+  border: 2px solid #555;
+  box-shadow: 0 0 0 4px var(--gold), 0 0 20px rgba(0,0,0,0.6);
+}
+
+.spotlight-body::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 10px;
+  background: #222;
+  border-radius: 50%;
+  border: 1px solid #555;
+}
+
+.spotlight.fixed .spotlight-body {
+  background: linear-gradient(180deg, #4a4a4a 0%, #222 100%);
+  box-shadow: 0 0 0 4px var(--gold-light), 0 0 20px var(--gold-light);
+}
+
+.spotlight-beam {
+  position: absolute;
+  top: 72px;
+  left: calc(50% - 40px);
+  transform: rotate(0deg);
+  transform-origin: top center;
+  width: 80px;
+  height: 320px;
+  background: linear-gradient(180deg, rgba(255,252,230,0.6) 0%, rgba(255,252,230,0.1) 75%, transparent 100%);
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0% 100%);
+  pointer-events: none;
+  z-index: 4;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+}
+
+.spotlight-beam.on {
+  opacity: 1;
+}
+
+.spotlight-beam.on::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 2%),
+    radial-gradient(circle at 60% 35%, rgba(255,255,255,0.1) 0%, transparent 1.5%),
+    radial-gradient(circle at 45% 50%, rgba(255,255,255,0.12) 0%, transparent 1%),
+    radial-gradient(circle at 55% 65%, rgba(255,255,255,0.08) 0%, transparent 2%),
+    radial-gradient(circle at 35% 75%, rgba(255,255,255,0.1) 0%, transparent 1.5%);
+  animation: dustFloat 4s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes dustFloat {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.spotlight-beam.hidden {
+  opacity: 0;
+}
+
+.spotlight-beam.hit-chair {
+  background: linear-gradient(180deg, rgba(255,252,230,0.85) 0%, rgba(255,250,200,0.35) 70%, transparent 100%);
+  filter: drop-shadow(0 0 20px rgba(255, 250, 200, 0.8));
+}
+
+.spotlight-controls {
+  position: absolute;
+  top: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.7);
+  padding: 6px 12px;
+  border-radius: 24px;
+  border: 1px solid var(--gold);
+  z-index: 7;
+}
+
+.spotlight-controls button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#angle-display {
+  font-family: Georgia, serif;
+  color: var(--gold);
+  min-width: 44px;
+  text-align: center;
+}
+
+
+.curtain {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 72%;
+  z-index: 5;
+  display: flex;
+  pointer-events: none;
+}
+
+.curtain-panel {
+  flex: 1;
+  height: 100%;
+  background:
+    repeating-linear-gradient(90deg, var(--velvet-red) 0, var(--velvet-red) 28px, var(--velvet-red-light) 29px, var(--velvet-red-light) 30px),
+    linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 100%);
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.6);
+  transition: transform 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.curtain-panel.left { transform: translateX(0); border-right: 2px solid rgba(0,0,0,0.3); }
+.curtain-panel.right { transform: translateX(0); border-left: 2px solid rgba(0,0,0,0.3); }
+
+.curtain.open .curtain-panel.left { transform: translateX(-90%); }
+.curtain.open .curtain-panel.right { transform: translateX(90%); }
+
+/* Grand stage curtains (backdrop) */
+.stage-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.grand-curtain {
+  position: absolute;
+  top: 0;
+  width: 25%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(90deg, var(--velvet-red) 0, var(--velvet-red) 20px, var(--velvet-red-light) 21px, var(--velvet-red-light) 22px);
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.7);
+  opacity: 0.9;
+}
+
+.grand-curtain.left { left: 0; transform: scaleX(-1); border-right: 3px solid var(--gold); }
+.grand-curtain.right { right: 0; border-left: 3px solid var(--gold); }
+
+.grand-curtain::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.5));
+}
+
+/* Chair */
+.chair {
+  left: 50%;
+  bottom: 16%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 130px;
+  z-index: 3;
+}
+
+.chair::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  background:
+    linear-gradient(180deg, #8b5a2b 0%, #5a3a1b 100%),
+    linear-gradient(90deg, transparent 0, transparent 8px, rgba(201,162,39,0.3) 8px, rgba(201,162,39,0.3) 10px, transparent 10px);
+  border: 2px solid var(--gold);
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+}
+
+.chair::after {
+  /* velvet cushion */
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: -6px;
+  width: 102px;
+  height: 30px;
+  background: linear-gradient(180deg, var(--velvet-pink) 0%, var(--velvet-red) 60%, #4a0a0a 100%);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1);
+}
+
+.chair .chair-back {
+  display: none;
+}
+
+/* Key */
+.key {
+  left: 50%;
+  bottom: 22%;
+  transform: translateX(-50%) rotate(-15deg);
+  width: 38px;
+  height: 60px;
+  z-index: 6;
+}
+
+.key::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 26px;
+  border: 6px solid var(--gold);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.key::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 30px;
+  background: var(--gold);
+  border-radius: 2px;
+  box-shadow: 6px 8px 0 -2px var(--gold), -2px 14px 0 -2px var(--gold);
+}
+
+/* Side door */
+.side-door {
+  right: 5%;
+  bottom: 0;
+  width: 100px;
+  height: 180px;
+  z-index: 3;
+}
+
+.door-frame {
+  position: absolute;
+  inset: 0;
+  border: 7px solid var(--wood);
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px 6px 0 0;
+}
+
+.door-panel {
+  position: absolute;
+  inset: 10px;
+  background: linear-gradient(90deg, #4a3025 0%, #3a2318 100%);
+  border: 2px solid var(--gold);
+  border-radius: 3px 3px 0 0;
+}
+
+.door-panel::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 24px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.exit-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+  pointer-events: none;
+  animation: glowPulse 1.5s infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Exit zones between rooms (invisible — the golden door is the visible cue) */
+.exit-zone {
+  position: absolute;
+  top: 30%;
+  width: 40px;
+  height: 40%;
+  z-index: 9;
+  pointer-events: none;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exit-zone.right {
+  right: 2px;
+}
+
+.exit-zone.left {
+  left: 2px;
+}
+
+.exit-zone::after {
+  content: '';
+}
+
+/* ===== Golden sparkling door between rooms ===== */
+/* ===== Single golden wooden door connecting the two rooms ===== */
+.room-door {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  transform: translateX(-50%);
+  width: 58px;
+  height: 84%;
+  z-index: 13;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.door-leaf {
+  position: absolute;
+  inset: 0;
+  border: 4px solid var(--gold);
+  border-radius: 5px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.14) 0, rgba(0,0,0,0.14) 2px, transparent 2px, transparent 11px),
+    linear-gradient(180deg, #8a5a2e 0%, #6b3f1d 55%, #4f2d14 100%);
+  box-shadow:
+    0 0 16px rgba(232,200,105,0.55),
+    inset 0 0 16px rgba(0,0,0,0.45);
+  overflow: hidden;
+}
+
+.door-panel {
+  position: absolute;
+  left: 14%;
+  width: 72%;
+  border: 2px solid var(--gold-dark);
+  border-radius: 3px;
+  background: rgba(0,0,0,0.2);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.55);
+}
+
+.door-panel.p-top { top: 9%; height: 33%; }
+.door-panel.p-bottom { top: 50%; height: 33%; }
+
+.door-handle {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #fff3c4, var(--gold));
+  box-shadow: 0 0 6px rgba(232,200,105,0.9);
+  transform: translateY(-50%);
+}
+
+.door-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, var(--gold-light) 55%, transparent 100%);
+  box-shadow: 0 0 8px 2px rgba(232,200,105,0.9);
+  opacity: 0;
+  animation: doorSparkle 2.8s ease-in-out infinite;
+}
+
+.door-sparkle.s1 { top: 18%; left: 14%; animation-delay: 0s; }
+.door-sparkle.s2 { top: 38%; left: 74%; animation-delay: 0.7s; }
+.door-sparkle.s3 { top: 60%; left: 22%; animation-delay: 1.4s; }
+.door-sparkle.s4 { top: 78%; left: 70%; animation-delay: 2.1s; }
+
+@keyframes doorSparkle {
+  0%, 100% { opacity: 0; transform: scale(0.4); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+.door-label {
+  position: absolute;
+  bottom: 6px;
+  z-index: 2;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: Georgia, serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.5px;
+  color: #2a1606;
+  background: linear-gradient(180deg, #f3d987, var(--gold));
+  padding: 3px 8px;
+  border-radius: 4px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.45);
+  pointer-events: none;
+}
+
+.door-label .door-arrow {
+  font-weight: bold;
+  font-size: 0.7rem;
+}
+
+/* ===== Introduction screen ===== */
+.intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 28%, #2a1616 0%, #140a0a 78%),
+    #0d0606;
+  overflow-y: auto;
+}
+
+.intro-screen.hidden {
+  display: none;
+}
+
+.intro-card {
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(42,26,20,0.96), rgba(24,14,10,0.96));
+  border: 3px solid var(--gold);
+  border-radius: 12px;
+  padding: 34px 30px;
+  box-shadow: 0 0 44px rgba(0,0,0,0.75), inset 0 0 30px rgba(232,200,105,0.08);
+}
+
+.intro-emblem {
+  font-size: 2.8rem;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 0 10px rgba(232,200,105,0.5));
+}
+
+.intro-title {
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  color: var(--gold);
+  margin: 4px 0 10px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 14px rgba(232,200,105,0.5);
+}
+
+.intro-rule {
+  width: 130px;
+  height: 2px;
+  margin: 0 auto 18px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.intro-story {
+  color: #f3e9d2;
+  font-size: 1rem;
+  line-height: 1.65;
+  margin: 0 0 16px;
+}
+
+.intro-mission {
+  color: #e8d8b8;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  text-align: left;
+  background: rgba(232,200,105,0.07);
+  border-left: 3px solid var(--gold);
+  padding: 11px 14px;
+  border-radius: 0 6px 6px 0;
+}
+
+.intro-mission strong {
+  color: var(--gold-light);
+}
+
+.intro-start-btn {
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+  letter-spacing: 1px;
+  color: #2a1606;
+  background: linear-gradient(180deg, #f3d987, var(--gold));
+  border: 2px solid #b8860b;
+  border-radius: 30px;
+  padding: 12px 34px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(232,200,105,0.4);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+
+.intro-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(232,200,105,0.6);
+}
+
+.intro-start-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.intro-controls {
+  margin-top: 18px;
+  color: var(--gold-light);
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 600px) {
+  .intro-title { font-size: 1.55rem; }
+  .intro-story, .intro-mission { font-size: 0.9rem; }
+  .intro-card { padding: 26px 18px; }
+}
+
+/* Inventory */
+#inventory {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: rgba(0,0,0,0.4);
+  border-top: 2px solid var(--gold);
+  padding: 0 40px;
+}
+
+#inventory h3 {
+  font-family: Georgia, serif;
+  color: var(--gold-light);
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+#inventory-slots {
+  display: flex;
+  gap: 12px;
+}
+
+.slot {
+  width: 64px;
+  height: 64px;
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.slot .inventory-icon {
+  max-width: 80%;
+  max-height: 80%;
+}
+
+.slot .inventory-icon.lens-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9), rgba(180,210,255,0.6) 40%, rgba(255,255,255,0.2) 70%);
+  border: 3px solid #6a6a6a;
+}
+
+.slot .inventory-icon.poem-icon {
+  width: 30px;
+  height: 44px;
+  background: var(--cream);
+  border: 1px solid #bfa36f;
+  font-family: Georgia, serif;
+  font-size: 0.5rem;
+  color: #6b4a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot .inventory-icon.key-icon {
+  width: 26px;
+  height: 44px;
+  border: 4px solid var(--gold);
+  border-radius: 50% 50% 0 0;
+  position: relative;
+}
+
+.slot .inventory-icon.key-icon::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 22px;
+  background: var(--gold);
+}
+
+/* Message area */
+#message-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 40px;
+  background: rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(201,162,39,0.3);
+  gap: 6px;
+}
+
+#message {
+  margin: 0;
+  font-size: 1.15rem;
+  text-align: center;
+  color: var(--cream);
+  max-width: 900px;
+}
+
+.controls-hint {
+  font-size: 0.95rem;
+  color: var(--gold);
+  opacity: 0.75;
+}
+
+.controls-hint kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 5px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  font-family: Georgia, serif;
+  text-align: center;
+  margin: 0 1px;
+}
+
+/* Modals */
+.modal, .end-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.modal.hidden, .end-screen.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vintage-card {
+  background: linear-gradient(180deg, #2b1a1a 0%, #1a0f0f 100%);
+  border: 3px solid var(--gold);
+  border-radius: 8px;
+  padding: 32px 40px;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.4);
+}
+
+.vintage-card h2, .vintage-card h1 {
+  font-family: Georgia, serif;
+  color: var(--gold-light);
+  margin-top: 0;
+}
+
+.vintage-card p {
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+.poem-text {
+  font-style: italic;
+  color: var(--gold-light);
+  margin: 18px 0;
+}
+
+/* Clue modal (click-to-inspect) */
+.clue-card {
+  max-width: 440px;
+  padding: 28px 36px;
+}
+
+.clue-icon-wrap {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: rgba(232, 200, 105, 0.1);
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+
+.clue-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--cream);
+  margin: 16px 0 20px;
+  text-align: left;
+  font-style: italic;
+}
+
+button {
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  padding: 10px 22px;
+  margin: 6px;
+  border: 2px solid var(--gold);
+  border-radius: 4px;
+  background: var(--velvet-red);
+  color: var(--cream);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+button:hover {
+  background: var(--velvet-red-light);
+  transform: translateY(-2px);
+}
+
+/* Code entry */
+#code-slots {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.code-slot {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  color: var(--cream);
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.code-slot.selected {
+  box-shadow: 0 0 12px var(--gold-light);
+  border-color: var(--gold-light);
+}
+
+.code-slot.red { background: #c0392b; color: #fff; }
+.code-slot.orange { background: #e67e22; color: #fff; }
+.code-slot.gold { background: #d4af37; color: #2a1a1a; }
+.code-slot.green { background: #27ae60; color: #fff; }
+.code-slot.turquoise { background: #1abc9c; color: #fff; }
+.code-slot.blue { background: #2980b9; color: #fff; }
+.code-slot.purple { background: #8e44ad; color: #fff; }
+
+.color-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  max-width: 380px;
+}
+
+.color-btn.red { background: #c0392b; }
+.color-btn.orange { background: #e67e22; }
+.color-btn.gold { background: #d4af37; color: #2a1a1a; }
+.color-btn.green { background: #27ae60; }
+.color-btn.turquoise { background: #1abc9c; }
+.color-btn.blue { background: #2980b9; }
+.color-btn.purple { background: #8e44ad; }
+
+.color-btn {
+  min-width: 80px;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Utility */
+.hidden {
+  display: none !important;
+}
+
+/* ===================================
+   Touch Controls: D-pad + Interact
+   =================================== */
+#touch-controls {
+  position: fixed;
+  bottom: 28px;
+  right: 36px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* D-pad cross layout */
+.dpad {
+  display: grid;
+  grid-template-areas:
+    ".  up  ."
+    "left center right"
+    ".  down  .";
+  grid-template-columns: 56px 56px 56px;
+  grid-template-rows: 56px 56px 56px;
+  gap: 3px;
+}
+
+.dpad-btn {
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  margin: 0;
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  background: rgba(20, 10, 10, 0.85);
+  color: var(--gold-light);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  -webkit-tap-highlight-color: transparent;
+}
+.dpad-btn:hover {
+  background: rgba(90, 15, 15, 0.9);
+  box-shadow: 0 4px 14px rgba(201, 162, 39, 0.3);
+}
+.dpad-btn:active,
+.dpad-btn.active {
+  background: rgba(122, 31, 31, 0.95);
+  transform: scale(0.92);
+  box-shadow: 0 0 18px rgba(232, 200, 105, 0.6);
+  border-color: var(--gold-light);
+}
+
+.dpad-up    { grid-area: up; border-radius: 10px 10px 4px 4px; }
+.dpad-down  { grid-area: down; border-radius: 4px 4px 10px 10px; }
+.dpad-left  { grid-area: left; border-radius: 10px 4px 4px 10px; }
+.dpad-right { grid-area: right; border-radius: 4px 10px 10px 4px; }
+
+/* Up/Down buttons disabled — movement is left/right only */
+.dpad-btn.dpad-up, .dpad-btn.dpad-down {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.dpad-center {
+  grid-area: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(30, 15, 15, 0.9);
+  border: 2px solid var(--gold);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Interact hint (positioned above the D-pad) */
+#interact-hint {
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+  color: var(--gold-light);
+  min-height: 20px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  text-shadow: 0 0 8px rgba(232, 200, 105, 0.5);
+  pointer-events: none;
+  white-space: nowrap;
+}
+#interact-hint.visible {
+  opacity: 1;
+}
+
+.interact-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  margin: 0;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: rgba(20, 10, 10, 0.85);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  -webkit-tap-highlight-color: transparent;
+}
+.interact-btn:hover {
+  background: rgba(90, 15, 15, 0.9);
+  box-shadow: 0 0 16px rgba(232, 200, 105, 0.3);
+}
+.interact-btn:active {
+  background: rgba(122, 31, 31, 0.95);
+  transform: scale(0.92);
+}
+.interact-btn.glow-hint {
+  animation: interactPulse 1s infinite;
+  border-color: var(--gold-light);
+}
+
+@keyframes interactPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(232, 200, 105, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(232, 200, 105, 0.85);
+  }
+}
+
+.interact-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.interact-label {
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  font-family: Georgia, serif;
+  color: var(--gold-light);
+}
+
+/* ===================================
+   3D Perspective Floor
+   =================================== */
+.perspective-floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  z-index: 0;
+  pointer-events: none;
+  clip-path: polygon(22% 0%, 78% 0%, 100% 100%, 0% 100%);
+}
+
+#dressing-room .perspective-floor {
+  background:
+    linear-gradient(180deg, rgba(62,39,35,0.95) 0%, rgba(40,25,20,1) 100%),
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 30px,
+      rgba(201,162,39,0.06) 30px, rgba(201,162,39,0.06) 32px);
+  box-shadow: inset 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.stage-perspective {
+  background:
+    linear-gradient(180deg, rgba(42,26,21,0.95) 0%, rgba(20,12,8,1) 100%),
+    repeating-linear-gradient(90deg,
+      transparent 0, transparent 28px,
+      rgba(90,60,42,0.12) 28px, rgba(90,60,42,0.12) 30px);
+  box-shadow: inset 0 10px 30px rgba(0,0,0,0.6);
+}
+
+/* Vanishing point glow */
+.floor-vanish {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 30%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,250,220,0.08) 0%, transparent 70%);
+}
+
+.stage-vanish {
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,252,230,0.06) 0%, transparent 70%);
+}
+
+/* Perspective floor planks (converging lines) */
+.floor-plank {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(201,162,39,0.25) 0%, rgba(201,162,39,0.04) 80%, transparent 100%);
+  transform-origin: bottom center;
+}
+
+.floor-plank.p1 { left: 50%; transform: translateX(-50%) rotate(0deg); }
+.floor-plank.p2 { left: 35%; transform: rotate(-12deg); }
+.floor-plank.p3 { left: 65%; transform: rotate(12deg); }
+.floor-plank.p4 { left: 20%; transform: rotate(-22deg); }
+.floor-plank.p5 { left: 80%; transform: rotate(22deg); }
+
+.stage-perspective .floor-plank {
+  background: linear-gradient(180deg, rgba(180,140,80,0.2) 0%, rgba(180,140,80,0.03) 80%, transparent 100%);
+}
+
+/* ===================================
+   Ladder
+   =================================== */
+.ladder {
+  left: 57%;
+  bottom: 14%;
+  width: 50px;
+  height: 280px;
+  z-index: 7;
+  cursor: default;
+  pointer-events: none;
+  transition: left 0.12s ease-out, bottom 0.12s ease-out;
+}
+
+.ladder-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood) 50%, var(--wood-light) 100%);
+  border-radius: 2px;
+  box-shadow: 1px 0 3px rgba(0,0,0,0.4);
+}
+
+.ladder-rail.left { left: 4px; }
+.ladder-rail.right { right: 4px; }
+
+.ladder-rung {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 5px;
+  background: linear-gradient(180deg, var(--wood-light), var(--wood));
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.ladder-rung.r1 { bottom: 8%; }
+.ladder-rung.r2 { bottom: 24%; }
+.ladder-rung.r3 { bottom: 40%; }
+.ladder-rung.r4 { bottom: 56%; }
+.ladder-rung.r5 { bottom: 72%; }
+.ladder-rung.r6 { bottom: 88%; }
+
+/* ===================================
+   Spotlight Adjustment Mode Indicator
+   =================================== */
+.adjust-mode {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  background: rgba(20, 10, 10, 0.92);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 10px 28px;
+  text-align: center;
+  box-shadow: 0 0 24px rgba(232, 200, 105, 0.4);
+  animation: adjustPulse 1.5s infinite alternate;
+}
+
+.adjust-title {
+  font-family: Georgia, serif;
+  font-size: 1.1rem;
+  color: var(--gold-light);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.adjust-hint {
+  font-size: 0.85rem;
+  color: var(--gold);
+  opacity: 0.8;
+}
+
+.adjust-angle {
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  color: var(--gold-light);
+  margin: 4px 0;
+}
+
+.adjust-angle span {
+  font-weight: bold;
+  color: #fff;
+}
+
+@keyframes adjustPulse {
+  0% { box-shadow: 0 0 16px rgba(232, 200, 105, 0.3); }
+  100% { box-shadow: 0 0 32px rgba(232, 200, 105, 0.6); }
+}
+
+/* ===================================
+   Interact Button "!" Active State
+   =================================== */
+.interact-icon-normal {
+  font-size: 0.95rem;
+  line-height: 1;
+  display: block;
+}
+
+.interact-icon-active {
+  display: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1;
+  color: var(--gold-light);
+  text-shadow: 0 0 10px rgba(232, 200, 105, 0.9);
+}
+
+.interact-btn.interact-active .interact-icon-normal {
+  display: none;
+}
+
+.interact-btn.interact-active .interact-icon-active {
+  display: block;
+  animation: exclaimBounce 0.6s infinite alternate;
+}
+
+@keyframes exclaimBounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-3px) scale(1.15); }
+}
+
+.interact-btn.interact-active {
+  background: rgba(122, 31, 31, 0.95);
+  border-color: var(--gold-light);
+  animation: interactPulse 0.8s infinite;
+}
+
+.interact-btn.interact-active .interact-label {
+  display: none;
+}
+
+/* ===================================
+   Singer on-ladder state
+   =================================== */
+.singer.on-ladder {
+  transition: none;
+}
+
+/* Climbing animation — position is controlled by JS rAF animation */
+.singer.climbing {
+  transition: none;
+}
+
+/* Climbing animation — legs and arms move as if climbing rungs */
+.singer.climbing .leg.left-leg {
+  animation: climbLegL 0.35s infinite alternate ease-in-out;
+}
+.singer.climbing .leg.right-leg {
+  animation: climbLegR 0.35s infinite alternate ease-in-out;
+}
+
+@keyframes climbLegL {
+  0% { transform: rotate(0deg) translateY(0); }
+  100% { transform: rotate(20deg) translateY(-5px); }
+}
+
+@keyframes climbLegR {
+  0% { transform: rotate(20deg) translateY(-5px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
+.singer.climbing .arm.left-arm {
+  animation: climbArmL 0.35s infinite alternate ease-in-out;
+}
+.singer.climbing .arm.right-arm {
+  animation: climbArmR 0.35s infinite alternate ease-in-out;
+}
+
+@keyframes climbArmL {
+  0% { transform: rotate(-15deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes climbArmR {
+  0% { transform: rotate(10deg); }
+  100% { transform: rotate(-15deg); }
+}
+
+.singer.climbing .body {
+  animation: climbBodySway 0.35s infinite alternate ease-in-out;
+}
+
+@keyframes climbBodySway {
+  0% { transform: translateX(-50%) rotate(-1.5deg); }
+  100% { transform: translateX(-50%) rotate(1.5deg); }
+}
+
+/* ===================================
+   Spotlight Control Panel (ground level)
+   =================================== */
+.spotlight-panel {
+  position: absolute;
+  left: 50%;
+  bottom: 15%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 44px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.spotlight-panel .panel-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 14px;
+  background: linear-gradient(180deg, #3a3a3a, #1a1a1a);
+  border: 2px solid var(--gold);
+  border-radius: 4px 4px 2px 2px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+}
+
+.spotlight-panel .panel-lever {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 32px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(232, 200, 105, 0.5);
+}
+
+.spotlight-panel .panel-lever::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(232, 200, 105, 0.6);
+}
+
+/* ===================================
+   Disable prop hover/cursor (no clicks)
+   =================================== */
+.prop, .item {
+  cursor: default !important;
+}
+
+.prop:hover, .item:hover {
+  filter: none;
+  transform: none;
+}
+
+/* Inspectable items — clickable for clues */
+.inspectable {
+  cursor: pointer !important;
+  z-index: 10;
+}
+
+.inspectable::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inspectable:hover::after {
+  border-color: rgba(232, 200, 105, 0.5);
+  box-shadow: 0 0 16px rgba(232, 200, 105, 0.3);
+}
+
+.inspectable:hover {
+  filter: brightness(1.12) !important;
+}
+
+/* Subtle pulsing glow to hint these are clickable */
+@keyframes inspectPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 200, 105, 0); }
+  50% { box-shadow: 0 0 0 3px rgba(232, 200, 105, 0.15); }
+}
+
+.inspectable {
+  animation: inspectPulse 2.5s ease-in-out infinite;
+}
+
+/* ===================================
+   Extra Decorations — Dressing Room
+   =================================== */
+
+/* Gramophone on storage trunk */
+.gramophone {
+  position: absolute;
+  left: 8%;
+  bottom: 11%;
+  width: 40px;
+  height: 50px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.gramophone-base {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 36px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--wood-light), var(--wood));
+  border: 1px solid var(--gold-dark);
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.gramophone-base::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 1px;
+}
+
+.gramophone-horn {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-15deg);
+  width: 22px;
+  height: 36px;
+  background: linear-gradient(180deg, #c8a030 0%, #e8c869 30%, #c8a030 100%);
+  clip-path: polygon(35% 0, 65% 0, 100% 100%, 0% 100%);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  animation: glitter 3s ease-in-out infinite;
+}
+
+.gramophone-horn::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 5px;
+  background: var(--gold-dark);
+  border-radius: 50%;
+}
+
+/* Bust statue on pedestal */
+.bust-pedestal {
+  position: absolute;
+  right: 30%;
+  top: 20%;
+  width: 36px;
+  height: 90px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.bust-pedestal .pedestal {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 44px;
+  background: linear-gradient(180deg, #d8c8a8 0%, #b8a888 50%, #988868 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 2px 2px 4px 4px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.bust-pedestal .pedestal::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gold);
+  opacity: 0.5;
+}
+
+.bust-pedestal .pedestal::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gold);
+  opacity: 0.4;
+}
+
+.bust-pedestal .bust {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 46px;
+  background: linear-gradient(180deg, #e0d0b0 0%, #c8b898 60%, #a89878 100%);
+  border-radius: 50% 50% 20% 20% / 60% 60% 10% 10%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset -3px 0 0 rgba(0,0,0,0.06);
+}
+
+.bust-pedestal .bust::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 16px;
+  background: inherit;
+  border-radius: 50% 50% 30% 30%;
+  box-shadow: inset -2px -1px 0 rgba(0,0,0,0.08);
+}
+
+.bust-pedestal .bust::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+/* Velvet wall drape */
+.wall-drape {
+  position: absolute;
+  left: 0;
+  top: 6%;
+  width: 14%;
+  height: 50%;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--velvet-red) 0, var(--velvet-red) 10px,
+      var(--velvet-red-light) 10px, var(--velvet-red-light) 11px),
+    linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 40%);
+  border-right: 3px solid var(--gold);
+  box-shadow: inset -8px 0 20px rgba(0,0,0,0.4), 2px 0 8px rgba(0,0,0,0.3);
+  z-index: 1;
+  pointer-events: none;
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 0% 100%);
+}
+
+.wall-drape::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--velvet-red) 0, var(--velvet-red) 8px,
+      var(--velvet-red-light) 8px, var(--velvet-red-light) 9px);
+  clip-path: polygon(0 0, 5% 100%, 10% 0, 15% 100%, 20% 0, 25% 100%, 30% 0, 35% 100%, 40% 0, 45% 100%, 50% 0, 55% 100%, 60% 0, 65% 100%, 70% 0, 75% 100%, 80% 0, 85% 100%, 90% 0, 95% 100%, 100% 0);
+}
+
+/* Rose petals on floor */
+.rose-petals {
+  position: absolute;
+  bottom: 3%;
+  left: 0;
+  right: 0;
+  height: 6%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.rose-petals span {
+  position: absolute;
+  width: 8px;
+  height: 6px;
+  background: radial-gradient(ellipse at 50% 30%, #e8555a 0%, #c0392b 60%, #8e2020 100%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  opacity: 0.7;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.rose-petals span:nth-child(1) { left: 18%; bottom: 10%; transform: rotate(15deg); }
+.rose-petals span:nth-child(2) { left: 34%; bottom: 40%; transform: rotate(-25deg); }
+.rose-petals span:nth-child(3) { left: 48%; bottom: 5%; transform: rotate(45deg); }
+.rose-petals span:nth-child(4) { left: 62%; bottom: 30%; transform: rotate(-10deg); }
+.rose-petals span:nth-child(5) { left: 76%; bottom: 15%; transform: rotate(30deg); }
+.rose-petals span:nth-child(6) { left: 26%; bottom: 60%; transform: rotate(-40deg); }
+.rose-petals span:nth-child(7) { left: 54%; bottom: 55%; transform: rotate(20deg); }
+.rose-petals span:nth-child(8) { left: 70%; bottom: 50%; transform: rotate(-15deg); }
+
+/* Ornate wall clock */
+.wall-clock {
+  position: absolute;
+  left: 40%;
+  top: 14%;
+  width: 42px;
+  height: 56px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.wall-clock .clock-face {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 38px;
+  background: radial-gradient(circle, var(--cream) 0%, #d8c8a0 80%, #c8b890 100%);
+  border: 4px solid var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 0 0 2px var(--gold-dark);
+}
+
+.wall-clock .clock-face::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  width: 2px;
+  height: 12px;
+  background: var(--ink);
+  border-radius: 1px;
+  transform-origin: bottom center;
+}
+
+.wall-clock .clock-face::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%) rotate(90deg);
+  width: 2px;
+  height: 9px;
+  background: var(--ink);
+  border-radius: 1px;
+  transform-origin: bottom center;
+}
+
+.wall-clock .clock-pendulum {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 16px;
+  background: var(--gold-dark);
+}
+
+.wall-clock .clock-pendulum::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, var(--gold-light), var(--gold-dark));
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  animation: pendulumSwing 2s infinite alternate ease-in-out;
+}
+
+@keyframes pendulumSwing {
+  0% { transform: translateX(-50%) translateX(-3px); }
+  100% { transform: translateX(-50%) translateX(3px); }
+}
+
+/* ===================================
+   Extra Decorations — Stage
+   =================================== */
+
+/* Harp silhouette */
+.harp {
+  position: absolute;
+  right: 8%;
+  bottom: 14%;
+  width: 36px;
+  height: 90px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.harp .harp-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 80px;
+  border: 3px solid var(--gold);
+  border-right: none;
+  border-radius: 50% 0 0 50% / 50% 0 0 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.harp .harp-pillar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 80px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.harp .harp-strings {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 68px;
+  background: repeating-linear-gradient(90deg,
+    transparent 0, transparent 3px,
+    rgba(255,255,255,0.25) 3px, rgba(255,255,255,0.25) 4px);
+}
+
+/* Gold tassels on curtain */
+.curtain-tassel {
+  position: absolute;
+  top: 60%;
+  width: 12px;
+  height: 40px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.curtain-tassel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(232, 200, 105, 0.6);
+}
+
+.curtain-tassel::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 30px;
+  background:
+    repeating-linear-gradient(0deg,
+      var(--gold-light) 0, var(--gold-light) 2px,
+      var(--gold-dark) 2px, var(--gold-dark) 3px);
+  border-radius: 0 0 50% 50%;
+  box-shadow: 0 0 8px rgba(232, 200, 105, 0.4);
+  animation: tasselSway 3s infinite alternate ease-in-out;
+}
+
+@keyframes tasselSway {
+  0% { transform: translateX(-50%) rotate(-3deg); }
+  100% { transform: translateX(-50%) rotate(3deg); }
+}
+
+.tassel-left { left: 24%; }
+.tassel-right { right: 24%; }
+
+/* Velvet rope barriers */
+.velvet-rope {
+  position: absolute;
+  bottom: 8%;
+  width: 60px;
+  height: 24px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.velvet-rope::before {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 6px;
+  height: 14px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.velvet-rope::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  right: 0;
+  width: 6px;
+  height: 14px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.rope-left { left: 16%; }
+.rope-right { right: 16%; }
+
+.velvet-rope .rope-cord {
+  position: absolute;
+  bottom: 18px;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  background: linear-gradient(180deg, var(--velvet-pink), var(--velvet-red));
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Ceiling stars */
+.ceiling-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ceiling-stars span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--gold-light);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: starTwinkle 2.5s infinite alternate;
+  box-shadow: 0 0 6px rgba(232, 200, 105, 0.7);
+}
+
+.ceiling-stars span:nth-child(1) { top: 10%; left: 15%; animation-delay: 0s; }
+.ceiling-stars span:nth-child(2) { top: 5%; left: 35%; animation-delay: 0.5s; }
+.ceiling-stars span:nth-child(3) { top: 12%; left: 55%; animation-delay: 1s; }
+.ceiling-stars span:nth-child(4) { top: 6%; left: 75%; animation-delay: 1.5s; }
+.ceiling-stars span:nth-child(5) { top: 15%; left: 25%; animation-delay: 0.3s; }
+.ceiling-stars span:nth-child(6) { top: 8%; left: 65%; animation-delay: 0.8s; }
+.ceiling-stars span:nth-child(7) { top: 14%; left: 85%; animation-delay: 1.3s; }
+.ceiling-stars span:nth-child(8) { top: 3%; left: 50%; animation-delay: 1.8s; }
+
+@keyframes starTwinkle {
+  0% { opacity: 0.3; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Stage pedestal with flowers */
+.stage-pedestal {
+  position: absolute;
+  left: 4%;
+  bottom: 12%;
+  width: 32px;
+  height: 70px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.stage-pedestal .pedestal-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 50px;
+  background: linear-gradient(180deg, #d8c8a8 0%, #b8a888 50%, #988868 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 2px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.stage-pedestal .pedestal-base::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gold);
+  opacity: 0.5;
+}
+
+.stage-pedestal .pedestal-base::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gold);
+  opacity: 0.4;
+}
+
+.stage-pedestal .pedestal-flowers {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 20px;
+}
+
+.stage-pedestal .pedestal-flowers span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #e8555a 0%, #c0392b 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(231, 85, 90, 0.5);
+}
+
+.stage-pedestal .pedestal-flowers span:nth-child(1) { top: 0; left: 2px; }
+.stage-pedestal .pedestal-flowers span:nth-child(2) { top: 2px; left: 50%; transform: translateX(-50%); background: radial-gradient(circle, #f0c040 0%, #d4a020 100%); }
+.stage-pedestal .pedestal-flowers span:nth-child(3) { top: 0; right: 2px; background: radial-gradient(circle, #f5dcb5 0%, #d4b890 100%); }
+
+/* Comedy & Tragedy masks */
+.stage-mask {
+  position: absolute;
+  top: 18%;
+  width: 28px;
+  height: 36px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.stage-mask::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background: linear-gradient(180deg, #e8c868 0%, #c8a830 100%);
+  border-radius: 50% 50% 40% 40%;
+  border: 2px solid var(--gold-dark);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.stage-mask::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 8px;
+  background: var(--gold-dark);
+  border-radius: 2px;
+}
+
+.mask-left { left: 10%; }
+.mask-left::before {
+  /* Comedy — smiling eyes */
+  background: linear-gradient(180deg, #f0d080 0%, #d4a830 100%);
+}
+
+.mask-left::before {
+  box-shadow: inset 0 -8px 0 -4px rgba(0,0,0,0.15);
+}
+
+.mask-right { right: 10%; }
+.mask-right::before {
+  /* Tragedy — darker */
+  background: linear-gradient(180deg, #c8a830 0%, #a08820 100%);
+}
+
+/* Glitter on gramophone horn */
+.gramophone .gramophone-horn {
+  animation: glitter 2.5s ease-in-out infinite;
+}
+
+/* Bust sparkle */
+.bust-pedestal .bust {
+  animation: glitter 4s ease-in-out infinite;
+}
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+  #game-wrapper { grid-template-rows: 48px 1fr 80px 70px; }
+  .branding { font-size: 1.3rem; }
+  .hud { font-size: 1rem; gap: 16px; }
+  #stage { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .singer { width: 45px; height: 100px; }
+  .singer .head { width: 22px; height: 28px; }
+  .singer .body { width: 36px; height: 74px; }
+  .mirror { width: 120px; height: 160px; }
+  .dressing-table { width: 160px; height: 120px; }
+  .spotlight { width: 70px; height: 65px; }
+  .wardrobe { width: 90px; height: 150px; }
+  .controls-hint { display: none; }
+  #message { font-size: 0.9rem; }
+  #message-area { padding: 6px 16px; }
+  #inventory { padding: 6px 16px; }
+  #inventory h3 { font-size: 0.8rem; margin: 0; }
+  #inventory-slots { gap: 8px; }
+  .slot { width: 44px; height: 44px; }
+}
+
+@media (max-width: 600px) {
+  #game-wrapper { grid-template-rows: 40px 1fr 64px 56px; }
+  .branding { font-size: 1.1rem; }
+  .hud { font-size: 0.85rem; gap: 12px; }
+  #message { font-size: 0.8rem; }
+  #message-area { padding: 4px 12px; }
+  #inventory { padding: 4px 12px; }
+  #inventory h3 { font-size: 0.7rem; }
+  .slot { width: 36px; height: 36px; }
+  .singer { width: 38px; height: 85px; }
+  .singer .head { width: 18px; height: 24px; }
+  .singer .body { width: 30px; height: 62px; }
+}
+
+@media (max-height: 500px) {
+  #game-wrapper { grid-template-rows: 36px 1fr 50px 44px; }
+  .branding { font-size: 1rem; }
+  .hud { font-size: 0.8rem; }
+  #message { font-size: 0.75rem; }
+}
+
+</style>
+</head>
+<body>
+  <!-- Introduction screen -->
+  <div id="intro-screen" class="intro-screen">
+    <div class="intro-card">
+      <div class="intro-emblem">🎭</div>
+      <h1 class="intro-title">In the Opera House</h1>
+      <div class="intro-rule"></div>
+      <p class="intro-story">
+        The final curtain has fallen and the audience has gone home — yet the opera singer
+        remains inside the great opera house, locked in by mistake as the stagehands bolted
+        the heavy doors for the night. The corridors are dark, the chandeliers dim, and no one
+        is coming to let her out.
+      </p>
+      <p class="intro-mission">
+        <strong>Your mission:</strong> guide the opera singer from the dressing room out onto the
+        stage. Uncover the hidden clues, mend the broken spotlight, and find the golden key that
+        opens the side door — then help her escape before the theatre is sealed for good.
+      </p>
+      <button id="btn-start" class="intro-start-btn">Begin the Escape</button>
+      <p class="intro-controls">◀ ▶ / A&nbsp;D to move · INTERACT near objects · Click items to inspect</p>
+    </div>
+  </div>
+
+  <div id="game-wrapper">
+    <header>
+      <div class="branding">In the Opera House</div>
+      <div class="hud">
+        <span id="level-display">Level 1</span>
+        <span id="timer-display">10:00</span>
+      </div>
+    </header>
+
+    <main id="stage">
+      <!-- Single golden wooden door connecting the two rooms -->
+      <div id="room-door" class="room-door">
+        <div class="door-leaf">
+          <div class="door-panel p-top"></div>
+          <div class="door-panel p-bottom"></div>
+          <div class="door-handle"></div>
+        </div>
+        <div class="door-sparkle s1"></div>
+        <div class="door-sparkle s2"></div>
+        <div class="door-sparkle s3"></div>
+        <div class="door-sparkle s4"></div>
+        <div class="door-label" id="room-door-label"></div>
+      </div>
+
+      <!-- Left: Dressing Room -->
+      <section id="dressing-room" class="room active">
+        <div class="room-label">Dressing Room</div>
+
+        <div class="wallpaper"></div>
+
+        <!-- 3D perspective floor -->
+        <div class="perspective-floor">
+          <div class="floor-vanish"></div>
+          <div class="floor-plank p1"></div>
+          <div class="floor-plank p2"></div>
+          <div class="floor-plank p3"></div>
+          <div class="floor-plank p4"></div>
+          <div class="floor-plank p5"></div>
+        </div>
+
+        <div class="crown-molding"></div>
+        <div class="chandelier chandelier-left">
+          <div class="chain"></div>
+          <div class="candle-holders">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="chandelier-sparkles">
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+          </div>
+        </div>
+
+        <div class="wall-sconce sconce-1"><div class="sconce-flame"></div></div>
+        <div class="wall-sconce sconce-2"><div class="sconce-flame"></div></div>
+
+        <div class="portrait-frame">
+          <div class="portrait-inner">
+            <div class="portrait-bg"></div>
+            <div class="portrait-singer">
+              <div class="portrait-hair-back"></div>
+              <div class="portrait-head"></div>
+              <div class="portrait-hair-front"></div>
+              <div class="portrait-body"></div>
+              <div class="portrait-bouquet"></div>
+            </div>
+            <div class="portrait-plaque"></div>
+          </div>
+        </div>
+
+        <div class="rug"></div>
+
+        <div id="wardrobe" class="prop wardrobe" title="Wardrobe">
+          <div class="wardrobe-body"></div>
+          <div class="wardrobe-door left"></div>
+          <div class="wardrobe-door right"></div>
+        </div>
+
+        <div class="coat-rack">
+          <div class="rack-pole"></div>
+          <div class="rack-base"></div>
+          <div class="fur-stole"></div>
+        </div>
+
+        <div class="storage-trunk"></div>
+
+        <!-- Gramophone on storage trunk -->
+        <div class="gramophone">
+          <div class="gramophone-base"></div>
+          <div class="gramophone-horn"></div>
+        </div>
+
+        <!-- Bust statue on pedestal -->
+        <div class="bust-pedestal">
+          <div class="pedestal"></div>
+          <div class="bust"></div>
+        </div>
+
+        <!-- Velvet drape on left wall -->
+        <div class="wall-drape"></div>
+
+        <!-- Rose petals on floor -->
+        <div class="rose-petals">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+
+        <!-- Ornate wall clock -->
+        <div class="wall-clock">
+          <div class="clock-face"></div>
+          <div class="clock-pendulum"></div>
+        </div>
+
+        <div id="vanity-chair" class="prop vanity-chair" title="Velvet stool">
+          <div class="seat"></div>
+          <div class="legs"></div>
+        </div>
+
+        <div id="mirror" class="prop mirror inspectable" title="Ornate mirror">
+          <div class="bulbs">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="frame"></div>
+          <div class="glass">
+            <div class="sticker red" data-color="red"></div>
+            <div class="sticker blue" data-color="blue"></div>
+            <div class="sticker gold" data-color="gold"></div>
+          </div>
+        </div>
+
+        <div id="dressing-table" class="prop dressing-table" title="Dressing table">
+          <div class="table-top"></div>
+          <div id="drawer" class="drawer inspectable" title="Locked drawer">
+            <div class="lock"></div>
+          </div>
+          <div id="drawer-contents" class="drawer-contents hidden">
+            <div id="lens" class="item lens" title="Spotlight lens"></div>
+            <div id="poem" class="item poem" title="Torn poem"></div>
+          </div>
+          <div class="decor">
+            <div class="perfume"></div>
+            <div class="pearl-strand"></div>
+            <div class="compact"></div>
+            <div class="love-letter"></div>
+            <div class="lace-fan"></div>
+          </div>
+        </div>
+
+        <div id="flower-vase" class="prop flower-vase" title="Roses">
+          <div class="vase"></div>
+          <div class="flowers">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div id="side-table" class="prop side-table" title="Side table">
+          <div class="top"></div>
+          <div class="leg"></div>
+          <div class="table-lamp"></div>
+        </div>
+
+        <div id="singer" class="singer" title="The opera singer">
+          <div class="hair-back"></div>
+          <div class="legs">
+            <div class="leg left-leg"></div>
+            <div class="leg right-leg"></div>
+          </div>
+          <div class="body">
+            <div class="arm left-arm"></div>
+            <div class="arm right-arm"></div>
+            <div class="necklace"></div>
+            <div class="dress-detail"></div>
+          </div>
+          <div class="head"></div>
+          <div class="hair-front"></div>
+        </div>
+
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+
+        <div class="exit-zone right" data-target="stage-area" title="Walk to the stage"></div>
+      </section>
+
+      <!-- Right: Stage -->
+      <section id="stage-area" class="room unrevealed">
+        <div class="room-label">The Stage</div>
+        <div class="stage-overlay">
+          <p>A dark curtain hides the stage. Walk the opera singer here to step into the light.</p>
+        </div>
+
+        <div class="stage-backdrop">
+          <div class="grand-curtain left"></div>
+          <div class="grand-curtain right"></div>
+        </div>
+
+        <!-- 3D perspective stage floor -->
+        <div class="perspective-floor stage-perspective">
+          <div class="floor-vanish stage-vanish"></div>
+          <div class="floor-plank p1"></div>
+          <div class="floor-plank p2"></div>
+          <div class="floor-plank p3"></div>
+          <div class="floor-plank p4"></div>
+          <div class="floor-plank p5"></div>
+        </div>
+
+        <div class="curtain-rope left-rope"></div>
+        <div class="curtain-rope right-rope"></div>
+
+        <div class="stage-chandelier">
+          <div class="chain"></div>
+          <div class="crystal-holders">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="stage-sparkles">
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+            <div class="sparkle-dot"></div>
+          </div>
+        </div>
+
+        <div class="stage-footlights">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+
+        <div class="music-stand">
+          <div class="stand-pole"></div>
+          <div class="stand-tray"></div>
+          <div class="stand-sheets"></div>
+        </div>
+
+        <!-- Harp silhouette -->
+        <div class="harp">
+          <div class="harp-frame"></div>
+          <div class="harp-strings"></div>
+          <div class="harp-pillar"></div>
+        </div>
+
+        <!-- Gold tassels on curtain -->
+        <div class="curtain-tassel tassel-left"></div>
+        <div class="curtain-tassel tassel-right"></div>
+
+        <!-- Velvet rope barriers -->
+        <div class="velvet-rope rope-left">
+          <div class="rope-cord"></div>
+        </div>
+        <div class="velvet-rope rope-right">
+          <div class="rope-cord"></div>
+        </div>
+
+        <!-- Star decorations on ceiling -->
+        <div class="ceiling-stars">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+
+        <!-- Pedestal with flowers -->
+        <div class="stage-pedestal">
+          <div class="pedestal-base"></div>
+          <div class="pedestal-flowers">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Stage mask decorations (comedy & tragedy) -->
+        <div class="stage-mask mask-left"></div>
+        <div class="stage-mask mask-right"></div>
+
+        <div id="ladder" class="prop ladder" title="Wooden ladder">
+          <div class="ladder-rail left"></div>
+          <div class="ladder-rail right"></div>
+          <div class="ladder-rung r1"></div>
+          <div class="ladder-rung r2"></div>
+          <div class="ladder-rung r3"></div>
+          <div class="ladder-rung r4"></div>
+          <div class="ladder-rung r5"></div>
+          <div class="ladder-rung r6"></div>
+        </div>
+
+        <div id="spotlight" class="prop spotlight inspectable" title="Broken spotlight">
+          <div class="spotlight-mount"></div>
+          <div class="spotlight-body"></div>
+          <div id="spotlight-beam" class="spotlight-beam hidden"></div>
+          <div id="spotlight-controls" class="spotlight-controls hidden">
+            <button id="angle-left" title="Rotate left">◀</button>
+            <span id="angle-display">0°</span>
+            <button id="angle-right" title="Rotate right">▶</button>
+          </div>
+        </div>
+
+        <div id="curtain" class="curtain">
+          <div class="curtain-panel left"></div>
+          <div class="curtain-panel right"></div>
+        </div>
+
+        <div id="chair" class="prop chair hidden" title="Empty chair"></div>
+        <div id="key" class="item key hidden" title="Golden key"></div>
+
+        <!-- Spotlight control panel on the ground (appears after spotlight is fixed) -->
+        <div id="spotlight-panel" class="spotlight-panel hidden">
+          <div class="panel-lever"></div>
+          <div class="panel-base"></div>
+        </div>
+
+        <div class="exit-sign">EXIT</div>
+
+        <div id="side-door" class="prop side-door" title="Side door (locked)">
+          <div class="door-frame"></div>
+          <div class="door-panel"></div>
+          <div class="exit-glow hidden"></div>
+        </div>
+
+        <div id="singer-stage" class="singer" title="The opera singer">
+          <div class="hair-back"></div>
+          <div class="legs">
+            <div class="leg left-leg"></div>
+            <div class="leg right-leg"></div>
+          </div>
+          <div class="body">
+            <div class="arm left-arm"></div>
+            <div class="arm right-arm"></div>
+            <div class="necklace"></div>
+            <div class="dress-detail"></div>
+          </div>
+          <div class="head"></div>
+          <div class="hair-front"></div>
+        </div>
+
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+        <div class="floating-sparkle"></div>
+
+        <div class="exit-zone left" data-target="dressing-room" title="Return to dressing room"></div>
+      </section>
+    </main>
+
+    <aside id="inventory">
+      <h3>Inventory</h3>
+      <div id="inventory-slots">
+        <div class="slot" data-item=""></div>
+        <div class="slot" data-item=""></div>
+        <div class="slot" data-item=""></div>
+      </div>
+    </aside>
+
+    <footer id="message-area">
+      <p id="message">The opera singer is trapped after the show. Use arrow keys or WASD to move. Help her escape before the theatre locks.</p>
+      <div class="controls-hint">◀ ▶ or A/D to move · INTERACT near objects · ◀ ▶ or Q/E to aim spotlight · Click items to inspect</div>
+    </footer>
+
+    <!-- Spotlight adjustment mode indicator -->
+    <div id="adjust-mode" class="adjust-mode hidden">
+      <div class="adjust-title">✦ Adjusting Spotlight ✦</div>
+      <div class="adjust-angle">Beam: <span id="adjust-angle-val">-25°</span></div>
+      <div class="adjust-hint">◀ ▶ to aim · INTERACT to exit</div>
+    </div>
+
+    <!-- D-pad and Interact controls overlay -->
+    <div id="touch-controls">
+      <div id="interact-hint"></div>
+      <div class="dpad">
+        <button id="btn-up" class="dpad-btn dpad-up" title="Move Up">▲</button>
+        <button id="btn-left" class="dpad-btn dpad-left" title="Move Left">◀</button>
+        <div class="dpad-center">
+          <button id="btn-interact" class="interact-btn" title="Interact">
+            <span class="interact-icon-normal">🔍</span>
+            <span class="interact-icon-active">!</span>
+            <span class="interact-label">ACT</span>
+          </button>
+        </div>
+        <button id="btn-right" class="dpad-btn dpad-right" title="Move Right">▶</button>
+        <button id="btn-down" class="dpad-btn dpad-down" title="Move Down">▼</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code entry modal -->
+  <div id="code-modal" class="modal hidden">
+    <div class="modal-panel vintage-card">
+      <h2>Enter the color code</h2>
+      <div id="code-slots">
+        <button class="code-slot" data-index="0" data-value="">?</button>
+        <button class="code-slot" data-index="1" data-value="">?</button>
+        <button class="code-slot" data-index="2" data-value="">?</button>
+      </div>
+      <div class="color-buttons">
+        <button class="color-btn red" data-color="red">Red</button>
+        <button class="color-btn orange" data-color="orange">Orange</button>
+        <button class="color-btn gold" data-color="gold">Gold</button>
+        <button class="color-btn green" data-color="green">Green</button>
+        <button class="color-btn turquoise" data-color="turquoise">Turquoise</button>
+        <button class="color-btn blue" data-color="blue">Blue</button>
+        <button class="color-btn purple" data-color="purple">Purple</button>
+      </div>
+      <div class="modal-actions">
+        <button id="submit-code">Unlock</button>
+        <button id="cancel-code">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Poem modal -->
+  <div id="poem-modal" class="modal hidden">
+    <div class="modal-panel vintage-card">
+      <h2>A Torn Poem</h2>
+      <p class="poem-text">
+        Red marks the opera's grand opening.<br>
+        Blue tints the spotlight when it's dimmed.<br>
+        Golden sunbeams brush the seat.
+      </p>
+      <button class="close-modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Clue modal (click-to-inspect) -->
+  <div id="clue-modal" class="modal hidden">
+    <div class="modal-panel vintage-card clue-card">
+      <div class="clue-icon-wrap" id="clue-icon"></div>
+      <h2 id="clue-title">Inspection</h2>
+      <p class="clue-text" id="clue-text"></p>
+      <button class="close-modal" id="close-clue">Close</button>
+    </div>
+  </div>
+
+  <!-- End screens -->
+  <div id="win-screen" class="end-screen hidden">
+    <div class="vintage-card">
+      <h1>Escape!</h1>
+      <p>The opera singer slipped out through the side door before the theatre locked.</p>
+      <p id="win-time"></p>
+      <button id="play-again-win">Play Again</button>
+    </div>
+  </div>
+
+  <div id="lose-screen" class="end-screen hidden">
+    <div class="vintage-card">
+      <h1>The Lights Go Down</h1>
+      <p>The theatre doors are locked. The opera singer must spend the night inside.</p>
+      <button id="play-again-lose">Try Again</button>
+    </div>
+  </div>
+
+  <script>
+/* =====================================================
+   In the Opera House — Game Logic (v4)
+   Left/right movement only, INTERACT-only controls:
+   mirror code → drawer → lens → ladder → spotlight
+   → adjust beam on ladder → chair → key → side door.
+   ===================================================== */
+
+(function () {
+  'use strict';
+
+  // ---------------- Constants ----------------
+  const TOTAL_TIME = 600; // 10 minutes in seconds
+  const CORRECT_CODE = ['red', 'blue', 'gold'];
+  const CHAIR_ANGLE_MIN = -10;
+  const CHAIR_ANGLE_MAX = 10;
+  const MOVE_SPEED = 0.4; // percentage per frame
+  const ADJUST_SPEED = 0.6; // degrees per frame in adjustment mode
+  const FIXED_Y = 20; // fixed y position — singer only moves left/right
+
+  // All color classes for code slots
+  const COLOR_CLASSES = ['red', 'orange', 'gold', 'green', 'turquoise', 'blue', 'purple'];
+
+  // ---------------- Game state ----------------
+  const state = {
+    timeRemaining: TOTAL_TIME,
+    active: false,
+    level: 1,
+    inventory: [],
+    drawerUnlocked: false,
+    lensFixed: false,
+    spotlightOn: false,
+    curtainOpen: false,
+    chairLit: false,
+    keyTaken: false,
+    escaped: false,
+    escaping: false,
+    started: false,
+    angle: -25,
+    codeIndex: 0,
+    enteredCode: [null, null, null],
+
+    // Movement / room state
+    currentRoom: 'dressing-room',
+    stageRevealed: false,
+    positions: {
+      'dressing-room': { x: 12, y: FIXED_Y },
+      'stage-area': { x: 12, y: FIXED_Y }
+    },
+    keys: {
+      w: false, a: false, s: false, d: false, q: false, e: false,
+      ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
+    },
+    isMoving: false,
+    facingRight: true,
+    lastFrameTime: 0,
+
+    // Ladder / spotlight adjustment state
+    onLadder: false,
+    isClimbing: false,
+    adjustingSpotlight: false,
+    ladderFloorPos: null,
+    ladderPos: { x: 57, y: 14 }
+  };
+
+  let timerId = null;
+  let moveFrameId = null;
+  let climbAnimId = null;
+
+  // ---------------- DOM references ----------------
+  const els = {
+    levelDisplay: document.getElementById('level-display'),
+    timerDisplay: document.getElementById('timer-display'),
+    message: document.getElementById('message'),
+    inventorySlots: document.querySelectorAll('#inventory-slots .slot'),
+
+    dressingRoom: document.getElementById('dressing-room'),
+    stageArea: document.getElementById('stage-area'),
+    singerDressing: document.getElementById('singer'),
+    singerStage: document.getElementById('singer-stage'),
+
+    mirror: document.getElementById('mirror'),
+    drawer: document.getElementById('drawer'),
+    drawerContents: document.getElementById('drawer-contents'),
+    lens: document.getElementById('lens'),
+    poem: document.getElementById('poem'),
+
+    ladder: document.getElementById('ladder'),
+    spotlight: document.getElementById('spotlight'),
+    beam: document.getElementById('spotlight-beam'),
+    controls: document.getElementById('spotlight-controls'),
+    angleDisplay: document.getElementById('angle-display'),
+    curtain: document.getElementById('curtain'),
+    chair: document.getElementById('chair'),
+    key: document.getElementById('key'),
+    sideDoor: document.getElementById('side-door'),
+    exitGlow: document.querySelector('.exit-glow'),
+
+    spotlightPanel: document.getElementById('spotlight-panel'),
+    adjustMode: document.getElementById('adjust-mode'),
+    adjustAngleVal: document.getElementById('adjust-angle-val'),
+
+    codeModal: document.getElementById('code-modal'),
+    codeSlots: document.querySelectorAll('#code-slots .code-slot'),
+    colorButtons: document.querySelectorAll('.color-btn'),
+    submitCode: document.getElementById('submit-code'),
+    cancelCode: document.getElementById('cancel-code'),
+    poemModal: document.getElementById('poem-modal'),
+    closePoem: document.querySelector('#poem-modal .close-modal'),
+
+    clueModal: document.getElementById('clue-modal'),
+    clueTitle: document.getElementById('clue-title'),
+    clueText: document.getElementById('clue-text'),
+    clueIcon: document.getElementById('clue-icon'),
+    closeClue: document.getElementById('close-clue'),
+    winScreen: document.getElementById('win-screen'),
+    loseScreen: document.getElementById('lose-screen'),
+    playAgainWin: document.getElementById('play-again-win'),
+    playAgainLose: document.getElementById('play-again-lose'),
+    winTime: document.getElementById('win-time'),
+
+    introScreen: document.getElementById('intro-screen'),
+    startBtn: document.getElementById('btn-start'),
+    roomDoorLabel: document.getElementById('room-door-label'),
+
+    // Touch controls
+    btnUp: document.getElementById('btn-up'),
+    btnDown: document.getElementById('btn-down'),
+    btnLeft: document.getElementById('btn-left'),
+    btnRight: document.getElementById('btn-right'),
+    btnInteract: document.getElementById('btn-interact'),
+    interactHint: document.getElementById('interact-hint')
+  };
+
+  // ---------------- Utility ----------------
+  function distSq(x1, y1, x2, y2) {
+    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+  }
+
+  function getProximityTargets(room) {
+    if (room === 'dressing-room') {
+      return [
+        { id: 'mirror', cx: 91, cy: 28, r: 20 },
+        { id: 'dtable', cx: 80, cy: 30, r: 26 }
+      ];
+    }
+    if (room === 'stage-area') {
+      return [
+        { id: 'ladder', cx: state.ladderPos.x + 2.5, cy: state.ladderPos.y + 10, r: 18 },
+        { id: 'chair',  cx: 50, cy: 22, r: 18 },
+        { id: 'door',   cx: 88, cy: 30, r: 24 }
+      ];
+    }
+    return [];
+  }
+
+  function findNearestTarget(room) {
+    // When on the ladder, the only interactable is the spotlight
+    if (state.onLadder) {
+      return { id: 'spotlight_top', cx: 50, cy: 10, r: 999 };
+    }
+
+    // When adjusting spotlight, always allow stop
+    if (state.adjustingSpotlight) {
+      return { id: 'spotlight_top', cx: 50, cy: 10, r: 999 };
+    }
+
+    const pos = state.positions[room];
+    const sx = pos.x + 2.5;
+    const sy = pos.y + 6;
+    const list = getProximityTargets(room);
+    let best = null;
+    let bestDS = Infinity;
+    for (const t of list) {
+      const ds = distSq(sx, sy, t.cx, t.cy);
+      if (ds < t.r * t.r && ds < bestDS) {
+        bestDS = ds;
+        best = t;
+      }
+    }
+    return best;
+  }
+
+  function getInteractAction(target) {
+    const room = state.currentRoom;
+    if (!target) return null;
+
+    // ---- On ladder: spotlight interactions ----
+    if (state.onLadder && room === 'stage-area') {
+      if (!state.lensFixed) {
+        if (!hasItem('lens')) {
+          return { label: 'Climb Down', action: 'climb_down' };
+        }
+        return { label: 'Fix Spotlight', action: 'spotlight_fix' };
+      }
+      // After fixing: spotlight auto on, curtain auto open
+      if (state.spotlightOn && state.curtainOpen && !state.chairLit) {
+        if (state.adjustingSpotlight) {
+          return { label: 'Stop Adjusting', action: 'spotlight_stop_adjust' };
+        }
+        return { label: 'Adjust Spotlight', action: 'spotlight_adjust' };
+      }
+      return null;
+    }
+
+    // ---- Dressing room interactions ----
+    if (room === 'dressing-room') {
+      if (target.id === 'mirror') {
+        return { label: 'Examine Mirror', action: 'mirror' };
+      }
+      if (target.id === 'dtable') {
+        if (!state.drawerUnlocked) {
+          return { label: 'Unlock Drawer', action: 'drawer_unlock' };
+        }
+        if (!hasItem('lens') || !hasItem('poem')) {
+          return { label: 'Collect Items', action: 'collect_drawer' };
+        }
+        return { label: 'Drawer (empty)', action: null };
+      }
+    }
+
+    // ---- Stage area (floor) interactions ----
+    if (room === 'stage-area') {
+      if (target.id === 'ladder') {
+        if (state.lensFixed) return null;
+        return { label: 'Climb Ladder', action: 'climb_up' };
+      }
+      if (target.id === 'chair') {
+        if (state.chairLit && !state.keyTaken) {
+          return { label: 'Take Key', action: 'take_key' };
+        }
+        return null;
+      }
+      if (target.id === 'door') {
+        if (state.keyTaken) {
+          return { label: 'Escape!', action: 'escape' };
+        }
+        return { label: 'Locked Door', action: 'door_locked' };
+      }
+    }
+
+    return null;
+  }
+
+  function updateInteractHint() {
+    if (!state.active || isModalOpen()) {
+      els.interactHint.classList.remove('visible');
+      els.interactHint.textContent = '';
+      els.btnInteract.classList.remove('interact-active', 'glow-hint');
+      return;
+    }
+
+    const target = findNearestTarget(state.currentRoom);
+    const action = getInteractAction(target);
+
+    if (action && action.action) {
+      els.interactHint.textContent = action.label;
+      els.interactHint.classList.add('visible');
+      els.btnInteract.classList.add('interact-active');
+      els.btnInteract.classList.add('glow-hint');
+    } else if (action && !action.action) {
+      els.interactHint.textContent = action.label;
+      els.interactHint.classList.add('visible');
+      els.btnInteract.classList.remove('interact-active', 'glow-hint');
+    } else {
+      els.interactHint.classList.remove('visible');
+      els.interactHint.textContent = '';
+      els.btnInteract.classList.remove('interact-active', 'glow-hint');
+    }
+  }
+
+  function onInteractPress() {
+    if (!state.active) return;
+    if (isModalOpen()) return;
+    if (state.escaping) return;
+    if (state.isClimbing) return;
+
+    const target = findNearestTarget(state.currentRoom);
+    const action = getInteractAction(target);
+    if (!action || !action.action) return;
+
+    // Visual feedback on button
+    els.btnInteract.style.transform = 'scale(0.9)';
+    setTimeout(() => { els.btnInteract.style.transform = ''; }, 120);
+
+    switch (action.action) {
+      case 'mirror':              onMirror(); break;
+      case 'drawer_unlock':       onDrawer(); break;
+      case 'collect_drawer':
+        if (!hasItem('lens')) onLens();
+        else if (!hasItem('poem')) onPoem();
+        break;
+      case 'spotlight_fix':       onSpotlightFix(); break;
+      case 'spotlight_adjust':    enterAdjustMode(); break;
+      case 'spotlight_stop_adjust': exitAdjustMode(); break;
+      case 'climb_up':            climbUp(); break;
+      case 'climb_down':          climbDown(); break;
+      case 'take_key':            onKey(); break;
+      case 'escape':              onSideDoor(); break;
+      case 'door_locked':
+        setMessage('The side door is locked. You need a key to escape.');
+        break;
+    }
+  }
+
+  // ---------------- Utility functions ----------------
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function setMessage(text) {
+    els.message.textContent = text;
+  }
+
+  function hasItem(item) {
+    return state.inventory.includes(item);
+  }
+
+  function addItem(item) {
+    if (!hasItem(item)) {
+      state.inventory.push(item);
+      renderInventory();
+    }
+  }
+
+  function removeItem(item) {
+    const idx = state.inventory.indexOf(item);
+    if (idx !== -1) {
+      state.inventory.splice(idx, 1);
+      renderInventory();
+    }
+  }
+
+  function renderInventory() {
+    const icons = {
+      lens: '<div class="inventory-icon lens-icon" title="Spotlight lens"></div>',
+      poem: '<div class="inventory-icon poem-icon" title="Poem">poem</div>',
+      key: '<div class="inventory-icon key-icon" title="Golden key"></div>'
+    };
+    els.inventorySlots.forEach((slot, i) => {
+      slot.innerHTML = icons[state.inventory[i]] || '';
+      slot.dataset.item = state.inventory[i] || '';
+    });
+  }
+
+  function updateLevelDisplay() {
+    els.levelDisplay.textContent = `Level ${state.level}`;
+  }
+
+  // ---------------- Timer ----------------
+  function startTimer() {
+    if (timerId) return;
+    timerId = setInterval(() => {
+      if (!state.active) return;
+      state.timeRemaining -= 1;
+      els.timerDisplay.textContent = formatTime(state.timeRemaining);
+
+      if (state.timeRemaining <= 60) {
+        els.timerDisplay.classList.add('warning');
+      }
+      if (state.timeRemaining <= 0) {
+        endGame(false);
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+  }
+
+  // ---------------- Level progression ----------------
+  function advanceToLevel(level) {
+    state.level = level;
+    updateLevelDisplay();
+  }
+
+  function getActiveSinger() {
+    return state.currentRoom === 'dressing-room' ? els.singerDressing : els.singerStage;
+  }
+
+  function updateSingerVisuals() {
+    const singer = getActiveSinger();
+    const pos = state.positions[state.currentRoom];
+    if (!singer || !pos) return;
+
+    singer.style.left = `${pos.x}%`;
+    singer.style.bottom = `${pos.y}%`;
+    singer.style.setProperty('--flip', state.facingRight ? '1' : '-1');
+
+    // No depth scaling — singer stays same size everywhere
+    singer.style.setProperty('--depth-scale', '1');
+
+    if (state.isMoving) {
+      singer.classList.add('walking');
+    } else {
+      singer.classList.remove('walking');
+    }
+  }
+
+  function switchRoom(targetRoom) {
+    if (targetRoom === state.currentRoom) return;
+
+    // Reset ladder state when leaving stage
+    if (state.currentRoom === 'stage-area') {
+      if (state.onLadder || state.isClimbing) {
+        if (climbAnimId) { cancelAnimationFrame(climbAnimId); climbAnimId = null; }
+        state.onLadder = false;
+        state.isClimbing = false;
+        state.adjustingSpotlight = false;
+        els.adjustMode.classList.add('hidden');
+        els.singerStage.classList.remove('on-ladder', 'climbing');
+      }
+    }
+
+    if (targetRoom === 'stage-area') {
+      if (!state.stageRevealed) {
+        state.stageRevealed = true;
+        els.stageArea.classList.remove('unrevealed');
+        setMessage('The opera singer steps onto the stage. The grand curtain rises into the light.');
+      } else {
+        setMessage('The opera singer returns to the stage.');
+      }
+      state.currentRoom = 'stage-area';
+      state.positions['stage-area'] = { x: 16, y: FIXED_Y };
+    } else {
+      state.currentRoom = 'dressing-room';
+      state.positions['dressing-room'] = { x: 62, y: FIXED_Y };
+      setMessage('Back in the dressing room.');
+    }
+
+    updateSingerVisuals();
+    updateRoomVisibility();
+  }
+
+  function updateRoomVisibility() {
+    els.singerDressing.style.opacity = state.currentRoom === 'dressing-room' ? '1' : '0';
+    els.singerStage.style.opacity = state.currentRoom === 'stage-area' ? '1' : '0';
+    els.singerDressing.style.pointerEvents = 'none';
+    els.singerStage.style.pointerEvents = 'none';
+
+    // Update the shared door's label + arrow to match the current room
+    if (els.roomDoorLabel) {
+      if (state.currentRoom === 'dressing-room') {
+        els.roomDoorLabel.innerHTML = 'go to the stage <span class="door-arrow">&rarr;</span>';
+      } else {
+        els.roomDoorLabel.innerHTML = '<span class="door-arrow">&larr;</span> go to the dressing room';
+      }
+    }
+  }
+
+  // ---------------- Movement ----------------
+  function wouldCollide(room, newX) {
+    const singerW = 5; // percent width
+    // Only x bounds — singer only moves left/right at fixed y
+    if (newX < 0 || newX + singerW > 100) {
+      return true;
+    }
+    return false;
+  }
+
+  function isInExitZone(room, x) {
+    if (room === 'dressing-room') return x >= 93;
+    if (room === 'stage-area') return x <= 7;
+    return false;
+  }
+
+  function isModalOpen() {
+    return !els.codeModal.classList.contains('hidden') ||
+           !els.poemModal.classList.contains('hidden') ||
+           !els.clueModal.classList.contains('hidden');
+  }
+
+  function moveLoop(timestamp) {
+    if (!state.active) {
+      moveFrameId = null;
+      return;
+    }
+
+    const k = state.keys;
+
+    // ---- Spotlight adjustment mode: LEFT/RIGHT controls beam (reversed direction) ----
+    if (state.adjustingSpotlight) {
+      if (k.a || k.ArrowLeft || k.q) {
+        state.angle = Math.min(45, state.angle + ADJUST_SPEED);
+      }
+      if (k.d || k.ArrowRight || k.e) {
+        state.angle = Math.max(-45, state.angle - ADJUST_SPEED);
+      }
+      updateSpotlightBeam();
+      updateInteractHint();
+      moveFrameId = requestAnimationFrame(moveLoop);
+      return;
+    }
+
+    // ---- On ladder: no movement, no visual updates (CSS transition handles animation) ----
+    if (state.onLadder) {
+      state.isMoving = false;
+      // Do NOT call updateSingerVisuals() here — it would override the CSS transition
+      // by resetting inline left/bottom every frame, breaking the smooth climb animation.
+      updateInteractHint();
+      moveFrameId = requestAnimationFrame(moveLoop);
+      return;
+    }
+
+    // ---- Climbing animation in progress (climb-down): no movement, no visual updates ----
+    if (state.isClimbing) {
+      state.isMoving = false;
+      updateInteractHint();
+      moveFrameId = requestAnimationFrame(moveLoop);
+      return;
+    }
+
+    // ---- Normal movement: LEFT/RIGHT only ----
+    let dx = 0;
+
+    if (!isModalOpen() && !state.escaping) {
+      if (k.a || k.ArrowLeft) { dx -= MOVE_SPEED; state.facingRight = false; }
+      if (k.d || k.ArrowRight) { dx += MOVE_SPEED; state.facingRight = true; }
+    }
+
+    state.isMoving = dx !== 0;
+
+    if (state.isMoving) {
+      const pos = state.positions[state.currentRoom];
+      let newX = pos.x + dx;
+
+      if (!wouldCollide(state.currentRoom, newX)) {
+        pos.x = newX;
+      }
+
+      // Room transition detection
+      if (isInExitZone(state.currentRoom, pos.x)) {
+        const target = state.currentRoom === 'dressing-room' ? 'stage-area' : 'dressing-room';
+        switchRoom(target);
+      }
+    }
+
+    updateSingerVisuals();
+    updateInteractHint();
+    moveFrameId = requestAnimationFrame(moveLoop);
+  }
+
+  function startMovementLoop() {
+    if (!moveFrameId) {
+      moveFrameId = requestAnimationFrame(moveLoop);
+    }
+  }
+
+  // ---------------- Ladder mechanics ----------------
+  function climbUp() {
+    if (state.currentRoom !== 'stage-area') return;
+    if (climbAnimId) { cancelAnimationFrame(climbAnimId); climbAnimId = null; }
+
+    state.onLadder = true;
+    state.isClimbing = true;
+    state.isMoving = false;
+    state.ladderFloorPos = { ...state.positions['stage-area'] };
+
+    const singer = els.singerStage;
+    singer.classList.remove('walking');
+    singer.classList.add('climbing');
+
+    const startPos = { ...state.ladderFloorPos };
+
+    // Dynamically calculate the ladder top position so singer reaches the spotlight
+    const stageEl = document.getElementById('stage-area');
+    const stageH = stageEl.clientHeight || 600;
+    const ladderBottomPct = 14;      // CSS: bottom: 14%
+    const ladderHeightPx = 280;      // CSS: height: 280px
+    const ladderTopPx = (ladderBottomPct / 100) * stageH + ladderHeightPx;
+    const ladderTopPct = (ladderTopPx / stageH) * 100;
+    // Place singer's feet near the top of the ladder (slight offset for standing on rung)
+    const endY = Math.min(ladderTopPct - 6, 72);
+
+    const endPos = { x: state.ladderPos.x, y: endY };
+    const duration = 850;
+    const startTime = performance.now();
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      // ease-in-out cubic
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      const x = startPos.x + (endPos.x - startPos.x) * ease;
+      const y = startPos.y + (endPos.y - startPos.y) * ease;
+
+      state.positions['stage-area'] = { x, y };
+      singer.style.left = x + '%';
+      singer.style.bottom = y + '%';
+
+      if (t < 1) {
+        climbAnimId = requestAnimationFrame(step);
+      } else {
+        state.positions['stage-area'] = { x: endPos.x, y: endPos.y };
+        singer.style.left = endPos.x + '%';
+        singer.style.bottom = endPos.y + '%';
+        singer.classList.add('on-ladder');
+        state.isClimbing = false;
+        climbAnimId = null;
+      }
+    }
+
+    climbAnimId = requestAnimationFrame(step);
+    setMessage('The opera singer climbs the ladder to the spotlight high above the stage.');
+  }
+
+  function climbDown(silent) {
+    if (state.adjustingSpotlight) {
+      state.adjustingSpotlight = false;
+      els.adjustMode.classList.add('hidden');
+      Object.keys(state.keys).forEach(k => { state.keys[k] = false; });
+    }
+    if (climbAnimId) { cancelAnimationFrame(climbAnimId); climbAnimId = null; }
+
+    state.onLadder = false;
+    state.isClimbing = true;
+    state.isMoving = false;
+
+    const singer = els.singerStage;
+    singer.classList.remove('walking', 'on-ladder');
+    singer.classList.add('climbing');
+
+    const startPos = { ...state.positions['stage-area'] };
+    const endPos = state.ladderFloorPos || { x: 40, y: FIXED_Y };
+    const duration = 850;
+    const startTime = performance.now();
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      // ease-in-out cubic
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      const x = startPos.x + (endPos.x - startPos.x) * ease;
+      const y = startPos.y + (endPos.y - startPos.y) * ease;
+
+      state.positions['stage-area'] = { x, y };
+      singer.style.left = x + '%';
+      singer.style.bottom = y + '%';
+
+      if (t < 1) {
+        climbAnimId = requestAnimationFrame(step);
+      } else {
+        state.positions['stage-area'] = { x: endPos.x, y: endPos.y };
+        singer.style.left = endPos.x + '%';
+        singer.style.bottom = endPos.y + '%';
+        singer.classList.remove('climbing');
+        state.isClimbing = false;
+        climbAnimId = null;
+      }
+    }
+
+    climbAnimId = requestAnimationFrame(step);
+    if (!silent) {
+      setMessage('The opera singer climbs down the ladder.');
+    }
+  }
+
+  // ---------------- Spotlight logic ----------------
+  function updateSpotlightBeam() {
+    els.beam.style.transform = `rotate(${state.angle}deg)`;
+    els.angleDisplay.textContent = `${state.angle}°`;
+    if (els.adjustAngleVal) {
+      els.adjustAngleVal.textContent = `${Math.round(state.angle)}°`;
+    }
+
+    const hitChair = state.spotlightOn &&
+      state.curtainOpen &&
+      state.angle >= CHAIR_ANGLE_MIN &&
+      state.angle <= CHAIR_ANGLE_MAX;
+
+    if (hitChair) {
+      if (!state.chairLit) {
+        state.chairLit = true;
+        els.beam.classList.add('hit-chair');
+        if (!state.keyTaken) {
+          els.key.classList.remove('hidden');
+          els.key.classList.add('glow');
+        }
+        setMessage('The beam finds the chair! A golden key glints on the velvet cushion.');
+
+        // Auto exit adjustment mode
+        state.adjustingSpotlight = false;
+        els.adjustMode.classList.add('hidden');
+        Object.keys(state.keys).forEach(k => { state.keys[k] = false; });
+
+        // Auto climb down after a brief delay, then ladder slides left
+        setTimeout(() => {
+          if (!state.active) return;
+          climbDown(true);
+
+          setTimeout(() => {
+            if (!state.active) return;
+            state.ladderPos = { x: 8, y: 14 };
+            els.ladder.style.left = '8%';
+            els.ladder.style.bottom = '14%';
+            setMessage('The opera singer descends the ladder. It slides to the left. Walk to the chair and take the key.');
+          }, 900);
+        }, 1000);
+      }
+    } else {
+      if (state.chairLit) {
+        state.chairLit = false;
+        els.beam.classList.remove('hit-chair');
+        if (!state.keyTaken) {
+          els.key.classList.add('hidden');
+          els.key.classList.remove('glow');
+        }
+      }
+    }
+  }
+
+  function enterAdjustMode() {
+    state.adjustingSpotlight = true;
+    els.adjustMode.classList.remove('hidden');
+    setMessage('Use ◀ ▶ (D-pad or Q/E) to aim the spotlight beam. Find what the poem hints at.');
+    updateSpotlightBeam();
+  }
+
+  function exitAdjustMode() {
+    state.adjustingSpotlight = false;
+    els.adjustMode.classList.add('hidden');
+    Object.keys(state.keys).forEach(k => { state.keys[k] = false; });
+    setMessage('You stop adjusting the beam. Press INTERACT to try again.');
+  }
+
+  // ---------------- Interactions ----------------
+  function onMirror() {
+    if (!state.active) return;
+    setMessage('The mirror has three colored stickers: red, blue, and gold. They must mean something.');
+    els.mirror.classList.add('glow');
+    setTimeout(() => els.mirror.classList.remove('glow'), 2000);
+  }
+
+  function onDrawer() {
+    if (!state.active) return;
+    if (state.drawerUnlocked) {
+      setMessage('The drawer is already open. The lens and poem are inside.');
+      return;
+    }
+    openCodeModal();
+  }
+
+  function openCodeModal() {
+    state.codeIndex = 0;
+    state.enteredCode = [null, null, null];
+    renderCodeSlots();
+    els.codeModal.classList.remove('hidden');
+  }
+
+  function closeCodeModal() {
+    els.codeModal.classList.add('hidden');
+  }
+
+  function renderCodeSlots() {
+    els.codeSlots.forEach((slot, i) => {
+      const color = state.enteredCode[i];
+      slot.dataset.value = color || '';
+      slot.textContent = color ? color[0].toUpperCase() : '?';
+      // Remove all color classes
+      COLOR_CLASSES.forEach(c => slot.classList.remove(c));
+      slot.classList.remove('selected');
+      if (color) slot.classList.add(color);
+      if (i === state.codeIndex) slot.classList.add('selected');
+    });
+  }
+
+  function selectCodeSlot(index) {
+    state.codeIndex = index;
+    renderCodeSlots();
+  }
+
+  function setCodeColor(color) {
+    state.enteredCode[state.codeIndex] = color;
+    const next = state.enteredCode.findIndex((c) => c === null);
+    state.codeIndex = next !== -1 ? next : 2;
+    renderCodeSlots();
+  }
+
+  function submitCode() {
+    const entered = state.enteredCode.join(',');
+    const correct = CORRECT_CODE.join(',');
+    if (entered === correct) {
+      state.drawerUnlocked = true;
+      els.drawer.classList.add('open');
+      els.drawerContents.classList.remove('hidden');
+      els.drawerContents.classList.add('open');
+      closeCodeModal();
+      setMessage('The drawer clicks open. A lens and a torn poem lie inside.');
+      advanceToLevel(2);
+    } else {
+      setMessage('The lock rattles but does not open. The code order must be wrong.');
+      const panel = els.codeModal.querySelector('.modal-panel');
+      panel.style.animation = 'none';
+      panel.offsetHeight; // reflow
+      panel.style.animation = 'shake 0.4s ease';
+    }
+  }
+
+  function onLens() {
+    if (!state.active || !state.drawerUnlocked) return;
+    if (hasItem('lens')) {
+      setMessage('You already have the lens.');
+      return;
+    }
+    addItem('lens');
+    els.lens.classList.add('hidden');
+    setMessage('You pocket the spotlight lens. It might fit the broken stage light.');
+  }
+
+  function onPoem() {
+    if (!state.active || !state.drawerUnlocked) return;
+    els.poemModal.classList.remove('hidden');
+    if (!hasItem('poem')) {
+      addItem('poem');
+      setMessage('You read the poem. It hints at the spotlight and the chair.');
+    }
+  }
+
+  function closePoemModal() {
+    els.poemModal.classList.add('hidden');
+  }
+
+  // ---------------- Click-to-inspect clue system ----------------
+  const itemClues = {
+    mirror: {
+      icon: '🪞',
+      getTitle: function() { return 'The Ornate Mirror'; },
+      getText: function() {
+        if (state.drawerUnlocked) {
+          return 'The three colored stickers — red, blue, and gold — have served their purpose. The code they revealed has unlocked the drawer. The mirror reflects your progress.';
+        }
+        return 'Three colored stickers cling to the mirror\'s gilded frame: a red one near the top, a blue one in the center, and a gold one toward the bottom. They seem deliberately placed. Their order might be a key...';
+      }
+    },
+    drawer: {
+      icon: '🔒',
+      getTitle: function() { return 'The Locked Drawer'; },
+      getText: function() {
+        if (state.drawerUnlocked) {
+          if (hasItem('lens') || hasItem('poem')) {
+            return 'The drawer stands open. A lens and a torn poem were found inside — evidence of a forgotten performance. Take them before moving on.';
+          }
+          return 'The drawer is open and empty. Whatever secrets it held have been claimed.';
+        }
+        return 'A heavy oak drawer with a brass lock. Seven colored buttons are set in a row — red, orange, gold, green, turquoise, blue, purple. Three must be pressed in the correct sequence. The mirror\'s stickers may hold the answer...';
+      }
+    },
+    spotlight: {
+      icon: '💡',
+      getTitle: function() { return 'The Broken Spotlight'; },
+      getText: function() {
+        if (state.spotlightOn) {
+          if (state.chairLit) {
+            return 'The spotlight blazes overhead, its beam now perfectly aimed at the empty chair. The golden key has been revealed. The path to escape grows clearer.';
+          }
+          if (state.lensFixed) {
+            return 'The lens has been replaced and the spotlight burns bright. But the beam points aimlessly into the dark. "Golden sunbeams brush the seat" — perhaps the angle needs adjusting...';
+          }
+          return 'The spotlight is lit, but something is not yet right. The beam needs to be directed.';
+        }
+        return 'The spotlight hangs cold and dark from the ceiling. Its lens is missing — only an empty socket remains. Without a lens, no beam can be cast. A replacement must be found somewhere in the theatre...';
+      }
+    }
+  };
+
+  function showClue(itemId) {
+    if (!state.active) return;
+    if (isModalOpen()) return;
+    var clue = itemClues[itemId];
+    if (!clue) return;
+
+    els.clueIcon.textContent = clue.icon;
+    els.clueTitle.textContent = clue.getTitle();
+    els.clueText.textContent = clue.getText();
+    els.clueModal.classList.remove('hidden');
+  }
+
+  function closeClueModal() {
+    els.clueModal.classList.add('hidden');
+  }
+
+  function onSpotlightFix() {
+    if (!state.active) return;
+    if (!hasItem('lens')) {
+      setMessage('The spotlight is missing its lens. It cannot turn on.');
+      return;
+    }
+    state.lensFixed = true;
+    removeItem('lens');
+    els.spotlight.classList.add('fixed');
+    setMessage('The lens fits perfectly. The spotlight blazes to life!');
+
+    // Auto turn on spotlight
+    state.spotlightOn = true;
+    els.beam.classList.remove('hidden');
+    els.beam.classList.add('on');
+
+    // Curtain opens after spotlight turns on — singer stays on ladder
+    setTimeout(() => {
+      if (!state.active) return;
+      state.curtainOpen = true;
+      els.curtain.classList.add('open');
+      els.chair.classList.remove('hidden');
+      setMessage('The curtain opens, revealing a lone chair. Press INTERACT to adjust the spotlight beam — "Golden sunbeams brush the seat."');
+      advanceToLevel(3);
+      updateSpotlightBeam();
+    }, 1200);
+  }
+
+  function onKey() {
+    if (!state.active || !state.chairLit) return;
+    if (state.keyTaken) return;
+
+    state.keyTaken = true;
+    addItem('key');
+    els.key.classList.add('hidden');
+    els.key.classList.remove('glow');
+    els.exitGlow.classList.remove('hidden');
+    setMessage('You take the golden key. The side door is waiting.');
+  }
+
+  function onSideDoor() {
+    if (!state.active) return;
+    if (!state.keyTaken) {
+      setMessage('The side door is locked. You need a key to escape.');
+      return;
+    }
+
+    state.escaping = true;
+    Object.keys(state.keys).forEach(k => { state.keys[k] = false; });
+
+    // Open door animation
+    const doorPanel = els.sideDoor.querySelector('.door-panel');
+    if (doorPanel) {
+      doorPanel.style.transition = 'transform 0.8s ease';
+      doorPanel.style.transformOrigin = 'left center';
+      doorPanel.style.transform = 'perspective(400px) rotateY(-75deg)';
+    }
+    setMessage('The key turns in the lock. The side door swings open...');
+
+    // After 2 seconds, singer walks through door and disappears
+    setTimeout(() => {
+      if (!state.active) return;
+      const singer = getActiveSinger();
+      const pos = state.positions[state.currentRoom];
+
+      // Animate singer walking toward door and fading out
+      singer.style.transition = 'left 1.5s ease-in, opacity 1s ease-in 0.8s';
+      pos.x = 90;
+      singer.style.left = '90%';
+      singer.style.opacity = '0';
+      setMessage('The opera singer slips through the door and escapes into the night!');
+
+      setTimeout(() => {
+        endGame(true);
+      }, 2000);
+    }, 2000);
+  }
+
+  // ---------------- End screens ----------------
+  function endGame(win) {
+    if (!state.active) return;
+    state.active = false;
+    stopTimer();
+    cancelAnimationFrame(moveFrameId);
+    moveFrameId = null;
+    if (climbAnimId) { cancelAnimationFrame(climbAnimId); climbAnimId = null; }
+
+    if (win) {
+      state.escaped = true;
+      const used = TOTAL_TIME - state.timeRemaining;
+      const m = Math.floor(used / 60);
+      const s = used % 60;
+      els.winTime.textContent = `Escaped in ${m}m ${s}s with ${formatTime(state.timeRemaining)} remaining.`;
+      els.winScreen.classList.remove('hidden');
+    } else {
+      els.loseScreen.classList.remove('hidden');
+    }
+  }
+
+  function resetGame() {
+    stopTimer();
+    cancelAnimationFrame(moveFrameId);
+    moveFrameId = null;
+    if (climbAnimId) { cancelAnimationFrame(climbAnimId); climbAnimId = null; }
+
+    state.timeRemaining = TOTAL_TIME;
+    state.active = true;
+    state.level = 1;
+    state.inventory = [];
+    state.drawerUnlocked = false;
+    state.lensFixed = false;
+    state.spotlightOn = false;
+    state.curtainOpen = false;
+    state.chairLit = false;
+    state.keyTaken = false;
+    state.escaped = false;
+    state.escaping = false;
+    state.angle = -25;
+    state.codeIndex = 0;
+    state.enteredCode = [null, null, null];
+    state.currentRoom = 'dressing-room';
+    state.stageRevealed = false;
+    state.positions = {
+      'dressing-room': { x: 12, y: FIXED_Y },
+      'stage-area': { x: 12, y: FIXED_Y }
+    };
+    state.keys = {
+      w: false, a: false, s: false, d: false, q: false, e: false,
+      ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
+    };
+    state.isMoving = false;
+    state.facingRight = true;
+    state.onLadder = false;
+    state.isClimbing = false;
+    state.adjustingSpotlight = false;
+    state.ladderFloorPos = null;
+    state.ladderPos = { x: 57, y: 14 };
+    els.ladder.style.left = '57%';
+    els.ladder.style.bottom = '14%';
+
+    // Reset UI classes
+    els.drawer.classList.remove('open');
+    els.drawerContents.classList.remove('open');
+    els.drawerContents.classList.add('hidden');
+    els.lens.classList.remove('hidden');
+    els.beam.classList.add('hidden');
+    els.beam.classList.remove('on', 'hit-chair');
+    els.curtain.classList.remove('open');
+    els.chair.classList.add('hidden');
+    els.key.classList.add('hidden');
+    els.key.classList.remove('glow');
+    els.exitGlow.classList.add('hidden');
+    els.spotlight.classList.remove('fixed');
+    if (els.spotlightPanel) {
+      els.spotlightPanel.classList.add('hidden');
+    }
+    els.singerStage.classList.remove('on-ladder', 'climbing');
+
+    // Reset singer styles
+    const singerD = els.singerDressing;
+    const singerS = els.singerStage;
+    singerD.style.transition = '';
+    singerD.style.opacity = '';
+    singerS.style.transition = '';
+    singerS.style.opacity = '';
+
+    // Reset door
+    const doorPanel = els.sideDoor.querySelector('.door-panel');
+    if (doorPanel) {
+      doorPanel.style.transition = '';
+      doorPanel.style.transform = '';
+      doorPanel.style.transformOrigin = '';
+    }
+
+    els.adjustMode.classList.add('hidden');
+    els.winScreen.classList.add('hidden');
+    els.loseScreen.classList.add('hidden');
+    els.clueModal.classList.add('hidden');
+    els.timerDisplay.classList.remove('warning');
+    els.timerDisplay.textContent = formatTime(TOTAL_TIME);
+    els.stageArea.classList.add('unrevealed');
+    els.btnInteract.classList.remove('interact-active');
+
+    updateSpotlightBeam();
+    renderInventory();
+    updateLevelDisplay();
+    updateSingerVisuals();
+    updateRoomVisibility();
+    setMessage('The opera singer is trapped after the show. Use ◀ ▶ or A/D to move. Press INTERACT near objects to act.');
+
+    if (!state.started) {
+      showIntro();
+    } else {
+      startTimer();
+      startMovementLoop();
+    }
+  }
+
+  function showIntro() {
+    if (els.introScreen) els.introScreen.classList.remove('hidden');
+  }
+
+  function startGameFromIntro() {
+    if (els.introScreen) els.introScreen.classList.add('hidden');
+    state.started = true;
+    startTimer();
+    startMovementLoop();
+  }
+
+  // ---------------- Event bindings ----------------
+  function bindEvents() {
+    // Modal buttons
+    els.codeSlots.forEach((slot, i) => {
+      slot.addEventListener('click', (e) => { e.stopPropagation(); selectCodeSlot(i); });
+    });
+    els.colorButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); setCodeColor(btn.dataset.color); });
+    });
+    els.submitCode.addEventListener('click', (e) => { e.stopPropagation(); submitCode(); });
+    els.cancelCode.addEventListener('click', (e) => { e.stopPropagation(); closeCodeModal(); });
+    els.closePoem.addEventListener('click', closePoemModal);
+    els.closeClue.addEventListener('click', closeClueModal);
+    els.playAgainWin.addEventListener('click', resetGame);
+    els.playAgainLose.addEventListener('click', resetGame);
+    if (els.startBtn) {
+      els.startBtn.addEventListener('click', startGameFromIntro);
+    }
+
+    // Click-to-inspect: mirror, drawer, spotlight
+    var inspectables = [
+      { el: els.mirror, id: 'mirror' },
+      { el: els.drawer, id: 'drawer' },
+      { el: els.spotlight, id: 'spotlight' }
+    ];
+    inspectables.forEach(function(item) {
+      if (!item.el) return;
+      item.el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showClue(item.id);
+      });
+      item.el.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showClue(item.id);
+      });
+    });
+
+    // Click outside clue modal to close it
+    els.clueModal.addEventListener('click', function(e) {
+      if (e.target === els.clueModal) {
+        closeClueModal();
+      }
+    });
+
+    // Keyboard: LEFT/RIGHT movement + interact + Q/E for beam
+    document.addEventListener('keydown', (e) => {
+      if (!state.active) return;
+
+      // Q/E for adjustment mode
+      if (e.key === 'q' || e.key === 'Q') {
+        state.keys.q = true;
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'e' || e.key === 'E') {
+        state.keys.e = true;
+        e.preventDefault();
+        return;
+      }
+
+      // LEFT/RIGHT movement only
+      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
+        state.keys.a = true;
+        state.keys.ArrowLeft = true;
+        if (!state.onLadder && !state.adjustingSpotlight) state.facingRight = false;
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+        state.keys.d = true;
+        state.keys.ArrowRight = true;
+        if (!state.onLadder && !state.adjustingSpotlight) state.facingRight = true;
+        e.preventDefault();
+        return;
+      }
+
+      // Interact
+      if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
+        e.preventDefault();
+        onInteractPress();
+      }
+
+      if (e.key === 'Escape') {
+        closeCodeModal();
+        closePoemModal();
+        closeClueModal();
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'q' || e.key === 'Q') {
+        state.keys.q = false;
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'e' || e.key === 'E') {
+        state.keys.e = false;
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
+        state.keys.a = false;
+        state.keys.ArrowLeft = false;
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+        state.keys.d = false;
+        state.keys.ArrowRight = false;
+        e.preventDefault();
+        return;
+      }
+    });
+
+    // D-pad: LEFT/RIGHT only (UP/DOWN disabled)
+    const dpadMap = {
+      left:  { key: 'ArrowLeft',  el: els.btnLeft },
+      right: { key: 'ArrowRight', el: els.btnRight }
+    };
+
+    Object.values(dpadMap).forEach(({ key, el }) => {
+      function startMove(e) {
+        if (!state.active || isModalOpen()) return;
+        e.preventDefault();
+
+        // In adjustment mode: LEFT/RIGHT control beam
+        if (state.adjustingSpotlight) {
+          state.keys[key] = true;
+          el.classList.add('active');
+          return;
+        }
+
+        // On ladder: no movement
+        if (state.onLadder) return;
+
+        // Normal movement: LEFT/RIGHT only
+        state.keys[key] = true;
+        el.classList.add('active');
+        if (key === 'ArrowLeft') state.facingRight = false;
+        if (key === 'ArrowRight') state.facingRight = true;
+      }
+
+      function stopMove(e) {
+        e.preventDefault();
+        state.keys[key] = false;
+        el.classList.remove('active');
+      }
+
+      el.addEventListener('mousedown', startMove);
+      el.addEventListener('touchstart', startMove, { passive: false });
+      el.addEventListener('mouseup', stopMove);
+      el.addEventListener('touchend', stopMove);
+      el.addEventListener('mouseleave', stopMove);
+    });
+
+    // Global release to catch pointer leaving the button
+    document.addEventListener('mouseup', () => {
+      Object.values(dpadMap).forEach(({ key, el }) => {
+        state.keys[key] = false;
+        el.classList.remove('active');
+      });
+    });
+    document.addEventListener('touchend', () => {
+      Object.values(dpadMap).forEach(({ key, el }) => {
+        state.keys[key] = false;
+        el.classList.remove('active');
+      });
+    });
+
+    // Interact button
+    els.btnInteract.addEventListener('click', (e) => {
+      e.preventDefault();
+      onInteractPress();
+    });
+    els.btnInteract.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      onInteractPress();
+    });
+  }
+
+  // Add shake keyframes
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-3px); }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ---------------- Start ----------------
+  try {
+    bindEvents();
+    resetGame();
+  } catch (err) {
+    console.error('Game init error:', err);
+    document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;color:#e8c869;font-family:Georgia,serif;text-align:center;padding:20px;"><h1>In the Opera House</h1><p style="color:#f3e9d2;font-size:1.1rem;">Something went wrong loading the game.</p><p style="color:#c9a227;font-size:0.9rem;">Error: ' + (err.message || 'Unknown') + '</p><p style="color:#f3e9d2;font-size:0.85rem;opacity:0.7;">Please try refreshing the page.</p></div>';
+  }
+}());
+
+</script>
+</body>
+</html>

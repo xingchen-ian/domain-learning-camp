@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hue Keeper — Play Game</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">
+            <span class="logo-dot"></span>
+            Hue Keeper
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="domain.html">Domain Knowledge</a></li>
+            <li><a href="system.html">System Design</a></li>
+            <li><a href="process.html">Development Process</a></li>
+            <li><a href="game.html" class="nav-cta">Play Game</a></li>
+        </ul>
+    </nav>
+
+    <div class="game-page">
+        <div class="game-header">
+            <h1>Hue Keeper</h1>
+            <p>Restore the fresco. Mix colors at the fountain. Defeat monsters with complementary colors.</p>
+        </div>
+
+        <div class="game-canvas-wrap">
+            <canvas id="gameCanvas" width="960" height="600"></canvas>
+        </div>
+
+        <div class="game-controls-info">
+            <div class="control-item">
+                <span class="key-badge">W A S D</span>
+                <span>or</span>
+                <span class="key-badge">&larr; &uarr; &darr; &rarr;</span>
+                <span>Move Pixie</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">1</span>
+                <span class="key-badge">2</span>
+                <span>Select palette slot</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">SPACE</span>
+                <span>Splatter color</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">R</span>
+                <span>Restart (after win/lose)</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">ENTER</span>
+                <span>Start Level 1 (from menu)</span>
+            </div>
+        </div>
+
+        <div style="margin-top:20px; max-width:680px; text-align:center;">
+            <div style="background:#2d2840; border-radius:12px; padding:20px; border:1px solid #4a4360;">
+                <h3 style="color:#e9c46a; margin-bottom:12px; font-size:1rem;">How to Play</h3>
+                <p style="color:#a89888; font-size:0.88rem; line-height:1.8; text-align:left;">
+                    <strong style="color:#e0d5c8;">1. Collect:</strong> Walk over a flower to collect its color into your palette (2 slots).<br>
+                    <strong style="color:#e0d5c8;">2. Switch:</strong> Press <span class="key-badge">1</span> or <span class="key-badge">2</span> to change which palette slot is active.<br>
+                    <strong style="color:#e0d5c8;">3. Mix:</strong> Fill both palette slots with primary colors, then walk over the fountain to mix them into a secondary color.<br>
+                    <strong style="color:#e0d5c8;">4. Restore:</strong> Press SPACE near the fresco to splatter your active color. Match the required color to fill that piece.<br>
+                    <strong style="color:#e0d5c8;">5. Defeat (L3):</strong> Press SPACE near a monster to attack. Use the <em>complementary</em> color (opposite on the color wheel) to defeat it. The same color makes it stronger!<br>
+                    <strong style="color:#e0d5c8;">6. Win:</strong> Fill all fresco pieces. Don't let monsters touch you (L3). Don't let the fresco fade away (L2&ndash;3).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/game.js"></script>
+</body>
+</html>

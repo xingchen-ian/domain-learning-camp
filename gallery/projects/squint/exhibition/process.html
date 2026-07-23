@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Squint — Development Process</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">Squint <small>Painting &amp; Light</small></div>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="index.html#system">System Design</a>
+      <a href="process.html" class="active">Development Process</a>
+      <a href="game.html">Play Game</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <h2>Development Process</h2>
+    <p class="muted">A truthful, chronological record of how <em>Squint</em> was built through human–AI collaboration.
+    Full raw entries live in <code>agent-development-log.md</code>.</p>
+
+    <div class="timeline">
+      <div class="entry">
+        <h4>Interaction 01 — Project scaffold &amp; first playable loop</h4>
+        <div class="meta">Stage: Setup &amp; Milestone 1 · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> Student confirmed the implementation plan and asked the agent to build the
+        project following the brief and system graph.</p>
+        <p><strong>What changed.</strong> Created the <code>exhibition/</code> + <code>source/</code> structure,
+        copied the brief and system graph, built the three website pages, and implemented a complete Level 1 loop:
+        procedural reference scene under one light, hidden true-value map, click-drag block placement, 1–5 value
+        assignment, squint / step-back / flip feedback, region pops, stroke budget, deterministic AI critique, and
+        win / lose. Levels 2 and 3 were wired as selectable presets.</p>
+        <p><strong>Decisions.</strong> Track A (no build, Canvas 2D + plain JS). The "AI critique" is a deterministic
+        offline scorer (compares the player's blocked-in values region-by-region against the hidden true-value map)
+        so the exhibition runs without internet. Win rule follows the system graph: all regions matched AND budget
+        remaining AND score ≥ 75.</p>
+        <p><strong>Test.</strong> Served locally over a static HTTP server and verified navigation, gameplay,
+        squint/step-back/flip, scoring, and win/lose at 1920×1080. Passing score threshold (75) and stroke budgets
+        still need playtesting by the student.</p>
+        <p class="hint">Open question for the student: are the 75 / 35 thresholds and the 14-stroke budget right once you play it?</p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 02 — Painting model &amp; detail mode</h4>
+        <div class="meta">Stage: Engine refinement · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> The block-drag mechanic was clunky — the player "draws spheres but can only draw
+        with shapes." Student asked for individual pixel painting, a higher pixel count, attainable detail, and an
+        optional detail mode after completing a level.</p>
+        <p><strong>What changed.</strong> Replaced block-drag with <strong>per-pixel painting</strong>: grid raised
+        from 21×21 to <strong>84×84</strong>; click / drag paints cells; an adjustable <strong>brush</strong>
+        (single pixel up to 17×17) lets the player work from detail to big masses; stroke budget now counts one drag
+        (rewarding efficient mass-blocking); squint "pops" recomputed on a coarse 21×21 grid for readability; and an
+        <strong>optional Detail Mode</strong> unlocks on win for free, unscored refining.</p>
+        <p><strong>Validation.</strong> Headless Node harness confirmed the full 1–5 value range is still used,
+        a perfect solve scores 100 / wins, a blank canvas scores 0, and a naive one-value-per-region attempt correctly
+        fails (a sphere has a gradient, so several values per region are required). Exhibition serves offline with no
+        CDN / absolute paths.</p>
+        <p class="hint">Playtest the new painting feel, brush defaults, and the 20 / 24 stroke budgets.</p>
+      </div>
+
+      <div class="entry reflection">
+        <h4>Reflection 01 — Stage Reflection</h4>
+        <div class="meta">Covers Interactions 01–02 · Stage: first playable loop → painting model refinement</div>
+        <p><strong>Goal of this stage.</strong> One complete observe → judge → act → feedback → adjust loop that
+        teaches the core shift (light → values, not objects).</p>
+        <p><strong>What changed.</strong> Website + game skeleton plus a working Level 1, then a full rewrite from
+        block-dragging to per-pixel painting with adjustable brush (84×84 grid). Detail mode unlocked on win.</p>
+        <p><strong>How AI helped.</strong> Drafted the plan, scaffolded all files, implemented the engine, caught an
+        inverted-quantize bug via headless validation, then rewrote the interaction model entirely after student
+        critique about clunky drawing.</p>
+        <p><strong>Student reflection.</strong> The game <em>does</em> deliver the intended learning shift. Two gaps:
+        squint/step-back tools were not visually obvious enough for beginners; only 3 levels was too few repetitions.
+        Both addressed in Interaction 03.</p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 03 — UI aesthetic overhaul &amp; level expansion</h4>
+        <div class="meta">Stage: Polish &amp; scope extension · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> Make UI more "aesthetic" (retro panel-inspired). Highlight squint/step-back with icons so they jump out. Add more levels to reinforce learning through repetition.</p>
+        <p><strong>What changed.</strong>
+          Full CSS rewrite: warm studio palette, defined panel borders, green accent for tool buttons, gradient CTAs, entrance animations.<br/>
+          Squint / Step-back / Flip replaced with <b>iconic tool buttons</b>: SVG eye/shrink-arrows/flip-arrows inside green-accented pills with keyboard hints.<br/>
+          (Levels 4–6 were later redefined as new reference scenes — see Interaction 04.)
+        </p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 04 — New reference scenes (Apple / Bird / Dragon)</h4>
+        <div class="meta">Stage: Content expansion · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> Keep the first reference (sphere+box) for Levels 1–3; after that, add three <em>new, more interesting references</em> instead of abstract variations. Level 4 = semi-realistic apple in colour with stand-out cool shadows (dark blue/green); Level 5 = a bird; final = a simple, fun cartoon dragon. Label post-L3 levels as <b>Apple / Bird / Dragon</b> (no numbers). Keep the block-in-values core.</p>
+        <p><strong>What changed.</strong>
+          <code>scene.js</code> now dispatches on <code>cfg.kind</code>: <b>forms</b> (L1–3), <b>apple</b>, <b>bird</b>, <b>dragon</b>. Each new scene is drawn from primitives (ellipses, circles, polygons) and still resolves to a 5-value map, so squint/pop/scoring are unchanged. Apple uses a cool blue-green shadow hue for realism; bird is blue with a warm beak; dragon is a friendly green with teal shadows. Scoring refactored to be region-data-driven (body/head/wing/leaf/stem…). Tabs relabelled L1 Grayscale / L2 Moving Light / L3 Colour / <b>Apple</b> / <b>Bird</b> / <b>Dragon</b>.
+        </p>
+        <p><strong>Validation.</strong> All 6 levels pass headless checks: full 1–5 value range, perfect = 100/win, blank = 0/lose, correct region sets per kind. Offline-safe.</p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 05 — UI layout rebalance (two-sided controls)</h4>
+        <div class="meta">Stage: Interface readability · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> Move interactable elements to two sides of the screen instead of only the right, and separate informational elements so the controls are easier to read and use.</p>
+        <p><strong>What changed.</strong>
+          The 2-column layout (canvas + single right sidebar) became a <b>3-column layout</b>:
+          <br/>• <b>Left</b> — interactable painting tools: value palette, brush size, colour-mix (hue) slider.
+          <br/>• <b>Center</b> — the player canvas.
+          <br/>• <b>Right</b> — observation + scoring (informational, separated): reference image, KPIs (strokes left / used / AI score), painter's tool buttons (squint / step-back / flip), action buttons, and result + critique.
+          <br/>Small section-label dividers ("Painter's tools", "Actions") keep feedback clearly apart from controls. Swatches are now fluid so they fill the narrower left column. No JS changed — only structure + CSS, so behavior is identical.
+        </p>
+        <p><strong>Validation.</strong> JS syntax-checked; exhibition served at 1920×1080, all assets 200, no absolute/CDN paths. Interactable controls now sit on the left and right sides; reference/KPIs/result isolated on the right.</p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 06 — Tools &amp; Actions moved to the left column</h4>
+        <div class="meta">Stage: Interface readability (follow-up) · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> Put Tools &amp; Actions on the left with the palette; keep Score, Result, Reference on the right.</p>
+        <p><strong>What changed.</strong>
+          Refined the Interaction 05 layout: the <b>left column</b> now holds all interactable controls together — palette, brush, colour-mix, the painter's tool buttons (Squint / Step-back / Flip), and action buttons (Undo / Reset / Submit / Detail) in a second "Tools &amp; Actions" card. The <b>right column</b> keeps only informational panels: Reference, Score (KPIs), and Result (critique), split into three separate cards. Left column widened to 268px. No JS changed.
+        </p>
+        <p><strong>Validation.</strong> Element IDs unique (1 each); columns in DOM order tools → canvas → side; exhibition serves offline with all assets 200.</p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 07 — UI clarity, pure palette, gentler 80% scoring</h4>
+        <div class="meta">Stage: Interface clarity &amp; game feel · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> Obvious Submit at the bottom of the canvas (it wins the game); use empty space so tools need no scrolling; palette must be pure monochrome (was yellow-tinted); evaluation too harsh — 80% = passing with bands (0–50 needs improvement, 60 a little work, 70 decent, 80 good, 90 great, 95–100 perfect); reference ~70% of canvas.</p>
+        <p><strong>What changed.</strong>
+          • <b>Palette</b> now pure neutral gray (R=G=B) so value steps are unambiguous.<br/>
+          • <b>Scoring</b>: win = score ≥ 80 &amp; budget &gt; 0; the brittle "every region within 1 step" gate removed so 80%+ truly passes. Added grade bands printed in result + critique.<br/>
+          • <b>Submit</b> moved to a full-width big button at the bottom of the canvas — the most prominent element.<br/>
+          • <b>Space / no-scroll</b>: added a goal strip under the tabs; left tool buttons are now full-width, stacked, larger.<br/>
+          • <b>Reference</b> displays at 70% of the canvas (294px, square), centered as a thumbnail. System Design win/lose note updated.
+        </p>
+        <p><strong>Validation.</strong> JS syntax-checked; all assets 200; Submit confirmed inside the canvas column; perfect solve still 100/win, blank 0/lose, and 80%+ now passes even if one region is slightly off.</p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 08 — Result as a semi-opaque pop-up</h4>
+        <div class="meta">Stage: Interface clarity &amp; game feel · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> The result should be a semi-opaque pop-up on Submit that covers the canvas and is a little larger than it.</p>
+        <p><strong>What changed.</strong> Removed the inline right-side Result card. Pressing Submit now opens a centered modal (semi-opaque backdrop + blurred panel, 440px over the 420px canvas) showing the big score, grade, reason and full critique, with Keep Painting / Enter Detail Mode and a close button. Esc closes; the pop-up hides on reset.</p>
+        <p><strong>Validation.</strong> JS syntax-checked; all nine pop-up element IDs present; no stale inline-result references.</p>
+      </div>
+
+      <div class="entry">
+        <h4>Interaction 09 — Fair background scoring &amp; colour palette</h4>
+        <div class="meta">Stage: Scoring fairness &amp; colour tooling · Student: Charlie. S · Agent: Claude</div>
+        <p><strong>Request.</strong> The AI is never satisfied with the background (too dark/too light) even though value 2 is correct; and colour levels should have a colour palette.</p>
+        <p><strong>What changed.</strong>
+          • A headless harness proved the background is objectively value 2 everywhere — the fault was the scorer treating every <em>unpainted</em> cell as maximum error while the background is 44–74% of the canvas.<br/>
+          • <b>Fair blank rule</b>: an unpainted cell now scores as its distance from value 1 (the white canvas), so a correctly-read light background passes without hand-filling thousands of cells; a blank canvas still fails and dark blanks are still penalised.<br/>
+          • <b>Colour palette</b>: each colour level now offers named colour chips (e.g. Apple Red / Leaf Green / Stem Brown / Sky / Shadow Blue); the value swatches re-tint to the chosen colour. Scoring stays value-based.
+        </p>
+        <p><strong>Validation.</strong> Old-vs-new scoring table (blank 62/68 &lt; 80, perfect 100, forms-perfect-blank-bg 89/82 pass); node --check clean; assets 200.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:24px;"><a class="cta" href="game.html">Try the game →</a></p>
+  </div>
+
+  <footer>Squint — NYU Shanghai IMA Game Design Summer Camp · Track A (no build) · Student: Charlie. S</footer>
+</body>
+</html>

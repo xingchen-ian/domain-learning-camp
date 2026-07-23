@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animal Dash — Project Home</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <nav>
+    <span class="logo">Animal Dash</span>
+    <a href="index.html" class="active">Home</a>
+    <a href="game.html">Play Game</a>
+    <a href="process.html">Development Process</a>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>⚡ Animal Dash ⚡</h1>
+    <p class="subtitle">Speed isn't everything — adaptation, stamina & HP matter!</p>
+    <a href="game.html" class="cta-btn">▶ Play the Game</a>
+  </div>
+
+  <div class="container">
+
+    <!-- Game Idea -->
+    <section id="idea">
+      <h2>Game Idea</h2>
+      <div class="card">
+        <h3>Concept</h3>
+        <p>Different animals have different characteristics and adapt to different environments. In Animal Dash, you race across randomly generated terrains — dodging obstacles with <strong>← → keys</strong>, boosting speed with <strong>↑ key</strong>, and switching to the right animal for each environment. Manage two survival resources: <strong>Stamina</strong> (energy, constantly draining) and <strong>HP</strong> (blood, reduced by obstacles). With 7 environments, 14 animals, and 3 levels of increasing difficulty, every run is different!</p>
+
+        <h3>Player Goal</h3>
+        <p>Survive and outrun the AI opponent by strategically switching animals at each terrain boundary. Dodge obstacles to preserve HP, collect food to restore stamina, and use the boost wisely.</p>
+
+        <h3>Core Learning Shift</h3>
+        <div class="info-box warning">
+          <strong>Novice misconception:</strong> Beginners just choose the fastest animal (e.g., Cheetah with speed 10) and hold boost all the time.
+        </div>
+        <div class="info-box success">
+          <strong>Expert insight:</strong> Consider multiple aspects — environment adaptation, stamina drain, HP toughness, and terrain fit. A Camel (speed 5, HP 60) beats a Cheetah in the desert because of perfect adaptation, high stamina, and better obstacle resistance. Adaptation is <em>hidden</em> — you learn it through experience!
+        </div>
+
+        <h3>Controls</h3>
+        <p>🎮 <strong>← → (or A/D)</strong> — Switch lanes to dodge obstacles and collect bonuses<br>
+        🔥 <strong>↑ (or W) hold</strong> — Boost speed ×1.5, but stamina drains ×2.2 faster!<br>
+        🖱️ <strong>Click</strong> — Select animals and navigate menus<br>
+        ⌨️ <strong>Enter/Space</strong> — Progress through screens</p>
+      </div>
+    </section>
+
+    <!-- Domain Knowledge -->
+    <section id="domain">
+      <h2>Domain Knowledge: Animal Adaptation & Survival</h2>
+
+      <div class="card">
+        <h3>Real-World Domain</h3>
+        <p>Animals evolve characteristics suited to their native habitats. A dolphin is perfectly adapted to water but helpless on land. A mountain goat can traverse steep cliffs that a horse cannot. A penguin thrives in antarctic ice. This biological reality creates trade-offs: specialization means excellence in one environment but weakness in others. In the game, this extends to <strong>HP (blood/toughness)</strong> — a Bear is slow but nearly impossible to kill, while a Rabbit is quick but fragile.</p>
+
+        <h3>Why This Becomes Playable</h3>
+        <p>The trade-off between specialization and versatility is inherently game-like. Players must observe the terrain, judge which animal fits, and act by switching. The feedback is immediate — the animal speeds up or struggles visibly. Through repetition, players develop the expert skill of matching adaptation to environment. <strong>Adaptation is hidden</strong> — players discover which animals fit each terrain through experience, not by reading a number.</p>
+
+        <h3>Novice vs. Expert Judgment</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Aspect</th>
+              <th>Novice Focus</th>
+              <th>Expert Focus</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Primary metric</td>
+              <td>Base speed only</td>
+              <td>Effective speed = base speed × adaptation × stamina × HP</td>
+            </tr>
+            <tr>
+              <td>Environment</td>
+              <td>Ignored or treated as decoration</td>
+              <td>Key decision factor — changes optimal animal</td>
+            </tr>
+            <tr>
+              <td>Stamina</td>
+              <td>Not considered</td>
+              <td>Constant drain — must collect food and manage boost</td>
+            </tr>
+            <tr>
+              <td>HP (blood)</td>
+              <td>Not considered</td>
+              <td>Obstacles reduce HP — adapted animals lose less; HP=0 means death</td>
+            </tr>
+            <tr>
+              <td>Boost</td>
+              <td>Always hold ↑ for speed</td>
+              <td>Use strategically — drains stamina fast</td>
+            </tr>
+            <tr>
+              <td>Animal choice</td>
+              <td>"Pick the fastest one"</td>
+              <td>"Pick the one that thrives in this terrain AND survives obstacles"</td>
+            </tr>
+            <tr>
+              <td>Adaptation info</td>
+              <td>Wants to see percentages</td>
+              <td>Hidden — learned through experience</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Animal Stats (14 Animals — Adaptation Hidden in Game!)</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Animal</th>
+            <th>Speed</th>
+            <th>Stamina</th>
+            <th>HP</th>
+            <th>Best Terrain</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>🐆 Cheetah</td><td>10</td><td>40</td><td>30</td><td>Grassland (fragile)</td></tr>
+          <tr><td>🐴 Horse</td><td>7</td><td>70</td><td>50</td><td>Grassland (versatile)</td></tr>
+          <tr><td>🐪 Camel</td><td>5</td><td>90</td><td>60</td><td>Desert (tank)</td></tr>
+          <tr><td>🦌 Deer</td><td>6</td><td>60</td><td>40</td><td>Forest</td></tr>
+          <tr><td>🐬 Dolphin</td><td>8</td><td>80</td><td>45</td><td>Ocean</td></tr>
+          <tr><td>🦅 Eagle</td><td>9</td><td>50</td><td>35</td><td>Mountain (fragile)</td></tr>
+          <tr><td>🦊 Fox</td><td>5</td><td>65</td><td>45</td><td>Forest (all-rounder)</td></tr>
+          <tr><td>🐐 Mtn Goat</td><td>4</td><td>85</td><td>55</td><td>Mountain</td></tr>
+          <tr><td>🐻 Bear</td><td>3</td><td>95</td><td>80</td><td>Forest (super tank)</td></tr>
+          <tr><td>🐧 Penguin</td><td>4</td><td>75</td><td>50</td><td>Antarctic</td></tr>
+          <tr><td>🦭 Seal</td><td>5</td><td>70</td><td>50</td><td>Antarctic/Ocean</td></tr>
+          <tr><td>🐺 Wolf</td><td>6</td><td>75</td><td>55</td><td>Arctic</td></tr>
+          <tr><td>🐰 Rabbit</td><td>5</td><td>45</td><td>25</td><td>Grassland (very fragile)</td></tr>
+          <tr><td>🦈 Shark</td><td>7</td><td>60</td><td>50</td><td>Ocean</td></tr>
+        </tbody>
+      </table>
+      <p style="color:#F39C12;font-size:14px;margin-top:8px;">⚠️ <strong>Adaptation percentages are hidden in the game!</strong> You can only see Speed, Stamina, and HP. Discover which animals fit each terrain by playing and observing feedback.</p>
+
+      <h3>Opponent Strength</h3>
+      <div class="card">
+        <p>The AI opponent is <strong>much tougher</strong> than the player's animal:</p>
+        <table class="data-table">
+          <thead>
+            <tr><th>Attribute</th><th>Player</th><th>Opponent</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Stamina</td><td>Normal (×1.0)</td><td>Boosted (×1.5)</td></tr>
+            <tr><td>HP</td><td>Normal (×1.0)</td><td>Boosted (×1.3)</td></tr>
+            <tr><td>Stamina drain</td><td>Full rate</td><td>70% of normal rate</td></tr>
+            <tr><td>Stamina regen</td><td>None</td><td>0.15/second</td></tr>
+            <tr><td>Obstacle hit rate</td><td>Full collision</td><td>~0.8% chance/sec</td></tr>
+            <tr><td>HP damage on hit</td><td>Full cost</td><td>25% of normal</td></tr>
+            <tr><td>Boost</td><td>Manual (↑ key)</td><td>~12% chance auto-boost</td></tr>
+          </tbody>
+        </table>
+        <p style="color:#E74C3C;font-size:13px;">The opponent won't die easily — you need to <strong>outrun them by distance</strong>, not wait for them to collapse!</p>
+      </div>
+    </section>
+
+    <!-- System Design -->
+    <section id="system">
+      <h2>System Design</h2>
+
+      <div class="card-grid">
+        <div class="card">
+          <h3>Environment Data</h3>
+          <p>7 terrain types: grassland, forest, desert, ocean, mountain, antarctic, arctic. Each level generates random terrain segments — no two runs are the same! Level 1 announces upcoming terrain; Level 2 & 3 don't.</p>
+        </div>
+        <div class="card">
+          <h3>Player-Controlled Data</h3>
+          <p><strong>Lane position</strong> (← → keys) — dodge obstacles and collect bonuses.<br>
+          <strong>Boost</strong> (↑ hold) — speed ×1.5, stamina drain ×2.2<br>
+          <strong>Animal choice</strong> — switch at each terrain boundary.</p>
+        </div>
+        <div class="card">
+          <h3>System-Calculated Results</h3>
+          <p><strong>Effective Speed</strong> = baseSpeed × adaptation × staminaFactor × hpFactor × boost × acceleration<br>
+          <strong>Stamina Drain</strong> = rate based on adaptation (+ boost multiplier)<br>
+          <strong>HP Loss</strong> = obstacleHit × (3.0 - adaptation × 2.5)<br>
+          <strong>Acceleration</strong> = ×(1 + time × 0.0008)</p>
+        </div>
+        <div class="card">
+          <h3>Feedback Translation</h3>
+          <p><strong>Speed bar</strong> — green/yellow/red<br>
+          <strong>Stamina bar</strong> — green/yellow/red (depleting constantly)<br>
+          <strong>HP bar</strong> — red (depleted by obstacles)<br>
+          <strong>Boost flames 🔥</strong> — visible behind animal when boosting<br>
+          <strong>Collision flash</strong> — red screen on obstacle hit<br>
+          <strong>Red border</strong> — flashing when HP low<br>
+          <strong>Yellow border</strong> — flashing when stamina low<br>
+          <strong>Ambient particles</strong> — snow/leaves/bubbles per terrain</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Success & Failure</h3>
+        <div class="info-box success">
+          <strong>Success:</strong> Complete all terrain segments and cover more distance than the AI opponent. Survive by managing stamina (collect food), HP (dodge obstacles), and choosing well-adapted animals. The opponent is tough — winning by distance is the primary victory path.
+        </div>
+        <div class="info-box warning">
+          <strong>Failure:</strong> Three ways to lose:<br>
+          💀 Stamina = 0 — animal collapses from exhaustion<br>
+          💀 HP = 0 — animal dies from too many obstacle hits<br>
+          🏁 Opponent finishes first — you covered less distance
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>3 Levels — Increasing Difficulty</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>Difficulty</th>
+              <th>Environments</th>
+              <th>Animals</th>
+              <th>Segment Time</th>
+              <th>Obstacles</th>
+              <th>Terrain Announce?</th>
+              <th>Key Challenge</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Level 1</td>
+              <td><span class="badge badge-green">Easy</span></td>
+              <td>3</td>
+              <td>7</td>
+              <td>3 min</td>
+              <td>Sparse</td>
+              <td>✅ Yes</td>
+              <td>Learn adaptation + HP/Stamina basics</td>
+            </tr>
+            <tr>
+              <td>Level 2</td>
+              <td><span class="badge badge-yellow">Medium</span></td>
+              <td>5</td>
+              <td>12</td>
+              <td>2.5 min</td>
+              <td>Normal</td>
+              <td>❌ No</td>
+              <td>No announcement — watch environment yourself!</td>
+            </tr>
+            <tr>
+              <td>Level 3</td>
+              <td><span class="badge badge-red">Hard</span></td>
+              <td>7</td>
+              <td>14</td>
+              <td>2 min</td>
+              <td>Dense</td>
+              <td>❌ No</td>
+              <td>Full mastery: all 7 terrains, must recognize without hints</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px;color:#888;font-size:13px;">Game speed gradually increases over time within each level! Obstacles appear more frequently and sometimes spawn in pairs at higher difficulties. The opponent gets 1.5× stamina, 1.3× HP, slower drain, and stamina regeneration.</p>
+      </div>
+    </section>
+
+    <!-- Core Loop -->
+    <section id="loop">
+      <h2>Core Player Learning Loop</h2>
+      <div class="card">
+        <div class="card-grid">
+          <div class="card">
+            <h3>1. Observe</h3>
+            <p>See the terrain and its obstacles. Level 1 shows upcoming terrain; later levels don't. Watch your stamina and HP bars. Notice the ambient visual effects (snow, sand, leaves).</p>
+          </div>
+          <div class="card">
+            <h3>2. Judge</h3>
+            <p>At terrain boundaries, which animal might fit? Adaptation is hidden — use your experience from previous runs. Consider Speed, Stamina, and HP.</p>
+          </div>
+          <div class="card">
+            <h3>3. Act</h3>
+            <p>Switch to a promising animal, or keep your current one. Use ← → to dodge obstacles, ↑ to boost when needed. Collect food 🍖 and ❤️ hearts.</p>
+          </div>
+          <div class="card">
+            <h3>4. Read Feedback</h3>
+            <p>Speed bar (green = thriving, red = struggling). Stamina depleting fast? HP dropping from hits? Opponent pulling ahead? All visible!</p>
+          </div>
+          <div class="card">
+            <h3>5. Adjust</h3>
+            <p>If HP is low → dodge obstacles more carefully. If stamina is low → stop boosting, collect food. If speed is slow → switch animal next terrain. The opponent won't die — you need to outrun them by distance!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <p>Animal Dash — Student: Chengxuan Zhang | AI Agent: WorkBuddy | Domain: Racing Animals</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cake - Development Process</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-title">Cake</div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="design.html">Domain &amp; System</a>
+      <a href="process.html" class="active">Development Process</a>
+      <a href="game.html">Play the Game</a>
+    </nav>
+  </header>
+
+  <main class="info-page">
+    <h1>Development Process</h1>
+    <p class="lead">
+      A concise, truthful timeline of how the project was built, including the changes,
+      tests, and decisions along the way. The full log lives in
+      <code>agent-development-log.md</code> at the project root.
+    </p>
+
+    <section>
+      <h2>Timeline</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>1. Read the brief and the system graph</h4>
+          <div class="meta">Stage 1 &middot; Planning</div>
+          <p>
+            Read <code>development-brief.md</code> and looked at the system graph. Identified
+            the core learning shift, the player loop, and the three difficulty presets. The
+            graph specified the controls (A, W, mouse, space) and the win / lose conditions,
+            which I used as the spine of the implementation.
+          </p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>2. Chose the dependency track</h4>
+          <div class="meta">Stage 1 &middot; Decision</div>
+          <p>
+            Picked <strong>Track A &mdash; no build step</strong>. The brief allows Track C
+            (Vite + Three.js) for 3D, but a 2D Canvas game does not need that complexity.
+            Track A means the iMac just needs a static HTTP server, no <code>npm install</code>
+            and no internet.
+          </p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>3. Built the smallest complete game loop first</h4>
+          <div class="meta">Stage 2 &middot; Implementation</div>
+          <p>
+            Built a single-state game object that holds the order, the cake, the step, and
+            the timer. Wrote the order generator, the action handlers, the canvas drawing,
+            and the win / lose check. Three levels were then layered on top as different
+            configurations of the same loop.
+          </p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>4. Built the integrated project website</h4>
+          <div class="meta">Stage 2 &middot; Implementation</div>
+          <p>
+            Created the four required pages &mdash; Home, Domain &amp; System, Development
+            Process, and Play the Game &mdash; with shared navigation, Gallery-compatible
+            relative paths, and a 1920&times;1080 layout. Linked the website to the brief and
+            the system graph.
+          </p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>5. Tested the build</h4>
+          <div class="meta">Stage 3 &middot; Verification</div>
+          <p>
+            Started a local static HTTP server, opened <code>exhibition/index.html</code>,
+            and walked through all four pages, the level select, and the three levels. No
+            console errors. All links and assets use relative paths so the project will work
+            inside <code>gallery/projects/group-XX/</code>.
+          </p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>6. Packaged the submission</h4>
+          <div class="meta">Stage 3 &middot; Submission</div>
+          <p>
+            Created <code>README.md</code>, <code>THIRD_PARTY.md</code>,
+            <code>submission-manifest.json</code>, and <code>preview.png</code>. The final ZIP
+            is named <code>2026-Camp-Group-XX-Cake.zip</code> and opens directly to the
+            project files.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What changed along the way</h2>
+      <ul>
+        <li>
+          <strong>Decoration toggle.</strong> The first version made decorations add-only. The
+          brief says players should be able to replace a wrong decoration. Decorations are
+          now toggled on click, and the submit button is disabled until at least one
+          decoration is added.
+        </li>
+        <li>
+          <strong>Game Over on timeout.</strong> When the timer reaches zero, the game
+          immediately shows "Game Over" and freezes — no cake evaluation, no continuing.
+          The player lost because they ran out of time.
+        </li>
+        <li>
+          <strong>Color-coded timer.</strong> The timer turns yellow with 20 seconds left
+          and red with 5 seconds left. This is a small but real translation of invisible
+          data ("time left") into visible state.
+        </li>
+        <li>
+          <strong>Timed mixing and baking phases.</strong> Mixing the batter and baking
+          in the oven each take <strong>10 seconds</strong> with a visible progress bar.
+          The player cannot act during these phases. This adds realistic tension and
+          forces careful planning before hitting Mix or W.
+        </li>
+        <li>
+          <strong>Level 3 reworked: layer selection.</strong> Level 3 now has a 1-minute
+          timer (changed from 30 seconds). The key twist: the player must manually pick a
+          different base for each of the 3 layers. Step-by-step instructions and a
+          "memorize the toppings" warning were added to the order panel.
+        </li>
+        <li>
+          <strong>Ingredient click fix.</strong> The original ingredient click handler
+          depended on the global <code>event</code> object, which silently failed.
+          Fixed by passing the button element directly to the selection function.
+        </li>
+        <li>
+          <strong>Decoration phase: no hints.</strong> During the DECORATE step, the
+          order card hides the "Toppings" list and shows "Remember from the order!"
+          instead. This forces the player to recall what decorations the customer
+          asked for rather than just copying from the order card.
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Open questions and known issues</h2>
+      <ul>
+        <li>
+          The cake drawing uses simple Canvas 2D shapes. It is intentionally not photoreal.
+          The brief says to keep graphics simple and prioritize interaction over polish.
+        </li>
+        <li>
+          Level 2 and Level 3 use the same number of decorations as the brief calls out.
+          The student can adjust the constants <code>minDecorations</code> and
+          <code>maxDecorations</code> in <code>game.js</code> to change the difficulty.
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Cake &middot; A first playable web game by Huang Yan Yue.</span>
+  </footer>
+</body>
+</html>

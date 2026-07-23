@@ -1,0 +1,4309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NEON STRIKE - 俯视角射击</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; overflow: hidden; font-family: 'Courier New', monospace; color: #fff; }
+  #gameContainer { position: relative; width: 100vw; height: 100vh; }
+  #gameCanvas { display: block; cursor: crosshair; touch-action: none; }
+
+  /* === HUD === */
+  #hud { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10; }
+  .hud-top { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 20px; flex-wrap: wrap; gap: 6px; }
+  .hud-panel { background: rgba(10,10,20,0.7); border: 1px solid rgba(0,255,200,0.3); border-radius: 8px; padding: 8px 14px; backdrop-filter: blur(4px); }
+
+  .health-bar-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .health-bar-bg { width: 160px; height: 14px; background: rgba(255,50,50,0.15); border: 1px solid rgba(255,80,80,0.4); border-radius: 4px; overflow: hidden; }
+  .health-bar-fill { height: 100%; background: linear-gradient(90deg, #ff4444, #ff6666); transition: width 0.2s; }
+  .health-label { font-size: 12px; color: #ff6666; font-weight: bold; text-shadow: 0 0 6px rgba(255,80,80,0.6); }
+  .health-value { font-size: 12px; color: #ffaaaa; min-width: 55px; }
+  .status-indicators { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .health-status-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .status-ind { font-size: 12px; font-weight: bold; text-shadow: 0 0 4px rgba(255,255,255,0.3); }
+  .status-ind.hidden { display: none; }
+
+  .level-info { text-align: center; }
+  .level-name { font-size: 16px; color: #00ffc8; font-weight: bold; text-shadow: 0 0 8px rgba(0,255,200,0.5); letter-spacing: 2px; }
+  .level-progress { font-size: 12px; color: #888; margin-top: 4px; }
+
+  .score-display { text-align: right; }
+  .score-label { font-size: 11px; color: #666; letter-spacing: 1px; }
+  .score-value { font-size: 22px; color: #ffdd44; font-weight: bold; text-shadow: 0 0 8px rgba(255,221,68,0.4); }
+
+  .score-credits-group { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+  /* === Weapon HUD === */
+  .hud-bottom { display: flex; justify-content: center; padding: 0 0 16px 0; position: absolute; bottom: 0; width: 100%; }
+  .weapon-bar { display: flex; gap: 8px; background: rgba(10,10,20,0.7); border: 1px solid rgba(0,255,200,0.2); border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(4px); }
+  .weapon-slot { display: flex; flex-direction: column; align-items: center; padding: 4px 9px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: all 0.15s; min-width: 56px; pointer-events: auto; }
+  .weapon-slot.active { border-color: #00ffc8; background: rgba(0,255,200,0.1); box-shadow: 0 0 12px rgba(0,255,200,0.3); }
+  .weapon-slot:hover { background: rgba(255,255,255,0.05); }
+  .weapon-icon { font-size: 20px; margin-bottom: 1px; }
+  .weapon-name { font-size: 9px; color: #aaa; letter-spacing: 0.5px; }
+  .weapon-slot.active .weapon-name { color: #00ffc8; }
+  .weapon-key { font-size: 8px; color: #555; margin-top: 1px; }
+  .weapon-ammo { font-size: 10px; color: #ffdd44; font-weight: bold; margin-top: 1px; }
+  .weapon-ammo.inf { color: #888; }
+  .weapon-ammo.low { color: #ff4444; }
+  .weapon-slot.locked { opacity: 0.5; border-color: rgba(255,80,80,0.3); cursor: pointer; }
+  .weapon-slot.locked:hover { background: rgba(255,80,80,0.08); }
+  .weapon-slot .weapon-price { font-size: 10px; color: #ff6644; margin-top: 2px; }
+  .weapon-slot .weapon-locked { font-size: 12px; color: #666; margin-top: 2px; }
+
+  /* Credits display */
+  .credits-display { display: flex; align-items: center; gap: 6px; }
+  .credits-icon { font-size: 18px; }
+  .credits-value { font-size: 20px; color: #ffdd44; font-weight: bold; text-shadow: 0 0 8px rgba(255,221,68,0.4); }
+
+  /* Shop overlay */
+  .shop-hint { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); font-size: 12px; color: rgba(255,255,255,0.3); z-index: 15; letter-spacing: 1px; }
+  /* Shop tabs & panels */
+  .shop-tabs { display: flex; gap: 2px; margin: 10px 0 0 0; max-width: 540px; width: 100%; }
+  .shop-tab { flex: 1; padding: 10px 8px; font-size: 13px; font-family: 'Courier New', monospace; font-weight: bold; background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.08); color: #777; cursor: pointer; transition: all 0.2s; border-radius: 6px 6px 0 0; letter-spacing: 1px; }
+  .shop-tab:hover { color: #aaa; border-color: rgba(255,255,255,0.2); background: rgba(10,10,20,0.7); }
+  .shop-tab.active { color: #00ffc8; border-color: #00ffc8; border-bottom-color: transparent; background: rgba(0,255,200,0.05); box-shadow: 0 -2px 10px rgba(0,255,200,0.1); }
+  .shop-panels { max-width: 540px; width: 100%; border: 1px solid rgba(0,255,200,0.2); border-radius: 0 0 8px 8px; overflow: hidden; }
+  .shop-panel { display: none; flex-direction: column; gap: 10px; padding: 14px 16px; max-height: 340px; overflow-y: auto; background: rgba(10,10,20,0.4); scrollbar-width: thin; scrollbar-color: rgba(0,255,200,0.2) transparent; }
+  .shop-panel.active { display: flex; }
+  .shop-panel::-webkit-scrollbar { width: 6px; }
+  .shop-panel::-webkit-scrollbar-track { background: transparent; }
+  .shop-panel::-webkit-scrollbar-thumb { background: rgba(0,255,200,0.2); border-radius: 3px; }
+  .shop-grid { display: flex; flex-direction: column; gap: 10px; }
+  .shop-item { display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: rgba(10,10,20,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; transition: all 0.2s; }
+  .shop-item:hover { border-color: rgba(0,255,200,0.3); background: rgba(10,10,20,0.8); }
+  .shop-item.owned { border-color: rgba(0,255,200,0.4); }
+  .shop-icon { font-size: 32px; width: 50px; text-align: center; }
+  .shop-info { flex: 1; }
+  .shop-name { font-size: 16px; color: #fff; font-weight: bold; }
+  .shop-desc { font-size: 12px; color: #888; margin-top: 4px; max-width: 300px; }
+  .shop-action { min-width: 80px; text-align: center; }
+  .shop-price { font-size: 18px; font-weight: bold; }
+  .shop-price.affordable { color: #ffdd44; }
+  .shop-price.expensive { color: #888; }
+  .shop-owned { color: #00ffc8; font-size: 14px; }
+  .shop-item.equipped { border-color: #00ffc8 !important; background: rgba(0,255,200,0.06); box-shadow: 0 0 12px rgba(0,255,200,0.15); }
+  .equip-btn { background: rgba(0,255,200,0.12) !important; border-color: #00ffc8 !important; color: #00ffc8 !important; }
+  .equip-btn:hover { background: rgba(0,255,200,0.25) !important; }
+  .shop-btn { padding: 8px 20px; font-size: 13px; font-family: 'Courier New', monospace; font-weight: bold; border: 1px solid #ffdd44; background: transparent; color: #ffdd44; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .shop-btn:hover { background: rgba(255,221,68,0.15); box-shadow: 0 0 12px rgba(255,221,68,0.3); }
+  .shop-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; }
+  .shop-btn:disabled:hover { background: transparent; box-shadow: none; }
+  .shop-empty { color: #666; text-align: center; padding: 40px; }
+
+  /* === Overlay Screens === */
+  .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; background: rgba(5,5,10,0.92); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
+  .overlay.hidden { display: none; }
+  .overlay h1 { font-size: 52px; font-weight: bold; letter-spacing: 6px; margin-bottom: 8px; }
+  .overlay h2 { font-size: 28px; margin-bottom: 6px; letter-spacing: 3px; }
+  .overlay p { color: #aaa; font-size: 14px; margin-bottom: 6px; }
+  .neon-title { color: #00ffc8; text-shadow: 0 0 20px rgba(0,255,200,0.5), 0 0 40px rgba(0,255,200,0.2); }
+  .neon-red { color: #ff4466; text-shadow: 0 0 20px rgba(255,68,102,0.5); }
+  .neon-yellow { color: #ffdd44; text-shadow: 0 0 20px rgba(255,221,68,0.4); }
+
+  .btn { padding: 12px 40px; font-size: 16px; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 2px; border: 2px solid #00ffc8; background: transparent; color: #00ffc8; border-radius: 6px; cursor: pointer; transition: all 0.2s; margin-top: 24px; pointer-events: auto; }
+  .btn:hover { background: rgba(0,255,200,0.15); box-shadow: 0 0 20px rgba(0,255,200,0.4); }
+  .btn-red { border-color: #ff4466; color: #ff4466; }
+  .btn-red:hover { background: rgba(255,68,102,0.15); box-shadow: 0 0 20px rgba(255,68,102,0.4); }
+  .btn-load { border-color: #ffdd44; color: #ffdd44; padding: 8px 28px; font-size: 13px; margin-top: 0; }
+  .btn-load:hover { background: rgba(255,221,68,0.15); box-shadow: 0 0 16px rgba(255,221,68,0.4); }
+
+  /* === Save Card (main menu) === */
+  #loadSaveArea { width: 100%; max-width: 420px; margin: 4px 0 8px 0; }
+  .save-card { background: rgba(0,255,200,0.06); border: 1px solid rgba(0,255,200,0.35); border-radius: 12px; padding: 16px 20px; backdrop-filter: blur(6px); box-shadow: 0 0 24px rgba(0,255,200,0.12); }
+  .save-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .save-card-title { font-size: 14px; color: #00ffc8; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 8px rgba(0,255,200,0.4); }
+  .save-card-time { font-size: 11px; color: #666; }
+  .save-card-progress { margin-bottom: 12px; }
+  .save-progress-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .save-progress-row .lvl { color: #ffdd44; font-weight: bold; }
+  .save-progress-row .coins { color: #ffdd44; font-weight: bold; }
+  .save-progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .save-progress-fill { height: 100%; background: linear-gradient(90deg, #00ffc8, #00ddaa); border-radius: 3px; transition: width 0.4s; box-shadow: 0 0 8px rgba(0,255,200,0.5); }
+  .save-card-stats { display: flex; gap: 16px; font-size: 11px; color: #888; margin-bottom: 12px; }
+  .save-card-stats .stat-val { color: #ccc; font-weight: bold; }
+  .save-upgrades { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .save-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; font-size: 11px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #aaa; }
+  .save-badge.frost { border-color: rgba(102,204,255,0.4); color: #66ccff; background: rgba(102,204,255,0.06); }
+  .save-badge.fire { border-color: rgba(255,102,0,0.4); color: #ff8844; background: rgba(255,102,0,0.06); }
+  .save-badge.ricochet { border-color: rgba(0,255,170,0.4); color: #00ffaa; background: rgba(0,255,170,0.06); }
+  .save-badge.multishot { border-color: rgba(255,221,68,0.4); color: #ffdd44; background: rgba(255,221,68,0.06); }
+  .save-badge.health { border-color: rgba(255,100,100,0.4); color: #ff8888; background: rgba(255,100,100,0.06); }
+  .save-badge.weapon { border-color: rgba(255,221,68,0.4); color: #ffdd44; background: rgba(255,221,68,0.06); }
+  .save-badge.melee { border-color: rgba(100,255,200,0.4); color: #88ffbb; background: rgba(100,255,200,0.06); }
+  .save-card-actions { display: flex; gap: 10px; align-items: center; }
+  .save-card-actions .btn { margin-top: 0; flex: 1; }
+  .save-delete-btn { font-size: 11px; color: #666; border: 1px solid rgba(255,255,255,0.1); background: transparent; padding: 6px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .save-delete-btn:hover { color: #ff6666; border-color: rgba(255,80,80,0.4); }
+
+  .controls-grid { display: grid; grid-template-columns: auto auto; gap: 6px 20px; margin: 20px 0; font-size: 13px; }
+  .controls-grid .key { color: #00ffc8; font-weight: bold; text-align: right; }
+  .controls-grid .desc { color: #aaa; }
+
+  .level-transition { text-align: center; }
+  .level-num { font-size: 18px; color: #666; margin-bottom: 8px; }
+
+  .stats-grid { display: grid; grid-template-columns: auto auto; gap: 4px 30px; margin: 16px 0; font-size: 15px; }
+  .stats-grid .label { color: #888; text-align: right; }
+  .stats-grid .val { color: #ffdd44; font-weight: bold; }
+
+  /* === Crosshair === */
+  #crosshair { position: absolute; pointer-events: none; z-index: 5; width: 24px; height: 24px; margin-left: -12px; margin-top: -12px; }
+
+  /* Pause indicator */
+  #pauseHint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; color: rgba(255,255,255,0.3); z-index: 50; display: none; }
+  #pauseHint.show { display: block; }
+
+  /* === Mobile Controls === */
+  #mobileControls { display: none; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+  #mobileControls.active { display: block; }
+
+  /* Joystick */
+  #joystickArea { position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px; pointer-events: auto; }
+  #joystickBase { position: absolute; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 2px solid rgba(0,255,200,0.25); left: 0; top: 0; }
+  #joystickThumb { position: absolute; width: 56px; height: 56px; border-radius: 50%; background: rgba(0,255,200,0.3); border: 2px solid rgba(0,255,200,0.6); left: 42px; top: 42px; transition: none; box-shadow: 0 0 16px rgba(0,255,200,0.3); }
+
+  /* Shoot button */
+  #shootBtn { position: absolute; bottom: 60px; right: 30px; width: 90px; height: 90px; border-radius: 50%; background: rgba(255,68,68,0.2); border: 3px solid rgba(255,68,68,0.5); pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 24px; color: rgba(255,255,255,0.6); letter-spacing: 1px; font-family: 'Courier New', monospace; box-shadow: 0 0 20px rgba(255,68,68,0.2); }
+  #shootBtn:active, #shootBtn.pressed { background: rgba(255,68,68,0.45); border-color: rgba(255,100,100,0.8); box-shadow: 0 0 30px rgba(255,68,68,0.5); }
+
+  /* Action buttons - horizontal row (desktop-like) */
+  #actionBtns { position: absolute; bottom: 30px; right: 140px; display: flex; gap: 12px; pointer-events: auto; }
+  .mobile-action-btn { width: 52px; height: 52px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2); background: rgba(10,10,20,0.6); display: flex; align-items: center; justify-content: center; font-size: 20px; color: rgba(255,255,255,0.7); font-family: 'Courier New', monospace; box-shadow: none; transition: all 0.1s; }
+  .mobile-action-btn:active { background: rgba(255,255,255,0.15); border-color: rgba(0,255,200,0.5); }
+  #meleeBtn { color: rgba(0,255,200,0.8); border-color: rgba(0,255,200,0.3); }
+  #dashBtn { color: rgba(0,221,255,0.8); border-color: rgba(0,221,255,0.3); }
+  #reloadBtn { color: rgba(255,136,68,0.8); border-color: rgba(255,136,68,0.3); }
+  #shopBtn { color: rgba(255,221,68,0.8); border-color: rgba(255,221,68,0.3); }
+
+  /* Weapon switch row */
+  #weaponSwitchRow { position: absolute; bottom: 170px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: auto; }
+  .mobile-weapon-btn { width: 44px; height: 44px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.15); background: rgba(10,10,20,0.7); display: flex; align-items: center; justify-content: center; font-size: 18px; color: rgba(255,255,255,0.5); transition: all 0.15s; }
+  .mobile-weapon-btn.active { border-color: #00ffc8; background: rgba(0,255,200,0.1); box-shadow: 0 0 12px rgba(0,255,200,0.3); }
+  .mobile-weapon-btn.locked { opacity: 0.4; }
+
+  /* Melee switch row */
+  #meleeSwitchRow { position: absolute; bottom: 220px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: auto; }
+  .mobile-melee-btn { width: 38px; height: 38px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.12); background: rgba(10,10,20,0.7); display: flex; align-items: center; justify-content: center; font-size: 16px; color: rgba(255,255,255,0.45); transition: all 0.15s; }
+  .mobile-melee-btn.active { border-color: #ffdd44; background: rgba(255,221,68,0.15); box-shadow: 0 0 10px rgba(255,221,68,0.3); }
+  .mobile-melee-btn.locked { opacity: 0.35; }
+
+  /* Rotate hint */
+  #rotateHint { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,10,0.95); z-index: 200; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', monospace; }
+  #rotateHint .rotate-icon { font-size: 64px; animation: rotateAnim 2s ease-in-out infinite; }
+  @keyframes rotateAnim { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
+  #rotateHint .rotate-text { color: #aaa; font-size: 18px; margin-top: 20px; letter-spacing: 2px; }
+
+  /* === Landscape mobile layout === */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .hud-bottom { display: none; }
+    #joystickArea {
+      bottom: 50%;
+      left: 12px;
+      transform: translateY(50%);
+      width: 100px; height: 100px;
+    }
+    #joystickBase { width: 100px; height: 100px; }
+    #joystickThumb { width: 40px; height: 40px; left: 30px; top: 30px; }
+
+    #shootBtn {
+      bottom: 14px;
+      right: 14px;
+      width: 62px; height: 62px;
+      font-size: 16px; border-width: 2px;
+    }
+
+    /* Action buttons: vertical stack on right, evenly spaced */
+    #actionBtns {
+      top: 40px;
+      right: 14px;
+      bottom: 95px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      align-items: center;
+      gap: 0;
+    }
+    .mobile-action-btn { width: 40px; height: 40px; font-size: 17px; border-radius: 10px; }
+
+    #weaponSwitchRow {
+      bottom: 10px; gap: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .mobile-weapon-btn { width: 30px; height: 30px; font-size: 13px; border-radius: 7px; }
+
+    #meleeSwitchRow {
+      bottom: 48px; gap: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .mobile-melee-btn { width: 28px; height: 28px; font-size: 13px; border-radius: 7px; }
+
+    #mobilePauseBtn {
+      top: 6px; right: 6px;
+      width: 24px; height: 24px;
+      font-size: 12px; border-radius: 8px;
+    }
+  }
+
+  /* === Portrait mobile layout (竖屏适配) === */
+  /* Canvas is letterboxed + centered by JS; controls go in top/bottom empty areas */
+  @media (max-width: 768px) and (orientation: portrait) {
+    .hud-bottom { display: none; } /* hide desktop weapon bar; mobile has its own */
+
+    /* HUD top area — compact single row */
+    .hud-top { padding: 6px 10px; gap: 6px; }
+    .hud-panel { padding: 4px 8px; font-size: 10px; }
+    .health-bar-bg { width: 110px; height: 11px; }
+    .health-label, .health-value { font-size: 10px; }
+    .level-name { font-size: 11px; letter-spacing: 1px; }
+    .level-progress { font-size: 9px; }
+    .credits-value { font-size: 14px; }
+    .status-ind { font-size: 11px; }
+    .status-indicators { gap: 5px; }
+    .health-status-row { gap: 8px; }
+
+    /* Weapon + melee switch rows pinned to top, just under HUD */
+    #weaponSwitchRow {
+      top: 48px; bottom: auto;
+      left: 50%; transform: translateX(-50%);
+      gap: 6px;
+      flex-wrap: wrap; justify-content: center; max-width: 96vw;
+    }
+    .mobile-weapon-btn { width: 36px; height: 36px; font-size: 15px; border-radius: 8px; }
+
+    #meleeSwitchRow {
+      top: 92px; bottom: auto;
+      left: 50%; transform: translateX(-50%);
+      gap: 5px;
+      flex-wrap: wrap; justify-content: center; max-width: 96vw;
+    }
+    .mobile-melee-btn { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
+
+    /* Joystick — bottom-left, comfortable size */
+    #joystickArea { bottom: 26px; left: 22px; width: 120px; height: 120px; }
+    #joystickBase { width: 120px; height: 120px; }
+    #joystickThumb { width: 50px; height: 50px; left: 35px; top: 35px; }
+
+    /* Shoot button — bottom-right */
+    #shootBtn { bottom: 30px; right: 24px; width: 82px; height: 82px; font-size: 18px; border-width: 3px; }
+
+    /* Action buttons — bottom-center horizontal row, spaced out */
+    #actionBtns {
+      bottom: 34px; right: auto;
+      left: 50%; transform: translateX(-50%);
+      flex-direction: row;
+      gap: 12px;
+    }
+    .mobile-action-btn { width: 50px; height: 50px; font-size: 19px; border-radius: 12px; }
+
+    /* Pause button — top-right */
+    #mobilePauseBtn {
+      top: 8px; right: 8px;
+      width: 30px; height: 30px;
+      font-size: 14px; border-radius: 9px;
+    }
+  }
+
+  /* Mobile HUD adjustments */
+  @media (max-width: 768px) {
+    .hud-top { padding: 5px 8px; flex-wrap: wrap; gap: 4px; }
+    .hud-panel { padding: 4px 8px; font-size: 10px; }
+    .health-bar-bg { width: 90px; height: 10px; }
+    .health-label, .health-value { font-size: 10px; }
+    .level-name { font-size: 11px; }
+    .status-ind { font-size: 10px; }
+    .credits-value { font-size: 13px; }
+    .hud-bottom { padding: 0 0 5px 0; }
+    .weapon-bar { padding: 4px 6px; gap: 3px; }
+    .weapon-slot { padding: 3px 6px; min-width: 38px; }
+    .weapon-icon { font-size: 13px; }
+    .weapon-name { font-size: 7px; }
+    .weapon-key { font-size: 6px; }
+    .weapon-ammo { font-size: 8px; }
+    .shop-hint { top: 60px; font-size: 9px; display: none; }
+    .overlay h1 { font-size: 26px; letter-spacing: 2px; }
+    .overlay h2 { font-size: 18px; }
+    .overlay p { font-size: 11px; }
+    .controls-grid { font-size: 10px; gap: 2px 10px; }
+    .btn { padding: 8px 24px; font-size: 13px; }
+    .shop-tabs { max-width: 300px; }
+    .shop-tab { padding: 8px 4px; font-size: 11px; letter-spacing: 0px; }
+    .shop-panels { max-width: 300px; }
+    .shop-panel { max-height: 220px; padding: 10px 8px; gap: 6px; }
+    .shop-item { padding: 8px 10px; gap: 8px; }
+    .shop-icon { font-size: 20px; width: 30px; }
+    .shop-name { font-size: 11px; }
+    .shop-desc { font-size: 9px; }
+    .shop-price { font-size: 13px; }
+    .stats-grid { font-size: 11px; gap: 2px 16px; }
+    .status-indicators { gap: 4px; }
+    .health-status-row { gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <!-- Health + Status indicators together -->
+      <div class="health-status-row">
+        <div class="hud-panel health-bar-wrap">
+          <span class="health-label">HP</span>
+          <div class="health-bar-bg"><div class="health-bar-fill" id="healthBar" style="width:100%"></div></div>
+          <span class="health-value" id="healthValue">100/100</span>
+        </div>
+        <div class="status-indicators">
+          <span class="status-ind" id="shieldIndicator" style="display:none;color:#44aaff;">🛡</span>
+          <span class="status-ind" id="meleeIndicator" style="color:#00ffc8;">🗡</span>
+          <span class="status-ind" id="dashIndicator" style="color:#00ddff;">⚡</span>
+          <span class="status-ind hidden" id="reloadIndicator" style="color:#ff8844;">🔄</span>
+          <span class="status-ind hidden" id="ricochetIndicator" style="color:#00ffaa;">↯</span>
+          <span class="status-ind hidden" id="frostIndicator" style="color:#66ccff;">❄</span>
+          <span class="status-ind hidden" id="fireIndicator" style="color:#ff6600;">🔥</span>
+          <span class="status-ind" id="healthPackIndicator" style="color:#ff6666;">❤️x1</span>
+        </div>
+      </div>
+      <!-- Level -->
+      <div class="hud-panel level-info">
+        <div class="level-name" id="levelName">TRAINING GROUND</div>
+        <div class="level-progress" id="levelProgress">击杀 0/5</div>
+      </div>
+      <!-- Score & Credits -->
+      <div class="score-credits-group">
+        <div class="hud-panel credits-display">
+          <span class="credits-icon">🪙</span>
+          <span class="credits-value" id="creditsValue">0</span>
+        </div>
+      </div>
+    </div>
+    <!-- Weapons -->
+    <div class="hud-bottom">
+      <div class="weapon-bar" id="weaponBar"></div>
+    </div>
+    <div class="shop-hint" id="shopHint">按 B 打开武器商店</div>
+  </div>
+
+  <!-- Pause -->
+  <div id="pauseHint">PAUSED</div>
+
+  <!-- Shop Screen -->
+  <div class="overlay hidden" id="shopScreen">
+    <h2 class="neon-yellow">武器商店</h2>
+    <p style="font-size:14px; margin-top:4px;">击杀敌人赚取金币，购买更强武器！</p>
+    <div class="credits-display" style="margin:12px 0;">
+      <span class="credits-icon">🪙</span>
+      <span class="credits-value" id="shopCredits">0</span>
+    </div>
+    <!-- Tab bar -->
+    <div class="shop-tabs" id="shopTabs">
+      <button class="shop-tab active" data-tab="upgrades">⬆ 升级/强化</button>
+      <button class="shop-tab" data-tab="weapons">🔫 枪械武器</button>
+      <button class="shop-tab" data-tab="melee">⚔ 近战武器</button>
+    </div>
+    <div class="shop-panels">
+      <div class="shop-panel active" id="upgradesPanel"></div>
+      <div class="shop-panel" id="weaponsPanel"></div>
+      <div class="shop-panel" id="meleePanel"></div>
+    </div>
+    <p style="font-size:11px; color:#555; margin:8px 0 0 0; letter-spacing:1px;">Q / E 切换分类 &nbsp;|&nbsp; 滚轮翻动列表</p>
+    <button class="btn" id="closeShopBtn">关闭商店</button>
+  </div>
+
+  <!-- Start Screen -->
+  <div class="overlay" id="startScreen">
+    <h1 class="neon-title">NEON STRIKE</h1>
+    <p style="font-size:16px; margin-top:4px;">俯视角射击 · 9种武器 · 10个关卡</p>
+    <p style="font-size:12px; color:#666; margin-top:2px;">弹夹换弹系统 · 自动锁定瞄准 · 弹射强化 · 冲刺闪避 · 血包 · 通过第4/8关自动存档</p>
+    <div class="controls-grid" id="desktopControls">
+      <div class="key">W A S D</div><div class="desc">移动</div>
+      <div class="key">鼠标</div><div class="desc">瞄准（静止0.3秒自动锁定600范围内最近敌人并开火）</div>
+      <div class="key">左键 / 按住</div><div class="desc">射击</div>
+      <div class="key">1-9 / 滚轮</div><div class="desc">切换武器</div>
+      <div class="key">R</div><div class="desc">换弹（弹夹空时自动触发）</div>
+      <div class="key">右键</div><div class="desc">近战斩击 / G切换近战武器（6种可购买）</div>
+      <div class="key">SHIFT</div><div class="desc">冲刺闪避（2秒CD，无敌0.25秒，向移动方向冲）</div>
+      <div class="key">B</div><div class="desc">商店（Q/E切换分类，滚轮翻动）</div>
+      <div class="key">H</div><div class="desc">使用血包（回复50HP，最多储存3个，初始1个）</div>
+      <div class="key">P / ESC</div><div class="desc">暂停</div>
+    </div>
+    <div class="controls-grid" id="mobileControlsInfo" style="display:none;">
+      <div class="key">🕹 左摇杆</div><div class="desc">移动角色</div>
+      <div class="key">🔴 FIRE按钮</div><div class="desc">射击（自动锁定600范围内最近敌人）</div>
+      <div class="key">🗡 ⚡ 🔄 🪙</div><div class="desc">近战 / 冲刺 / 换弹 / 商店</div>
+      <div class="key">顶部武器栏</div><div class="desc">上排枪械 / 下排近战，点击切换</div>
+      <div class="key">竖屏画面</div><div class="desc">等比例缩小居中，上下留白放置控件</div>
+    </div>
+    <!-- Save card (shown only if a save exists) -->
+    <div id="loadSaveArea" style="display:none;width:100%;max-width:420px;margin-bottom:8px;">
+      <div class="save-card">
+        <div class="save-card-head">
+          <span class="save-card-title">💾 存档进度</span>
+          <span class="save-card-time" id="saveTime"></span>
+        </div>
+        <div class="save-card-progress">
+          <div class="save-progress-row">
+            <span class="lvl" id="saveLevelText">第 1 关</span>
+            <span class="coins" id="saveCoinsText">🪙 0</span>
+          </div>
+          <div class="save-progress-bar"><div class="save-progress-fill" id="saveProgressBar" style="width:10%"></div></div>
+        </div>
+        <div class="save-card-stats">
+          <span>击杀 <span class="stat-val" id="saveKillsText">0</span></span>
+          <span>得分 <span class="stat-val" id="saveScoreText">0</span></span>
+          <span>血包 <span class="stat-val" id="saveHealthText">1</span></span>
+        </div>
+        <div class="save-upgrades" id="saveUpgrades"></div>
+        <div class="save-card-actions">
+          <button class="btn btn-load" id="loadSaveBtn">继续存档</button>
+          <button class="save-delete-btn" id="deleteSaveBtn">🗑 删除</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn" id="startBtn">开始新游戏</button>
+  </div>
+
+  <!-- Level Transition -->
+  <div class="overlay hidden" id="levelScreen">
+    <div class="level-transition">
+      <div class="level-num" id="transLevelNum">LEVEL 1</div>
+      <h2 class="neon-title" id="transLevelName">TRAINING GROUND</h2>
+      <p id="transLevelDesc" style="margin-top:12px; max-width:400px; text-align:center;"></p>
+      <button class="btn" id="levelBtn">进入</button>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div class="overlay hidden" id="gameOverScreen">
+    <h2 class="neon-red">GAME OVER</h2>
+    <div class="stats-grid">
+      <div class="label">到达关卡</div><div class="val" id="goLevel">1</div>
+      <div class="label">击杀数</div><div class="val" id="goKills">0</div>
+      <div class="label">最终得分</div><div class="val" id="goScore">0</div>
+    </div>
+    <div id="goLoadSaveArea" style="margin-top:16px;display:none;flex-direction:column;align-items:center;gap:8px;">
+      <div id="goSaveInfo" style="font-size:12px;color:#00ffc8;letter-spacing:1px;"></div>
+      <button class="btn btn-load" id="goLoadSaveBtn">继续存档</button>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button class="btn btn-red" id="restartBtn">重新开始</button>
+      <button class="btn" id="backToMenuBtn" style="margin-top:24px;border-color:#888;color:#888;padding:8px 20px;font-size:13px;">返回主菜单</button>
+    </div>
+  </div>
+
+  <!-- Victory -->
+  <div class="overlay hidden" id="victoryScreen">
+    <h2 class="neon-yellow">VICTORY!</h2>
+    <p style="font-size:16px; margin-top:8px;">你完成了所有关卡！</p>
+    <div class="stats-grid">
+      <div class="label">总击杀</div><div class="val" id="vicKills">0</div>
+      <div class="label">最终得分</div><div class="val" id="vicScore">0</div>
+    </div>
+    <button class="btn" id="victoryBtn">再来一次</button>
+  </div>
+
+  <!-- Mobile Controls -->
+  <div id="mobileControls">
+    <!-- Virtual Joystick -->
+    <div id="joystickArea">
+      <div id="joystickBase"></div>
+      <div id="joystickThumb"></div>
+    </div>
+    <!-- Shoot Button -->
+    <div id="shootBtn">FIRE</div>
+    <!-- Action Buttons -->
+    <div id="actionBtns">
+      <div class="mobile-action-btn" id="meleeBtn">🗡</div>
+      <div class="mobile-action-btn" id="dashBtn">⚡</div>
+      <div class="mobile-action-btn" id="reloadBtn">🔄</div>
+      <div class="mobile-action-btn" id="shopBtn">🪙</div>
+    </div>
+    <!-- Weapon Switch -->
+    <div id="weaponSwitchRow"></div>
+    <!-- Melee Switch -->
+    <div id="meleeSwitchRow"></div>
+    <!-- Pause Button -->
+    <div id="mobilePauseBtn" style="position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(10,10,20,0.6);border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(255,255,255,0.5);pointer-events:auto;z-index:21;">⏸</div>
+  </div>
+
+  <!-- Rotate Hint (unused — portrait now supported) -->
+  <div id="rotateHint" style="display:none;">
+    <div class="rotate-icon">📱</div>
+    <div class="rotate-text">竖屏模式已启用</div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  NEON STRIKE - Top-Down Shooter Game
+// ============================================================
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// === Mobile Detection (defined early, used by canvas sizing) ===
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    || ('ontouchstart' in window && window.innerWidth < 1024);
+
+let W = window.innerWidth, H = window.innerHeight;
+canvas.width = W; canvas.height = H;
+
+// Portrait mobile: letterboxed canvas (maintain game aspect ratio, scale down proportionally)
+const MOBILE_GAME_ASPECT = 3 / 2; // width : height (landscape-ish game world)
+
+function isPortraitMobile() {
+  return isMobile && window.innerHeight > window.innerWidth;
+}
+
+function resizeCanvas() {
+  if (isPortraitMobile()) {
+    // Letterbox: canvas fills width, height = width / aspect, centered vertically
+    W = window.innerWidth;
+    H = Math.round(W / MOBILE_GAME_ASPECT);
+    // Cap height so we always leave room for top + bottom control areas
+    const maxH = window.innerHeight - 280; // reserve ~140px top (HUD+weapon rows) + ~140px bottom (joystick/shoot)
+    if (H > maxH) {
+      H = maxH;
+      W = Math.round(H * MOBILE_GAME_ASPECT);
+    }
+    canvas.width = W;
+    canvas.height = H;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    canvas.style.position = 'absolute';
+    canvas.style.left = Math.round((window.innerWidth - W) / 2) + 'px';
+    canvas.style.top = Math.round((window.innerHeight - H) / 2) + 'px';
+  } else {
+    // Full screen (desktop / landscape mobile)
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.position = '';
+    canvas.style.left = '';
+    canvas.style.top = '';
+  }
+}
+
+function getCanvasCoords(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  // Map screen pixels to canvas internal pixels (handle CSS scaling)
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+resizeCanvas();
+window.addEventListener('resize', () => { resizeCanvas(); });
+
+// === Input ===
+const keys = {};
+const mouse = { x: W/2, y: H/2, down: false };
+let lastMouseMoveTime = 0;
+let mouseStationary = false;
+let autoFiring = false;
+const MOUSE_STILL_DELAY = 280; // ms before auto-aim activates
+const AUTO_LOCK_RANGE = 600; // auto-lock only within this range
+window.addEventListener('keydown', e => {
+  keys[e.key.toLowerCase()] = true;
+  if (e.key === 'Escape' || e.key.toLowerCase() === 'p') {
+    // Close shop first if open
+    const shop = document.getElementById('shopScreen');
+    if (!shop.classList.contains('hidden')) {
+      closeShop();
+      return;
+    }
+    togglePause();
+  }
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 9) { selectWeapon(num - 1); }
+  if (e.key === 'Shift' && gameState === 'playing') { tryDash(); }
+  if (e.key.toLowerCase() === 'r' && gameState === 'playing') { tryReload(); }
+  if (e.key.toLowerCase() === 'h' && gameState === 'playing') { useHealthPack(); }
+  if (e.key.toLowerCase() === 'g' && gameState === 'playing') { cycleMelee(); }
+});
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+canvas.addEventListener('mousemove', e => { const c = getCanvasCoords(e.clientX, e.clientY); mouse.x = c.x; mouse.y = c.y; lastMouseMoveTime = Date.now(); });
+canvas.addEventListener('mousedown', e => { if (e.button === 0) mouse.down = true; if (e.button === 2 && gameState === 'playing') tryMelee(); });
+canvas.addEventListener('mouseup', e => { if (e.button === 0) mouse.down = false; });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const dir = e.deltaY > 0 ? 1 : -1;
+  let idx = currentWeaponIdx + dir;
+  if (idx < 0) idx = WEAPONS.length - 1;
+  if (idx >= WEAPONS.length) idx = 0;
+  selectWeapon(idx);
+});
+
+// === Mobile UI Setup ===
+if (isMobile) {
+  document.getElementById('desktopControls').style.display = 'none';
+  document.getElementById('mobileControlsInfo').style.display = '';
+  canvas.style.cursor = 'none';
+
+  // JS-based orientation detection (no longer force landscape — portrait supported)
+  function updateOrientationState() {
+    // Portrait is now supported — no rotate hint, show controls in both orientations
+    const hint = document.getElementById('rotateHint');
+    hint.style.display = 'none';
+    const mc = document.getElementById('mobileControls');
+    const shouldShow = gameState === 'playing' || gameState === 'levelTransition';
+    if (shouldShow) mc.classList.add('active');
+    else mc.classList.remove('active');
+    // Recompute letterboxed canvas size for new orientation
+    resizeCanvas();
+  }
+  window.addEventListener('resize', updateOrientationState);
+  window.addEventListener('orientationchange', () => setTimeout(updateOrientationState, 100));
+  updateOrientationState();
+}
+
+// === Virtual Joystick ===
+const joystick = { active: false, dx: 0, dy: 0, baseX: 0, baseY: 0, id: null };
+const joystickArea = document.getElementById('joystickArea');
+const joystickThumb = document.getElementById('joystickThumb');
+function getJoystickCenter() {
+  const r = joystickArea.getBoundingClientRect();
+  const tr = joystickThumb.getBoundingClientRect();
+  return { cx: r.width / 2, cy: r.height / 2, r: Math.min(r.width, r.height) / 2, tr: Math.min(tr.width, tr.height) / 2 };
+}
+
+function updateJoystickVisual(dx, dy) {
+  const c = getJoystickCenter();
+  const maxR = c.r - c.tr;
+  const len = Math.min(Math.hypot(dx, dy), maxR);
+  const angle = Math.atan2(dy, dx);
+  const tx = c.cx + Math.cos(angle) * len;
+  const ty = c.cy + Math.sin(angle) * len;
+  joystickThumb.style.left = (tx - c.tr) + 'px';
+  joystickThumb.style.top = (ty - c.tr) + 'px';
+}
+
+function resetJoystickVisual() {
+  const c = getJoystickCenter();
+  joystickThumb.style.left = (c.cx - c.tr) + 'px';
+  joystickThumb.style.top = (c.cy - c.tr) + 'px';
+}
+
+joystickArea.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const touch = e.changedTouches[0];
+  const rect = joystickArea.getBoundingClientRect();
+  const c = getJoystickCenter();
+  const cx = touch.clientX - rect.left - c.cx;
+  const cy = touch.clientY - rect.top - c.cy;
+  const d = Math.hypot(cx, cy);
+  const r = c.r;
+  if (d < r) {
+    joystick.active = true;
+    joystick.baseX = rect.left + c.cx;
+    joystick.baseY = rect.top + c.cy;
+    joystick.dx = cx / r;
+    joystick.dy = cy / r;
+    joystick.id = touch.identifier;
+    joystick._r = r;
+    updateJoystickVisual(cx, cy);
+  }
+});
+
+joystickArea.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const r = joystick._r || getJoystickCenter().r;
+  for (const touch of e.changedTouches) {
+    if (touch.identifier === joystick.id) {
+      const cx = touch.clientX - joystick.baseX;
+      const cy = touch.clientY - joystick.baseY;
+      const d = Math.hypot(cx, cy);
+      if (d < 1) { joystick.dx = 0; joystick.dy = 0; }
+      else { joystick.dx = cx / r; joystick.dy = cy / r; }
+      updateJoystickVisual(cx, cy);
+    }
+  }
+});
+
+joystickArea.addEventListener('touchend', e => {
+  for (const touch of e.changedTouches) {
+    if (touch.identifier === joystick.id) {
+      joystick.active = false;
+      joystick.dx = 0;
+      joystick.dy = 0;
+      joystick.id = null;
+      resetJoystickVisual();
+    }
+  }
+});
+joystickArea.addEventListener('touchcancel', e => {
+  joystick.active = false;
+  joystick.dx = 0;
+  joystick.dy = 0;
+  joystick.id = null;
+  resetJoystickVisual();
+});
+
+// === Shoot Button ===
+const shootBtn = document.getElementById('shootBtn');
+let mobileShooting = false;
+
+shootBtn.addEventListener('touchstart', e => {
+  e.preventDefault();
+  mobileShooting = true;
+  shootBtn.classList.add('pressed');
+  if (!audioCtx) { initAudio(); audioCtx?.resume(); }
+});
+shootBtn.addEventListener('touchend', e => {
+  e.preventDefault();
+  mobileShooting = false;
+  shootBtn.classList.remove('pressed');
+});
+shootBtn.addEventListener('touchcancel', () => {
+  mobileShooting = false;
+  shootBtn.classList.remove('pressed');
+});
+
+// Prevent double-tap zoom on shoot button
+shootBtn.addEventListener('click', e => e.preventDefault());
+
+// === Action Buttons ===
+document.getElementById('meleeBtn').addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (gameState === 'playing') tryMelee();
+});
+document.getElementById('dashBtn').addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (gameState === 'playing') tryDash();
+});
+document.getElementById('reloadBtn').addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (gameState === 'playing') tryReload();
+});
+document.getElementById('shopBtn').addEventListener('touchstart', e => {
+  e.preventDefault();
+  toggleShop();
+});
+
+// === Mobile Pause Button ===
+document.getElementById('mobilePauseBtn').addEventListener('touchstart', e => {
+  e.preventDefault();
+  togglePause();
+});
+
+// === Mobile Weapon Switch ===
+function updateMobileWeaponBar() {
+  const row = document.getElementById('weaponSwitchRow');
+  row.innerHTML = '';
+  WEAPONS.forEach((w, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'mobile-weapon-btn' + (i === currentWeaponIdx ? ' active' : '') + (!w.unlocked ? ' locked' : '');
+    btn.textContent = w.unlocked ? w.icon : '🔒';
+    btn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (w.unlocked) selectWeapon(i);
+    });
+    row.appendChild(btn);
+  });
+  updateMobileMeleeBar();
+}
+
+function updateMobileMeleeBar() {
+  const row = document.getElementById('meleeSwitchRow');
+  row.innerHTML = '';
+  MELEE_WEAPONS.forEach((mw, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'mobile-melee-btn' + (i === currentMeleeIdx ? ' active' : '') + (!mw.unlocked ? ' locked' : '');
+    btn.textContent = mw.unlocked ? mw.icon : '🔒';
+    btn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (mw.unlocked) {
+        currentMeleeIdx = i;
+        spawnParticles(player.x, player.y, 8, mw.color, 4, 0.3);
+        playSound(900, 0.08, 'sine', 0.04);
+        updateHUD();
+        updateMobileMeleeBar();
+      }
+    });
+    row.appendChild(btn);
+  });
+}
+
+// Prevent scrolling on canvas
+canvas.addEventListener('touchstart', e => e.preventDefault());
+canvas.addEventListener('touchmove', e => e.preventDefault());
+
+// === Audio (Web Audio API) ===
+let audioCtx = null;
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+function playSound(freq, duration, type = 'square', volume = 0.06) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+function playNoise(duration, volume = 0.05) {
+  if (!audioCtx) return;
+  const bufSize = audioCtx.sampleRate * duration;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const gain = audioCtx.createGain();
+  gain.gain.value = volume;
+  src.connect(gain); gain.connect(audioCtx.destination);
+  src.start();
+}
+
+// === Utility ===
+const rand = (a, b) => a + Math.random() * (b - a);
+const randInt = (a, b) => Math.floor(rand(a, b + 1));
+const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const angleTo = (x1, y1, x2, y2) => Math.atan2(y2 - y1, x2 - x1);
+// 点 (px,py) 到线段 (x1,y1)-(x2,y2) 的最短距离
+const pointToSegmentDist = (px, py, x1, y1, x2, y2) => {
+  const dx = x2 - x1, dy = y2 - y1;
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.hypot(px - x1, py - y1);
+  let t = ((px - x1) * dx + (py - y1) * dy) / len2;
+  t = clamp(t, 0, 1);
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+};
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// === Game State ===
+let gameState = 'menu'; // menu, playing, paused, levelTransition, gameOver, victory
+let currentLevel = 0;
+let score = 0;
+let kills = 0;
+let totalKills = 0;
+let credits = 0;
+let ricochetPurchased = false; // 本局永久弹射强化，死亡/重开时重置
+let multishotLevel = 0;        // 多重发射等级 0-3，死亡/重开时重置
+let frostPurchased = false;    // 冰冻强化，死亡/重开时重置
+let firePurchased = false;     // 火焰强化，死亡/重开时重置
+let healthPacks = 1;           // 血包数量，初始1个，最多3个
+let shakeAmount = 0;
+let frameCount = 0;
+let levelData = null;
+let currentWeaponIdx = 0;
+let currentMeleeIdx = 0;
+
+// === Weapons ===
+const WEAPONS = [
+  {
+    name: '手枪', icon: '🔫', key: '1',
+    damage: 28, fireRate: 280, bulletSpeed: 14, bulletRadius: 4,
+    color: '#ffdd44', ammo: 12, maxAmmo: Infinity,
+    magSize: 12, reserve: Infinity, reserveMax: Infinity, reloadTime: 1.0, reloading: 0,
+    spread: 0.02, bulletsPerShot: 1, type: 'bullet',
+    price: 0, unlocked: true, desc: '12发弹夹，无限备弹',
+    sound: () => playSound(800, 0.08, 'square', 0.05)
+  },
+  {
+    name: '霰弹枪', icon: '💥', key: '2',
+    damage: 16, fireRate: 600, bulletSpeed: 12, bulletRadius: 3,
+    color: '#ff8844', ammo: 7, maxAmmo: 7,
+    magSize: 7, reserve: 60, reserveMax: 60, reloadTime: 1.5, reloading: 0,
+    spread: 0.22, bulletsPerShot: 7, type: 'bullet',
+    price: 200, unlocked: false, desc: '7发弹夹，近战利器',
+    sound: () => { playSound(300, 0.12, 'sawtooth', 0.07); playNoise(0.1, 0.03); }
+  },
+  {
+    name: '冲锋枪', icon: '⚡', key: '3',
+    damage: 12, fireRate: 70, bulletSpeed: 16, bulletRadius: 3,
+    color: '#44ddff', ammo: 35, maxAmmo: 35,
+    magSize: 35, reserve: 180, reserveMax: 180, reloadTime: 1.8, reloading: 0,
+    spread: 0.08, bulletsPerShot: 1, type: 'bullet',
+    price: 500, unlocked: false, desc: '35发弹夹，持续火力压制',
+    sound: () => playSound(1200, 0.04, 'square', 0.03)
+  },
+  {
+    name: '激光', icon: '🔆', key: '4',
+    damage: 1.6, fireRate: 0, bulletSpeed: 0, bulletRadius: 0,
+    color: '#ff44ff', ammo: 120, maxAmmo: 120,
+    magSize: 120, reserve: 360, reserveMax: 360, reloadTime: 2.0, reloading: 0,
+    spread: 0, bulletsPerShot: 0, type: 'laser',
+    price: 800, unlocked: false, desc: '120能量弹夹，220范围链式弹射',
+    sound: () => {}
+  },
+  {
+    name: '火箭筒', icon: '🚀', key: '5',
+    damage: 260, fireRate: 850, bulletSpeed: 10, bulletRadius: 8,
+    color: '#ff4444', ammo: 15, maxAmmo: 15,
+    magSize: Infinity, reserve: 0, reserveMax: 0, reloadTime: 0, reloading: 0,
+    spread: 0, bulletsPerShot: 1, type: 'rocket',
+    explosionRadius: 160, explosionDamage: 210, explosionKnockback: 18,
+    price: 1500, unlocked: false, desc: '大范围爆炸+击退，无需换弹',
+    sound: () => { playSound(120, 0.25, 'sawtooth', 0.1); playNoise(0.2, 0.06); }
+  },
+  {
+    name: '电弧枪', icon: '⚡', key: '6',
+    damage: 38, fireRate: 420, bulletSpeed: 18, bulletRadius: 4,
+    color: '#44ddff', ammo: 15, maxAmmo: 15,
+    magSize: 15, reserve: 90, reserveMax: 90, reloadTime: 1.6, reloading: 0,
+    spread: 0.03, bulletsPerShot: 1, type: 'arc',
+    chainRange: 180, chainDamage: 30, chainCount: 3,
+    price: 550, unlocked: false, desc: '连锁闪电，弹射3个目标',
+    sound: () => { playSound(2000, 0.06, 'sine', 0.04); playSound(3000, 0.04, 'square', 0.02); }
+  },
+  {
+    name: '狙击步枪', icon: '🔭', key: '7',
+    damage: 160, fireRate: 1100, bulletSpeed: 28, bulletRadius: 3,
+    color: '#ff8866', ammo: 5, maxAmmo: 5,
+    magSize: 5, reserve: 30, reserveMax: 30, reloadTime: 2.2, reloading: 0,
+    spread: 0.01, bulletsPerShot: 1, type: 'sniper',
+    price: 2200, unlocked: false, desc: '一击致命，穿透沿途所有敌人',
+    sound: () => { playSound(80, 0.2, 'sawtooth', 0.08); playNoise(0.15, 0.05); playSound(400, 0.05, 'sine', 0.03); }
+  },
+  {
+    name: '弹鼓霰弹', icon: '💣', key: '8',
+    damage: 14, fireRate: 350, bulletSpeed: 11, bulletRadius: 3,
+    color: '#ffaa00', ammo: 20, maxAmmo: 20,
+    magSize: 20, reserve: 120, reserveMax: 120, reloadTime: 2.0, reloading: 0,
+    spread: 0.18, bulletsPerShot: 9, type: 'bullet',
+    price: 1000, unlocked: false, desc: '20发弹鼓霰弹，每枪9弹丸',
+    sound: () => { playSound(250, 0.1, 'sawtooth', 0.06); playNoise(0.08, 0.03); }
+  },
+  {
+    name: '聚焦激光', icon: '🔥', key: '9',
+    damage: 3.5, fireRate: 0, bulletSpeed: 0, bulletRadius: 0,
+    color: '#ff6600', ammo: 150, maxAmmo: 150,
+    magSize: 150, reserve: 300, reserveMax: 300, reloadTime: 2.5, reloading: 0,
+    spread: 0, bulletsPerShot: 0, type: 'focusLaser',
+    price: 2500, unlocked: false, desc: '持续灼烧射线，伤害随时间递增',
+    sound: () => {}
+  }
+];
+
+// === Melee Weapons ===
+const MELEE_WEAPONS = [
+  {
+    name: '战斗小刀', icon: '🔪',
+    damage: 40, cooldown: 0.35, range: 65, arc: Math.PI * 0.55, knockback: 5,
+    color: '#aaddff', swingTime: 0.18,
+    price: 0, unlocked: true, desc: '默认近战，极速连击（冷却0.35秒）'
+  },
+  {
+    name: '能量剑', icon: '⚔️',
+    damage: 70, cooldown: 0.6, range: 90, arc: Math.PI * 0.75, knockback: 12,
+    color: '#00ffc8', swingTime: 0.25,
+    price: 200, unlocked: false, desc: '均衡之选，135°扇形范围伤害'
+  },
+  {
+    name: '巨斧', icon: '🪓',
+    damage: 130, cooldown: 0.95, range: 80, arc: Math.PI * 0.6, knockback: 20,
+    color: '#ff8844', swingTime: 0.3,
+    price: 550, unlocked: false, desc: '一击重创，强力击退效果'
+  },
+  {
+    name: '虎爪', icon: '🐯',
+    damage: 22, cooldown: 0.12, range: 55, arc: Math.PI * 0.45, knockback: 3,
+    color: '#ffcc00', swingTime: 0.1,
+    price: 400, unlocked: false, desc: '极速撕裂，每秒可攻击8次以上'
+  },
+  {
+    name: '冲击锤', icon: '🔨',
+    damage: 85, cooldown: 0.7, range: 105, arc: Math.PI * 0.9, knockback: 25,
+    color: '#ff44ff', swingTime: 0.28,
+    price: 700, unlocked: false, desc: '超大范围162°，强力群体击退'
+  },
+  {
+    name: '光刃', icon: '✨',
+    damage: 100, cooldown: 0.4, range: 100, arc: Math.PI * 0.8, knockback: 14,
+    color: '#ffdd44', swingTime: 0.22,
+    price: 1000, unlocked: false, desc: '终极近战，高伤高频大范围'
+  }
+];
+
+// Melee save/load
+function saveMeleeUnlocks() {
+  const unlocked = MELEE_WEAPONS.map(w => w.unlocked);
+  localStorage.setItem('neonStrike_melee', JSON.stringify(unlocked));
+}
+function loadMeleeUnlocks() {
+  try {
+    const data = JSON.parse(localStorage.getItem('neonStrike_melee'));
+    if (Array.isArray(data) && data.length === MELEE_WEAPONS.length) return data;
+  } catch (e) {}
+  const arr = MELEE_WEAPONS.map(() => false);
+  arr[0] = true;
+  return arr;
+}
+
+// Reset weapon ammo and unlock state
+function saveWeaponUnlocks() {
+  const unlocked = WEAPONS.map(w => w.unlocked);
+  localStorage.setItem('neonStrike_weapons', JSON.stringify(unlocked));
+}
+function loadWeaponUnlocks() {
+  try {
+    const data = JSON.parse(localStorage.getItem('neonStrike_weapons'));
+    if (Array.isArray(data) && data.length === WEAPONS.length) return data;
+  } catch (e) {}
+  // first time: only pistol unlocked
+  const arr = WEAPONS.map(() => false);
+  arr[0] = true;
+  return arr;
+}
+function resetWeapons() {
+  const unlocked = loadWeaponUnlocks();
+  WEAPONS.forEach((w, i) => {
+    w.ammo = w.magSize;
+    w.reserve = w.reserveMax;
+    w.reloading = 0;
+    w.unlocked = unlocked[i];
+  });
+}
+
+function resetMeleeWeapons() {
+  const unlocked = loadMeleeUnlocks();
+  MELEE_WEAPONS.forEach((m, i) => { m.unlocked = unlocked[i]; });
+}
+
+// === Save / Load System ===
+const SAVE_KEY = 'neonStrike_save';
+const SAVE_LEVELS = [3, 7]; // 通过第4关(index 3)和第8关(index 7)时存档
+
+function saveGame() {
+  const data = {
+    currentLevel: currentLevel + 1, // 存储下一关索引（已完成 currentLevel，下一关是 currentLevel+1）
+    credits: credits,
+    ricochetPurchased: ricochetPurchased,
+    multishotLevel: multishotLevel,
+    frostPurchased: frostPurchased,
+    firePurchased: firePurchased,
+    healthPacks: healthPacks,
+    currentMeleeIdx: currentMeleeIdx,
+    score: score,
+    totalKills: totalKills,
+    weaponUnlocks: WEAPONS.map(w => w.unlocked),
+    meleeUnlocks: MELEE_WEAPONS.map(m => m.unlocked),
+    timestamp: Date.now()
+  };
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    showSaveToast();
+  } catch (e) {
+    console.warn('存档失败:', e);
+  }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (typeof data.currentLevel !== 'number') return null;
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function hasSave() {
+  return loadGame() !== null;
+}
+
+function clearSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+}
+
+function applySave(data) {
+  // 恢复技能强化和状态
+  currentLevel = data.currentLevel;
+  credits = data.credits || 0;
+  ricochetPurchased = !!data.ricochetPurchased;
+  multishotLevel = data.multishotLevel || 0;
+  frostPurchased = !!data.frostPurchased;
+  firePurchased = !!data.firePurchased;
+  healthPacks = data.healthPacks !== undefined ? data.healthPacks : 1;
+  currentMeleeIdx = data.currentMeleeIdx || 0;
+  score = data.score || 0;
+  totalKills = data.totalKills || 0;
+
+  // 恢复武器解锁状态（同时同步到独立 localStorage key）
+  if (Array.isArray(data.weaponUnlocks) && data.weaponUnlocks.length === WEAPONS.length) {
+    const weaponUnlocked = loadWeaponUnlocks();
+    // 合并：存档中的解锁 OR 本地记录的解锁（取并集，防止数据丢失）
+    data.weaponUnlocks.forEach((unlocked, i) => {
+      WEAPONS[i].unlocked = unlocked || weaponUnlocked[i];
+    });
+    saveWeaponUnlocks(); // 同步回独立 key
+  }
+  if (Array.isArray(data.meleeUnlocks) && data.meleeUnlocks.length === MELEE_WEAPONS.length) {
+    const meleeUnlocked = loadMeleeUnlocks();
+    data.meleeUnlocks.forEach((unlocked, i) => {
+      MELEE_WEAPONS[i].unlocked = unlocked || meleeUnlocked[i];
+    });
+    saveMeleeUnlocks(); // 同步回独立 key
+  }
+}
+
+function getSaveInfoText() {
+  const data = loadGame();
+  if (!data) return '';
+  const levelNum = data.currentLevel + 1;
+  const parts = [`第${levelNum}关`, `🪙${data.credits || 0}`];
+  if (data.ricochetPurchased) parts.push('↯弹射');
+  if (data.multishotLevel > 0) parts.push(`✦×${data.multishotLevel}`);
+  if (data.frostPurchased) parts.push('❄冰冻');
+  if (data.firePurchased) parts.push('🔥火焰');
+  if (data.healthPacks > 0) parts.push(`❤️×${data.healthPacks}`);
+  return parts.join(' · ');
+}
+
+// 存档通知 toast
+function showSaveToast() {
+  let toast = document.getElementById('saveToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'saveToast';
+    toast.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(0,255,200,0.15);border:1px solid rgba(0,255,200,0.5);color:#00ffc8;padding:10px 24px;border-radius:8px;font-size:14px;font-family:Courier New,monospace;font-weight:bold;letter-spacing:2px;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(4px);box-shadow:0 0 20px rgba(0,255,200,0.3);';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = '💾 已存档';
+  toast.style.opacity = '1';
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => { toast.style.opacity = '0'; }, 1800);
+}
+
+// === Levels ===
+const LEVELS = [
+  {
+    name: 'TRAINING GROUND',
+    desc: '训练场 — 敌人凶猛，快速兵已经出动',
+    killTarget: 18,
+    spawnInterval: 1100,
+    maxEnemies: 10,
+    enemyTypes: ['grunt', 'runner'],
+    bg: '#0a0f0a'
+  },
+  {
+    name: 'CITY RAID',
+    desc: '城市突袭 — 坦克提前入场，火力全开',
+    killTarget: 28,
+    spawnInterval: 800,
+    maxEnemies: 14,
+    enemyTypes: ['grunt', 'runner', 'tank'],
+    bg: '#0f0a0a'
+  },
+  {
+    name: 'TOXIC ZONE',
+    desc: '毒化区域 — 射手加入，战场上弹幕横飞',
+    killTarget: 40,
+    spawnInterval: 600,
+    maxEnemies: 18,
+    enemyTypes: ['grunt', 'runner', 'tank', 'shooter', 'bomber'],
+    bg: '#0a0f0c'
+  },
+  {
+    name: 'WAR ZONE',
+    desc: '战区 — 海量敌人，弹幕地狱',
+    killTarget: 50,
+    spawnInterval: 450,
+    maxEnemies: 22,
+    enemyTypes: ['grunt', 'runner', 'tank', 'shooter', 'bomber'],
+    bg: '#0c0a0f'
+  },
+  {
+    name: 'WASTELAND',
+    desc: '废土 — 远程狙击手出动，保持移动！',
+    killTarget: 35,
+    spawnInterval: 600,
+    maxEnemies: 16,
+    enemyTypes: ['grunt', 'runner', 'tank', 'sniper'],
+    bg: '#0f0d08'
+  },
+  {
+    name: 'CHAOS LAB',
+    desc: '混沌实验室 — 分裂怪来袭，会裂成小怪',
+    killTarget: 40,
+    spawnInterval: 550,
+    maxEnemies: 18,
+    enemyTypes: ['splitter', 'shooter', 'bomber', 'runner'],
+    bg: '#0a0f10'
+  },
+  {
+    name: 'INFERNO',
+    desc: '炼狱 — 冲锋怪物出笼，冲撞无情',
+    killTarget: 35,
+    spawnInterval: 550,
+    maxEnemies: 16,
+    enemyTypes: ['charger', 'tank', 'sniper', 'grunt'],
+    bg: '#100a08'
+  },
+  {
+    name: 'THE HIVE',
+    desc: '巢穴 — 所有敌人倾巢而出！',
+    killTarget: 60,
+    spawnInterval: 380,
+    maxEnemies: 24,
+    enemyTypes: ['grunt', 'runner', 'tank', 'shooter', 'bomber', 'sniper', 'splitter', 'charger'],
+    bg: '#0d080f'
+  },
+  {
+    name: 'COMMAND CENTER',
+    desc: '指挥部 — 精英敌人包围，最后一关',
+    killTarget: 30,
+    spawnInterval: 420,
+    maxEnemies: 15,
+    enemyTypes: ['tank', 'sniper', 'charger', 'splitter', 'shooter'],
+    bg: '#080a0f'
+  },
+  {
+    name: 'FINAL BOSS',
+    desc: '终极BOSS — 强化形态！弹幕、召唤、冲撞、追踪导弹、旋转激光、陨石轰炸、分裂弹！',
+    killTarget: 99999,
+    spawnInterval: 99999,
+    maxEnemies: 1,
+    enemyTypes: ['boss'],
+    bg: '#10080a'
+  }
+];
+
+// === Enemy Types ===
+const ENEMY_DEFS = {
+  grunt: { hp: 70, speed: 1.1, radius: 14, color: '#ff5555', damage: 14, score: 100, credits: 15, type: 'melee' },
+  runner: { hp: 38, speed: 2.45, radius: 11, color: '#ffaa44', damage: 12, score: 150, credits: 25, type: 'melee' },
+  tank: { hp: 280, speed: 0.5, radius: 22, color: '#aa44ff', damage: 30, score: 300, credits: 60, type: 'melee' },
+  shooter: { hp: 75, speed: 0.7, radius: 14, color: '#44aaff', damage: 14, score: 250, credits: 50, type: 'ranged', shootInterval: 1100, bulletSpeed: 8, bulletDamage: 14 },
+  boss: { hp: 12000, speed: 0.45, radius: 45, color: '#ff2266', damage: 40, score: 10000, credits: 2000, type: 'boss', shootInterval: 800, bulletSpeed: 7, bulletDamage: 18 },
+  bomber: { hp: 90, speed: 1.7, radius: 16, color: '#ff6622', damage: 25, score: 350, credits: 80, type: 'melee', explodeOnDeath: true, explodeRadius: 100, explodeDamage: 60 },
+  sniper: { hp: 55, speed: 0.3, radius: 13, color: '#ffff44', damage: 10, score: 400, credits: 70, type: 'kiting', shootInterval: 2200, bulletSpeed: 18, bulletDamage: 32, kiteDist: 380 },
+  splitter: { hp: 130, speed: 1.15, radius: 18, color: '#22ff88', damage: 22, score: 500, credits: 100, type: 'melee', splitOnDeath: true },
+  charger: { hp: 160, speed: 0.55, radius: 20, color: '#ff8800', damage: 35, score: 450, credits: 85, type: 'charger', chargeSpeed: 7.5, chargeCooldown: 2800, chargeDuration: 500 },
+  miniSplitter: { hp: 28, speed: 2.6, radius: 8, color: '#88ffcc', damage: 8, score: 50, credits: 10, type: 'melee' }
+};
+
+// === Entities ===
+let player = null;
+let enemies = [];
+let bullets = [];
+let enemyBullets = [];
+let particles = [];
+let pickups = [];
+let explosions = [];
+let damageNumbers = [];
+let muzzleFlash = null;
+let meteorWarnings = [];   // Boss 陨石轰炸：警告区域 {x,y,r,timer,delay,damage}
+
+// === Player ===
+function createPlayer() {
+  return {
+    x: W / 2, y: H / 2,
+    radius: 16,
+    speed: 2.5,
+    health: 100, maxHealth: 100,
+    angle: 0,
+    lastShot: 0,
+    invulnerable: 0,
+    shieldTimer: 0,
+    laserActive: false,
+    laserTarget: null,
+    laserChain: [],
+    _focusBeamTime: 0,
+    meleeCooldown: 0,
+    meleeSwing: 0,
+    dashCooldown: 0,
+    dashTime: 0,
+    dashDirX: 0,
+    dashDirY: 0
+  };
+}
+
+// === Spawn Enemy ===
+function spawnEnemy(type) {
+  const def = ENEMY_DEFS[type];
+  let x, y;
+  const side = randInt(0, 3);
+  const margin = 40;
+  if (side === 0) { x = rand(0, W); y = -margin; }
+  else if (side === 1) { x = W + margin; y = rand(0, H); }
+  else if (side === 2) { x = rand(0, W); y = H + margin; }
+  else { x = -margin; y = rand(0, H); }
+
+  const enemy = {
+    x, y,
+    type,
+    hp: def.hp,
+    maxHp: def.hp,
+    speed: def.speed,
+    radius: def.radius,
+    color: def.color,
+    damage: def.damage,
+    score: def.score,
+    credits: def.credits,
+    enemyType: def.type,
+    angle: 0,
+    lastShot: 0,
+    shootInterval: def.shootInterval || 0,
+    bulletSpeed: def.bulletSpeed || 0,
+    bulletDamage: def.bulletDamage || 0,
+    hitFlash: 0,
+    attackCooldown: 0,
+    // Boss specific
+    phase: 0,
+    phaseTimer: 0,
+    movePattern: 0,
+    specialTimer: 0,
+    enraged: false,
+    chargeTarget: null,
+    chargeSpeed: 0,
+    // Boss laser sweep
+    laserSweepCooldown: 9,   // 冷却计时（秒），每9秒可释放一次
+    laserSweepActive: false,  // 是否正在释放激光
+    laserSweepTime: 0,       // 当前激光已持续时间
+    laserSweepAngle: 0,       // 激光当前角度
+    laserSweepDuration: 3.2,  // 激光持续总时长（秒）
+    // Boss meteor strike
+    meteorCooldown: 11,      // 陨石轰炸冷却
+    meteorCastTime: 0,       // 距上次陨石释放的时间
+    // Boss split shot
+    splitShotCooldown: 7,    // 分裂弹冷却
+    // Bomber specific
+    explodeOnDeath: def.explodeOnDeath || false,
+    explodeRadius: def.explodeRadius || 0,
+    explodeDamage: def.explodeDamage || 0,
+    // Splitter specific
+    splitOnDeath: def.splitOnDeath || false,
+    // Charger specific
+    chargeCooldown: def.chargeCooldown || 0,
+    chargeDuration: def.chargeDuration || 0,
+    chargeSpeed: def.chargeSpeed || 0,
+    _charging: false,
+    _chargeTimer: 0,
+    _chargeCooldownTime: 0,
+    _chargeAngle: 0,
+    // Sniper / kiting specific
+    kiteDist: def.kiteDist || 0,
+    pulse: 0,
+    // Frost effect
+    frostTime: 0,
+    // Fire effect (burning)
+    fireTime: 0
+  };
+  enemies.push(enemy);
+}
+
+// === Particle System ===
+function spawnParticles(x, y, count, color, speed, life) {
+  for (let i = 0; i < count; i++) {
+    const a = rand(0, Math.PI * 2);
+    const s = rand(speed * 0.3, speed);
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+      life: life || rand(0.4, 0.8),
+      maxLife: life || 0.8,
+      color,
+      size: rand(2, 5)
+    });
+  }
+}
+
+function spawnExplosion(x, y, radius, color) {
+  explosions.push({ x, y, radius: 0, maxRadius: radius, life: 0.4, maxLife: 0.4, color });
+  spawnParticles(x, y, 30, color, 8, 0.6);
+  spawnParticles(x, y, 15, '#ffffff', 5, 0.3);
+  shakeAmount = Math.min(shakeAmount + 12, 30);
+  playSound(80, 0.3, 'sawtooth', 0.08);
+  playNoise(0.25, 0.05);
+}
+
+function spawnDamageNumber(x, y, dmg, color) {
+  damageNumbers.push({ x, y: y - 10, dmg, color: color || '#ffdd44', life: 0.8, maxLife: 0.8, vy: -2 });
+}
+
+// === Auto-Lock Aim ===
+let aimAssistTarget = null; // current locked-on enemy for rendering
+
+function getNearestEnemy() {
+  let best = null;
+  let bestDist = Infinity;
+  for (const e of enemies) {
+    const d = dist(player.x, player.y, e.x, e.y);
+    if (d < bestDist && d <= AUTO_LOCK_RANGE) {
+      bestDist = d;
+      best = e;
+    }
+  }
+  return best;
+}
+
+// === Reload ===
+function tryReload() {
+  const weapon = WEAPONS[currentWeaponIdx];
+  if (weapon.magSize === Infinity) return;     // no mag system (rocket)
+  if (weapon.reloading > 0) return;            // already reloading
+  if (weapon.ammo >= weapon.magSize) return;  // mag already full
+  if (weapon.reserve <= 0) return;             // no reserve ammo
+  weapon.reloading = weapon.reloadTime;
+  playSound(400, 0.1, 'sine', 0.04);
+}
+
+function finishReload(weapon) {
+  const needed = weapon.magSize - weapon.ammo;
+  if (weapon.reserve === Infinity) {
+    weapon.ammo = weapon.magSize;
+  } else {
+    const take = Math.min(needed, weapon.reserve);
+    weapon.ammo += take;
+    weapon.reserve -= take;
+  }
+  weapon.reloading = 0;
+  playSound(700, 0.08, 'sine', 0.04);
+  playSound(1000, 0.06, 'sine', 0.03);
+}
+
+// === Health Pack ===
+function useHealthPack() {
+  if (healthPacks <= 0) return;
+  if (player.health >= player.maxHealth) return;
+  healthPacks--;
+  player.health = Math.min(player.health + 50, player.maxHealth);
+  playSound(400, 0.15, 'sine', 0.1);
+  playSound(600, 0.08, 'sine', 0.06);
+  spawnParticles(player.x, player.y, 12, '#ff4444', 5, 0.6);
+  updateHUD();
+  updateHealthPackIndicator();
+}
+
+function updateHealthPackIndicator() {
+  const el = document.getElementById('healthPackIndicator');
+  if (healthPacks <= 0) {
+    el.classList.add('hidden');
+  } else {
+    el.classList.remove('hidden');
+    el.textContent = `❤️x${healthPacks}`;
+  }
+}
+
+// === Shooting ===
+function tryShoot() {
+  const weapon = WEAPONS[currentWeaponIdx];
+  // Can't shoot while reloading
+  if (weapon.reloading > 0) return;
+  // Auto-reload when empty
+  if (weapon.ammo <= 0 && weapon.magSize !== Infinity) {
+    tryReload();
+    return;
+  }
+  if (weapon.ammo <= 0 && weapon.ammo !== Infinity) return;
+  const now = Date.now();
+  if (weapon.type === 'laser') {
+    // Laser is continuous
+    player.laserActive = (mouse.down || autoFiring) && weapon.ammo > 0 && weapon.reloading <= 0;
+    return;
+  }
+  if (weapon.type === 'focusLaser') {
+    player.laserActive = (mouse.down || autoFiring) && weapon.ammo > 0 && weapon.reloading <= 0;
+    return;
+  }
+  if (now - player.lastShot < weapon.fireRate) return;
+  player.lastShot = now;
+
+  if (weapon.ammo !== Infinity) weapon.ammo--;
+  weapon.sound();
+
+  const baseAngle = player.angle;
+  const totalBullets = weapon.bulletsPerShot + multishotLevel; // 多重发射额外子弹
+  for (let i = 0; i < totalBullets; i++) {
+    let angle = baseAngle;
+    if (totalBullets > 1) {
+      const idx = i - (totalBullets - 1) / 2;
+      angle += idx * MULTISHOT.spreadAngle;
+    }
+    const spread = (Math.random() - 0.5) * weapon.spread * 2;
+    angle += spread;
+
+    bullets.push({
+      x: player.x + Math.cos(angle) * 20,
+      y: player.y + Math.sin(angle) * 20,
+      vx: Math.cos(angle) * weapon.bulletSpeed,
+      vy: Math.sin(angle) * weapon.bulletSpeed,
+      radius: weapon.bulletRadius,
+      damage: weapon.damage,
+      color: weapon.color,
+      life: 1.5,
+      type: weapon.type,
+      trail: [],
+      ricochet: ricochetPurchased,
+      bouncesLeft: ricochetPurchased ? RICOCHET.maxBounces : 0,
+      hitList: []
+    });
+  }
+
+  // Muzzle flash
+  muzzleFlash = { angle: baseAngle, life: 0.08 };
+  // Recoil shake
+  shakeAmount = Math.min(shakeAmount + (weapon.type === 'rocket' ? 10 : (weapon.type === 'sniper' ? 6 : 2)), 20);
+}
+
+// Laser logic - chain lightning style
+const LASER_CHAIN_RANGE = 220;
+const LASER_MAX_HITS = 3;
+
+function updateLaser(dt) {
+  const weapon = WEAPONS[currentWeaponIdx];
+  if (!player.laserActive) { player.laserChain = []; return; }
+  if (weapon.reloading > 0) { player.laserActive = false; player.laserChain = []; return; }
+  if (weapon.ammo <= 0) {
+    player.laserActive = false; player.laserChain = [];
+    tryReload();
+    return;
+  }
+
+  weapon.ammo -= dt * (weapon.type === 'focusLaser' ? 12 : 15); // drains magazine
+  if (weapon.ammo <= 0) { weapon.ammo = 0; player.laserActive = false; player.laserChain = []; tryReload(); return; }
+
+  const aimAngle = player.angle;
+
+  if (weapon.type === 'focusLaser') {
+    // Focus laser: cone AoE, damage ramps up over time
+    if (!player._focusBeamTime) player._focusBeamTime = 0;
+    player._focusBeamTime += dt;
+    const rampMultiplier = Math.min(1 + player._focusBeamTime * 2, 4); // ramps from 1x to 4x over 1.5s
+    const beamDamage = weapon.damage * rampMultiplier * dt * 60;
+    const beamRange = 200;
+    const beamHalfArc = Math.PI / 6; // 30° half-angle cone
+
+    const chainTargets = [];
+    for (const e of enemies) {
+      if (e.hp <= 0) continue;
+      const dx = e.x - player.x;
+      const dy = e.y - player.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d > beamRange) continue;
+      const eAngle = Math.atan2(dy, dx);
+      let diff = eAngle - aimAngle;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      if (Math.abs(diff) < beamHalfArc) {
+        e.hp -= beamDamage;
+        e.hitFlash = 0.05;
+        applyFrost(e);
+        applyFire(e);
+        if (frameCount % 3 === 0) spawnParticles(e.x, e.y - 10, 2, '#ff6600', 3, 0.15);
+        if (frameCount % 5 === 0) spawnDamageNumber(e.x, e.y - 10, Math.round(beamDamage), '#ff6600');
+        if (e.hp <= 0) killEnemy(e);
+        else chainTargets.push(e);
+      }
+    }
+    player.laserChain = chainTargets;
+    return;
+  }
+
+  // Original laser: chain lightning style
+  const hitCounts = new Map();
+
+  // Step 1: find first target along the beam from player
+  let firstTarget = null;
+  let firstDist = Infinity;
+
+  for (const e of enemies) {
+    if (e.hp <= 0) continue;
+    const dx = e.x - player.x;
+    const dy = e.y - player.y;
+    const proj = dx * Math.cos(aimAngle) + dy * Math.sin(aimAngle); // projection onto aim direction
+    if (proj < 0) continue;
+    const perp = Math.abs(dx * (-Math.sin(aimAngle)) + dy * Math.cos(aimAngle)); // perpendicular distance
+    if (perp < e.radius + 6) {
+      if (proj < firstDist) {
+        firstDist = proj;
+        firstTarget = e;
+      }
+    }
+  }
+
+  const chainTargets = [];
+
+  if (firstTarget) {
+    chainTargets.push(firstTarget);
+    hitCounts.set(firstTarget, 1);
+
+    // Step 2: BFS chain — from each target, find nearby enemies within 220px
+    for (let i = 0; i < chainTargets.length && chainTargets.length < 30; i++) {
+      const src = chainTargets[i];
+      for (const e of enemies) {
+        if (e.hp <= 0) continue;
+        const hits = hitCounts.get(e) || 0;
+        if (hits >= LASER_MAX_HITS) continue;
+        const d = dist(src.x, src.y, e.x, e.y);
+        if (d <= LASER_CHAIN_RANGE) {
+          hitCounts.set(e, hits + 1);
+          if (hits === 0) chainTargets.push(e);
+        }
+      }
+    }
+  }
+
+  player.laserTarget = firstTarget;
+  player.laserChain = chainTargets;
+
+  // Apply damage to all chained enemies
+  for (const e of chainTargets) {
+    e.hp -= weapon.damage * dt * 60;
+    e.hitFlash = 0.1;
+    applyFrost(e);
+    applyFire(e);
+    if (Math.random() < 0.3) {
+      spawnParticles(e.x, e.y, 2, '#ff44ff', 4, 0.3);
+    }
+  }
+
+  // Kill enemies that died during this frame
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    if (enemies[i].hp <= 0) killEnemy(enemies[i]);
+  }
+
+  if (frameCount % 6 === 0) playSound(2000, 0.03, 'sine', 0.02);
+}
+
+// === Melee Attack ===
+// === Dash Skill ===
+const DASH = {
+  speed: 14,          // 冲刺速度
+  duration: 0.18,     // 冲刺持续时间（秒）
+  cooldown: 2.0,      // CD（秒）
+  invulnTime: 0.25,   // 冲刺无敌时间（秒）
+  trailColor: '#00ddff'
+};
+
+const HIT_INTERVAL = 0.06; // 受击最小间隔（秒）
+
+const RICOCHET = {
+  price: 500,           // 商店购买价格
+  maxBounces: 3,       // 最多弹射次数
+  searchRadius: 100    // 弹射搜索半径（怪物周围）
+};
+
+const MULTISHOT = {
+  basePrice: 400,      // 基础价格
+  maxLevel: 3,         // 最高等级
+  spreadAngle: 0.15    // 额外子弹的扩散角度（弧度）
+};
+
+const FROST = {
+  price: 600,              // 商店购买价格
+  slowMultiplier: 0.45,   // 减速后速度倍率（45% = 减速55%）
+  dotDamage: 8,            // 每秒持续伤害
+  duration: 10,            // 持续时间（秒）
+  color: '#66ccff'         // 冰冻视觉颜色
+};
+
+const FIRE = {
+  price: 650,              // 商店购买价格
+  dotDamage: 28,           // 每秒持续伤害（大量燃烧伤害）
+  duration: 13,            // 持续时间（秒）
+  spreadRadius: 12,       // 燃烧传染检测容差（怪物间碰撞时点燃）
+  color: '#ff6600',        // 火焰视觉颜色
+  particleColor: '#ffaa33'  // 火焰粒子颜色
+};
+
+function tryMelee() {
+  if (gameState !== 'playing') return;
+  const mw = MELEE_WEAPONS[currentMeleeIdx];
+  if (!mw || !mw.unlocked) return;
+  if (player.meleeCooldown > 0) return;
+
+  player.meleeCooldown = mw.cooldown;
+  player.meleeSwing = mw.swingTime;
+
+  // 音效
+  playSound(300, 0.12, 'sawtooth', 0.08);
+  playSound(500, 0.08, 'square', 0.05);
+  playNoise(0.08, 0.03);
+
+  // 扇形范围内的所有敌人受伤 + 击退
+  const aimAngle = player.angle;
+  const halfArc = mw.arc / 2;
+  let hitCount = 0;
+
+  for (const e of enemies) {
+    const dx = e.x - player.x;
+    const dy = e.y - player.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+
+    if (d > mw.range + e.radius) continue;
+
+    const enemyAngle = Math.atan2(dy, dx);
+    let diff = enemyAngle - aimAngle;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+
+    if (Math.abs(diff) <= halfArc || d < e.radius + player.radius) {
+      e.hp -= mw.damage;
+      e.hitFlash = 0.15;
+      applyFrost(e);
+      applyFire(e);
+      hitCount++;
+
+      const kb = mw.knockback;
+      e.x += Math.cos(enemyAngle) * kb;
+      e.y += Math.sin(enemyAngle) * kb;
+      e.x = clamp(e.x, e.radius, W - e.radius);
+      e.y = clamp(e.y, e.radius, H - e.radius);
+
+      spawnParticles(e.x, e.y, 8, mw.color, 5, 0.3);
+      spawnParticles(e.x, e.y, 4, '#ffffff', 3, 0.2);
+      spawnDamageNumber(e.x, e.y - 10, Math.round(mw.damage), mw.color);
+
+      if (e.enemyType === 'boss') { e.chargeTarget = null; }
+      if (e.enemyType === 'charger' && e._charging) {
+        e._charging = false; e._chargeTimer = 0;
+      }
+      if (e.hp <= 0) killEnemy(e);
+    }
+  }
+
+  // 格挡敌方子弹
+  for (let i = enemyBullets.length - 1; i >= 0; i--) {
+    const b = enemyBullets[i];
+    const d = dist(b.x, b.y, player.x, player.y);
+    if (d > mw.range + b.radius) continue;
+    const bAngle = Math.atan2(b.y - player.y, b.x - player.x);
+    let diff = bAngle - aimAngle;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    if (Math.abs(diff) <= halfArc) {
+      spawnParticles(b.x, b.y, 5, mw.color, 4, 0.2);
+      enemyBullets.splice(i, 1);
+      hitCount++;
+    }
+  }
+
+  if (hitCount > 0) {
+    shakeAmount = Math.min(shakeAmount + 5, 20);
+    playSound(800, 0.06, 'square', 0.04);
+  }
+}
+
+function cycleMelee() {
+  if (gameState !== 'playing') return;
+  const unlocked = MELEE_WEAPONS.filter(m => m.unlocked);
+  if (unlocked.length <= 1) return;
+  let idx = currentMeleeIdx;
+  do {
+    idx = (idx + 1) % MELEE_WEAPONS.length;
+  } while (!MELEE_WEAPONS[idx].unlocked);
+  currentMeleeIdx = idx;
+  spawnParticles(player.x, player.y, 8, MELEE_WEAPONS[idx].color, 4, 0.3);
+  playSound(900, 0.08, 'sine', 0.04);
+  updateHUD();
+}
+
+function purchaseMelee(idx) {
+  const mw = MELEE_WEAPONS[idx];
+  if (mw.unlocked) return;
+  if (credits < mw.price) return;
+  credits -= mw.price;
+  mw.unlocked = true;
+  currentMeleeIdx = idx;
+  playSound(1000, 0.1, 'sine', 0.06);
+  playSound(1500, 0.1, 'sine', 0.06);
+  saveMeleeUnlocks();
+  spawnParticles(W / 2, H / 2, 20, mw.color, 6, 0.8);
+  updateHUD();
+  updateShopUI();
+}
+
+function selectMeleeInShop(idx) {
+  if (!MELEE_WEAPONS[idx].unlocked) return;
+  currentMeleeIdx = idx;
+  playSound(600, 0.08, 'sine', 0.04);
+  updateHUD();
+  updateShopUI();
+}
+
+// === Dash Skill ===
+function tryDash() {
+  if (gameState !== 'playing') return;
+  if (player.dashCooldown > 0) return;
+  if (player.dashTime > 0) return;
+
+  // Determine dash direction: use current movement keys/joystick, or face toward mouse if no movement
+  let dx = 0, dy = 0;
+  if (isMobile && joystick.active) {
+    dx = joystick.dx;
+    dy = joystick.dy;
+  } else {
+    if (keys['w'] || keys['arrowup']) dy -= 1;
+    if (keys['s'] || keys['arrowdown']) dy += 1;
+    if (keys['a'] || keys['arrowleft']) dx -= 1;
+    if (keys['d'] || keys['arrowright']) dx += 1;
+  }
+
+  if (dx === 0 && dy === 0) {
+    // No movement input → dash toward mouse
+    dx = Math.cos(player.angle);
+    dy = Math.sin(player.angle);
+  } else {
+    const len = Math.hypot(dx, dy);
+    dx /= len; dy /= len;
+  }
+
+  player.dashDirX = dx;
+  player.dashDirY = dy;
+  player.dashTime = DASH.duration;
+  player.dashCooldown = DASH.cooldown;
+  player.invulnerable = Math.max(player.invulnerable, DASH.invulnTime);
+
+  // Sound
+  playSound(600, 0.08, 'sine', 0.05);
+  playSound(900, 0.06, 'sine', 0.04);
+
+  // Burst particles
+  spawnParticles(player.x, player.y, 12, DASH.trailColor, 5, 0.3);
+}
+
+// === Ammo Drop Amounts ===
+const AMMO_DROP_AMOUNTS = [0, 10, 35, 20, 2]; // pistol(n/a), shotgun, smg, laser, rocket
+
+function getAmmoDropAmount(weaponIdx) {
+  return AMMO_DROP_AMOUNTS[weaponIdx] || 0;
+}
+
+// === Kill Enemy ===
+function killEnemy(enemy) {
+  const idx = enemies.indexOf(enemy);
+  if (idx === -1) return;
+  enemies.splice(idx, 1);
+
+  // Bomber explosion on death
+  if (enemy.explodeOnDeath) {
+    explosions.push({ x: enemy.x, y: enemy.y, radius: 0, maxRadius: enemy.explodeRadius, color: '#ff6622', life: 0.4, maxLife: 0.4 });
+    spawnParticles(enemy.x, enemy.y, 30, '#ff6622', 8, 0.7);
+    spawnParticles(enemy.x, enemy.y, 15, '#ffaa44', 5, 0.5);
+    if (dist(enemy.x, enemy.y, player.x, player.y) < enemy.explodeRadius + player.radius) {
+      if (player.invulnerable <= 0 && player.shieldTimer <= 0) {
+        player.health -= enemy.explodeDamage;
+        player.invulnerable = 0.5;
+      }
+      shakeAmount = Math.min(shakeAmount + 10, 25);
+    }
+    playSound(100, 0.25, 'sawtooth', 0.1);
+    playNoise(0.2, 0.06);
+  }
+
+  // Splitter death: spawn 2 mini-splitters
+  if (enemy.splitOnDeath) {
+    spawnParticles(enemy.x, enemy.y, 20, '#88ffcc', 5, 0.5);
+    playSound(300, 0.12, 'triangle', 0.05);
+    for (let si = 0; si < 2; si++) {
+      const sDef = ENEMY_DEFS.miniSplitter;
+      const sx = enemy.x + randInt(-30, 30);
+      const sy = enemy.y + randInt(-30, 30);
+      enemies.push({
+        x: clamp(sx, sDef.radius, W - sDef.radius),
+        y: clamp(sy, sDef.radius, H - sDef.radius),
+        enemyType: sDef.type, hp: sDef.hp, maxHp: sDef.hp,
+        speed: sDef.speed, radius: sDef.radius, color: sDef.color,
+        damage: sDef.damage, score: sDef.score, credits: sDef.credits,
+        type: 'melee', lastShot: 0, shootInterval: 0,
+        bulletSpeed: 0, bulletDamage: 0,
+        angle: 0, pulse: 0, attackCooldown: 0,
+        explodeOnDeath: false, explodeRadius: 0, explodeDamage: 0,
+        frostTime: 0, fireTime: 0
+      });
+    }
+  }
+
+  score += enemy.score;
+  kills++;
+  totalKills++;
+  credits += enemy.credits;
+
+  spawnParticles(enemy.x, enemy.y, 20, enemy.color, 6, 0.6);
+  spawnParticles(enemy.x, enemy.y, 8, '#ffffff', 4, 0.3);
+  spawnDamageNumber(enemy.x, enemy.y, `+${enemy.credits}💰`, '#ffdd44');
+  playSound(400, 0.1, 'square', 0.04);
+  playSound(200, 0.15, 'sawtooth', 0.03);
+
+  shakeAmount = Math.min(shakeAmount + 3, 15);
+
+  // Drop pickup
+  const isBoss = enemy.enemyType === 'boss';
+  const dropChance = isBoss ? 1.0 : 0.32;
+  if (Math.random() < dropChance || isBoss) {
+    // Boss drops multiple pickups
+    const dropCount = isBoss ? 5 : 1;
+    for (let di = 0; di < dropCount; di++) {
+      const r = Math.random();
+      const offsetX = isBoss ? rand(-60, 60) : 0;
+      const offsetY = isBoss ? rand(-60, 60) : 0;
+      let pickupType, ammoWeaponIdx = -1;
+
+      if (r < 0.12) {
+        pickupType = 'health';
+      } else if (r < 0.18) {
+        pickupType = 'healthPack'; // replenish stored health pack
+      } else if (r < 0.62) {
+        // Weapon-specific ammo drop
+        const candidates = [];
+        WEAPONS.forEach((w, i) => {
+          if (w.unlocked && w.magSize !== Infinity) candidates.push(i);
+        });
+        if (candidates.length > 0) {
+          pickupType = 'ammo_weapon';
+          ammoWeaponIdx = candidates[randInt(0, candidates.length - 1)];
+        } else {
+          pickupType = 'credits';
+        }
+      } else if (r < 0.82) {
+        pickupType = 'shield';
+      } else {
+        pickupType = 'ammo'; // rare full ammo refill
+      }
+
+      pickups.push({
+        x: enemy.x + offsetX, y: enemy.y + offsetY,
+        type: pickupType, radius: 12, life: 12, bob: 0,
+        ammoWeaponIdx,
+        spawnTime: 0 // for spawn animation
+      });
+    }
+  }
+
+  // Check level complete: Boss 关以击杀 Boss 为准，普通关按击杀数
+  if (levelData && (kills >= levelData.killTarget || enemy.enemyType === 'boss')) {
+    completeLevel();
+  }
+}
+
+// === Level Management ===
+function startLevel(idx) {
+  currentLevel = idx;
+  levelData = LEVELS[idx];
+  kills = 0;
+  enemies = [];
+  bullets = [];
+  enemyBullets = [];
+  particles = [];
+  pickups = [];
+  explosions = [];
+  damageNumbers = [];
+  meteorWarnings = [];
+
+  player = createPlayer();
+  resetWeapons();
+  resetMeleeWeapons();
+  currentWeaponIdx = 0;
+  spawnTimer = 0;
+
+  gameState = 'playing';
+  document.getElementById('hud').classList.remove('hidden');
+  updateHUD();
+
+  // Show level transition
+  showLevelTransition(idx);
+}
+
+function showLevelTransition(idx) {
+  const level = LEVELS[idx];
+  document.getElementById('transLevelNum').textContent = `LEVEL ${idx + 1}`;
+  document.getElementById('transLevelName').textContent = level.name;
+  document.getElementById('transLevelDesc').textContent = level.desc;
+  document.getElementById('levelScreen').classList.remove('hidden');
+  gameState = 'levelTransition';
+
+  document.getElementById('levelBtn').onclick = null;
+  bindTap(document.getElementById('levelBtn'), () => {
+    document.getElementById('levelScreen').classList.add('hidden');
+    gameState = 'playing';
+    levelData = level;
+    updateHUD();
+  });
+}
+
+function completeLevel() {
+  if (gameState !== 'playing') return;
+  // 自动存档：通过第4关(index 3)和第8关(index 7)时存档
+  if (SAVE_LEVELS.includes(currentLevel)) {
+    saveGame();
+  }
+  if (currentLevel >= LEVELS.length - 1) {
+    // Victory!
+    clearSave(); // 通关后清除存档
+    gameState = 'victory';
+    if (isMobile) document.getElementById('mobileControls').classList.remove('active');
+    document.getElementById('vicKills').textContent = totalKills;
+    document.getElementById('vicScore').textContent = score;
+    document.getElementById('victoryScreen').classList.remove('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    return;
+  }
+  // Next level
+  startLevel(currentLevel + 1);
+}
+
+// === Pause ===
+function togglePause() {
+  if (gameState === 'playing') {
+    gameState = 'paused';
+    document.getElementById('pauseHint').classList.add('show');
+  } else if (gameState === 'paused') {
+    gameState = 'playing';
+    document.getElementById('pauseHint').classList.remove('show');
+  }
+}
+
+// === Weapon Selection ===
+function selectWeapon(idx) {
+  if (idx < 0 || idx >= WEAPONS.length) return;
+  if (gameState !== 'playing') return;
+  if (!WEAPONS[idx].unlocked) return; // prevent selecting locked weapons
+  currentWeaponIdx = idx;
+  player.laserActive = false;
+  player.laserChain = [];
+  player._focusBeamTime = 0;
+  updateWeaponHUD();
+}
+
+// === Purchase Weapon ===
+function purchaseWeapon(idx) {
+  const weapon = WEAPONS[idx];
+  if (weapon.unlocked) return;
+  if (credits < weapon.price) return;
+  credits -= weapon.price;
+  weapon.unlocked = true;
+  weapon.ammo = weapon.magSize;
+  weapon.reserve = weapon.reserveMax;
+  weapon.reloading = 0;
+  // Auto-switch to purchased weapon
+  currentWeaponIdx = idx;
+  player.laserActive = false;
+  player.laserChain = [];
+  playSound(1000, 0.1, 'sine', 0.06);
+  playSound(1500, 0.1, 'sine', 0.06);
+  saveWeaponUnlocks();
+  spawnParticles(W / 2, H / 2, 20, '#ffdd44', 6, 0.8);
+  updateHUD();
+  updateShopUI();
+}
+
+function purchaseRicochet() {
+  if (ricochetPurchased) return;
+  if (credits < RICOCHET.price) return;
+  credits -= RICOCHET.price;
+  ricochetPurchased = true;
+  playSound(600, 0.1, 'sine', 0.06);
+  playSound(900, 0.08, 'sine', 0.04);
+  playSound(1200, 0.06, 'sine', 0.03);
+  spawnParticles(W / 2, H / 2, 25, '#00ffaa', 7, 0.8);
+  updateHUD();
+  updateShopUI();
+}
+
+function getMultishotPrice() {
+  return MULTISHOT.basePrice + multishotLevel * 100;
+}
+
+function purchaseMultishot() {
+  if (multishotLevel >= MULTISHOT.maxLevel) return;
+  const price = getMultishotPrice();
+  if (credits < price) return;
+  credits -= price;
+  multishotLevel++;
+  playSound(400, 0.1, 'square', 0.05);
+  playSound(600, 0.08, 'square', 0.04);
+  playSound(800, 0.06, 'square', 0.03);
+  spawnParticles(W / 2, H / 2, 20, '#ff8844', 6, 0.7);
+  updateHUD();
+  updateShopUI();
+}
+
+// Apply frost effect to an enemy (called on hit when frostPurchased)
+function applyFrost(e) {
+  if (!frostPurchased) return;
+  if (!e || e.frostTime === undefined) return;
+  e.frostTime = FROST.duration;
+  // Spawn frost particles occasionally to show effect
+  if (Math.random() < 0.4) {
+    spawnParticles(e.x, e.y, 3, FROST.color, 3, 0.4);
+  }
+}
+
+function purchaseFrost() {
+  if (frostPurchased) return;
+  if (credits < FROST.price) return;
+  credits -= FROST.price;
+  frostPurchased = true;
+  playSound(500, 0.12, 'sine', 0.06);
+  playSound(700, 0.1, 'sine', 0.05);
+  playSound(1000, 0.08, 'sine', 0.04);
+  spawnParticles(W / 2, H / 2, 30, FROST.color, 8, 1.0);
+  updateHUD();
+  updateShopUI();
+}
+
+// Apply fire effect to an enemy (called on hit when firePurchased)
+// 火焰与冰冻可叠加：两者使用独立的计时器，互不干扰
+function applyFire(e) {
+  if (!firePurchased) return;
+  if (!e || e.fireTime === undefined) return;
+  e.fireTime = FIRE.duration;
+  // Spawn fire particles occasionally to show effect
+  if (Math.random() < 0.4) {
+    spawnParticles(e.x, e.y, 3, FIRE.particleColor, 3, 0.4);
+  }
+}
+
+function purchaseFire() {
+  if (firePurchased) return;
+  if (credits < FIRE.price) return;
+  credits -= FIRE.price;
+  firePurchased = true;
+  playSound(300, 0.15, 'sawtooth', 0.08);
+  playSound(500, 0.12, 'square', 0.06);
+  playSound(800, 0.1, 'sine', 0.04);
+  spawnParticles(W / 2, H / 2, 35, FIRE.color, 9, 1.0);
+  spawnParticles(W / 2, H / 2, 20, '#ffdd44', 7, 0.8);
+  updateHUD();
+  updateShopUI();
+}
+
+// === HUD Update ===
+function updateHUD() {
+  const level = LEVELS[currentLevel];
+  document.getElementById('levelName').textContent = level.name;
+  document.getElementById('levelProgress').textContent = `击杀 ${kills}/${level.killTarget}`;
+
+  // Health
+  const hpPct = (player.health / player.maxHealth) * 100;
+  document.getElementById('healthBar').style.width = hpPct + '%';
+  document.getElementById('healthValue').textContent = `${Math.ceil(player.health)}/${player.maxHealth}`;
+
+  // Shield indicator
+  const shieldEl = document.getElementById('shieldIndicator');
+  if (player.shieldTimer > 0) {
+    shieldEl.textContent = `🛡${player.shieldTimer.toFixed(1)}s`;
+    shieldEl.style.display = 'inline';
+  } else {
+    shieldEl.style.display = 'none';
+  }
+
+  // Melee indicator
+  const meleeW = MELEE_WEAPONS[currentMeleeIdx];
+  const meleeEl = document.getElementById('meleeIndicator');
+  if (player.meleeCooldown > 0) {
+    meleeEl.textContent = `${meleeW.icon}${player.meleeCooldown.toFixed(1)}s`;
+    meleeEl.style.color = '#555';
+    meleeEl.style.textShadow = 'none';
+  } else {
+    meleeEl.textContent = meleeW.icon;
+    meleeEl.style.color = meleeW.color;
+    meleeEl.style.textShadow = `0 0 6px ${meleeW.color}`;
+  }
+
+  // Dash indicator
+  const dashEl = document.getElementById('dashIndicator');
+  if (player.dashCooldown > 0) {
+    dashEl.textContent = `⚡${player.dashCooldown.toFixed(1)}s`;
+    dashEl.style.color = '#555';
+    dashEl.style.textShadow = 'none';
+  } else {
+    dashEl.textContent = '⚡';
+    dashEl.style.color = '#00ddff';
+    dashEl.style.textShadow = '0 0 6px rgba(0,221,255,0.5)';
+  }
+
+  // Reload indicator
+  const reloadEl = document.getElementById('reloadIndicator');
+  const curW = WEAPONS[currentWeaponIdx];
+  if (curW.reloading > 0) {
+    reloadEl.textContent = `🔄${curW.reloading.toFixed(1)}s`;
+    reloadEl.classList.remove('hidden');
+    reloadEl.style.color = '#ff8844';
+    reloadEl.style.textShadow = '0 0 6px rgba(255,136,68,0.5)';
+  } else if (curW.ammo <= 0 && curW.magSize !== Infinity && curW.reserve > 0) {
+    reloadEl.textContent = '🔄!';
+    reloadEl.classList.remove('hidden');
+    reloadEl.style.color = '#ff4444';
+    reloadEl.style.textShadow = '0 0 8px rgba(255,68,68,0.6)';
+  } else {
+    reloadEl.classList.add('hidden');
+  }
+
+  // Ricochet indicator
+  const ricEl = document.getElementById('ricochetIndicator');
+  ricochetPurchased ? ricEl.classList.remove('hidden') : ricEl.classList.add('hidden');
+
+  // Frost indicator
+  const frostEl = document.getElementById('frostIndicator');
+  frostPurchased ? frostEl.classList.remove('hidden') : frostEl.classList.add('hidden');
+
+  // Fire indicator
+  const fireEl = document.getElementById('fireIndicator');
+  firePurchased ? fireEl.classList.remove('hidden') : fireEl.classList.add('hidden');
+
+  updateWeaponHUD();
+  document.getElementById('creditsValue').textContent = credits;
+  updateHealthPackIndicator();
+}
+
+function updateWeaponHUD() {
+  const bar = document.getElementById('weaponBar');
+  bar.innerHTML = '';
+  WEAPONS.forEach((w, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'weapon-slot' + (i === currentWeaponIdx ? ' active' : '') + (!w.unlocked ? ' locked' : '');
+    if (!w.unlocked) {
+      slot.title = `点击购买：${w.price}🪙`;
+      slot.onclick = () => purchaseWeapon(i);
+    } else {
+      slot.onclick = () => selectWeapon(i);
+    }
+
+    let ammoClass = '';
+    let ammoText = '';
+    if (!w.unlocked) {
+      ammoText = '';
+    } else if (w.magSize === Infinity) {
+      // Rocket: no mag system
+      ammoClass = 'inf'; ammoText = w.ammo;
+      if (w.ammo === 0) ammoClass = 'low';
+    } else if (w.reloading > 0) {
+      ammoClass = 'low'; ammoText = 'RELOAD';
+    } else {
+      const reserveText = w.reserve === Infinity ? '∞' : w.reserve;
+      ammoText = `${w.ammo}/${reserveText}`;
+      if (w.ammo === 0) ammoClass = 'low';
+    }
+
+    slot.innerHTML = `
+      <div class="weapon-icon">${w.unlocked ? w.icon : '🔒'}</div>
+      <div class="weapon-name">${w.name}</div>
+      <div class="weapon-key">[${w.key}]</div>
+      ${w.unlocked
+        ? `<div class="weapon-ammo ${ammoClass}">${ammoText}</div>`
+        : `<div class="weapon-price">${w.price}🪙</div>`
+      }
+    `;
+    bar.appendChild(slot);
+  });
+  if (isMobile) updateMobileWeaponBar();
+}
+
+// === Shop UI ===
+let currentShopTab = 'upgrades';
+
+function toggleShop() {
+  if (gameState !== 'playing') return;
+  const shop = document.getElementById('shopScreen');
+  if (shop.classList.contains('hidden')) {
+    openShop();
+  } else {
+    closeShop();
+  }
+}
+
+function openShop() {
+  if (gameState !== 'playing') return;
+  gameState = 'paused';
+  currentShopTab = 'upgrades';
+  document.getElementById('shopScreen').classList.remove('hidden');
+  document.getElementById('shopHint').style.display = 'none';
+  updateShopUI();
+  switchShopTabUI('upgrades');
+}
+
+function closeShop() {
+  document.getElementById('shopScreen').classList.add('hidden');
+  gameState = 'playing';
+  document.getElementById('shopHint').style.display = 'block';
+}
+
+function switchShopTabUI(tab) {
+  currentShopTab = tab;
+  document.querySelectorAll('.shop-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  document.querySelectorAll('.shop-panel').forEach(p => {
+    p.classList.toggle('active', p.id === tab + 'Panel');
+  });
+}
+
+function updateShopUI() {
+  document.getElementById('shopCredits').textContent = credits;
+
+  // === Upgrade Panel ===
+  const upPanel = document.getElementById('upgradesPanel');
+  upPanel.innerHTML = '<div class="shop-grid"></div>';
+  const upGrid = upPanel.querySelector('.shop-grid');
+
+  // Ricochet
+  const ricOwned = ricochetPurchased;
+  const ricCanAfford = credits >= RICOCHET.price;
+  const ricItem = document.createElement('div');
+  ricItem.className = 'shop-item' + (ricOwned ? ' owned' : '');
+  ricItem.innerHTML = `
+    <div class="shop-icon">${ricOwned ? '↯' : '🔒'}</div>
+    <div class="shop-info">
+      <div class="shop-name">弹射强化 <span style="font-size:11px;color:#666;">[本局永久]</span></div>
+      <div class="shop-desc">子弹在敌人间弹射最多3次（范围100px）</div>
+    </div>
+    <div class="shop-action">
+      ${ricOwned
+        ? '<span class="shop-owned">已拥有</span>'
+        : `<span class="shop-price ${ricCanAfford ? 'affordable' : 'expensive'}">${RICOCHET.price} 🪙</span>
+           <button class="shop-btn" ${!ricCanAfford ? 'disabled' : ''} onclick="purchaseRicochet();">购买</button>`
+      }
+    </div>`;
+  upGrid.appendChild(ricItem);
+
+  // Multishot
+  const msMaxed = multishotLevel >= MULTISHOT.maxLevel;
+  const msPrice = getMultishotPrice();
+  const msCanAfford = credits >= msPrice;
+  const msItem = document.createElement('div');
+  msItem.className = 'shop-item' + (msMaxed ? ' owned' : '');
+  msItem.innerHTML = `
+    <div class="shop-icon">${msMaxed ? '✦' : (multishotLevel > 0 ? '✦' : '🔒')}</div>
+    <div class="shop-info">
+      <div class="shop-name">多重发射 Lv.${multishotLevel}/${MULTISHOT.maxLevel} <span style="font-size:11px;color:#666;">[可重复购买]</span></div>
+      <div class="shop-desc">每级多发射1发子弹（散弹分叉效果，不额外耗弹）</div>
+    </div>
+    <div class="shop-action">
+      ${msMaxed
+        ? '<span class="shop-owned">已满级</span>'
+        : `<span class="shop-price ${msCanAfford ? 'affordable' : 'expensive'}">${msPrice} 🪙</span>
+           <button class="shop-btn" ${!msCanAfford ? 'disabled' : ''} onclick="purchaseMultishot();">购买</button>`
+      }
+    </div>`;
+  upGrid.appendChild(msItem);
+
+  // Frost
+  const frostOwned = frostPurchased;
+  const frostCanAfford = credits >= FROST.price;
+  const frostItem = document.createElement('div');
+  frostItem.className = 'shop-item' + (frostOwned ? ' owned' : '');
+  frostItem.innerHTML = `
+    <div class="shop-icon">${frostOwned ? '❄' : '🔒'}</div>
+    <div class="shop-info">
+      <div class="shop-name">冰冻强化 <span style="font-size:11px;color:#666;">[本局永久]</span></div>
+      <div class="shop-desc">攻击命中后冰冻敌人10秒：减速55% + 每秒8点持续伤害</div>
+    </div>
+    <div class="shop-action">
+      ${frostOwned
+        ? '<span class="shop-owned">已拥有</span>'
+        : `<span class="shop-price ${frostCanAfford ? 'affordable' : 'expensive'}">${FROST.price} 🪙</span>
+           <button class="shop-btn" ${!frostCanAfford ? 'disabled' : ''} onclick="purchaseFrost();">购买</button>`
+      }
+    </div>`;
+  upGrid.appendChild(frostItem);
+
+  // Fire
+  const fireOwned = firePurchased;
+  const fireCanAfford = credits >= FIRE.price;
+  const fireItem = document.createElement('div');
+  fireItem.className = 'shop-item' + (fireOwned ? ' owned' : '');
+  fireItem.innerHTML = `
+    <div class="shop-icon">${fireOwned ? '🔥' : '🔒'}</div>
+    <div class="shop-info">
+      <div class="shop-name">火焰强化 <span style="font-size:11px;color:#666;">[本局永久 · 可与冰冻叠加]</span></div>
+      <div class="shop-desc">攻击命中后点燃敌人13秒：每秒28点燃烧伤害，燃烧怪物接触普通怪物时传染</div>
+    </div>
+    <div class="shop-action">
+      ${fireOwned
+        ? '<span class="shop-owned">已拥有</span>'
+        : `<span class="shop-price ${fireCanAfford ? 'affordable' : 'expensive'}">${FIRE.price} 🪙</span>
+           <button class="shop-btn" ${!fireCanAfford ? 'disabled' : ''} onclick="purchaseFire();">购买</button>`
+      }
+    </div>`;
+  upGrid.appendChild(fireItem);
+
+  // === Weapon Panel ===
+  const wpPanel = document.getElementById('weaponsPanel');
+  wpPanel.innerHTML = '<div class="shop-grid"></div>';
+  const wpGrid = wpPanel.querySelector('.shop-grid');
+
+  WEAPONS.forEach((w, i) => {
+    const item = document.createElement('div');
+    item.className = 'shop-item' + (w.unlocked ? ' owned' : '');
+    const canAfford = credits >= w.price;
+    item.innerHTML = `
+      <div class="shop-icon">${w.unlocked ? w.icon : '🔒'}</div>
+      <div class="shop-info">
+        <div class="shop-name">${w.name} <span style="font-size:12px;color:#666;">[${w.key}]</span></div>
+        <div class="shop-desc">${w.desc}</div>
+      </div>
+      <div class="shop-action">
+        ${w.unlocked
+          ? '<span class="shop-owned">已拥有</span>'
+          : `<span class="shop-price ${canAfford ? 'affordable' : 'expensive'}">${w.price} 🪙</span>
+             <button class="shop-btn" ${!canAfford ? 'disabled' : ''} onclick="purchaseWeapon(${i});closeShop();">购买</button>`
+        }
+      </div>`;
+    wpGrid.appendChild(item);
+  });
+
+  // === Melee Panel ===
+  const mlPanel = document.getElementById('meleePanel');
+  mlPanel.innerHTML = '<div class="shop-grid"></div>';
+  const mlGrid = mlPanel.querySelector('.shop-grid');
+
+  MELEE_WEAPONS.forEach((mw, i) => {
+    const item = document.createElement('div');
+    const isEquipped = mw.unlocked && i === currentMeleeIdx;
+    item.className = 'shop-item' + (mw.unlocked ? ' owned' : '') + (isEquipped ? ' equipped' : '');
+    const canAfford = credits >= mw.price;
+    item.innerHTML = `
+      <div class="shop-icon">${mw.unlocked ? mw.icon : '🔒'}</div>
+      <div class="shop-info">
+        <div class="shop-name">${mw.name} <span style="font-size:11px;color:#888;">| 伤害${mw.damage} | CD${mw.cooldown}s | 范围${mw.range}</span></div>
+        <div class="shop-desc">${mw.desc}</div>
+      </div>
+      <div class="shop-action">
+        ${mw.unlocked
+          ? (isEquipped
+            ? '<span class="shop-owned" style="color:#00ffc8;text-shadow:0 0 8px rgba(0,255,200,0.5);">当前装备</span>'
+            : `<button class="shop-btn equip-btn" onclick="selectMeleeInShop(${i});">装备</button>`)
+          : `<span class="shop-price ${canAfford ? 'affordable' : 'expensive'}">${mw.price} 🪙</span>
+             <button class="shop-btn" ${!canAfford ? 'disabled' : ''} onclick="purchaseMelee(${i});closeShop();">购买</button>`
+        }
+      </div>`;
+    mlGrid.appendChild(item);
+  });
+}
+
+// Tab switching
+document.querySelectorAll('.shop-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchShopTabUI(btn.dataset.tab);
+  });
+});
+
+// Q/E to cycle shop tabs when shop is open
+document.addEventListener('keydown', e => {
+  if (gameState !== 'paused' || document.getElementById('shopScreen').classList.contains('hidden')) return;
+  const tabs = ['upgrades', 'weapons', 'melee'];
+  const idx = tabs.indexOf(currentShopTab);
+  if (e.key.toLowerCase() === 'q') {
+    const prev = (idx - 1 + 3) % 3;
+    switchShopTabUI(tabs[prev]);
+  }
+  if (e.key.toLowerCase() === 'e') {
+    const next = (idx + 1) % 3;
+    switchShopTabUI(tabs[next]);
+  }
+});
+
+// Close shop button
+document.getElementById('closeShopBtn').onclick = null;
+bindTap(document.getElementById('closeShopBtn'), closeShop);
+// B key to toggle shop (but not during pause from other screens)
+const origKeyDown = window.onkeydown;
+window.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() === 'b' && gameState === 'playing') {
+    openShop();
+  }
+});
+
+// === Game Logic Update ===
+let lastTime = 0;
+let spawnTimer = 0;
+
+function update(dt) {
+  if (gameState !== 'playing') return;
+  frameCount++;
+
+  const level = LEVELS[currentLevel];
+
+  // --- Player Movement ---
+  if (player.dashTime > 0) {
+    // Dashing: override normal movement
+    player.x += player.dashDirX * DASH.speed;
+    player.y += player.dashDirY * DASH.speed;
+    player.x = clamp(player.x, player.radius, W - player.radius);
+    player.y = clamp(player.y, player.radius, H - player.radius);
+    // Trail particles
+    if (frameCount % 2 === 0) {
+      spawnParticles(player.x, player.y, 3, DASH.trailColor, 3, 0.2);
+    }
+  } else {
+    let mx = 0, my = 0;
+    if (isMobile && joystick.active) {
+      mx = joystick.dx;
+      my = joystick.dy;
+    } else {
+      if (keys['w'] || keys['arrowup']) my -= 1;
+      if (keys['s'] || keys['arrowdown']) my += 1;
+      if (keys['a'] || keys['arrowleft']) mx -= 1;
+      if (keys['d'] || keys['arrowright']) mx += 1;
+    }
+    if (mx !== 0 || my !== 0) {
+      const len = Math.hypot(mx, my);
+      mx /= len; my /= len;
+      player.x += mx * player.speed;
+      player.y += my * player.speed;
+      player.x = clamp(player.x, player.radius, W - player.radius);
+      player.y = clamp(player.y, player.radius, H - player.radius);
+    }
+  }
+
+  // Check if mouse is stationary for auto-aim
+  const timeSinceMove = Date.now() - lastMouseMoveTime;
+  mouseStationary = timeSinceMove > MOUSE_STILL_DELAY;
+
+  // Player aim + auto-lock
+  if (mouseStationary || isMobile) {
+    const target = getNearestEnemy();
+    aimAssistTarget = target;
+    if (target) {
+      player.angle = angleTo(player.x, player.y, target.x, target.y);
+      autoFiring = true;
+    } else {
+      if (isMobile && joystick.active) {
+        // Aim in joystick direction when no enemies nearby
+        player.angle = Math.atan2(joystick.dy, joystick.dx);
+      } else {
+        player.angle = angleTo(player.x, player.y, mouse.x, mouse.y);
+      }
+      autoFiring = false;
+    }
+  } else {
+    player.angle = angleTo(player.x, player.y, mouse.x, mouse.y);
+    aimAssistTarget = null;
+    autoFiring = false;
+  }
+
+  // Shooting (auto-fire when locked, or manual when mouse down / mobile shoot btn)
+  const shouldShoot = autoFiring || mouse.down || (isMobile && mobileShooting);
+  if (shouldShoot) {
+    tryShoot();
+  } else {
+    player.laserActive = false;
+    player.laserChain = [];
+    player._focusBeamTime = 0;
+  }
+
+  // Laser
+  updateLaser(dt);
+
+  // Reload timer
+  for (const w of WEAPONS) {
+    if (w.reloading > 0) {
+      w.reloading -= dt;
+      if (w.reloading <= 0) finishReload(w);
+    }
+  }
+
+  // Invulnerability
+  if (player.invulnerable > 0) player.invulnerable -= dt;
+  if (player.shieldTimer > 0) player.shieldTimer -= dt;
+  if (player.meleeCooldown > 0) player.meleeCooldown -= dt;
+  if (player.meleeSwing > 0) player.meleeSwing -= dt;
+  if (player.dashCooldown > 0) player.dashCooldown -= dt;
+  if (player.dashTime > 0) player.dashTime -= dt;
+
+  // --- Enemy Spawning ---
+  spawnTimer += dt * 1000;
+  if (spawnTimer >= level.spawnInterval && enemies.length < level.maxEnemies && kills < level.killTarget) {
+    spawnTimer = 0;
+    const type = level.enemyTypes[randInt(0, level.enemyTypes.length - 1)];
+    spawnEnemy(type);
+  }
+
+  // Always spawn boss immediately for boss level
+  if (currentLevel === 9 && enemies.length === 0 && kills === 0 && spawnTimer > 500) {
+    spawnEnemy('boss');
+  }
+
+  // --- Enemy Update ---
+  for (const e of enemies) {
+    const def = ENEMY_DEFS[e.type];
+
+    // === Frost effect: DoT + slow ===
+    if (e.frostTime > 0) {
+      e.hp -= FROST.dotDamage * dt;
+      e.frostTime -= dt;
+      if (e.frostTime <= 0) e.frostTime = 0;
+      if (e.hp <= 0) { killEnemy(e); continue; }
+    }
+    // === Fire effect: burning DoT (可与冰冻叠加，互不影响) ===
+    if (e.fireTime > 0) {
+      e.hp -= FIRE.dotDamage * dt;
+      e.fireTime -= dt;
+      // 燃烧期间偶尔产生火焰粒子和伤害数字
+      if (frameCount % 8 === 0) {
+        spawnParticles(e.x, e.y - e.radius * 0.3, 2, FIRE.particleColor, 2.5, 0.35);
+      }
+      if (frameCount % 30 === 0) {
+        spawnDamageNumber(e.x, e.y - e.radius - 8, Math.round(FIRE.dotDamage * 0.5), FIRE.color);
+      }
+      if (e.fireTime <= 0) e.fireTime = 0;
+      if (e.hp <= 0) { killEnemy(e); continue; }
+    }
+    const moveSpeed = e.frostTime > 0 ? e.speed * FROST.slowMultiplier : e.speed;
+    const slowFactor = e.frostTime > 0 ? FROST.slowMultiplier : 1;
+
+    e.angle = angleTo(e.x, e.y, player.x, player.y);
+    const d = dist(e.x, e.y, player.x, player.y);
+
+    if (e.enemyType === 'boss') {
+      // Boss AI: 5 phases + special attacks
+      e.phaseTimer += dt;
+      e.specialTimer += dt;
+
+      // Enrage at 50% HP
+      const hpPct = e.hp / e.maxHp;
+      if (hpPct < 0.5 && !e.enraged) {
+        e.enraged = true;
+        e.shootInterval *= 0.6;
+        e.speed *= 1.3;
+        spawnParticles(e.x, e.y, 40, '#ff4444', 10, 1.0);
+        spawnDamageNumber(e.x, e.y - 60, 'ENRAGED!', '#ff4444');
+        playSound(80, 0.3, 'sawtooth', 0.1);
+      }
+
+      // Phase change every 3.5s
+      if (e.phaseTimer > 3.5) {
+        e.phaseTimer = 0;
+        e.phase = (e.phase + 1) % 5;
+        e.movePattern = randInt(0, 2);
+      }
+
+      // ===== Phase Movement =====
+      if (e.phase === 0) {
+        // Chase & shoot
+        if (d > 200) {
+          e.x += Math.cos(e.angle) * moveSpeed;
+          e.y += Math.sin(e.angle) * moveSpeed;
+        }
+      } else if (e.phase === 1) {
+        // Circle
+        const circleAngle = e.angle + Math.PI / 2;
+        e.x += Math.cos(circleAngle) * moveSpeed * 1.5;
+        e.y += Math.sin(circleAngle) * moveSpeed * 1.5;
+      } else if (e.phase === 2) {
+        // Retreat & summon
+        if (d < 350) {
+          e.x -= Math.cos(e.angle) * moveSpeed;
+          e.y -= Math.sin(e.angle) * moveSpeed;
+        }
+      } else if (e.phase === 3) {
+        // Charge attack: rush toward player
+        if (!e.chargeTarget) {
+          // Quick pause to telegraph
+          e.chargeTarget = { x: player.x, y: player.y };
+          e.chargeSpeed = e.speed * 8;
+          spawnParticles(e.x, e.y, 15, '#ffaa00', 4, 0.5);
+          playSound(300, 0.2, 'square', 0.08);
+        }
+        const cdx = e.chargeTarget.x - e.x;
+        const cdy = e.chargeTarget.y - e.y;
+        const cd = Math.sqrt(cdx * cdx + cdy * cdy);
+        if (cd > 5) {
+          e.x += (cdx / cd) * e.chargeSpeed * slowFactor;
+          e.y += (cdy / cd) * e.chargeSpeed * slowFactor;
+          // Damage player on contact during charge
+          if (cd < e.radius + player.radius + 10 && (player.invulnerable <= 0 && player.shieldTimer <= 0)) {
+            player.health -= e.damage * 1.5;
+            player.invulnerable = 0.5;
+            spawnParticles(player.x, player.y, 15, '#ff6600', 8, 0.6);
+            playSound(100, 0.25, 'sawtooth', 0.08);
+          }
+        }
+      } else if (e.phase === 4) {
+        // Zigzag approach
+        const zigAngle = e.angle + Math.sin(e.phaseTimer * 4) * 0.8;
+        e.x += Math.cos(zigAngle) * moveSpeed * 1.2;
+        e.y += Math.sin(zigAngle) * moveSpeed * 1.2;
+      }
+
+      // Reset charge state on phase change
+      if (e.phase !== 3) e.chargeTarget = null;
+
+      // ===== Shooting Systems =====
+      const now = Date.now();
+      const enrFactor = e.enraged ? 1 : 0; // extra bullets when enraged
+
+      // 1. Spread shot (phases 0, 2, 4)
+      if ([0, 2, 4].includes(e.phase) && now - e.lastShot > e.shootInterval && d < 700) {
+        e.lastShot = now;
+        const spreadCount = 5 + enrFactor * 2;
+        for (let i = 0; i < spreadCount; i++) {
+          const sa = e.angle + (i - (spreadCount - 1) / 2) * 0.15;
+          enemyBullets.push({
+            x: e.x, y: e.y,
+            vx: Math.cos(sa) * e.bulletSpeed,
+            vy: Math.sin(sa) * e.bulletSpeed,
+            radius: 6, damage: e.bulletDamage, color: '#ff4466', life: 3
+          });
+        }
+        playSound(200, 0.15, 'sawtooth', 0.05);
+      }
+
+      // 2. Ring burst (phase 1: circle shoot, also every 12s special)
+      const doRingBurst = e.phase === 1 && now - e.lastShot > e.shootInterval * 1.5 && d < 700;
+      const specialBurst = e.specialTimer > 12;
+      if (doRingBurst || specialBurst) {
+        e.lastShot = now;
+        if (specialBurst) e.specialTimer = 0;
+        const ringCount = 16;
+        for (let i = 0; i < ringCount; i++) {
+          const ra = (Math.PI * 2 / ringCount) * i;
+          enemyBullets.push({
+            x: e.x, y: e.y,
+            vx: Math.cos(ra) * e.bulletSpeed * 0.8,
+            vy: Math.sin(ra) * e.bulletSpeed * 0.8,
+            radius: 5, damage: e.bulletDamage * 0.7, color: '#ff66aa', life: 3
+          });
+        }
+        playSound(150, 0.2, 'sine', 0.08);
+        spawnParticles(e.x, e.y, 25, '#ff66aa', 7, 0.7);
+      }
+
+      // 3. Summon minions (phase 2)
+      if (e.phase === 2 && e.phaseTimer < 0.3 && !e._summonedThisPhase) {
+        e._summonedThisPhase = true;
+        const summonCount = e.enraged ? 4 : 2;
+        for (let i = 0; i < summonCount; i++) {
+          const sx = e.x + randInt(-80, 80);
+          const sy = e.y + randInt(-80, 80);
+          const sType = i % 2 === 0 ? 'grunt' : 'runner';
+          const sDef = ENEMY_DEFS[sType];
+          enemies.push({
+            x: clamp(sx, sDef.radius, W - sDef.radius),
+            y: clamp(sy, sDef.radius, H - sDef.radius),
+            enemyType: sType, hp: sDef.hp, maxHp: sDef.hp,
+            speed: sDef.speed, radius: sDef.radius, color: sDef.color,
+            damage: sDef.damage, score: sDef.score, credits: sDef.credits,
+            type: sDef.type, lastShot: 0, shootInterval: sDef.shootInterval || 0,
+            bulletSpeed: sDef.bulletSpeed || 0, bulletDamage: sDef.bulletDamage || 0,
+            angle: 0, pulse: 0,
+            explodeOnDeath: false, explodeRadius: 0, explodeDamage: 0,
+            frostTime: 0, fireTime: 0
+          });
+        }
+        spawnParticles(e.x, e.y, 20, '#8866ff', 6, 0.6);
+        playSound(400, 0.12, 'triangle', 0.05);
+      }
+      if (e.phase !== 2) e._summonedThisPhase = false;
+
+      // 4. Homing missile (enraged: every 2.5s)
+      if (e.enraged && e.specialTimer % 2.5 < 0.1 && !e._missileFired) {
+        e._missileFired = true;
+        const ma = e.angle + randInt(-30, 30) * 0.03;
+        enemyBullets.push({
+          x: e.x, y: e.y,
+          vx: Math.cos(ma) * e.bulletSpeed * 0.5,
+          vy: Math.sin(ma) * e.bulletSpeed * 0.5,
+          radius: 8, damage: e.bulletDamage * 1.8, color: '#ff00ff',
+          life: 6, homing: true, turnRate: 0.04
+        });
+        playSound(600, 0.1, 'square', 0.04);
+      }
+      if (e.specialTimer % 2.5 >= 0.1) e._missileFired = false;
+
+      // 5. 旋转激光扫射 (Laser Sweep) — 每 9 秒释放一次，持续 3.2 秒
+      // 激光绕 boss 旋转，接触造成持续伤害
+      e.laserSweepCooldown -= dt;
+      if (e.laserSweepCooldown <= 0 && !e.laserSweepActive) {
+        e.laserSweepActive = true;
+        e.laserSweepTime = 0;
+        e.laserSweepAngle = Math.random() * Math.PI * 2;
+        spawnParticles(e.x, e.y, 30, '#ff00aa', 8, 0.8);
+        spawnDamageNumber(e.x, e.y - 70, 'LASER SWEEP!', '#ff00aa');
+        playSound(120, 0.4, 'sawtooth', 0.09);
+        playSound(300, 0.3, 'sine', 0.06);
+      }
+      if (e.laserSweepActive) {
+        e.laserSweepTime += dt;
+        // 激光旋转速度：狂暴后更快
+        const rotSpeed = e.enraged ? 2.4 : 1.8;
+        e.laserSweepAngle += rotSpeed * dt;
+        // 激光持续伤害判定（点到线段距离）
+        const beamLen = Math.max(W, H) + 100;
+        const bx2 = e.x + Math.cos(e.laserSweepAngle) * beamLen;
+        const by2 = e.y + Math.sin(e.laserSweepAngle) * beamLen;
+        // 计算玩家到激光线的距离
+        const distToBeam = pointToSegmentDist(player.x, player.y, e.x, e.y, bx2, by2);
+        if (distToBeam < 16 + player.radius && player.invulnerable <= 0 && player.shieldTimer <= 0) {
+          player.health -= 55 * dt; // 每秒55伤害
+          if (Math.random() < 0.3) {
+            spawnParticles(player.x, player.y, 2, '#ff66cc', 4, 0.3);
+          }
+          if (player.health <= 0) { gameOver(); return; }
+        }
+        // 激光结束
+        if (e.laserSweepTime >= e.laserSweepDuration) {
+          e.laserSweepActive = false;
+          e.laserSweepCooldown = e.enraged ? 7 : 9; // 狂暴后冷却更短
+        }
+      }
+
+      // 6. 陨石轰炸 (Meteor Strike) — 每 11 秒在玩家周围召唤多个火球
+      e.meteorCastTime += dt;
+      if (e.meteorCastTime >= (e.enraged ? 8 : 11) && e.meteorCooldown > 0) {
+        e.meteorCastTime = 0;
+        const meteorCount = e.enraged ? 6 : 4;
+        for (let i = 0; i < meteorCount; i++) {
+          const mx = player.x + rand(-140, 140);
+          const my = player.y + rand(-140, 140);
+          meteorWarnings.push({
+            x: clamp(mx, 30, W - 30),
+            y: clamp(my, 30, H - 30),
+            r: 52,
+            timer: 0,
+            delay: 1.2,  // 1.2 秒后落下
+            damage: 28,
+            exploded: false
+          });
+        }
+        spawnDamageNumber(e.x, e.y - 70, 'METEOR!', '#ff8800');
+        playSound(180, 0.2, 'triangle', 0.06);
+      }
+
+      // 7. 分裂弹 (Split Shot) — 每 7 秒发射大型分裂弹
+      e.splitShotCooldown -= dt;
+      if (e.splitShotCooldown <= 0) {
+        e.splitShotCooldown = e.enraged ? 5.5 : 7;
+        enemyBullets.push({
+          x: e.x, y: e.y,
+          vx: Math.cos(e.angle) * e.bulletSpeed * 0.7,
+          vy: Math.sin(e.angle) * e.bulletSpeed * 0.7,
+          radius: 12, damage: e.bulletDamage * 1.4, color: '#ffcc00',
+          life: 1.4, splitShot: true, splitCount: 6, splitTime: 1.2
+        });
+        playSound(350, 0.12, 'square', 0.05);
+        spawnParticles(e.x, e.y, 8, '#ffcc00', 5, 0.4);
+      }
+
+      // Keep boss on screen (except during charge)
+      if (e.phase !== 3) {
+        e.x = clamp(e.x, e.radius, W - e.radius);
+        e.y = clamp(e.y, e.radius, H - e.radius);
+      }
+      e.x = clamp(e.x, -e.radius, W + e.radius);
+      e.y = clamp(e.y, -e.radius, H + e.radius);
+
+    } else if (e.enemyType === 'ranged') {
+      // Shooter: keep distance, shoot
+      if (d < 250) {
+        // Back away
+        e.x -= Math.cos(e.angle) * moveSpeed;
+        e.y -= Math.sin(e.angle) * moveSpeed;
+      } else if (d > 400) {
+        // Approach
+        e.x += Math.cos(e.angle) * moveSpeed;
+        e.y += Math.sin(e.angle) * moveSpeed;
+      }
+      // Shoot
+      const now = Date.now();
+      if (now - e.lastShot > e.shootInterval) {
+        e.lastShot = now;
+        enemyBullets.push({
+          x: e.x, y: e.y,
+          vx: Math.cos(e.angle) * e.bulletSpeed,
+          vy: Math.sin(e.angle) * e.bulletSpeed,
+          radius: 4, damage: e.bulletDamage,
+          color: '#44aaff', life: 2.5
+        });
+        playSound(600, 0.06, 'square', 0.03);
+      }
+    } else if (e.enemyType === 'bomber') {
+      // Bomber: rush toward player, self-destruct on contact
+      e.pulse += dt * 8;
+      e.x += Math.cos(e.angle) * moveSpeed;
+      e.y += Math.sin(e.angle) * moveSpeed;
+
+      if (d < e.radius + player.radius + 6) {
+        // Self-destruct! Kill self + deal AoE
+        if (player.invulnerable <= 0 && player.shieldTimer <= 0) {
+          player.health -= e.explodeDamage;
+          player.invulnerable = 0.4;
+        }
+        shakeAmount = Math.min(shakeAmount + 12, 25);
+        explosions.push({ x: e.x, y: e.y, radius: 0, maxRadius: e.explodeRadius, color: '#ff6622', life: 0.4, maxLife: 0.4 });
+        spawnParticles(e.x, e.y, 35, '#ff6622', 9, 0.8);
+        spawnParticles(e.x, e.y, 15, '#ff8844', 6, 0.5);
+        playSound(100, 0.3, 'sawtooth', 0.12);
+        playNoise(0.25, 0.07);
+        // Award kill credit
+        score += e.score;
+        kills++;
+        totalKills++;
+        credits += e.credits;
+        enemies.splice(enemies.indexOf(e), 1);
+        if (player.health <= 0) { gameOver(); return; }
+        continue;
+      }
+    } else if (e.enemyType === 'charger') {
+      // Charger: slow movement, periodic high-speed charge toward player
+      if (!e._charging) {
+        // Normal slow movement toward player
+        e.x += Math.cos(e.angle) * moveSpeed;
+        e.y += Math.sin(e.angle) * moveSpeed;
+
+        // Charge cooldown
+        if (!e._chargeCooldownTime) e._chargeCooldownTime = randInt(1000, e.chargeCooldown || 2800);
+        e._chargeTimer = (e._chargeTimer || 0) + dt * 1000;
+        if (e._chargeTimer > e._chargeCooldownTime) {
+          // Begin charge!
+          e._charging = true;
+          e._chargeTimer = 0;
+          e._chargeCooldownTime = (e.chargeCooldown || 2800) + randInt(-500, 500);
+          e._chargeAngle = e.angle;
+          e.pulse = 0;
+          spawnParticles(e.x, e.y, 8, '#ffcc00', 4, 0.4);
+          playSound(500, 0.12, 'square', 0.06);
+        }
+      } else {
+        // Charging: fly in charge direction
+        const cs = (e.chargeSpeed || 7.5) * slowFactor;
+        e.x += Math.cos(e._chargeAngle) * cs;
+        e.y += Math.sin(e._chargeAngle) * cs;
+        e.pulse += dt * 20;
+        e._chargeTimer += dt * 1000;
+        if (Math.random() < 0.5) spawnParticles(e.x, e.y, 2, e.color, 3, 0.2);
+
+        // End charge
+        if (e._chargeTimer > (e.chargeDuration || 500)) {
+          e._charging = false;
+          e._chargeTimer = 0;
+          shakeAmount = Math.min(shakeAmount + 4, 15);
+        }
+
+        // Damage player on contact during charge
+        if (d < e.radius + player.radius + 10 && player.invulnerable <= 0 && player.shieldTimer <= 0) {
+          player.health -= e.damage * 1.3;
+          player.invulnerable = 0.6;
+          spawnParticles(player.x, player.y, 15, e.color, 8, 0.6);
+          shakeAmount = Math.min(shakeAmount + 10, 25);
+          playSound(120, 0.25, 'sawtooth', 0.08);
+        }
+      }
+
+      // Attack on contact (non-charging)
+      if (!e._charging && d < e.radius + player.radius + 4 && e.attackCooldown <= 0) {
+        if (player.invulnerable <= 0 && player.shieldTimer <= 0) {
+          player.health -= e.damage;
+          player.invulnerable = 0.5;
+          e.attackCooldown = 0.6;
+          shakeAmount = Math.min(shakeAmount + 6, 20);
+          spawnParticles(player.x, player.y, 10, '#ff4400', 5, 0.4);
+          playSound(150, 0.2, 'sawtooth', 0.06);
+        }
+      }
+
+    } else if (e.enemyType === 'kiting') {
+      // Sniper / kiting: maintain distance, shoot powerful shots
+      const kiteDist = e.kiteDist || 380;
+      if (d < kiteDist - 80) {
+        e.x -= Math.cos(e.angle) * moveSpeed;
+        e.y -= Math.sin(e.angle) * moveSpeed;
+      } else if (d > kiteDist + 100) {
+        e.x += Math.cos(e.angle) * moveSpeed;
+        e.y += Math.sin(e.angle) * moveSpeed;
+      }
+      // Shoot when within range
+      if (d < kiteDist + 250) {
+        const now = Date.now();
+        if (now - e.lastShot > e.shootInterval) {
+          e.lastShot = now;
+          enemyBullets.push({
+            x: e.x, y: e.y,
+            vx: Math.cos(e.angle) * e.bulletSpeed,
+            vy: Math.sin(e.angle) * e.bulletSpeed,
+            radius: 5, damage: e.bulletDamage,
+            color: e.color, life: 3
+          });
+          spawnParticles(e.x, e.y, 6, e.color, 4, 0.15);
+          playSound(800, 0.08, 'square', 0.04);
+        }
+      }
+
+    } else {
+      // Melee: chase player
+      e.x += Math.cos(e.angle) * moveSpeed;
+      e.y += Math.sin(e.angle) * moveSpeed;
+
+      // Attack
+      if (d < e.radius + player.radius + 4 && e.attackCooldown <= 0) {
+        if (player.invulnerable <= 0 && player.shieldTimer <= 0) {
+          player.health -= e.damage;
+          player.invulnerable = 0.5;
+          e.attackCooldown = 0.5;
+          shakeAmount = Math.min(shakeAmount + 6, 20);
+          spawnParticles(player.x, player.y, 10, '#ff4444', 5, 0.4);
+          playSound(150, 0.2, 'sawtooth', 0.06);
+          if (player.health <= 0) { gameOver(); return; }
+        }
+      }
+    }
+
+    if (e.attackCooldown > 0) e.attackCooldown -= dt;
+    if (e.hitFlash > 0) e.hitFlash -= dt;
+
+    e.x = clamp(e.x, e.radius, W - e.radius);
+    e.y = clamp(e.y, e.radius, H - e.radius);
+  }
+
+  // === Fire spread: burning enemies ignite nearby normal enemies on contact ===
+  if (firePurchased) {
+    for (const burner of enemies) {
+      if (burner.fireTime <= 0) continue;
+      for (const target of enemies) {
+        // 只点燃未燃烧的敌人（已燃烧的不再重复点燃，避免无意义计算）
+        if (target.fireTime > 0) continue;
+        if (target === burner) continue;
+        if (target.fireTime === undefined) continue;
+        const sd = dist(burner.x, burner.y, target.x, target.y);
+        // 敌人接触检测：距离小于双方半径之和 + 传染半径
+        if (sd < burner.radius + target.radius + FIRE.spreadRadius) {
+          target.fireTime = FIRE.duration;
+          // 传染时产生火焰粒子效果
+          spawnParticles(
+            (burner.x + target.x) / 2,
+            (burner.y + target.y) / 2,
+            5, FIRE.particleColor, 3, 0.4
+          );
+          if (Math.random() < 0.3) {
+            playSound(600 + Math.random() * 200, 0.04, 'sawtooth', 0.02);
+          }
+        }
+      }
+    }
+  }
+
+  // --- Bullets ---
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.trail.push({ x: b.x, y: b.y });
+    const maxTrail = b.type === 'sniper' ? 16 : 6;
+    if (b.trail.length > maxTrail) b.trail.shift();
+    b.x += b.vx; b.y += b.vy;
+    b.life -= dt;
+
+    if (b.life <= 0 || b.x < -50 || b.x > W + 50 || b.y < -50 || b.y > H + 50) {
+      bullets.splice(i, 1);
+      continue;
+    }
+
+    // Check enemy hits
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const e = enemies[j];
+      if (dist(b.x, b.y, e.x, e.y) < b.radius + e.radius) {
+        e.hp -= b.damage;
+        e.hitFlash = 0.1;
+        applyFrost(e);
+        applyFire(e);
+        spawnParticles(b.x, b.y, 4, b.color, 3, 0.2);
+        spawnDamageNumber(b.x, b.y, Math.round(b.damage), b.color);
+
+        if (b.type === 'rocket') {
+          const rocket = WEAPONS[4];
+          spawnExplosion(b.x, b.y, rocket.explosionRadius, '#ff4444');
+          // Area damage + knockback on ALL enemies in radius (including the hit one)
+          for (const e2 of enemies) {
+            const ed = dist(b.x, b.y, e2.x, e2.y);
+            if (ed < rocket.explosionRadius) {
+              const falloff = 1 - ed / rocket.explosionRadius;
+              const dmg = rocket.explosionDamage * falloff;
+              e2.hp -= dmg;
+              e2.hitFlash = 0.15;
+              applyFrost(e2);
+              applyFire(e2);
+              // Knockback
+              if (ed > 1) {
+                const kbAngle = angleTo(b.x, b.y, e2.x, e2.y);
+                const kbForce = rocket.explosionKnockback * falloff;
+                e2.x += Math.cos(kbAngle) * kbForce;
+                e2.y += Math.sin(kbAngle) * kbForce;
+                e2.x = clamp(e2.x, e2.radius, W - e2.radius);
+                e2.y = clamp(e2.y, e2.radius, H - e2.radius);
+              }
+              // Boss charge interrupted
+              if (e2.enemyType === 'boss') e2.chargeTarget = null;
+              if (e2 !== e) spawnDamageNumber(e2.x, e2.y - 10, Math.round(dmg), '#ff4444');
+              if (e2.hp <= 0) killEnemy(e2);
+            }
+          }
+          // Knockback player too (no damage, just push)
+          const pd = dist(b.x, b.y, player.x, player.y);
+          if (pd < rocket.explosionRadius) {
+            const pf = (1 - pd / rocket.explosionRadius) * 10;
+            const pa = angleTo(b.x, b.y, player.x, player.y);
+            player.x += Math.cos(pa) * pf;
+            player.y += Math.sin(pa) * pf;
+            player.x = clamp(player.x, player.radius, W - player.radius);
+            player.y = clamp(player.y, player.radius, H - player.radius);
+            shakeAmount = Math.min(shakeAmount + 6, 25);
+          }
+        }
+
+        if (e.hp <= 0) killEnemy(e);
+
+        // Arc bullet: chain lightning to nearby enemies
+        if (b.type === 'arc') {
+          const arcWep = WEAPONS[5];
+          const chained = new Set([e]);
+          for (let step = 0; step < arcWep.chainCount; step++) {
+            let bestTarget = null, bestDist = arcWep.chainRange;
+            for (const e2 of enemies) {
+              if (chained.has(e2) || e2.hp <= 0) continue;
+              const src = step === 0 ? e : [...chained][chained.size - 1];
+              const cd = dist(src.x, src.y, e2.x, e2.y);
+              if (cd < bestDist) { bestDist = cd; bestTarget = e2; }
+            }
+            if (!bestTarget) break;
+            chained.add(bestTarget);
+            bestTarget.hp -= arcWep.chainDamage;
+            bestTarget.hitFlash = 0.12;
+            applyFrost(bestTarget);
+            applyFire(bestTarget);
+            spawnParticles(bestTarget.x, bestTarget.y, 6, '#44ddff', 4, 0.3);
+            spawnDamageNumber(bestTarget.x, bestTarget.y - 10, Math.round(arcWep.chainDamage), '#44ddff');
+            playSound(2500, 0.03, 'sine', 0.02);
+            if (bestTarget.hp <= 0) killEnemy(bestTarget);
+          }
+        }
+
+        // Sniper bullet: pierce through, don't break
+        if (b.type === 'sniper') {
+          if (!b.hitList) b.hitList = [];
+          b.hitList.push(e);
+          spawnParticles(b.x, b.y, 3, '#ff8866', 2, 0.15);
+          playSound(600, 0.03, 'sine', 0.02);
+          // Continue through, don't splice yet
+          if (e.hp <= 0) killEnemy(e);
+          break; // break the enemy loop but keep the bullet
+        }
+
+        // Ricochet: bounce to nearest enemy within search radius
+        if (b.ricochet && b.bouncesLeft > 0 && b.type !== 'rocket') {
+          b.hitList.push(e);
+          let nearest = null;
+          let nearestDist = RICOCHET.searchRadius;
+          for (const e3 of enemies) {
+            if (b.hitList.includes(e3)) continue;
+            const rd = dist(e.x, e.y, e3.x, e3.y);
+            if (rd < nearestDist) {
+              nearestDist = rd;
+              nearest = e3;
+            }
+          }
+          if (nearest) {
+            // Redirect bullet toward the new target
+            const bounceAngle = angleTo(b.x, b.y, nearest.x, nearest.y);
+            const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+            b.vx = Math.cos(bounceAngle) * speed;
+            b.vy = Math.sin(bounceAngle) * speed;
+            b.bouncesLeft--;
+            b.life = Math.max(b.life, 0.8); // extend life
+            b.color = '#00ffaa'; // green trail for ricochet bullets
+            spawnParticles(b.x, b.y, 6, '#00ffaa', 4, 0.3);
+            playSound(1400, 0.04, 'sine', 0.03);
+            break; // don't remove the bullet
+          }
+        }
+
+        if (b.type !== 'rocket') bullets.splice(i, 1);
+        else bullets.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  // --- Enemy Bullets ---
+  for (let i = enemyBullets.length - 1; i >= 0; i--) {
+    const b = enemyBullets[i];
+    b.x += b.vx; b.y += b.vy;
+
+    // Homing missile: gently steer toward player
+    if (b.homing) {
+      const hAngle = angleTo(b.x, b.y, player.x, player.y);
+      const curAngle = Math.atan2(b.vy, b.vx);
+      const curSpeed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      let diff = hAngle - curAngle;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      const turn = clamp(diff, -b.turnRate, b.turnRate);
+      const newAngle = curAngle + turn;
+      b.vx = Math.cos(newAngle) * curSpeed;
+      b.vy = Math.sin(newAngle) * curSpeed;
+      if (Math.random() < 0.4) {
+        particles.push({ x: b.x, y: b.y, vx: rand(-0.5, 0.5), vy: rand(-0.5, 0.5), radius: rand(1.5, 3.5), color: '#ff66ff', life: 0.4, maxLife: 0.4 });
+      }
+    }
+
+    b.life -= dt;
+
+    // 分裂弹：到达 splitTime 时分裂成多个小弹丸
+    if (b.splitShot && !b._split && (b.life <= b.splitTime || b.x < 20 || b.x > W - 20 || b.y < 20 || b.y > H - 20)) {
+      b._split = true;
+      const sc = b.splitCount;
+      const baseAng = Math.atan2(b.vy, b.vx);
+      for (let s = 0; s < sc; s++) {
+        const sa = baseAng + (s - (sc - 1) / 2) * (Math.PI * 2 / sc);
+        enemyBullets.push({
+          x: b.x, y: b.y,
+          vx: Math.cos(sa) * 5,
+          vy: Math.sin(sa) * 5,
+          radius: 6, damage: b.damage * 0.5, color: '#ffdd44', life: 2.5
+        });
+      }
+      spawnParticles(b.x, b.y, 16, '#ffcc00', 6, 0.5);
+      playSound(500, 0.1, 'square', 0.05);
+      enemyBullets.splice(i, 1);
+      continue;
+    }
+
+    if (b.life <= 0 || b.x < -50 || b.x > W + 50 || b.y < -50 || b.y > H + 50) {
+      enemyBullets.splice(i, 1);
+      continue;
+    }
+
+    if (dist(b.x, b.y, player.x, player.y) < b.radius + player.radius && player.invulnerable <= 0 && player.shieldTimer <= 0) {
+      player.health -= b.damage;
+      player.invulnerable = 0.3;
+      shakeAmount = Math.min(shakeAmount + 4, 15);
+      spawnParticles(b.x, b.y, 6, '#ff4444', 4, 0.3);
+      playSound(150, 0.15, 'sawtooth', 0.05);
+      enemyBullets.splice(i, 1);
+      if (player.health <= 0) { gameOver(); return; }
+    }
+  }
+
+  // --- Meteor Warnings (Boss 陨石轰炸) ---
+  for (let i = meteorWarnings.length - 1; i >= 0; i--) {
+    const m = meteorWarnings[i];
+    m.timer += dt;
+    if (!m.exploded && m.timer >= m.delay) {
+      m.exploded = true;
+      // 落下：爆炸 AoE 伤害
+      if (dist(m.x, m.y, player.x, player.y) < m.r + player.radius && player.invulnerable <= 0 && player.shieldTimer <= 0) {
+        player.health -= m.damage;
+        player.invulnerable = 0.4;
+        shakeAmount = Math.min(shakeAmount + 6, 15);
+        spawnParticles(player.x, player.y, 12, '#ff6600', 6, 0.5);
+        playSound(120, 0.2, 'sawtooth', 0.07);
+        if (player.health <= 0) { gameOver(); return; }
+      }
+      // 爆炸特效
+      spawnParticles(m.x, m.y, 30, '#ff8800', 10, 0.8);
+      spawnParticles(m.x, m.y, 15, '#ffdd44', 8, 0.6);
+      explosions.push({ x: m.x, y: m.y, radius: m.r, maxRadius: m.r + 10, life: 0.5, maxLife: 0.5, color: '#ff8800' });
+      playSound(90, 0.25, 'sawtooth', 0.08);
+      meteorWarnings.splice(i, 1);
+    }
+  }
+
+  // --- Pickups ---
+  for (let i = pickups.length - 1; i >= 0; i--) {
+    const p = pickups[i];
+    p.life -= dt;
+    p.bob += dt * 4;
+
+    if (p.life <= 0) {
+      pickups.splice(i, 1);
+      continue;
+    }
+
+    if (dist(p.x, p.y, player.x, player.y) < p.radius + player.radius) {
+      if (p.type === 'health') {
+        player.health = Math.min(player.health + 25, player.maxHealth);
+        spawnParticles(p.x, p.y, 12, '#44ff44', 5, 0.4);
+        spawnDamageNumber(p.x, p.y, '+25 HP', '#44ff44');
+        playSound(800, 0.15, 'sine', 0.06);
+      } else if (p.type === 'healthPack') {
+        if (healthPacks < 3) {
+          healthPacks++;
+          spawnParticles(p.x, p.y, 14, '#ff4444', 6, 0.5);
+          spawnDamageNumber(p.x, p.y, '+❤️血包', '#ff4444');
+          playSound(500, 0.15, 'sine', 0.08);
+          updateHealthPackIndicator();
+        }
+      } else if (p.type === 'ammo_weapon') {
+        const wIdx = p.ammoWeaponIdx;
+        const w = WEAPONS[wIdx];
+        const amount = getAmmoDropAmount(wIdx);
+        if (w.magSize === Infinity) {
+          // Rocket: add directly to ammo
+          w.ammo = Math.min(w.ammo + amount, w.maxAmmo);
+        } else if (w.reserve === Infinity) {
+          // Pistol: infinite reserve, just refill mag a bit
+          w.ammo = Math.min(w.ammo + amount, w.magSize);
+        } else {
+          w.reserve = Math.min(w.reserve + amount, w.reserveMax);
+        }
+        spawnParticles(p.x, p.y, 12, w.color, 5, 0.4);
+        spawnDamageNumber(p.x, p.y, `+${amount} ${w.name}`, w.color);
+        playSound(900 + wIdx * 100, 0.12, 'sine', 0.05);
+      } else if (p.type === 'ammo') {
+        WEAPONS.forEach(w => {
+          if (w.magSize === Infinity) {
+            if (w.maxAmmo !== Infinity) w.ammo = w.maxAmmo;
+          } else {
+            w.ammo = w.magSize;
+            if (w.reserve !== Infinity) w.reserve = w.reserveMax;
+            w.reloading = 0;
+          }
+        });
+        spawnParticles(p.x, p.y, 12, '#ffdd44', 5, 0.4);
+        spawnDamageNumber(p.x, p.y, 'AMMO FULL', '#ffdd44');
+        playSound(1000, 0.15, 'sine', 0.06);
+      } else if (p.type === 'shield') {
+        player.shieldTimer = 5;
+        spawnParticles(p.x, p.y, 15, '#44aaff', 6, 0.5);
+        spawnDamageNumber(p.x, p.y, '🛡️ SHIELD', '#44aaff');
+        playSound(1200, 0.12, 'sine', 0.05);
+        playSound(1600, 0.08, 'sine', 0.03);
+      } else if (p.type === 'credits') {
+        const amt = randInt(15, 40);
+        credits += amt;
+        spawnParticles(p.x, p.y, 10, '#ffdd44', 4, 0.4);
+        spawnDamageNumber(p.x, p.y, `+${amt}🪙`, '#ffdd44');
+        playSound(1100, 0.1, 'sine', 0.05);
+      }
+      pickups.splice(i, 1);
+    }
+  }
+
+  // --- Particles ---
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.95; p.vy *= 0.95;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  // --- Explosions ---
+  for (let i = explosions.length - 1; i >= 0; i--) {
+    const ex = explosions[i];
+    ex.life -= dt;
+    ex.radius = lerp(ex.radius, ex.maxRadius, 0.3);
+    if (ex.life <= 0) explosions.splice(i, 1);
+  }
+
+  // --- Damage Numbers ---
+  for (let i = damageNumbers.length - 1; i >= 0; i--) {
+    const d = damageNumbers[i];
+    d.y += d.vy;
+    d.vy *= 0.92;
+    d.life -= dt;
+    if (d.life <= 0) damageNumbers.splice(i, 1);
+  }
+
+  // Muzzle flash
+  if (muzzleFlash) {
+    muzzleFlash.life -= dt;
+    if (muzzleFlash.life <= 0) muzzleFlash = null;
+  }
+
+  // Screen shake decay
+  shakeAmount *= 0.9;
+
+  // HUD update (throttled)
+  if (frameCount % 6 === 0) updateHUD();
+}
+
+// === Game Over ===
+function gameOver() {
+  if (gameState === 'gameOver' || gameState === 'victory') return;
+  gameState = 'gameOver';
+  if (isMobile) document.getElementById('mobileControls').classList.remove('active');
+  spawnExplosion(player.x, player.y, 60, '#ff4444');
+  document.getElementById('goLevel').textContent = currentLevel + 1;
+  document.getElementById('goKills').textContent = totalKills;
+  document.getElementById('goScore').textContent = score;
+  document.getElementById('gameOverScreen').classList.remove('hidden');
+  document.getElementById('hud').classList.add('hidden');
+  updateGameOverSaveButton();
+}
+
+// === Rendering ===
+function render() {
+  const level = LEVELS[currentLevel] || LEVELS[0];
+
+  // Screen shake
+  const shakeX = (Math.random() - 0.5) * shakeAmount;
+  const shakeY = (Math.random() - 0.5) * shakeAmount;
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  // Background
+  ctx.fillStyle = level.bg;
+  ctx.fillRect(-shakeX, -shakeY, W + Math.abs(shakeX) * 2, H + Math.abs(shakeY) * 2);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(0,255,200,0.04)';
+  ctx.lineWidth = 1;
+  const gridSize = 50;
+  ctx.beginPath();
+  for (let x = 0; x < W; x += gridSize) {
+    ctx.moveTo(x, 0); ctx.lineTo(x, H);
+  }
+  for (let y = 0; y < H; y += gridSize) {
+    ctx.moveTo(0, y); ctx.lineTo(W, y);
+  }
+  ctx.stroke();
+
+  // Border glow
+  ctx.strokeStyle = 'rgba(0,255,200,0.15)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, W - 2, H - 2);
+
+  if (gameState === 'playing' || gameState === 'paused') {
+    // Pickups
+    for (const p of pickups) {
+      const bobY = Math.sin(p.bob) * 3;
+      const flash = p.life < 2 ? Math.sin(p.life * 10) > 0 : true;
+      if (!flash) continue;
+
+      ctx.save();
+      ctx.translate(p.x, p.y + bobY);
+      ctx.shadowBlur = 12;
+      if (p.type === 'health') {
+        ctx.shadowColor = '#44ff44';
+        ctx.fillStyle = '#44ff44';
+        ctx.fillRect(-3, -10, 6, 20);
+        ctx.fillRect(-10, -3, 20, 6);
+      } else if (p.type === 'healthPack') {
+        ctx.shadowColor = '#ff4444';
+        ctx.fillStyle = '#ff4444';
+        ctx.fillRect(-3, -10, 6, 20);
+        ctx.fillRect(-10, -3, 20, 6);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-3, -10, 6, 20);
+        ctx.strokeRect(-10, -3, 20, 6);
+      } else if (p.type === 'shield') {
+        ctx.shadowColor = '#44aaff';
+        ctx.strokeStyle = '#44aaff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#44aaff';
+        ctx.font = 'bold 12px Courier New';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🛡', 0, 0);
+      } else if (p.type === 'ammo_weapon') {
+        const w = WEAPONS[p.ammoWeaponIdx];
+        ctx.shadowColor = w.color;
+        ctx.fillStyle = w.color;
+        // Draw weapon-colored bullet shape
+        ctx.beginPath();
+        ctx.moveTo(0, -10);
+        ctx.lineTo(5, -4);
+        ctx.lineTo(5, 8);
+        ctx.lineTo(-5, 8);
+        ctx.lineTo(-5, -4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.font = 'bold 9px Courier New';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(w.key, 0, 2);
+      } else if (p.type === 'credits') {
+        ctx.shadowColor = '#ffdd44';
+        ctx.fillStyle = '#ffdd44';
+        ctx.beginPath();
+        ctx.arc(0, 0, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 12px Courier New';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🪙', 0, 0);
+      } else {
+        // Full ammo refill (rare)
+        ctx.shadowColor = '#ffdd44';
+        ctx.fillStyle = '#ffdd44';
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 10px Courier New';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('A', 0, 0);
+      }
+      ctx.restore();
+    }
+
+    // Particles
+    for (const p of particles) {
+      const alpha = p.life / p.maxLife;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    // Enemy bullets
+    for (const b of enemyBullets) {
+      ctx.shadowBlur = b.homing ? 20 : 10;
+      ctx.shadowColor = b.color;
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fill();
+      // Homing missile glow ring
+      if (b.homing) {
+        ctx.shadowBlur = 30;
+        ctx.strokeStyle = b.color;
+        ctx.globalAlpha = 0.5;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius + 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 1;
+      }
+      // 分裂弹：脉冲光环 + 旋转标记
+      if (b.splitShot) {
+        ctx.shadowBlur = 25;
+        ctx.strokeStyle = '#ffcc00';
+        ctx.globalAlpha = 0.4 + Math.sin(performance.now() / 80) * 0.3;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius + 5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 1;
+      }
+    }
+    ctx.shadowBlur = 0;
+
+    // 陨石轰炸警告圈
+    for (const m of meteorWarnings) {
+      const progress = m.timer / m.delay;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#ff8800';
+      // 外圈
+      ctx.strokeStyle = '#ff8800';
+      ctx.globalAlpha = 0.6 + Math.sin(performance.now() / 100) * 0.2;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      ctx.stroke();
+      // 填充警告（随时间变红）
+      ctx.fillStyle = `rgba(255,${Math.floor(80 * (1 - progress))},0,${0.15 + progress * 0.2})`;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      ctx.fill();
+      // 倒计时准星
+      ctx.strokeStyle = '#ffaa00';
+      ctx.globalAlpha = 0.7;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(m.x - m.r, m.y); ctx.lineTo(m.x - m.r * 0.5, m.y);
+      ctx.moveTo(m.x + m.r * 0.5, m.y); ctx.lineTo(m.x + m.r, m.y);
+      ctx.moveTo(m.x, m.y - m.r); ctx.lineTo(m.x, m.y - m.r * 0.5);
+      ctx.moveTo(m.x, m.y + m.r * 0.5); ctx.lineTo(m.x, m.y + m.r);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.shadowBlur = 0;
+
+    // Boss 旋转激光扫射
+    const bossForLaser = enemies.find(e => e.enemyType === 'boss' && e.laserSweepActive);
+    if (bossForLaser) {
+      const beamLen = Math.max(W, H) + 100;
+      const ex2 = bossForLaser.x + Math.cos(bossForLaser.laserSweepAngle) * beamLen;
+      const ey2 = bossForLaser.y + Math.sin(bossForLaser.laserSweepAngle) * beamLen;
+      // 激光本体（渐变）
+      const grad = ctx.createLinearGradient(bossForLaser.x, bossForLaser.y, ex2, ey2);
+      grad.addColorStop(0, 'rgba(255,0,170,0.95)');
+      grad.addColorStop(0.5, 'rgba(255,80,200,0.7)');
+      grad.addColorStop(1, 'rgba(255,0,170,0.2)');
+      ctx.shadowBlur = 25;
+      ctx.shadowColor = '#ff00aa';
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(bossForLaser.x, bossForLaser.y);
+      ctx.lineTo(ex2, ey2);
+      ctx.stroke();
+      // 内核高亮
+      ctx.strokeStyle = 'rgba(255,200,230,0.9)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(bossForLaser.x, bossForLaser.y);
+      ctx.lineTo(ex2, ey2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 0;
+    }
+
+    // Bullets
+    for (const b of bullets) {
+      // Trail
+      if (b.trail.length > 1) {
+        ctx.strokeStyle = b.color;
+        ctx.globalAlpha = 0.3;
+        ctx.lineWidth = b.radius * 1.5;
+        ctx.beginPath();
+        ctx.moveTo(b.trail[0].x, b.trail[0].y);
+        for (const t of b.trail) ctx.lineTo(t.x, t.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = b.color;
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // Laser & FocusLaser rendering
+    if (player.laserActive) {
+      const weapon = WEAPONS[currentWeaponIdx];
+      const chain = player.laserChain || [];
+      const pStartX = player.x + Math.cos(player.angle) * 20;
+      const pStartY = player.y + Math.sin(player.angle) * 20;
+
+      ctx.save();
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = weapon.color;
+      ctx.globalAlpha = 0.8;
+
+      if (weapon.type === 'focusLaser') {
+        // Cone-style flame beam
+        const beamLen = 200;
+        const halfArc = Math.PI / 6;
+        const flicker = 1 + Math.sin(frameCount * 0.4) * 0.15;
+        ctx.globalAlpha = 0.5 * flicker;
+        ctx.fillStyle = weapon.color;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, beamLen, player.angle - halfArc, player.angle + halfArc);
+        ctx.lineTo(player.x, player.y);
+        ctx.closePath();
+        ctx.fill();
+        // Core
+        ctx.globalAlpha = 0.7 * flicker;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, beamLen * 0.5, player.angle - halfArc * 0.6, player.angle + halfArc * 0.6);
+        ctx.lineTo(player.x, player.y);
+        ctx.closePath();
+        ctx.fill();
+        // White hot center
+        ctx.globalAlpha = 0.9;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pStartX, pStartY);
+        ctx.lineTo(player.x + Math.cos(player.angle) * beamLen, player.y + Math.sin(player.angle) * beamLen);
+        ctx.stroke();
+        // Sizzle particles
+        for (let p = 0; p < 3; p++) {
+          const angle = player.angle + (Math.random() - 0.5) * 0.6;
+          const dist = Math.random() * beamLen;
+          spawnParticles(player.x + Math.cos(angle) * dist, player.y + Math.sin(angle) * dist, 1, '#ff6600', 2, 0.15);
+        }
+      } else if (chain.length === 0) {
+        // No targets: beam extends forward
+        const endX = player.x + Math.cos(player.angle) * 1000;
+        const endY = player.y + Math.sin(player.angle) * 1000;
+        ctx.strokeStyle = weapon.color;
+        ctx.lineWidth = 4 + Math.sin(frameCount * 0.5) * 2;
+        ctx.beginPath();
+        ctx.moveTo(pStartX, pStartY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(pStartX, pStartY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      } else {
+        // Chain segments: player → first target → next targets
+        let prevX = pStartX, prevY = pStartY;
+        for (let i = 0; i < chain.length; i++) {
+          const t = chain[i];
+
+          // Outer glow
+          ctx.strokeStyle = weapon.color;
+          ctx.lineWidth = 4 + Math.sin(frameCount * 0.5 + i) * 2;
+          ctx.globalAlpha = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(t.x, t.y);
+          ctx.stroke();
+
+          // Inner white core
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(t.x, t.y);
+          ctx.stroke();
+
+          prevX = t.x;
+          prevY = t.y;
+        }
+      }
+      ctx.restore();
+    }
+
+    // Explosions
+    for (const ex of explosions) {
+      const alpha = ex.life / ex.maxLife;
+      ctx.globalAlpha = alpha * 0.5;
+      ctx.fillStyle = ex.color;
+      ctx.shadowBlur = 30;
+      ctx.shadowColor = ex.color;
+      ctx.beginPath();
+      ctx.arc(ex.x, ex.y, ex.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(ex.x, ex.y, ex.radius * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    // Enemies
+    for (const e of enemies) {
+      ctx.save();
+      ctx.translate(e.x, e.y);
+
+      // Flash on hit
+      const flash = e.hitFlash > 0;
+      const frozen = e.frostTime > 0;
+      const burning = e.fireTime > 0;
+
+      // Frost aura (outer ring)
+      if (frozen) {
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = FROST.color;
+        ctx.strokeStyle = FROST.color;
+        ctx.lineWidth = 2.5;
+        ctx.globalAlpha = 0.6 + Math.sin(performance.now() / 150) * 0.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, e.radius + 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // Fire aura (flickering flame ring)
+      if (burning) {
+        const flickerT = performance.now() / 80;
+        // Outer flame glow
+        ctx.shadowBlur = 22;
+        ctx.shadowColor = FIRE.color;
+        ctx.strokeStyle = FIRE.color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.7 + Math.sin(flickerT) * 0.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, e.radius + 6, 0, Math.PI * 2);
+        ctx.stroke();
+        // Inner flickering flame tongues (multi-segment for jagged flame look)
+        ctx.globalAlpha = 0.5 + Math.sin(flickerT * 1.3) * 0.2;
+        ctx.strokeStyle = FIRE.particleColor;
+        ctx.lineWidth = 2;
+        const tongues = 8;
+        ctx.beginPath();
+        for (let i = 0; i < tongues; i++) {
+          const a = (Math.PI * 2 / tongues) * i + Math.sin(flickerT + i) * 0.1;
+          const len = e.radius + 4 + Math.sin(flickerT * 2 + i * 1.7) * 4 + 3;
+          ctx.moveTo(Math.cos(a) * (e.radius + 2), Math.sin(a) * (e.radius + 2));
+          ctx.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // Body
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = e.color;
+      if (flash) {
+        ctx.fillStyle = '#ffffff';
+      } else if (frozen) {
+        // Tint enemy with frost color
+        ctx.fillStyle = FROST.color;
+      } else if (burning) {
+        // Tint enemy with fire color
+        ctx.fillStyle = FIRE.color;
+      } else {
+        ctx.fillStyle = e.color;
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner detail
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = flash ? e.color : 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.arc(0, 0, e.radius * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Direction indicator
+      ctx.rotate(e.angle);
+      ctx.fillStyle = flash ? '#000' : e.color;
+      ctx.beginPath();
+      ctx.moveTo(e.radius * 0.5, 0);
+      ctx.lineTo(e.radius, -4);
+      ctx.lineTo(e.radius, 4);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+
+      // HP bar
+      if (e.hp < e.maxHp) {
+        const barW = e.radius * 2;
+        const barH = 4;
+        const barX = e.x - barW / 2;
+        const barY = e.y - e.radius - 10;
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(barX, barY, barW, barH);
+        ctx.fillStyle = e.hp / e.maxHp > 0.3 ? '#44ff44' : '#ff4444';
+        ctx.fillRect(barX, barY, barW * (e.hp / e.maxHp), barH);
+      }
+
+      // Bomber pulse ring
+      if (e.enemyType === 'bomber') {
+        const pulseR = e.radius + Math.sin(e.pulse) * 6;
+        ctx.strokeStyle = 'rgba(255,102,34,0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, pulseR + 4, 0, Math.PI * 2);
+        ctx.stroke();
+        // Danger indicator near player
+        const dToPlayer = dist(e.x, e.y, player.x, player.y);
+        if (dToPlayer < 150) {
+          ctx.strokeStyle = `rgba(255,50,0,${0.3 + Math.sin(e.pulse * 2) * 0.3})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, pulseR + 8, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      // Boss HP bar at top
+      if (e.enemyType === 'boss') {
+        const bW = 400, bH = 20;
+        const bX = W / 2 - bW / 2;
+        const bY = 70;
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(bX, bY, bW, bH);
+        ctx.fillStyle = '#ff2266';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#ff2266';
+        ctx.fillRect(bX, bY, bW * (e.hp / e.maxHp), bH);
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255,34,102,0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bX, bY, bW, bH);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('BOSS', W / 2, bY + 14);
+      }
+    }
+
+    // Player
+    ctx.save();
+    ctx.translate(player.x, player.y);
+
+    // Melee swing effect
+    if (player.meleeSwing > 0) {
+      const mw = MELEE_WEAPONS[currentMeleeIdx];
+      const st = mw.swingTime || 0.25;
+      const swingProgress = 1 - (player.meleeSwing / st);
+      const swingAlpha = player.meleeSwing / st;
+      const startAngle = player.angle - mw.arc / 2;
+      const endAngle = player.angle + mw.arc / 2;
+      const currentAngle = startAngle + (endAngle - startAngle) * swingProgress;
+
+      // Slash arc
+      ctx.save();
+      ctx.rotate(currentAngle);
+      ctx.globalAlpha = swingAlpha * 0.7;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = mw.color;
+      ctx.strokeStyle = mw.color;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0, 0, mw.range * 0.8, -mw.arc / 2, mw.arc / 2);
+      ctx.stroke();
+      // Inner bright
+      ctx.globalAlpha = swingAlpha * 0.4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, mw.range * 0.8, -mw.arc / 2, mw.arc / 2);
+      ctx.stroke();
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+    }
+
+    // Invulnerability flash
+    const invFlash = player.invulnerable > 0 && Math.floor(player.invulnerable * 20) % 2 === 0;
+
+    if (!invFlash) {
+      // Dash trail effect
+      if (player.dashTime > 0) {
+        const dashAlpha = player.dashTime / DASH.duration;
+        const trailDist = 20 + dashAlpha * 15;
+        ctx.save();
+        ctx.translate(-player.dashDirX * trailDist, -player.dashDirY * trailDist);
+        ctx.globalAlpha = dashAlpha * 0.4;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = DASH.trailColor;
+        ctx.fillStyle = DASH.trailColor;
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+      }
+
+      // Shield effect
+      if (player.shieldTimer > 0) {
+        const shieldAlpha = player.shieldTimer < 1 ? player.shieldTimer : 1;
+        const shieldPulse = Math.sin(frameCount * 0.15) * 3;
+        ctx.strokeStyle = `rgba(68,170,255,${shieldAlpha * 0.6})`;
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 12 + shieldPulse;
+        ctx.shadowColor = '#44aaff';
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius + 10 + shieldPulse, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      // Ricochet aura
+      if (ricochetPurchased) {
+        const ricPulse = Math.sin(frameCount * 0.2) * 2;
+        ctx.strokeStyle = 'rgba(0,255,170,0.5)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.lineDashOffset = -frameCount * 0.5;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#00ffaa';
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius + 14 + ricPulse, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.lineDashOffset = 0;
+        ctx.shadowBlur = 0;
+      }
+
+      // Body
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#00ffc8';
+      ctx.fillStyle = '#00ffc8';
+      ctx.beginPath();
+      ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.arc(0, 0, player.radius * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Gun
+      ctx.rotate(player.angle);
+      ctx.fillStyle = '#00ffc8';
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = '#00ffc8';
+      ctx.fillRect(player.radius * 0.3, -3, 18, 6);
+
+      // Muzzle flash
+      if (muzzleFlash) {
+        ctx.fillStyle = '#ffff44';
+        ctx.shadowColor = '#ffff44';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(player.radius + 18, 0, 6 + Math.random() * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    ctx.shadowBlur = 0;
+
+    // Reload progress bar above player
+    const reloadW = WEAPONS[currentWeaponIdx];
+    if (reloadW.reloading > 0) {
+      const progress = 1 - (reloadW.reloading / reloadW.reloadTime);
+      const barW = 36, barH = 4;
+      const barX = player.x - barW / 2;
+      const barY = player.y - player.radius - 12;
+      ctx.fillStyle = 'rgba(255,136,68,0.3)';
+      ctx.fillRect(barX, barY, barW, barH);
+      ctx.fillStyle = '#ff8844';
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#ff8844';
+      ctx.fillRect(barX, barY, barW * progress, barH);
+      ctx.shadowBlur = 0;
+    }
+
+    // Damage numbers
+    for (const d of damageNumbers) {
+      const alpha = d.life / d.maxLife;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = d.color;
+      ctx.font = 'bold 14px Courier New';
+      ctx.textAlign = 'center';
+      ctx.shadowBlur = 4;
+      ctx.shadowColor = d.color;
+      ctx.fillText(d.dmg, d.x, d.y);
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    // Aim assist indicator - draw targeting bracket on locked enemy
+    if (aimAssistTarget && enemies.indexOf(aimAssistTarget) !== -1) {
+      const t = aimAssistTarget;
+      const r = t.radius + 8;
+      const pulse = Math.sin(frameCount * 0.2) * 2;
+      ctx.strokeStyle = 'rgba(0,255,200,0.8)';
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#00ffc8';
+      // Corner brackets
+      const bl = 8;
+      for (let i = 0; i < 4; i++) {
+        const ca = (Math.PI / 2) * i + Math.PI / 4;
+        const cx = t.x + Math.cos(ca) * (r + pulse);
+        const cy = t.y + Math.sin(ca) * (r + pulse);
+        ctx.beginPath();
+        ctx.arc(cx, cy, bl * 0.4, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  ctx.restore();
+
+  // Crosshair
+  if (gameState === 'playing' && !isMobile) {
+    ctx.strokeStyle = 'rgba(0,255,200,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 12, 0, Math.PI * 2);
+    ctx.moveTo(mouse.x - 18, mouse.y); ctx.lineTo(mouse.x - 6, mouse.y);
+    ctx.moveTo(mouse.x + 6, mouse.y); ctx.lineTo(mouse.x + 18, mouse.y);
+    ctx.moveTo(mouse.x, mouse.y - 18); ctx.lineTo(mouse.x, mouse.y - 6);
+    ctx.moveTo(mouse.x, mouse.y + 6); ctx.lineTo(mouse.x, mouse.y + 18);
+    ctx.stroke();
+  }
+}
+
+// === Game Loop ===
+function loop(timestamp) {
+  try {
+    const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+    lastTime = timestamp;
+    if (gameState === 'playing') update(dt);
+    render();
+  } catch (e) {
+    console.error('Game loop error:', e);
+    gameState = 'gameOver';
+  }
+  requestAnimationFrame(loop);
+}
+
+// === Start / Restart ===
+function formatSaveTime(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return '刚刚';
+  if (min < 60) return min + ' 分钟前';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + ' 小时前';
+  const day = Math.floor(hr / 24);
+  return day + ' 天前';
+}
+
+function checkAndShowSaveButton() {
+  const area = document.getElementById('loadSaveArea');
+  if (!area) return;
+  if (hasSave()) {
+    const data = loadGame();
+    if (!data) { area.style.display = 'none'; return; }
+    area.style.display = 'block';
+    const levelNum = (data.currentLevel || 0) + 1;
+    const totalLevels = LEVELS.length;
+    const pct = Math.min(100, Math.round((levelNum / totalLevels) * 100));
+    const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    const setHTML = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+    setText('saveLevelText', `第 ${levelNum} 关 / ${totalLevels}`);
+    setText('saveCoinsText', `🪙 ${data.credits || 0}`);
+    setText('saveKillsText', data.totalKills || 0);
+    setText('saveScoreText', data.score || 0);
+    setText('saveHealthText', data.healthPacks !== undefined ? data.healthPacks : 1);
+    setText('saveTime', formatSaveTime(data.timestamp));
+    const bar = document.getElementById('saveProgressBar');
+    if (bar) bar.style.width = pct + '%';
+    // Upgrades badges
+    const badges = [];
+    if (data.ricochetPurchased) badges.push('<span class="save-badge ricochet">↯ 弹射</span>');
+    if (data.multishotLevel > 0) badges.push(`<span class="save-badge multishot">✦ 连射×${data.multishotLevel}</span>`);
+    if (data.frostPurchased) badges.push('<span class="save-badge frost">❄ 冰冻强化</span>');
+    if (data.firePurchased) badges.push('<span class="save-badge fire">🔥 火焰强化</span>');
+    if (data.healthPacks > 0) badges.push(`<span class="save-badge health">❤️ 血包×${data.healthPacks}</span>`);
+    // 已解锁武器/近战数量
+    const wepCount = Array.isArray(data.weaponUnlocks) ? data.weaponUnlocks.filter(Boolean).length : 0;
+    const melCount = Array.isArray(data.meleeUnlocks) ? data.meleeUnlocks.filter(Boolean).length : 0;
+    if (wepCount > 1) badges.push(`<span class="save-badge weapon">🔫 ${wepCount}把武器</span>`);
+    if (melCount > 1) badges.push(`<span class="save-badge melee">⚔️ ${melCount}把近战</span>`);
+    setHTML('saveUpgrades', badges.length ? badges.join('') : '<span style="font-size:11px;color:#555;">无强化</span>');
+  } else {
+    area.style.display = 'none';
+  }
+}
+
+// 页面加载时检查存档 & 初始化武器解锁
+checkAndShowSaveButton();
+initWeaponState();
+
+function initWeaponState() {
+  const weaponUnlocked = loadWeaponUnlocks();
+  WEAPONS.forEach((w, i) => { w.unlocked = weaponUnlocked[i]; });
+  const meleeUnlocked = loadMeleeUnlocks();
+  MELEE_WEAPONS.forEach((m, i) => { m.unlocked = meleeUnlocked[i]; });
+}
+
+// === Tap support for mobile (click + touchend with dedup) ===
+// On some mobile browsers the click event on buttons may not fire reliably.
+// This helper binds both click and touchend, using a flag to prevent double-trigger.
+function bindTap(el, handler) {
+  if (!el) return;
+  let triggered = false;
+  const wrapped = (e) => {
+    if (triggered) return;
+    triggered = true;
+    e.preventDefault();
+    try { handler(e); } catch (err) { console.error('tap handler error:', err); }
+    setTimeout(() => { triggered = false; }, 400);
+  };
+  el.addEventListener('touchend', wrapped, { passive: false });
+  el.addEventListener('click', wrapped);
+  // Also handle pointerdown as a fallback for hybrid devices
+  el.style.cursor = el.style.cursor || 'pointer';
+  el.style.touchAction = 'manipulation';
+}
+
+document.getElementById('startBtn').onclick = null;
+bindTap(document.getElementById('startBtn'), () => {
+  initAudio();
+  audioCtx?.resume();
+  document.getElementById('startScreen').classList.add('hidden');
+  if (isMobile) updateOrientationState();
+  score = 0; totalKills = 0; credits = 0; ricochetPurchased = false; multishotLevel = 0; frostPurchased = false; firePurchased = false; healthPacks = 1; currentMeleeIdx = 0;
+  startLevel(0);
+});
+
+bindTap(document.getElementById('loadSaveBtn'), () => {
+  const data = loadGame();
+  if (!data) return;
+  initAudio();
+  audioCtx?.resume();
+  document.getElementById('startScreen').classList.add('hidden');
+  if (isMobile) updateOrientationState();
+  applySave(data);
+  startLevel(currentLevel);
+});
+
+bindTap(document.getElementById('deleteSaveBtn'), () => {
+  if (confirm('确定删除存档吗？此操作不可撤销。')) {
+    clearSave();
+    checkAndShowSaveButton();
+  }
+});
+
+document.getElementById('restartBtn').onclick = null;
+bindTap(document.getElementById('restartBtn'), () => {
+  document.getElementById('gameOverScreen').classList.add('hidden');
+  if (isMobile) updateOrientationState();
+  score = 0; totalKills = 0; credits = 0; ricochetPurchased = false; multishotLevel = 0; frostPurchased = false; firePurchased = false; healthPacks = 1; currentMeleeIdx = 0;
+  checkAndShowSaveButton();
+  startLevel(0);
+});
+document.getElementById('victoryBtn').onclick = null;
+bindTap(document.getElementById('victoryBtn'), () => {
+  document.getElementById('victoryScreen').classList.add('hidden');
+  if (isMobile) updateOrientationState();
+  score = 0; totalKills = 0; credits = 0; ricochetPurchased = false; multishotLevel = 0; frostPurchased = false; firePurchased = false; healthPacks = 1; currentMeleeIdx = 0;
+  checkAndShowSaveButton();
+  startLevel(0);
+});
+
+// Game Over screen: load save
+document.getElementById('goLoadSaveBtn').onclick = null;
+bindTap(document.getElementById('goLoadSaveBtn'), () => {
+  const data = loadGame();
+  if (!data) return;
+  document.getElementById('gameOverScreen').classList.add('hidden');
+  if (isMobile) updateOrientationState();
+  applySave(data);
+  startLevel(currentLevel);
+});
+
+// Game Over screen: back to main menu
+document.getElementById('backToMenuBtn').onclick = null;
+bindTap(document.getElementById('backToMenuBtn'), () => {
+  document.getElementById('gameOverScreen').classList.add('hidden');
+  document.getElementById('hud').classList.add('hidden');
+  if (isMobile) document.getElementById('mobileControls').classList.remove('active');
+  gameState = 'menu';
+  score = 0; totalKills = 0; credits = 0; ricochetPurchased = false; multishotLevel = 0; frostPurchased = false; firePurchased = false; healthPacks = 1; currentMeleeIdx = 0;
+  checkAndShowSaveButton();
+  document.getElementById('startScreen').classList.remove('hidden');
+});
+
+// Game Over: show/hide load save option
+function updateGameOverSaveButton() {
+  const area = document.getElementById('goLoadSaveArea');
+  const info = document.getElementById('goSaveInfo');
+  if (hasSave()) {
+    info.textContent = '💾 存档：' + getSaveInfoText();
+    area.style.display = 'flex';
+  } else {
+    area.style.display = 'none';
+  }
+}
+
+// Start render loop
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

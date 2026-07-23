@@ -1,0 +1,12 @@
+# Student source archives (too large for GitHub Pages; gallery has playable copies)
+GameDesignFinal_Day1/
+gamedesignfinal-thu/
+
+# ChatCut working files / proxies (site uses summary/media/showreel.mp4)
+chatcut-showreel/
+
+# OS / editor
+.DS_Store
+**/.DS_Store
+**/._*
+.workbuddy/

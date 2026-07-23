@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domain &amp; System — First Diagnosis</title>
+  <link rel="stylesheet" href="assets/css/site.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <span class="logo">F</span>
+        <span>First Diagnosis</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="domain.html" class="active">Domain &amp; System</a>
+        <a href="process.html">Development</a>
+        <a href="game.html" class="cta">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <span class="eyebrow">Domain &amp; System Design</span>
+        <h1>Why first aid? What are the rules?</h1>
+        <p class="lead">
+          The game is built on a specific learning shift: <em>evaluate before
+          treating</em>. The domain, the data model, and the feedback rules
+          below are the design backbone. The system graph in the brief is
+          treated as the only primary reference; where a graph is normally
+          included, this project explicitly skips it (per the student).
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Domain Knowledge</p>
+        <h2>First Aid as a real experience</h2>
+        <p class="section-sub">
+          The design brief comes from a high-school student's first-hand
+          experience: first aid is rarely as clean as it looks in a textbook.
+        </p>
+
+        <div class="two-col">
+          <div>
+            <h3>Novice misconception</h3>
+            <p>
+              Beginners often assume that all injuries can be treated the
+              same way — that the goal is to act quickly, not to evaluate
+              carefully. In reality, the wrong action in the wrong order
+              makes the injury worse.
+            </p>
+          </div>
+          <div>
+            <h3>Expert judgment</h3>
+            <p>
+              An experienced first-aider pauses. They look at the injury
+              type, depth, placement, and cleanliness. They ask what
+              equipment they actually have. They reason about the order
+              of operations, not just the speed.
+            </p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 30px;">The most important challenge in the domain</h3>
+        <p>
+          <strong>Equipment and incomplete information.</strong> Different
+          injuries call for different tools: an x-ray for internal injuries,
+          a specific medicine for a specific condition, a cast for a broken
+          bone. In an emergency, not all of these may be available. The
+          player must then decide with incomplete information — and live
+          with the consequences.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Why this becomes playable</p>
+        <h2>From real experience to game loop</h2>
+        <p>
+          The "evaluate before treating" shift maps cleanly into a game
+          loop with three distinct phases: hidden information that must be
+          revealed, a choice of tools that reflects what the player would
+          actually have, and feedback that punishes wrong order rather
+          than slow speed. The body becomes the scoreboard.
+        </p>
+
+        <div class="grid" style="margin-top: 20px;">
+          <div class="card">
+            <h3>Hidden variables</h3>
+            <p>
+              Depth, cleanliness, and internal damage are not visible at
+              the start. The player must choose to spend time examining
+              before committing to a treatment.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Equipment that has to be found</h3>
+            <p>
+              The basic supplies (saline, small bandages, sutures,
+              medicine) live in the sidebar and are always available.
+              The situational supplies (casts, big bandages, cleaning
+              cloths, water) are scattered around the disaster site and
+              have to be picked up. Some treatments can't be done at all
+              without first finding the right tool.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Wrong order = visible harm</h3>
+            <p>
+              Stitching before cleaning, basic stitching on a deep cut,
+              or medicating a broken bone all produce immediate, readable
+              consequences. The body answers back.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">System Design</p>
+        <h2>Data model</h2>
+        <p class="section-sub">
+          Three kinds of state are kept visibly separate in the code, as the
+          brief instructs: <em>environment data</em>, <em>player-controlled
+          data</em>, and <em>system-calculated results</em>.
+        </p>
+
+        <div class="two-col">
+          <div>
+            <h3>Environment data (read by player)</h3>
+            <ul class="kv">
+              <li><span class="k">Injury type</span><span class="v">cut / bruise / broken bone / internal</span></li>
+              <li><span class="k">Location</span><span class="v">head, arm, leg, torso</span></li>
+              <li><span class="k">Visible severity</span><span class="v">bleed rate, pain level, patient stability</span></li>
+              <li><span class="k">World layout</span><span class="v">jet, trees, fire patches, equipment spawns, patient positions</span></li>
+            </ul>
+
+            <h3 style="margin-top: 24px;">Player-controlled data</h3>
+            <ul class="kv">
+              <li><span class="k">Medic position</span><span class="v">x, y in the world; controlled by WASD/arrows</span></li>
+              <li><span class="k">Equipment pick-ups</span><span class="v">which env items have been collected</span></li>
+              <li><span class="k">Treatment choices</span><span class="v">which injury is selected, which tool is applied</span></li>
+              <li><span class="k">Treatment timing</span><span class="v">when during the per-patient countdown the action is taken</span></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>System-calculated results</h3>
+            <ul class="kv">
+              <li><span class="k">Patient stability</span><span class="v">0–100%, derived from untreated bleed &amp; pain</span></li>
+              <li><span class="k">Wound cleanliness</span><span class="v">hidden until examined or cleaned</span></li>
+              <li><span class="k">Wound depth</span><span class="v">hidden until examined</span></li>
+              <li><span class="k">Stitch integrity</span><span class="v">pops after a delay if not cleaned first</span></li>
+              <li><span class="k">Per-patient clock</span><span class="v">170 s countdown, starts on find, keeps ticking during treatment</span></li>
+              <li><span class="k">Mission state</span><span class="v">found / lost / treated counters; lose at 3 patient deaths</span></li>
+            </ul>
+
+            <h3 style="margin-top: 24px;">Feedback translation</h3>
+            <ul class="kv">
+              <li><span class="k">Bleeding continues</span><span class="v">stitch was wrong order, or bandage not yet placed</span></li>
+              <li><span class="k">Stitches pop</span><span class="v">wound was not cleaned before stitching</span></li>
+              <li><span class="k">Wound re-opens</span><span class="v">stitch too shallow for depth</span></li>
+              <li><span class="k">Limb stays limp</span><span class="v">broken bone not cast</span></li>
+              <li><span class="k">Pain worsens</span><span class="v">wrong treatment for the injury type</span></li>
+              <li><span class="k">Medicine is ignored</span><span class="v">no water in inventory to take it with</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Rules &amp; outcomes</p>
+        <h2>Win, lose, and the just-right range</h2>
+
+        <div class="grid">
+          <div class="card">
+            <span class="badge ok">Success</span>
+            <h3>Stabilize every survivor</h3>
+            <p>
+              All seven patients are found, treated in the correct order,
+              and discharged before their individual 170 s clock runs out.
+              Mission ends with the success overlay.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge warn">Failure</span>
+            <h3>Three ways to lose</h3>
+            <p>
+              A patient's per-patient clock runs out before treatment
+              completes; a patient loses all stability from untreated
+              damage; or three patients are lost in total — the mission
+              ends regardless of the player's progress on the rest.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">Just-right range</span>
+            <h3>Too much is also wrong</h3>
+            <p>
+              Bandaging a wound that hasn't been stitched, suturing a
+              wound that hasn't been cleaned, or using medicine where it
+              doesn't apply all register as over-treatment and add to the
+              patient's damage. The system punishes over-treatment, not
+              just under-treatment.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Mission: Jet Crash — Forest Clearing</p>
+        <h2>One mission, seven patients, one map</h2>
+        <p class="section-sub">
+          The first playable ships with a single mission but exercises the
+          full system. Adding a second mission (e.g. a building collapse,
+          a flood, a school cafeteria accident) is a matter of adding one
+          entry to the <code>LEVELS</code> map and one mission card to
+          <code>game.html</code>.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <span class="badge">Map</span>
+            <h3>Forest clearing with a crashed jet</h3>
+            <p>
+              A 1200×900 top-down world. Trees around the edges, the jet
+              across the middle, fire patches on three sides, equipment
+              inside and around the jet. The medic starts at the south
+              end of the clearing.
+            </p>
+            <ul class="muted" style="margin-top: 10px; font-size: 14px;">
+              <li>World: 1200 × 900 px, 4:3 aspect ratio</li>
+              <li>Player speed: 220 px/s, AABB collision</li>
+              <li>Fire: 3 patches, animated</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="badge">Patients</span>
+            <h3>7 patients, 4 visible and 3 hidden</h3>
+            <p>
+              Four patients are visible from the start (Alex, Maya,
+              Jordan, Drew). Three are hidden — Sam is behind the jet,
+              Riley is in the trees, Casey is under debris — and only
+              become visible when the medic walks within 100 px. The
+              170 s clock only starts when the medic walks within 60 px
+              and finds them.
+            </p>
+            <ul class="muted" style="margin-top: 10px; font-size: 14px;">
+              <li>Reveal radius: 100 px</li>
+              <li>Find (clock-start) radius: 60 px</li>
+              <li>Timer: 170 s per patient, keeps ticking during treatment</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="badge warn">Equipment</span>
+            <h3>Two tiers, two different loops</h3>
+            <p>
+              <strong>Sidebar (always available):</strong> saline, small
+              bandage, suture, medicine. These are the basic supplies a
+              first-aider carries on them.<br />
+              <strong>Environment (must find):</strong> cast, big bandage,
+              cleaning cloth, water. These are scattered around the site
+              — inside the jet, around the fire, in the undergrowth.
+              Water is required to take medicine.
+            </p>
+            <ul class="muted" style="margin-top: 10px; font-size: 14px;">
+              <li>Sidebar items: unlimited use</li>
+              <li>Env items: one use each, picked up by walking over them</li>
+              <li>Medicine → water: explicit dependency</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Feedback priorities</p>
+        <h2>What the body shows the player</h2>
+        <ul class="kv">
+          <li><span class="k">Immediate</span><span class="v">Bleeding rate, visible pain, limp limb, injury type, stability bar</span></li>
+          <li><span class="k">Delayed</span><span class="v">Stitch pop, wound re-opens, infection, swelling</span></li>
+          <li><span class="k">State-based</span><span class="v">Stability bar, per-patient timer, equipment availability, found/lost counters, success / fail overlay</span></li>
+          <li><span class="k">Audible (light)</span><span class="v">Find chime, stitch pop, success / fail chord, pickup chime, warn buzz</span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div><strong>First Diagnosis</strong> · Domain &amp; system design page</div>
+      <div><a href="process.html">Development process →</a></div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,6266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruff Routine — A Pet Care Journey</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+    background: #1a1a2e;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #game-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  #game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ===== GOLD NOTIFICATION ===== */
+  #gold-notify {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 40%, #2a2a4e, #1a1a2e);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    transition: opacity 0.8s;
+    cursor: pointer;
+  }
+  #gold-notify.hidden { opacity: 0; pointer-events: none; }
+  .gold-notify-text {
+    font-size: 22px;
+    color: #aaa;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+  .gold-amount {
+    font-size: 80px;
+    font-weight: 800;
+    color: #FFE66D;
+    text-shadow: 0 0 40px rgba(255,230,109,0.6);
+    margin-bottom: 4px;
+    transition: transform 0.3s;
+  }
+  .gold-amount-label {
+    font-size: 16px;
+    color: #FFE66D;
+    margin-bottom: 36px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .gold-continue {
+    font-size: 14px;
+    color: #666;
+    animation: blink 1.5s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* ===== TOP BAR ===== */
+  #top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 14px 24px;
+    z-index: 20;
+    pointer-events: none;
+  }
+  #gold-display {
+    background: rgba(20,20,40,0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,230,109,0.3);
+    border-radius: 24px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFE66D;
+  }
+  #gold-display .coin {
+    width: 22px; height: 22px;
+    background: radial-gradient(circle at 35% 35%, #FFE66D, #D4AC0D);
+    border-radius: 50%;
+    border: 2px solid #B8900A;
+    box-shadow: 0 0 8px rgba(255,230,109,0.4);
+  }
+
+  /* ===== DIALOGUE BOX ===== */
+  #dialogue-box {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.5) 30%);
+    padding: 20px 40px 28px;
+    z-index: 30;
+    display: none;
+  }
+  #dialogue-box.active { display: block; }
+  .dialogue-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 18px 28px;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
+    cursor: pointer;
+    position: relative;
+    border: 2px solid rgba(0,0,0,0.05);
+  }
+  .speaker-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #E67E22;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .dialogue-text {
+    font-size: 17px;
+    color: #333;
+    line-height: 1.6;
+    min-height: 28px;
+  }
+  .dialogue-arrow {
+    position: absolute;
+    bottom: 8px;
+    right: 16px;
+    font-size: 20px;
+    color: #999;
+    animation: bob 1s infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* ===== INFO PANEL ===== */
+  #info-panel {
+    position: absolute;
+    top: 50%;
+    right: -400px;
+    transform: translateY(-50%);
+    width: 340px;
+    background: linear-gradient(145deg, #ffffff, #f5f5fa);
+    border-radius: 24px;
+    padding: 28px 24px 24px;
+    box-shadow: -12px 0 50px rgba(0,0,0,0.35);
+    transition: right 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 50;
+  }
+  #info-panel.active { right: 20px; }
+
+  .info-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    width: 32px; height: 32px;
+    border: none;
+    background: rgba(0,0,0,0.06);
+    border-radius: 50%;
+    font-size: 20px;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .info-close:hover { background: rgba(0,0,0,0.12); }
+
+  .info-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: #aaa;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .info-breed {
+    font-size: 26px;
+    font-weight: 800;
+    color: #222;
+    margin-top: 2px;
+  }
+  .info-type {
+    font-size: 15px;
+    color: #888;
+    margin-top: 2px;
+    margin-bottom: 16px;
+  }
+
+  .info-price-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .info-price {
+    font-size: 28px;
+    font-weight: 800;
+    color: #E67E22;
+  }
+  .info-price.cant-afford { color: #ccc; }
+  .info-coin {
+    width: 26px; height: 26px;
+    background: radial-gradient(circle at 35% 35%, #FFE66D, #D4AC0D);
+    border-radius: 50%;
+    border: 2px solid #B8900A;
+  }
+  .info-affordable {
+    font-size: 13px;
+    color: #4CAF50;
+    margin-left: 4px;
+  }
+  .info-affordable.no { color: #E74C3C; }
+
+  .info-section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .info-traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .trait-tag {
+    background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+    color: #E65100;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(230,126,34,0.2);
+  }
+  .info-likes {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .info-desc {
+    font-size: 14px;
+    color: #777;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .adopt-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #E67E22, #D35400);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 15px rgba(230,126,34,0.4);
+  }
+  .adopt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(230,126,34,0.5);
+  }
+  .adopt-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* ===== CONFIRM MODAL ===== */
+  #confirm-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  #confirm-modal.active { display: flex; }
+  .confirm-box {
+    background: white;
+    border-radius: 24px;
+    padding: 36px 40px;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .confirm-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #222;
+    margin-bottom: 8px;
+  }
+  .confirm-text {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .confirm-btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .confirm-btn:hover { transform: translateY(-2px); }
+  .btn-yes {
+    background: linear-gradient(135deg, #E67E22, #D35400);
+    color: white;
+    box-shadow: 0 4px 12px rgba(230,126,34,0.4);
+  }
+  .btn-no {
+    background: #f0f0f0;
+    color: #666;
+  }
+
+  /* ===== PACKING OVERLAY ===== */
+  #packing-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #faf3e8, #f0e6d8);
+    z-index: 150;
+    display: none;
+  }
+  #packing-overlay.active { display: block; }
+  #packing-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .packing-caption {
+    position: absolute;
+    bottom: 60px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 20px;
+    color: #555;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.6s;
+  }
+  .packing-caption.show { opacity: 1; }
+
+  /* ===== NAMING SCREEN ===== */
+  #naming-screen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #e8d5c4 0%, #d4b896 40%, #c4a878 100%);
+    z-index: 150;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #naming-screen.active { display: flex; }
+  #naming-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .naming-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 36px 48px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    max-width: 440px;
+  }
+  .naming-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 8px;
+  }
+  .naming-subtitle {
+    font-size: 15px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  #name-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 18px;
+    font-family: inherit;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  #name-input:focus { border-color: #E67E22; }
+  .name-confirm-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #E67E22, #D35400);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(230,126,34,0.4);
+    transition: transform 0.15s;
+  }
+  .name-confirm-btn:hover { transform: translateY(-2px); }
+
+  /* ===== TRANSITION SCREEN ===== */
+  #transition-screen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1a1a2e, #16213e);
+    z-index: 180;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #transition-screen.active { display: flex; }
+  .transition-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: #FFE66D;
+    margin-bottom: 12px;
+    animation: fadeInUp 0.8s ease;
+  }
+  .transition-sub {
+    font-size: 16px;
+    color: #888;
+    animation: fadeInUp 1.2s ease;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== HINT TEXT ===== */
+  #hint-text {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20,20,40,0.7);
+    backdrop-filter: blur(8px);
+    color: #FFE66D;
+    font-size: 15px;
+    padding: 10px 24px;
+    border-radius: 20px;
+    z-index: 25;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  #hint-text.show { opacity: 1; }
+
+  /* ===== HOME SCENE UI ===== */
+  #action-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: none;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.4));
+    z-index: 25;
+  }
+  #action-bar.active { display: flex; }
+  .action-btn {
+    background: rgba(255,255,255,0.92);
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .action-btn:active { transform: translateY(-1px); }
+  .action-btn .emoji { font-size: 20px; }
+
+  #home-top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    z-index: 25;
+    pointer-events: none;
+  }
+  #home-top-bar.active { display: flex; }
+  #pet-name-display {
+    background: rgba(20,20,40,0.75);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    pointer-events: auto;
+  }
+  #pet-name-display .pet-type { font-size: 14px; color: #aaa; }
+  #time-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(20,20,40,0.75);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    pointer-events: auto;
+  }
+  #time-display #time-icon { font-size: 18px; }
+  #intimacy-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(20,20,40,0.75);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 8px 16px;
+    pointer-events: auto;
+  }
+  .intimacy-heart { font-size: 20px; }
+  .intimacy-bar-bg {
+    width: 120px; height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .intimacy-bar-fill {
+    height: 100%;
+    width: 15%;
+    background: linear-gradient(90deg, #E74C3C, #F39C12, #F1C40F);
+    border-radius: 5px;
+    transition: width 0.5s, background 0.5s;
+  }
+  .intimacy-value { font-size: 14px; color: #FFE66D; font-weight: 700; }
+
+  #stats-display {
+    position: absolute;
+    top: 52px;
+    right: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 25;
+  }
+  #stats-display.active { display: flex; }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(20,20,40,0.65);
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #ccc;
+  }
+  .stat-bar-bg {
+    width: 60px; height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s;
+  }
+
+  /* ===== COOKING OVERLAY ===== */
+  #cooking-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  #cooking-overlay.active { display: flex; }
+  .cooking-panel {
+    background: linear-gradient(145deg, #fff, #f8f8fa);
+    border-radius: 24px;
+    padding: 32px 36px;
+    max-width: 540px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .cooking-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 6px;
+  }
+  .cooking-step-text {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+    min-height: 24px;
+  }
+  .cooking-content {
+    margin-bottom: 20px;
+    min-height: 100px;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+  .ingredient-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .ingredient-btn {
+    background: #f5f5f5;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .ingredient-btn:hover {
+    border-color: #E67E22;
+    background: #FFF3E0;
+  }
+  .ingredient-btn.selected {
+    border-color: #E67E22;
+    background: #FFE0B2;
+    transform: scale(0.95);
+  }
+  .ingredient-btn .ing-emoji { font-size: 28px; }
+  .ingredient-btn .ing-name { font-size: 11px; color: #666; }
+  .ingredient-btn .ing-price { font-size: 10px; color: #D4AC0D; font-weight: 700; }
+  .ingredient-btn.cant-afford { opacity: 0.4; }
+  .ingredient-btn.cant-afford .ing-price { color: #999; }
+  .cook-cancel {
+    margin-top: 12px;
+    background: transparent;
+    border: 1px solid #ddd;
+    color: #999;
+    padding: 8px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .cook-cancel:hover { border-color: #E74C3C; color: #E74C3C; }
+  .pot-display {
+    font-size: 60px;
+    margin: 10px 0;
+  }
+  .pot-ingredients {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 10px 0;
+    font-size: 32px;
+  }
+  .cooking-progress {
+    width: 100%;
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .cooking-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #E67E22, #F39C12);
+    width: 0%;
+    transition: width 0.1s;
+    border-radius: 6px;
+  }
+  .cooking-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .cook-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.12s;
+  }
+  .cook-btn:hover { transform: translateY(-2px); }
+  .cook-btn-primary {
+    background: linear-gradient(135deg, #E67E22, #D35400);
+    color: white;
+    box-shadow: 0 4px 12px rgba(230,126,34,0.4);
+  }
+  .cook-btn-secondary {
+    background: #f0f0f0;
+    color: #666;
+  }
+  .cook-btn:disabled {
+    background: #ccc;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Play overlay — reuses cooking styles */
+  #play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  #play-overlay.active { display: flex; }
+  .toy-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .toy-btn {
+    background: #f5f5f5;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 14px 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .toy-btn:hover {
+    border-color: #2ECC71;
+    background: #E8F8F0;
+    transform: translateY(-3px);
+  }
+  .toy-btn.selected {
+    border-color: #2ECC71;
+    background: #D5F5E3;
+    transform: scale(0.95);
+  }
+  .toy-btn .toy-emoji { font-size: 30px; }
+  .toy-btn .toy-name { font-size: 11px; color: #555; font-weight: 600; }
+  .toy-btn .toy-desc { font-size: 9px; color: #aaa; }
+  .toy-btn .toy-fav { font-size: 9px; color: #E74C3C; font-weight: 700; }
+
+  /* Walk overlay — full-screen canvas scene */
+  #walk-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 90;
+  }
+  #walk-overlay.active { display: block; }
+  .walk-timer-bar {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 8px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 91;
+  }
+  .walk-timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2ECC71, #27AE60);
+    width: 100%;
+    border-radius: 4px;
+    transition: width 0.1s linear;
+  }
+  .walk-label {
+    position: absolute;
+    top: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    z-index: 91;
+  }
+  .walk-skip-btn {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    cursor: pointer;
+    z-index: 91;
+    transition: background 0.2s;
+  }
+  .walk-skip-btn:hover { background: rgba(0,0,0,0.7); }
+
+  /* Clean progress bar */
+  #clean-progress-bar {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    display: none;
+    z-index: 80;
+  }
+  #clean-progress-bar.active { display: block; }
+  .clean-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498DB, #2ECC71);
+    width: 0%;
+    border-radius: 5px;
+    transition: width 0.05s linear;
+  }
+  /* ===== TOAST MESSAGE ===== */
+  #toast {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(20,20,40,0.9);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 20px;
+    z-index: 90;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Gold Notification -->
+  <div id="gold-notify">
+    <div class="gold-notify-text">You check your savings...</div>
+    <div class="gold-amount" id="gold-amount">0</div>
+    <div class="gold-amount-label">Gold Coins</div>
+    <div class="gold-continue">Click to continue</div>
+  </div>
+
+  <!-- Top Bar -->
+  <div id="top-bar">
+    <div id="gold-display" style="display:none;">
+      <div class="coin"></div>
+      <span id="gold-display-num">0</span>
+    </div>
+  </div>
+
+  <!-- Hint -->
+  <div id="hint-text">Click on a pet to learn more</div>
+
+  <!-- Dialogue Box -->
+  <div id="dialogue-box">
+    <div class="dialogue-inner" id="dialogue-inner">
+      <div class="speaker-name" id="speaker-name"></div>
+      <div class="dialogue-text" id="dialogue-text"></div>
+      <div class="dialogue-arrow">▼</div>
+    </div>
+  </div>
+
+  <!-- Info Panel -->
+  <div id="info-panel">
+    <button class="info-close" id="info-close">×</button>
+    <div class="info-number" id="info-number">No.1</div>
+    <div class="info-breed" id="info-breed">Breed</div>
+    <div class="info-type" id="info-type">Dog</div>
+    <div class="info-price-row">
+      <div class="info-coin"></div>
+      <div class="info-price" id="info-price">0</div>
+      <div class="info-affordable" id="info-affordable"></div>
+    </div>
+    <div class="info-section-label">Personality</div>
+    <div class="info-traits" id="info-traits"></div>
+    <div class="info-section-label">Likes</div>
+    <div class="info-likes" id="info-likes"></div>
+    <div class="info-desc" id="info-desc"></div>
+    <button class="adopt-btn" id="adopt-btn">Adopt</button>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirm-modal">
+    <div class="confirm-box">
+      <div class="confirm-title" id="confirm-title">Adopt this pet?</div>
+      <div class="confirm-text" id="confirm-text"></div>
+      <div class="confirm-buttons">
+        <button class="confirm-btn btn-yes" id="confirm-yes">Yes, adopt!</button>
+        <button class="confirm-btn btn-no" id="confirm-no">Not yet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Packing Overlay -->
+  <div id="packing-overlay">
+    <canvas id="packing-canvas"></canvas>
+    <div class="packing-caption" id="packing-caption"></div>
+  </div>
+
+  <!-- Naming Screen -->
+  <div id="naming-screen">
+    <canvas id="naming-canvas"></canvas>
+    <div class="naming-content">
+      <div class="naming-title">You're home!</div>
+      <div class="naming-subtitle">What will you name your new best friend?</div>
+      <input type="text" id="name-input" placeholder="Type a name..." maxlength="16" autocomplete="off">
+      <button class="name-confirm-btn" id="name-confirm">Confirm Name</button>
+    </div>
+  </div>
+
+  <!-- Transition Screen -->
+  <div id="transition-screen">
+    <div class="transition-text" id="transition-text">Heading Home...</div>
+    <div class="transition-sub" id="transition-pet-name">with your new best friend</div>
+  </div>
+
+  <!-- Home Scene UI -->
+  <div id="home-top-bar">
+    <div id="pet-name-display">
+      <span id="pet-name-text">Pet</span> <span class="pet-type" id="pet-breed-text"></span>
+    </div>
+    <div id="time-display">
+      <span id="time-icon">☀️</span>
+      <span id="time-label">Daytime</span>
+    </div>
+    <div id="intimacy-display">
+      <span class="intimacy-heart">❤️</span>
+      <div class="intimacy-bar-bg">
+        <div class="intimacy-bar-fill" id="intimacy-fill"></div>
+      </div>
+      <span class="intimacy-value" id="intimacy-value">15</span>
+    </div>
+  </div>
+  <div id="stats-display">
+    <div class="stat-row">
+      <span>🍖</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" id="hunger-fill" style="background:#E74C3C;"></div></div>
+    </div>
+    <div class="stat-row">
+      <span>😊</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" id="happiness-fill" style="background:#F1C40F;"></div></div>
+    </div>
+    <div class="stat-row">
+      <span>⚡</span>
+      <div class="stat-bar-bg"><div class="stat-bar-fill" id="energy-fill" style="background:#3498DB;"></div></div>
+    </div>
+  </div>
+  <div id="action-bar">
+    <button class="action-btn" data-action="cook"><span class="emoji">🍳</span> Cook</button>
+    <button class="action-btn" data-action="play"><span class="emoji">🎾</span> Play</button>
+    <button class="action-btn" data-action="walk"><span class="emoji">🦮</span> Walk</button>
+    <button class="action-btn" data-action="pet"><span class="emoji">🤚</span> Pet</button>
+    <button class="action-btn" data-action="clean"><span class="emoji">🧹</span> Clean</button>
+  </div>
+  <div id="toast"></div>
+
+  <!-- Cooking Overlay -->
+  <div id="cooking-overlay">
+    <div class="cooking-panel">
+      <div class="cooking-title" id="cooking-title">🍳 Kitchen</div>
+      <div class="cooking-step-text" id="cooking-step-text">Step 1: Open the cabinet</div>
+      <div class="cooking-content" id="cooking-content"></div>
+      <div class="cooking-buttons" id="cooking-buttons"></div>
+      <button class="cook-btn cook-cancel" id="cook-cancel-btn">✕ Cancel (refund)</button>
+    </div>
+  </div>
+
+  <!-- Play / Toy Selection Overlay -->
+  <div id="play-overlay">
+    <div class="cooking-panel">
+      <div class="cooking-title">🎾 Toy Box</div>
+      <div class="cooking-step-text" id="play-step-text">Pick a toy to play with!</div>
+      <div class="cooking-content" id="play-content"></div>
+      <div class="cooking-buttons" id="play-buttons"></div>
+      <button class="cook-btn cook-cancel" id="play-cancel-btn">✕ Cancel</button>
+    </div>
+  </div>
+
+  <!-- Walk Scene Overlay (full-canvas) -->
+  <div id="walk-overlay"></div>
+
+  <!-- Clean animation progress bar -->
+  <div id="clean-progress-bar">
+    <div class="clean-progress-fill" id="clean-progress-fill"></div>
+  </div>
+</div>
+
+<script>
+// =====================================================
+//  RUFF ROUTINE — Pet Shop Experience
+// =====================================================
+
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+
+function resizeCanvas() {
+  DPR = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function rand(a, b) { return a + Math.random() * (b - a); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+// =====================================================
+//  PET DATA — 8 unique pets, no names, just numbers
+// =====================================================
+const PETS = [
+  {
+    num: 1, type: 'dog', breed: 'Golden Retriever', price: 1200,
+    traits: ['Clingy', 'Playful', 'Loyal'],
+    likes: 'Tennis balls & tummy rubs',
+    desc: 'A sunshine-furred sweetheart who lives to make you smile. Eternally puppy-brained.',
+    colors: { main: '#E8B530', dark: '#C49818', light: '#F5D547', belly: '#FFF5DC' },
+    earType: 'floppy', pattern: 'solid', animType: 'bounce',
+    eyeColor: '#5C3317', animOffset: 0,
+  },
+  {
+    num: 2, type: 'dog', breed: 'Shiba Inu', price: 2200,
+    traits: ['Independent', 'Clean', 'Alert'],
+    likes: 'Long walks & quiet time',
+    desc: 'A dignified little fox-dog. Will rule your household with an iron paw.',
+    colors: { main: '#E07A28', dark: '#B8601A', light: '#F09848', belly: '#FBF0E0' },
+    earType: 'pointy', pattern: 'shiba', animType: 'tilt',
+    eyeColor: '#2C1810', animOffset: 1.2,
+  },
+  {
+    num: 3, type: 'dog', breed: 'Welsh Corgi', price: 1800,
+    traits: ['Food-loving', 'Smart', 'Energetic'],
+    likes: 'Snacks & adventures',
+    desc: 'A tiny loaf with big personality. Will herd you around the house.',
+    colors: { main: '#D49E40', dark: '#B08030', light: '#E8BC68', belly: '#FFF0D0' },
+    earType: 'bigpointy', pattern: 'corgi', animType: 'wiggle',
+    eyeColor: '#4A2C1A', animOffset: 2.4,
+  },
+  {
+    num: 4, type: 'dog', breed: 'Siberian Husky', price: 4500,
+    traits: ['Playful', 'Vocal', 'Active'],
+    likes: 'Cold weather & howling',
+    desc: 'A majestic fluffball with striking blue eyes. Talks back. A lot.',
+    colors: { main: '#B0B0C0', dark: '#82828F', light: '#D0D0DC', belly: '#F0F0F5' },
+    earType: 'pointy', pattern: 'husky', animType: 'howl',
+    eyeColor: '#4A90D9', animOffset: 3.6,
+  },
+  {
+    num: 5, type: 'cat', breed: 'Orange Tabby', price: 500,
+    traits: ['Food-loving', 'Lazy', 'Friendly'],
+    likes: 'Fish & sunbeams',
+    desc: 'One brain cell, maximum charm. Will steal your food and your heart.',
+    colors: { main: '#E8843D', dark: '#C46820', light: '#F5A560', belly: '#FBE8D0' },
+    earType: 'catpointy', pattern: 'tabby', animType: 'lick',
+    eyeColor: '#5C8030', animOffset: 0.6,
+  },
+  {
+    num: 6, type: 'cat', breed: 'British Shorthair', price: 1500,
+    traits: ['Quiet', 'Calm', 'Independent'],
+    likes: 'Naps & personal space',
+    desc: 'A round, plush teddy bear cat. Dignified. Slightly judgmental.',
+    colors: { main: '#8B8B9A', dark: '#6A6A78', light: '#A5A5B5', belly: '#B8B8C8' },
+    earType: 'smallcat', pattern: 'solid', animType: 'blink',
+    eyeColor: '#D4A040', animOffset: 1.8,
+  },
+  {
+    num: 7, type: 'cat', breed: 'Ragdoll', price: 2800,
+    traits: ['Clingy', 'Gentle', 'Docile'],
+    likes: 'Being carried & cuddles',
+    desc: 'Goes limp when you pick her up. The gentlest soul you will ever meet.',
+    colors: { main: '#E8DCC8', dark: '#C0B098', light: '#F5EDE0', belly: '#FFFFFF' },
+    earType: 'catpointy', pattern: 'ragdoll', animType: 'sway',
+    eyeColor: '#4A90D9', animOffset: 3.0,
+  },
+  {
+    num: 8, type: 'cat', breed: 'Black Shorthair', price: 800,
+    traits: ['Mysterious', 'Quiet', 'Loyal'],
+    likes: 'Nighttime adventures',
+    desc: 'A tiny panther with golden eyes. Loyal to one person only.',
+    colors: { main: '#2C2C36', dark: '#181820', light: '#3C3C48', belly: '#101015' },
+    earType: 'catpointy', pattern: 'solid', animType: 'tail',
+    eyeColor: '#D4A040', animOffset: 4.2,
+  },
+];
+
+// Assign random animation offsets
+PETS.forEach(p => { p.animOffset = Math.random() * 6.28; });
+
+// =====================================================
+//  GAME STATE
+// =====================================================
+const game = {
+  phase: 'gold_notify',
+  gold: 0,
+  targetGold: 0,
+  time: 0,
+  selectedPet: null,
+  hoveredPet: null,
+  purchasedPet: null,
+  petName: '',
+  mouse: { x: 0, y: 0 },
+};
+
+// =====================================================
+//  PET DISPLAY POSITIONS — 4 columns × 2 rows
+// =====================================================
+function getPetPositions() {
+  const positions = [];
+  const cols = 4;
+  const rows = 2;
+  const startX = W * 0.16;
+  const gapX = (W * 0.68) / (cols - 1);
+  const startY = H * 0.46;
+  const gapY = H * 0.24;
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      positions.push({
+        x: startX + col * gapX,
+        y: startY + row * gapY,
+      });
+    }
+  }
+  return positions;
+}
+
+// =====================================================
+//  SHOP INTERIOR — realistic pet shop
+// =====================================================
+function drawShopInterior() {
+  // --- Wall ---
+  const wallGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+  wallGrad.addColorStop(0, '#F5E6D3');
+  wallGrad.addColorStop(0.5, '#EDE0CC');
+  wallGrad.addColorStop(1, '#E2D0B8');
+  ctx.fillStyle = wallGrad;
+  ctx.fillRect(0, 0, W, H * 0.55);
+
+  // --- Window (right side of wall) ---
+  const winX = W * 0.62, winY = H * 0.06, winW = W * 0.28, winH = H * 0.30;
+  // Window frame
+  ctx.fillStyle = '#8B7355';
+  ctx.fillRect(winX - 8, winY - 8, winW + 16, winH + 16);
+  // Sky
+  const skyGrad = ctx.createLinearGradient(0, winY, 0, winY + winH);
+  skyGrad.addColorStop(0, '#87CEEB');
+  skyGrad.addColorStop(0.6, '#B0E0E6');
+  skyGrad.addColorStop(1, '#E0F6FF');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(winX, winY, winW, winH);
+  // Sun
+  ctx.fillStyle = 'rgba(255,240,150,0.9)';
+  ctx.beginPath();
+  ctx.arc(winX + winW * 0.75, winY + winH * 0.3, 24, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,200,0.3)';
+  ctx.beginPath();
+  ctx.arc(winX + winW * 0.75, winY + winH * 0.3, 40, 0, Math.PI * 2);
+  ctx.fill();
+  // Clouds
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  drawCloud(winX + winW * 0.2, winY + winH * 0.35, 18);
+  drawCloud(winX + winW * 0.5, winY + winH * 0.6, 14);
+  // Window cross
+  ctx.fillStyle = '#8B7355';
+  ctx.fillRect(winX + winW / 2 - 3, winY, 6, winH);
+  ctx.fillRect(winX, winY + winH / 2 - 3, winW, 6);
+
+  // --- Shelves on back wall (left side) ---
+  drawShelves();
+
+  // --- Paw print decorations on wall ---
+  drawPawPrints();
+
+  // --- Floor (wooden planks with perspective) ---
+  drawFloor();
+
+  // --- Counter (left foreground) ---
+  drawCounter();
+
+  // --- Plants ---
+  drawPlant(W * 0.04, H * 0.52, 1);
+  drawPlant(W * 0.93, H * 0.55, 0.8);
+
+  // --- Lighting overlay (warm) ---
+  const lightGrad = ctx.createRadialGradient(W * 0.5, H * 0.2, 0, W * 0.5, H * 0.5, W * 0.8);
+  lightGrad.addColorStop(0, 'rgba(255,240,200,0.15)');
+  lightGrad.addColorStop(1, 'rgba(180,140,80,0.0)');
+  ctx.fillStyle = lightGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // --- Vignette ---
+  const vig = ctx.createRadialGradient(W / 2, H / 2, W * 0.3, W / 2, H / 2, W * 0.8);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(40,30,20,0.25)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function drawCloud(x, y, r) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.arc(x + r * 0.8, y - r * 0.3, r * 0.8, 0, Math.PI * 2);
+  ctx.arc(x + r * 1.5, y, r * 0.7, 0, Math.PI * 2);
+  ctx.arc(x + r * 0.7, y + r * 0.3, r * 0.6, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawShelves() {
+  const shelfX = W * 0.04;
+  const shelfW = W * 0.50;
+  const shelves = [
+    { y: H * 0.10, items: [
+      { type: 'bag', color: '#E8C842', w: 28, h: 38 },
+      { type: 'bag', color: '#E87A2D', w: 28, h: 38 },
+      { type: 'ball', color: '#4ECDC4', r: 10 },
+      { type: 'bag', color: '#7DCEA0', w: 26, h: 36 },
+      { type: 'box', color: '#F39C12', w: 30, h: 30 },
+      { type: 'ball', color: '#E74C3C', r: 12 },
+      { type: 'bag', color: '#85C1E9', w: 28, h: 38 },
+      { type: 'box', color: '#9B59B6', w: 28, h: 28 },
+    ]},
+    { y: H * 0.22, items: [
+      { type: 'box', color: '#5DADE2', w: 32, h: 32 },
+      { type: 'bag', color: '#F4D03F', w: 28, h: 38 },
+      { type: 'ball', color: '#58D68D', r: 10 },
+      { type: 'bag', color: '#EC7063', w: 28, h: 38 },
+      { type: 'box', color: '#48C9B0', w: 30, h: 30 },
+      { type: 'bag', color: '#AF7AC5', w: 26, h: 36 },
+      { type: 'ball', color: '#F5B041', r: 11 },
+      { type: 'box', color: '#E67E22', w: 28, h: 28 },
+    ]},
+  ];
+
+  shelves.forEach(shelf => {
+    // Shelf board
+    ctx.fillStyle = '#8B6F47';
+    ctx.fillRect(shelfX, shelf.y + 36, shelfW, 6);
+    ctx.fillStyle = '#6B5337';
+    ctx.fillRect(shelfX, shelf.y + 40, shelfW, 3);
+
+    // Items
+    let itemX = shelfX + 12;
+    const itemGap = (shelfW - 24) / shelf.items.length;
+    shelf.items.forEach(item => {
+      if (item.type === 'bag') {
+        // Pet food bag
+        ctx.fillStyle = item.color;
+        ctx.fillRect(itemX, shelf.y + 36 - item.h, item.w, item.h);
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillRect(itemX, shelf.y + 36 - item.h, item.w, 4);
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(itemX + 2, shelf.y + 36 - item.h + 2, item.w - 4, 8);
+        // Label
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillRect(itemX + 4, shelf.y + 36 - item.h * 0.5, item.w - 8, 6);
+      } else if (item.type === 'ball') {
+        ctx.fillStyle = item.color;
+        ctx.beginPath();
+        ctx.arc(itemX + item.r, shelf.y + 36 - item.r, item.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.arc(itemX + item.r - item.r * 0.3, shelf.y + 36 - item.r - item.r * 0.3, item.r * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (item.type === 'box') {
+        ctx.fillStyle = item.color;
+        ctx.fillRect(itemX, shelf.y + 36 - item.h, item.w, item.h);
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.fillRect(itemX, shelf.y + 36 - item.h, item.w, 3);
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(itemX, shelf.y + 36 - item.h, item.w, item.h);
+      }
+      itemX += itemGap;
+    });
+  });
+
+  // Sign on wall
+  ctx.fillStyle = '#6B5337';
+  ctx.fillRect(W * 0.18, H * 0.035, W * 0.14, H * 0.045);
+  ctx.fillStyle = '#F5E6D3';
+  ctx.fillRect(W * 0.185, H * 0.04, W * 0.13, H * 0.035);
+  ctx.fillStyle = '#8B6F47';
+  ctx.font = 'bold 16px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('🐾 Paws & Whiskers 🐾', W * 0.25, H * 0.063);
+}
+
+function drawPawPrints() {
+  const paws = [
+    { x: W * 0.57, y: H * 0.08, s: 0.6 },
+    { x: W * 0.58, y: H * 0.15, s: 0.5 },
+    { x: W * 0.55, y: H * 0.22, s: 0.55 },
+  ];
+  paws.forEach(p => {
+    ctx.fillStyle = 'rgba(139,111,71,0.15)';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 6 * p.s, 0, Math.PI * 2);
+    ctx.fill();
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI - Math.PI / 2;
+      ctx.beginPath();
+      ctx.arc(p.x + Math.cos(a) * 8 * p.s, p.y + Math.sin(a) * 8 * p.s - 4, 3 * p.s, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+}
+
+function drawFloor() {
+  const floorY = H * 0.55;
+  // Floor base
+  const floorGrad = ctx.createLinearGradient(0, floorY, 0, H);
+  floorGrad.addColorStop(0, '#C4A26C');
+  floorGrad.addColorStop(0.5, '#B8924F');
+  floorGrad.addColorStop(1, '#A07838');
+  ctx.fillStyle = floorGrad;
+  ctx.fillRect(0, floorY, W, H - floorY);
+
+  // Perspective lines (planks)
+  const vanishX = W * 0.5;
+  const vanishY = floorY;
+  ctx.strokeStyle = 'rgba(80,55,20,0.25)';
+  ctx.lineWidth = 1.5;
+  for (let i = -8; i <= 8; i++) {
+    const startX = vanishX + i * (W * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(startX, H);
+    ctx.lineTo(vanishX + i * (W * 0.02), vanishY);
+    ctx.stroke();
+  }
+
+  // Horizontal plank lines
+  ctx.strokeStyle = 'rgba(80,55,20,0.15)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 6; i++) {
+    const y = floorY + (H - floorY) * (i / 7) * (i / 7) * 1.1;
+    if (y < H) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+  }
+
+  // Floor highlight (light from window)
+  ctx.fillStyle = 'rgba(255,240,180,0.1)';
+  ctx.beginPath();
+  ctx.moveTo(W * 0.62, floorY);
+  ctx.lineTo(W * 0.90, floorY);
+  ctx.lineTo(W * 1.1, H);
+  ctx.lineTo(W * 0.4, H);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawCounter() {
+  const cx = W * 0.01;
+  const cy = H * 0.38;
+  const cw = W * 0.12;
+  const ch = H * 0.22;
+
+  // Counter body
+  const grad = ctx.createLinearGradient(cx, cy, cx, cy + ch);
+  grad.addColorStop(0, '#A0826D');
+  grad.addColorStop(1, '#7B5E3F');
+  ctx.fillStyle = grad;
+  ctx.fillRect(cx, cy, cw, ch);
+
+  // Counter top
+  ctx.fillStyle = '#6B5337';
+  ctx.fillRect(cx - 4, cy - 8, cw + 8, 12);
+
+  // Wood grain
+  ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(cx + 4, cy + 20 + i * 28);
+    ctx.lineTo(cx + cw - 4, cy + 20 + i * 28);
+    ctx.stroke();
+  }
+
+  // Cash register
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillRect(cx + cw * 0.2, cy - 36, cw * 0.5, 28);
+  ctx.fillStyle = '#2a8a2a';
+  ctx.fillRect(cx + cw * 0.25, cy - 32, cw * 0.4, 10);
+  ctx.fillStyle = '#888';
+  ctx.fillRect(cx + cw * 0.3, cy - 18, cw * 0.3, 6);
+
+  // Shop owner
+  drawShopOwner(cx + cw * 0.5, cy - 8);
+}
+
+function drawShopOwner(x, y) {
+  // Body (apron)
+  ctx.fillStyle = '#4A90D9';
+  ctx.beginPath();
+  ctx.moveTo(x - 22, y);
+  ctx.lineTo(x + 22, y);
+  ctx.lineTo(x + 18, y + 55);
+  ctx.lineTo(x - 18, y + 55);
+  ctx.closePath();
+  ctx.fill();
+
+  // Apron straps
+  ctx.strokeStyle = '#4A90D9';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(x - 18, y);
+  ctx.lineTo(x - 10, y - 22);
+  ctx.moveTo(x + 18, y);
+  ctx.lineTo(x + 10, y - 22);
+  ctx.stroke();
+
+  // Shirt collar
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.moveTo(x - 10, y - 22);
+  ctx.lineTo(x + 10, y - 22);
+  ctx.lineTo(x + 6, y - 8);
+  ctx.lineTo(x - 6, y - 8);
+  ctx.closePath();
+  ctx.fill();
+
+  // Head
+  ctx.fillStyle = '#FFDAB9';
+  ctx.beginPath();
+  ctx.arc(x, y - 35, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hair
+  ctx.fillStyle = '#3a2a1a';
+  ctx.beginPath();
+  ctx.arc(x, y - 38, 19, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(x - 16, y - 42, 32, 8);
+
+  // Eyes
+  ctx.fillStyle = '#2a2a2a';
+  ctx.beginPath();
+  ctx.arc(x - 6, y - 35, 2, 0, Math.PI * 2);
+  ctx.arc(x + 6, y - 35, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Smile
+  ctx.strokeStyle = '#8B4513';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y - 28, 6, 0, Math.PI);
+  ctx.stroke();
+
+  // Name tag
+  ctx.fillStyle = '#FFD700';
+  ctx.fillRect(x - 8, y + 8, 16, 10);
+}
+
+function drawPlant(x, y, scale) {
+  // Pot
+  ctx.fillStyle = '#A0522D';
+  ctx.beginPath();
+  ctx.moveTo(x - 18 * scale, y);
+  ctx.lineTo(x + 18 * scale, y);
+  ctx.lineTo(x + 14 * scale, y + 30 * scale);
+  ctx.lineTo(x - 14 * scale, y + 30 * scale);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(x - 20 * scale, y - 4, 40 * scale, 6);
+
+  // Leaves
+  const leaves = [
+    { dx: 0, dy: -35, w: 12, h: 30, rot: 0 },
+    { dx: -16, dy: -28, w: 10, h: 28, rot: -0.4 },
+    { dx: 16, dy: -28, w: 10, h: 28, rot: 0.4 },
+    { dx: -8, dy: -40, w: 8, h: 24, rot: -0.2 },
+    { dx: 8, dy: -40, w: 8, h: 24, rot: 0.2 },
+  ];
+  leaves.forEach(l => {
+    ctx.save();
+    ctx.translate(x + l.dx * scale, y + l.dy * scale);
+    ctx.rotate(l.rot);
+    const lg = ctx.createLinearGradient(0, -l.h, 0, 0);
+    lg.addColorStop(0, '#5DBB63');
+    lg.addColorStop(1, '#2D7D32');
+    ctx.fillStyle = lg;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, l.w * scale, l.h * scale, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+// =====================================================
+//  PET ENCLOSURES (glass display cases)
+// =====================================================
+function drawEnclosures() {
+  const positions = getPetPositions();
+  PETS.forEach((pet, i) => {
+    const pos = positions[i];
+    drawEnclosure(pos.x, pos.y, pet, i);
+  });
+}
+
+function drawEnclosure(cx, cy, pet, index) {
+  const ew = 110;
+  const eh = 95;
+
+  // Enclosure platform (wooden base)
+  ctx.fillStyle = '#8B6F47';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 42, ew * 0.55, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#6B5337';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 42, ew * 0.55, 8, 0, 0, Math.PI);
+  ctx.fill();
+
+  // Glass case (semi-transparent)
+  const glassGrad = ctx.createLinearGradient(cx - ew/2, cy - eh/2, cx + ew/2, cy + eh/2);
+  glassGrad.addColorStop(0, 'rgba(200,230,255,0.15)');
+  glassGrad.addColorStop(0.5, 'rgba(200,230,255,0.05)');
+  glassGrad.addColorStop(1, 'rgba(200,230,255,0.12)');
+  ctx.fillStyle = glassGrad;
+  ctx.fillRect(cx - ew/2, cy - eh/2 - 10, ew, eh);
+
+  // Glass frame (top)
+  ctx.fillStyle = '#8B6F47';
+  ctx.fillRect(cx - ew/2 - 3, cy - eh/2 - 13, ew + 6, 6);
+
+  // Glass reflection
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.moveTo(cx - ew/2 + 8, cy - eh/2 - 5);
+  ctx.lineTo(cx - ew/2 + 18, cy - eh/2 - 5);
+  ctx.lineTo(cx - ew/2 + 4, cy + eh/2 - 10);
+  ctx.lineTo(cx - ew/2 - 6, cy + eh/2 - 10);
+  ctx.closePath();
+  ctx.fill();
+
+  // Number tag
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath();
+  ctx.arc(cx - ew/2 + 12, cy - eh/2 - 2, 12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#E67E22';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#E67E22';
+  ctx.font = 'bold 12px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(pet.num, cx - ew/2 + 12, cy - eh/2 - 1);
+
+  // Price tag (small)
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.beginPath();
+  ctx.roundRect(cx - 28, cy + 44, 56, 16, 8);
+  ctx.fill();
+  ctx.fillStyle = '#FFE66D';
+  ctx.font = 'bold 11px Segoe UI';
+  ctx.fillText('$' + pet.price, cx, cy + 53);
+
+  // Dim if another pet is selected
+  if (game.selectedPet && game.selectedPet !== pet) {
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(cx - ew/2, cy - eh/2 - 10, ew, eh);
+  }
+
+  // Highlight if selected/hovered
+  if (game.selectedPet === pet || game.hoveredPet === pet) {
+    ctx.strokeStyle = 'rgba(255,230,109,0.8)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(cx - ew/2 - 2, cy - eh/2 - 12, ew + 4, eh + 4, 8);
+    ctx.stroke();
+  }
+}
+
+// =====================================================
+//  PET DRAWING — detailed, cute, unique animations
+// =====================================================
+function drawPet(pet, cx, cy, scale, t, isHovered) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(scale, scale);
+
+  const breath = Math.sin(t * 2 + pet.animOffset) * 1.5;
+  const blinkPhase = (t * 0.6 + pet.animOffset) % 5;
+  const blink = blinkPhase > 4.8 ? 0.15 : 1;
+
+  // Animation offsets per type
+  let animY = 0, animRot = 0, animScaleX = 1, animScaleY = 1, headRot = 0;
+
+  switch (pet.animType) {
+    case 'bounce':
+      animY = Math.abs(Math.sin(t * 2.5 + pet.animOffset)) * -14;
+      break;
+    case 'tilt':
+      headRot = Math.sin(t * 1.2 + pet.animOffset) * 0.18;
+      break;
+    case 'wiggle':
+      animY = Math.sin(t * 3 + pet.animOffset) * -3;
+      animRot = Math.sin(t * 3 + pet.animOffset) * 0.06;
+      break;
+    case 'howl':
+      if (Math.sin(t * 0.8 + pet.animOffset) > 0.7) {
+        headRot = -0.4;
+      }
+      break;
+    case 'lick':
+      // paw lick handled in draw
+      break;
+    case 'blink':
+      // frequent slow blinks
+      break;
+    case 'sway':
+      animRot = Math.sin(t * 0.8 + pet.animOffset) * 0.08;
+      break;
+    case 'tail':
+      // tail sway handled in draw
+      break;
+  }
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(0, 42, 34, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Highlight glow
+  if (isHovered) {
+    ctx.shadowColor = 'rgba(255,230,109,0.6)';
+    ctx.shadowBlur = 25;
+  }
+
+  ctx.translate(0, animY);
+  ctx.rotate(animRot);
+
+  if (pet.type === 'dog') {
+    drawDog(pet, breath, blink, t, headRot, isHovered);
+  } else {
+    drawCat(pet, breath, blink, t, headRot, isHovered);
+  }
+
+  ctx.restore();
+}
+
+// ===== DOG DRAWING =====
+function drawDog(pet, breath, blink, t, headRot, isHovered) {
+  const c = pet.colors;
+  const tailWag = Math.sin(t * 8 + pet.animOffset) * 0.5;
+
+  // --- Tail (behind body) ---
+  ctx.save();
+  ctx.translate(-24, 8);
+  ctx.rotate(tailWag - 0.3);
+  const tailGrad = ctx.createLinearGradient(0, 0, -20, -10);
+  tailGrad.addColorStop(0, c.main);
+  tailGrad.addColorStop(1, c.dark);
+  ctx.fillStyle = tailGrad;
+  if (pet.breed === 'Shiba Inu') {
+    // Curled tail
+    ctx.beginPath();
+    ctx.arc(-8, -8, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = c.belly;
+    ctx.beginPath();
+    ctx.arc(-8, -8, 5, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (pet.breed === 'Welsh Corgi') {
+    // Short bob tail
+    ctx.beginPath();
+    ctx.ellipse(-6, -4, 7, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Long tail
+    ctx.beginPath();
+    ctx.ellipse(-12, -6, 14, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // --- Body ---
+  const bodyGrad = ctx.createLinearGradient(0, -8 + breath, 0, 35);
+  bodyGrad.addColorStop(0, c.light);
+  bodyGrad.addColorStop(0.5, c.main);
+  bodyGrad.addColorStop(1, c.dark);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 12 + breath, 28, 24, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Belly
+  if (c.belly) {
+    ctx.fillStyle = c.belly;
+    ctx.beginPath();
+    ctx.ellipse(0, 20 + breath, 18, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Front legs
+  ctx.fillStyle = c.main;
+  ctx.beginPath();
+  ctx.roundRect(-16, 28 + breath, 9, 14, 4);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(7, 28 + breath, 9, 14, 4);
+  ctx.fill();
+  // Paws
+  ctx.fillStyle = c.dark;
+  ctx.beginPath();
+  ctx.ellipse(-11.5, 42 + breath, 6, 3, 0, 0, Math.PI * 2);
+  ctx.ellipse(11.5, 42 + breath, 6, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // --- Head ---
+  ctx.save();
+  ctx.translate(0, -14 + breath);
+  ctx.rotate(headRot);
+
+  const headGrad = ctx.createRadialGradient(-6, -8, 5, 0, 0, 32);
+  headGrad.addColorStop(0, c.light);
+  headGrad.addColorStop(0.7, c.main);
+  headGrad.addColorStop(1, c.dark);
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 25, 23, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ears
+  drawDogEars(pet, c);
+
+  // Snout/muzzle
+  ctx.fillStyle = c.belly || c.light;
+  ctx.beginPath();
+  ctx.ellipse(0, 8, 13, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes
+  drawEyes(pet, c, blink, isHovered);
+
+  // Nose
+  ctx.fillStyle = '#2C1810';
+  ctx.beginPath();
+  ctx.ellipse(0, 6, 4, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Nose highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(-1, 5, 2, 1, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Mouth
+  ctx.strokeStyle = '#2C1810';
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 9);
+  ctx.quadraticCurveTo(-5, 14, -8, 11);
+  ctx.moveTo(0, 9);
+  ctx.quadraticCurveTo(5, 14, 8, 11);
+  ctx.stroke();
+
+  // Tongue (for bounce/happy dogs)
+  if (pet.animType === 'bounce' && Math.sin(t * 2.5 + pet.animOffset) > 0.3) {
+    ctx.fillStyle = '#FF6B8A';
+    ctx.beginPath();
+    ctx.ellipse(0, 14, 3.5, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#E84B6B';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, 12);
+    ctx.lineTo(0, 18);
+    ctx.stroke();
+  }
+
+  // Howl mouth for husky
+  if (pet.animType === 'howl' && Math.sin(t * 0.8 + pet.animOffset) > 0.7) {
+    ctx.fillStyle = '#3a1a1a';
+    ctx.beginPath();
+    ctx.ellipse(0, 14, 4, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Blush when hovered
+  if (isHovered) {
+    ctx.fillStyle = 'rgba(255,130,130,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(-13, 4, 5, 3, 0, 0, Math.PI * 2);
+    ctx.ellipse(13, 4, 5, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore(); // head
+
+  // Patterns (spots, etc.)
+  if (pet.pattern === 'husky') {
+    // Facial mask
+    ctx.fillStyle = c.dark;
+    ctx.beginPath();
+    ctx.ellipse(0, -16 + breath, 16, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawDogEars(pet, c) {
+  ctx.fillStyle = c.dark;
+  switch (pet.earType) {
+    case 'floppy':
+      // Golden retriever - floppy ears
+      ctx.save();
+      ctx.translate(-18, -8);
+      ctx.rotate(-0.2);
+      ctx.beginPath();
+      ctx.ellipse(0, 8, 8, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.belly;
+      ctx.beginPath();
+      ctx.ellipse(0, 10, 4, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = c.dark;
+      ctx.save();
+      ctx.translate(18, -8);
+      ctx.rotate(0.2);
+      ctx.beginPath();
+      ctx.ellipse(0, 8, 8, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.belly;
+      ctx.beginPath();
+      ctx.ellipse(0, 10, 4, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      break;
+
+    case 'pointy':
+      // Shiba - triangular pointy ears
+      ctx.beginPath();
+      ctx.moveTo(-20, -12);
+      ctx.lineTo(-14, -26);
+      ctx.lineTo(-8, -14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = c.belly;
+      ctx.beginPath();
+      ctx.moveTo(-17, -14);
+      ctx.lineTo(-14, -22);
+      ctx.lineTo(-11, -14);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = c.dark;
+      ctx.beginPath();
+      ctx.moveTo(20, -12);
+      ctx.lineTo(14, -26);
+      ctx.lineTo(8, -14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = c.belly;
+      ctx.beginPath();
+      ctx.moveTo(17, -14);
+      ctx.lineTo(14, -22);
+      ctx.lineTo(11, -14);
+      ctx.closePath();
+      ctx.fill();
+      break;
+
+    case 'bigpointy':
+      // Corgi - large pointy ears
+      ctx.beginPath();
+      ctx.ellipse(-16, -16, 7, 14, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.belly;
+      ctx.beginPath();
+      ctx.ellipse(-16, -14, 3, 8, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = c.dark;
+      ctx.beginPath();
+      ctx.ellipse(16, -16, 7, 14, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.belly;
+      ctx.beginPath();
+      ctx.ellipse(16, -14, 3, 8, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+  }
+}
+
+// ===== CAT DRAWING =====
+function drawCat(pet, breath, blink, t, headRot, isHovered) {
+  const c = pet.colors;
+  const tailSway = Math.sin(t * 1.5 + pet.animOffset) * 0.4;
+
+  // --- Tail (behind body, long and swaying) ---
+  ctx.save();
+  ctx.translate(22, 10);
+  ctx.rotate(tailSway + 0.5);
+  const tailGrad = ctx.createLinearGradient(0, 0, 20, -30);
+  tailGrad.addColorStop(0, c.main);
+  tailGrad.addColorStop(1, c.dark);
+  ctx.fillStyle = tailGrad;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(15, -5, 20, -25);
+  ctx.quadraticCurveTo(22, -32, 18, -38);
+  ctx.quadraticCurveTo(12, -40, 8, -32);
+  ctx.quadraticCurveTo(6, -20, 0, -5);
+  ctx.closePath();
+  ctx.fill();
+
+  // Tail tip (for ragdoll)
+  if (pet.pattern === 'ragdoll') {
+    ctx.fillStyle = c.dark;
+    ctx.beginPath();
+    ctx.arc(18, -35, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // --- Body ---
+  const bodyGrad = ctx.createLinearGradient(0, -8 + breath, 0, 35);
+  bodyGrad.addColorStop(0, c.light);
+  bodyGrad.addColorStop(0.5, c.main);
+  bodyGrad.addColorStop(1, c.dark);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 12 + breath, 24, 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Belly
+  if (c.belly && pet.pattern !== 'solid') {
+    ctx.fillStyle = c.belly;
+    ctx.beginPath();
+    ctx.ellipse(0, 18 + breath, 14, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Front legs (sitting)
+  ctx.fillStyle = c.main;
+  ctx.beginPath();
+  ctx.roundRect(-14, 26 + breath, 8, 16, 4);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(6, 26 + breath, 8, 16, 4);
+  ctx.fill();
+  // Paw details
+  ctx.fillStyle = c.dark;
+  ctx.beginPath();
+  ctx.ellipse(-10, 42 + breath, 5, 2.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(10, 42 + breath, 5, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // --- Head ---
+  ctx.save();
+  ctx.translate(0, -14 + breath);
+  ctx.rotate(headRot);
+
+  const headGrad = ctx.createRadialGradient(-5, -8, 5, 0, 0, 30);
+  headGrad.addColorStop(0, c.light);
+  headGrad.addColorStop(0.7, c.main);
+  headGrad.addColorStop(1, c.dark);
+  ctx.fillStyle = headGrad;
+
+  // Cat head (slightly triangular/rounded)
+  ctx.beginPath();
+  ctx.moveTo(-22, 2);
+  ctx.quadraticCurveTo(-24, -12, -12, -18);
+  ctx.quadraticCurveTo(0, -22, 12, -18);
+  ctx.quadraticCurveTo(24, -12, 22, 2);
+  ctx.quadraticCurveTo(18, 14, 0, 16);
+  ctx.quadraticCurveTo(-18, 14, -22, 2);
+  ctx.closePath();
+  ctx.fill();
+
+  // Cat ears
+  drawCatEars(pet, c);
+
+  // Tabby stripes
+  if (pet.pattern === 'tabby') {
+    ctx.strokeStyle = c.dark;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    // Forehead stripes (M pattern)
+    ctx.beginPath();
+    ctx.moveTo(-6, -14);
+    ctx.lineTo(-4, -8);
+    ctx.moveTo(0, -16);
+    ctx.lineTo(0, -8);
+    ctx.moveTo(6, -14);
+    ctx.lineTo(4, -8);
+    ctx.stroke();
+    // Cheek stripes
+    ctx.beginPath();
+    ctx.moveTo(-16, 2);
+    ctx.lineTo(-10, 3);
+    ctx.moveTo(-16, 6);
+    ctx.lineTo(-10, 7);
+    ctx.moveTo(16, 2);
+    ctx.lineTo(10, 3);
+    ctx.moveTo(16, 6);
+    ctx.lineTo(10, 7);
+    ctx.stroke();
+  }
+
+  // Ragdoll face mask
+  if (pet.pattern === 'ragdoll') {
+    ctx.fillStyle = c.dark;
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 14, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Ears darker
+  }
+
+  // Muzzle
+  ctx.fillStyle = c.belly || c.light;
+  ctx.beginPath();
+  ctx.ellipse(0, 8, 10, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes (cat - more almond shaped)
+  drawCatEyes(pet, c, blink, isHovered, t);
+
+  // Nose
+  ctx.fillStyle = '#D4707A';
+  ctx.beginPath();
+  ctx.moveTo(-2, 5);
+  ctx.lineTo(2, 5);
+  ctx.lineTo(0, 8);
+  ctx.closePath();
+  ctx.fill();
+
+  // Mouth
+  ctx.strokeStyle = '#2C1810';
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 8);
+  ctx.lineTo(0, 11);
+  ctx.moveTo(0, 11);
+  ctx.quadraticCurveTo(-4, 14, -6, 12);
+  ctx.moveTo(0, 11);
+  ctx.quadraticCurveTo(4, 14, 6, 12);
+  ctx.stroke();
+
+  // Whiskers
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  if (c.main === '#2C2C36') ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(-10, 8);
+  ctx.lineTo(-22, 5);
+  ctx.moveTo(-10, 10);
+  ctx.lineTo(-22, 11);
+  ctx.moveTo(10, 8);
+  ctx.lineTo(22, 5);
+  ctx.moveTo(10, 10);
+  ctx.lineTo(22, 11);
+  ctx.stroke();
+
+  // Lick paw animation for tabby
+  if (pet.animType === 'lick' && Math.sin(t * 1.5 + pet.animOffset) > 0.5) {
+    ctx.save();
+    ctx.translate(-14, 2);
+    ctx.rotate(0.8);
+    ctx.fillStyle = c.main;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 5, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FF6B8A';
+    ctx.beginPath();
+    ctx.ellipse(0, -3, 4, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Blush when hovered
+  if (isHovered) {
+    ctx.fillStyle = 'rgba(255,130,130,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-12, 4, 4, 2.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(12, 4, 4, 2.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore(); // head
+}
+
+function drawCatEars(pet, c) {
+  const innerColor = pet.pattern === 'ragdoll' ? c.dark : '#FFB6C1';
+  switch (pet.earType) {
+    case 'catpointy':
+      // Standard pointy cat ears
+      ctx.fillStyle = c.main;
+      // Left ear
+      ctx.beginPath();
+      ctx.moveTo(-18, -14);
+      ctx.lineTo(-14, -28);
+      ctx.lineTo(-6, -16);
+      ctx.closePath();
+      ctx.fill();
+      // Right ear
+      ctx.beginPath();
+      ctx.moveTo(18, -14);
+      ctx.lineTo(14, -28);
+      ctx.lineTo(6, -16);
+      ctx.closePath();
+      ctx.fill();
+      // Inner ears
+      ctx.fillStyle = innerColor;
+      ctx.beginPath();
+      ctx.moveTo(-15, -16);
+      ctx.lineTo(-13, -24);
+      ctx.lineTo(-9, -17);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(15, -16);
+      ctx.lineTo(13, -24);
+      ctx.lineTo(9, -17);
+      ctx.closePath();
+      ctx.fill();
+      break;
+
+    case 'smallcat':
+      // Small rounded ears (British SH)
+      ctx.fillStyle = c.main;
+      ctx.beginPath();
+      ctx.ellipse(-14, -14, 6, 8, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(14, -14, 6, 8, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#FFB6C1';
+      ctx.beginPath();
+      ctx.ellipse(-14, -13, 3, 5, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(14, -13, 3, 5, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+  }
+}
+
+// ===== EYES =====
+function drawEyes(pet, c, blink, isHovered) {
+  const eyeY = -4;
+  const eyeSpacing = 9;
+  const ec = pet.eyeColor;
+
+  // Eye whites (subtle)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.ellipse(-eyeSpacing, eyeY, 5, 5 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(eyeSpacing, eyeY, 5, 5 * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Iris
+  ctx.fillStyle = ec;
+  ctx.beginPath();
+  ctx.arc(-eyeSpacing, eyeY, 4 * blink, 0, Math.PI * 2);
+  ctx.arc(eyeSpacing, eyeY, 4 * blink, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pupils
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(-eyeSpacing, eyeY, 2.5 * blink, 0, Math.PI * 2);
+  ctx.arc(eyeSpacing, eyeY, 2.5 * blink, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye highlights (cute sparkle)
+  if (blink > 0.5) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(-eyeSpacing + 1.5, eyeY - 1.5, 1.5, 0, Math.PI * 2);
+    ctx.arc(eyeSpacing + 1.5, eyeY - 1.5, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Smaller highlight
+    ctx.beginPath();
+    ctx.arc(-eyeSpacing - 1, eyeY + 1, 0.7, 0, Math.PI * 2);
+    ctx.arc(eyeSpacing - 1, eyeY + 1, 0.7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawCatEyes(pet, c, blink, isHovered, t) {
+  const eyeY = -4;
+  const eyeSpacing = 8;
+  const ec = pet.eyeColor;
+
+  // Cat eyes are more almond-shaped
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.ellipse(-eyeSpacing, eyeY, 5, 6 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(eyeSpacing, eyeY, 5, 6 * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Iris
+  ctx.fillStyle = ec;
+  ctx.beginPath();
+  ctx.ellipse(-eyeSpacing, eyeY, 4, 5.5 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(eyeSpacing, eyeY, 4, 5.5 * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Vertical slit pupils
+  ctx.fillStyle = '#000';
+  const pupilW = pet.animType === 'blink' && blink < 0.5 ? 3 : 1.5;
+  ctx.beginPath();
+  ctx.ellipse(-eyeSpacing, eyeY, pupilW, 5 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(eyeSpacing, eyeY, pupilW, 5 * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Highlights
+  if (blink > 0.5) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(-eyeSpacing + 1.5, eyeY - 2, 1.5, 0, Math.PI * 2);
+    ctx.arc(eyeSpacing + 1.5, eyeY - 2, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// =====================================================
+//  AMBIENT PARTICLES (dust motes in light)
+// =====================================================
+let ambientParticles = [];
+function initAmbientParticles() {
+  ambientParticles = [];
+  for (let i = 0; i < 20; i++) {
+    ambientParticles.push({
+      x: rand(0, W),
+      y: rand(0, H * 0.55),
+      vx: rand(-4, 4),
+      vy: rand(-2, 2),
+      size: rand(0.8, 2.5),
+      alpha: rand(0.08, 0.25),
+    });
+  }
+}
+initAmbientParticles();
+
+function drawAmbientParticles(dt) {
+  ctx.fillStyle = '#FFF';
+  ambientParticles.forEach(p => {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    if (p.x < 0) p.x = W;
+    if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H * 0.55;
+    if (p.y > H * 0.55) p.y = 0;
+    ctx.globalAlpha = p.alpha;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// =====================================================
+//  GOLD NOTIFICATION
+// =====================================================
+function startGoldNotification() {
+  game.targetGold = Math.floor(rand(3000, 15001));
+  game.gold = 0;
+  const display = document.getElementById('gold-amount');
+  const startTime = performance.now();
+  const duration = 1500;
+
+  function animateGold(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    game.gold = Math.floor(game.targetGold * eased);
+    display.textContent = game.gold.toLocaleString();
+    if (progress < 1) {
+      requestAnimationFrame(animateGold);
+    } else {
+      game.gold = game.targetGold;
+      display.textContent = game.gold.toLocaleString();
+      display.style.transform = 'scale(1.15)';
+      setTimeout(() => { display.style.transform = 'scale(1)'; }, 300);
+    }
+  }
+  requestAnimationFrame(animateGold);
+}
+
+document.getElementById('gold-notify').addEventListener('click', () => {
+  document.getElementById('gold-notify').classList.add('hidden');
+  document.getElementById('gold-display').style.display = 'flex';
+  document.getElementById('gold-display-num').textContent = game.gold.toLocaleString();
+  game.phase = 'intro_dialogue';
+  startDialogue();
+});
+
+// =====================================================
+//  DIALOGUE SYSTEM
+// =====================================================
+const DIALOGUES = [
+  { speaker: 'Mr. Benson', text: "Welcome to Paws & Whiskers! 🐾 The finest pet shop in all of Willowbrook." },
+  { speaker: 'Mr. Benson', text: "I can see you've got a good heart. And a nice pouch of gold too, I might add!" },
+  { speaker: 'Mr. Benson', text: "We have dogs and cats — each one special in their own way. Some are clingy, some are quiet, some are... well, a bit mischievous." },
+  { speaker: 'Mr. Benson', text: "Go on, have a look around! Click on any little one that catches your eye. I'll tell you all about them." },
+  { speaker: 'Mr. Benson', text: "Oh, and here's a starter kit — food bowl, a bag of kibble, and some toys. Consider it a gift from me! 🎁" },
+];
+
+let dialogueIndex = 0;
+let typeTimer = 0;
+let typeIndex = 0;
+let typing = false;
+
+function startDialogue() {
+  document.getElementById('dialogue-box').classList.add('active');
+  dialogueIndex = 0;
+  typeDialogue(DIALOGUES[0]);
+}
+
+function typeDialogue(dlg) {
+  typing = true;
+  typeIndex = 0;
+  typeTimer = 0;
+  document.getElementById('speaker-name').textContent = dlg.speaker;
+  document.getElementById('dialogue-text').textContent = '';
+}
+
+function updateDialogue(dt) {
+  if (!typing) return;
+  if (dialogueIndex >= DIALOGUES.length) return;
+
+  const dlg = DIALOGUES[dialogueIndex];
+  typeTimer += dt;
+  if (typeTimer > 0.025) {
+    typeTimer = 0;
+    typeIndex++;
+    document.getElementById('dialogue-text').textContent = dlg.text.substring(0, typeIndex);
+    if (typeIndex >= dlg.text.length) {
+      typing = false;
+    }
+  }
+}
+
+document.getElementById('dialogue-inner').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (game.phase !== 'intro_dialogue') return;
+  if (typing) {
+    // Skip to full text
+    typing = false;
+    document.getElementById('dialogue-text').textContent = DIALOGUES[dialogueIndex].text;
+    return;
+  }
+  dialogueIndex++;
+  if (dialogueIndex >= DIALOGUES.length) {
+    document.getElementById('dialogue-box').classList.remove('active');
+    game.phase = 'browsing';
+    document.getElementById('hint-text').classList.add('show');
+  } else {
+    typeDialogue(DIALOGUES[dialogueIndex]);
+  }
+});
+
+// =====================================================
+//  MOUSE INTERACTION
+// =====================================================
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  game.mouse.x = e.clientX - rect.left;
+  game.mouse.y = e.clientY - rect.top;
+
+  if (game.phase === 'browsing' || game.phase === 'intro_dialogue') {
+    const pet = getPetAt(game.mouse.x, game.mouse.y);
+    game.hoveredPet = pet;
+    canvas.style.cursor = pet ? 'pointer' : 'default';
+  } else {
+    canvas.style.cursor = 'default';
+  }
+});
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (game.phase === 'browsing') {
+    const pet = getPetAt(mx, my);
+    if (pet) {
+      showInfoPanel(pet);
+    }
+  }
+});
+
+function getPetAt(mx, my) {
+  const positions = getPetPositions();
+  for (let i = 0; i < PETS.length; i++) {
+    const pos = positions[i];
+    if (mx > pos.x - 60 && mx < pos.x + 60 &&
+        my > pos.y - 55 && my < pos.y + 60) {
+      return PETS[i];
+    }
+  }
+  return null;
+}
+
+// =====================================================
+//  INFO PANEL
+// =====================================================
+function showInfoPanel(pet) {
+  game.selectedPet = pet;
+  const panel = document.getElementById('info-panel');
+  const canAfford = game.gold >= pet.price;
+
+  document.getElementById('info-number').textContent = 'No.' + pet.num;
+  document.getElementById('info-breed').textContent = pet.breed;
+  document.getElementById('info-type').textContent = pet.type === 'dog' ? '🐕 Dog' : '🐱 Cat';
+  document.getElementById('info-price').textContent = '$' + pet.price.toLocaleString();
+  document.getElementById('info-price').classList.toggle('cant-afford', !canAfford);
+
+  const affEl = document.getElementById('info-affordable');
+  if (canAfford) {
+    affEl.textContent = '✓ Affordable';
+    affEl.classList.remove('no');
+  } else {
+    affEl.textContent = '✗ Need $' + (pet.price - game.gold).toLocaleString() + ' more';
+    affEl.classList.add('no');
+  }
+
+  // Traits
+  const traitsEl = document.getElementById('info-traits');
+  traitsEl.innerHTML = '';
+  pet.traits.forEach(trait => {
+    const tag = document.createElement('span');
+    tag.className = 'trait-tag';
+    tag.textContent = trait;
+    traitsEl.appendChild(tag);
+  });
+
+  document.getElementById('info-likes').textContent = pet.likes;
+  document.getElementById('info-desc').textContent = '"' + pet.desc + '"';
+
+  const adoptBtn = document.getElementById('adopt-btn');
+  adoptBtn.disabled = !canAfford;
+  adoptBtn.textContent = canAfford ? 'Adopt' : 'Not enough gold';
+
+  panel.classList.add('active');
+  document.getElementById('hint-text').classList.remove('show');
+}
+
+document.getElementById('info-close').addEventListener('click', () => {
+  document.getElementById('info-panel').classList.remove('active');
+  game.selectedPet = null;
+  if (game.phase === 'browsing') {
+    document.getElementById('hint-text').classList.add('show');
+  }
+});
+
+// =====================================================
+//  ADOPT BUTTON → CONFIRM MODAL
+// =====================================================
+document.getElementById('adopt-btn').addEventListener('click', () => {
+  if (!game.selectedPet) return;
+  const pet = game.selectedPet;
+  document.getElementById('confirm-title').textContent = 'Adopt No.' + pet.num + '?';
+  document.getElementById('confirm-text').innerHTML =
+    'You are about to adopt a <b>' + pet.breed + '</b> for <b>$' + pet.price.toLocaleString() + '</b>.<br>' +
+    'This little one will be yours forever. Are you sure?';
+  document.getElementById('confirm-modal').classList.add('active');
+});
+
+document.getElementById('confirm-yes').addEventListener('click', () => {
+  document.getElementById('confirm-modal').classList.remove('active');
+  document.getElementById('info-panel').classList.remove('active');
+  game.gold -= game.selectedPet.price;
+  document.getElementById('gold-display-num').textContent = game.gold.toLocaleString();
+  game.purchasedPet = game.selectedPet;
+  startPacking();
+});
+
+document.getElementById('confirm-no').addEventListener('click', () => {
+  document.getElementById('confirm-modal').classList.remove('active');
+});
+
+// =====================================================
+//  PACKING ANIMATION
+// =====================================================
+function startPacking() {
+  game.phase = 'packing';
+  document.getElementById('packing-overlay').classList.add('active');
+  const pCanvas = document.getElementById('packing-canvas');
+  const pCtx = pCanvas.getContext('2d');
+  pCanvas.width = W * DPR;
+  pCanvas.height = H * DPR;
+  pCanvas.style.width = W + 'px';
+  pCanvas.style.height = H + 'px';
+  pCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  const pet = game.purchasedPet;
+  let packPhase = 0; // 0: box opens, 1: pet walks in, 2: box closes, 3: supplies, 4: done
+  let phaseTimer = 0;
+  const caption = document.getElementById('packing-caption');
+
+  const packLoop = (now) => {
+    const dt = 0.016;
+    phaseTimer += dt;
+
+    // Clear
+    pCtx.clearRect(0, 0, W, H);
+
+    // Background (shop counter)
+    const bgGrad = pCtx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, '#faf3e8');
+    bgGrad.addColorStop(1, '#e8d5c4');
+    pCtx.fillStyle = bgGrad;
+    pCtx.fillRect(0, 0, W, H);
+
+    // Counter
+    pCtx.fillStyle = '#8B6F47';
+    pCtx.fillRect(W * 0.15, H * 0.55, W * 0.7, H * 0.15);
+    pCtx.fillStyle = '#6B5337';
+    pCtx.fillRect(W * 0.15, H * 0.53, W * 0.7, 8);
+
+    // Carrier box
+    const boxX = W * 0.5;
+    const boxY = H * 0.52;
+    const boxW = 140;
+    const boxH = 110;
+
+    // Box back
+    pCtx.fillStyle = '#7B5E3F';
+    pCtx.fillRect(boxX - boxW/2, boxY - boxH/2, boxW, boxH);
+
+    // Box interior (dark)
+    pCtx.fillStyle = '#3a2a1a';
+    pCtx.fillRect(boxX - boxW/2 + 8, boxY - boxH/2 + 8, boxW - 16, boxH - 16);
+
+    // Pet walking in
+    if (packPhase >= 1 && packPhase <= 2) {
+      const walkProgress = Math.min((phaseTimer - 0.5) / 1.0, 1);
+      const petX = boxX - 60 + walkProgress * 60;
+      const petY = boxY + 15;
+      pCtx.save();
+      pCtx.translate(petX, petY);
+      pCtx.scale(0.8, 0.8);
+      if (pet.type === 'dog') {
+        drawDog(pet, Math.sin(phaseTimer * 4) * 2, 1, phaseTimer, 0, false);
+      } else {
+        drawCat(pet, Math.sin(phaseTimer * 4) * 2, 1, phaseTimer, 0, false);
+      }
+      pCtx.restore();
+    }
+
+    // Pet inside box
+    if (packPhase >= 2) {
+      pCtx.save();
+      pCtx.translate(boxX, boxY + 15);
+      pCtx.scale(0.7, 0.7);
+      if (pet.type === 'dog') {
+        drawDog(pet, Math.sin(phaseTimer * 2) * 1.5, 1, phaseTimer, 0, false);
+      } else {
+        drawCat(pet, Math.sin(phaseTimer * 2) * 1.5, 1, phaseTimer, 0, false);
+      }
+      pCtx.restore();
+    }
+
+    // Box lid (closing)
+    const lidAngle = packPhase >= 2 ? Math.max(0, 0.5 - (phaseTimer - 2) * 2) : 0.5;
+    pCtx.save();
+    pCtx.translate(boxX, boxY - boxH/2);
+    pCtx.rotate(-lidAngle);
+    pCtx.fillStyle = '#6B5337';
+    pCtx.fillRect(-boxW/2 - 5, -10, boxW + 10, 12);
+    pCtx.restore();
+
+    // Box front bars (ventilation)
+    if (packPhase >= 3) {
+      pCtx.fillStyle = 'rgba(0,0,0,0.3)';
+      for (let i = 0; i < 5; i++) {
+        pCtx.fillRect(boxX - boxW/2 + 15 + i * 22, boxY - 10, 8, 30);
+      }
+      // Handle
+      pCtx.strokeStyle = '#3a2a1a';
+      pCtx.lineWidth = 5;
+      pCtx.beginPath();
+      pCtx.arc(boxX, boxY - boxH/2 - 5, 25, Math.PI, 0);
+      pCtx.stroke();
+    }
+
+    // Supplies appearing
+    if (packPhase >= 3) {
+      const supplyAlpha = Math.min((phaseTimer - 3) * 2, 1);
+      pCtx.globalAlpha = supplyAlpha;
+
+      // Food bag
+      pCtx.fillStyle = '#E8C842';
+      pCtx.fillRect(boxX + 100, boxY - 30, 35, 50);
+      pCtx.fillStyle = 'rgba(255,255,255,0.3)';
+      pCtx.fillRect(boxX + 103, boxY - 27, 29, 10);
+
+      // Food bowl
+      pCtx.fillStyle = '#E74C3C';
+      pCtx.beginPath();
+      pCtx.ellipse(boxX - 130, boxY + 30, 25, 12, 0, 0, Math.PI * 2);
+      pCtx.fill();
+      pCtx.fillStyle = '#8B4513';
+      pCtx.beginPath();
+      pCtx.ellipse(boxX - 130, boxY + 28, 18, 7, 0, 0, Math.PI * 2);
+      pCtx.fill();
+
+      // Toy ball
+      pCtx.fillStyle = '#4ECDC4';
+      pCtx.beginPath();
+      pCtx.arc(boxX + 130, boxY + 35, 14, 0, Math.PI * 2);
+      pCtx.fill();
+      pCtx.fillStyle = 'rgba(255,255,255,0.3)';
+      pCtx.beginPath();
+      pCtx.arc(boxX + 127, boxY + 32, 5, 0, Math.PI * 2);
+      pCtx.fill();
+
+      pCtx.globalAlpha = 1;
+
+      // Hearts
+      if (supplyAlpha > 0.5) {
+        for (let i = 0; i < 3; i++) {
+          const hx = boxX + Math.sin(phaseTimer * 2 + i * 2) * 40;
+          const hy = boxY - 60 - (phaseTimer * 20 + i * 30) % 80;
+          pCtx.fillStyle = 'rgba(255,107,143,' + (1 - ((phaseTimer * 20 + i * 30) % 80) / 80) + ')';
+          drawHeart(pCtx, hx, hy, 8);
+        }
+      }
+    }
+
+    // Phase progression
+    if (packPhase === 0 && phaseTimer > 0.5) { packPhase = 1; }
+    if (packPhase === 1 && phaseTimer > 1.5) { packPhase = 2; }
+    if (packPhase === 2 && phaseTimer > 2.5) { packPhase = 3; caption.classList.add('show'); caption.textContent = 'Mr. Benson packs everything with love...'; }
+    if (packPhase === 3 && phaseTimer > 4.5) {
+      caption.textContent = '"Here you go! Take good care of No.' + pet.num + '!" — Mr. Benson';
+    }
+    if (packPhase === 3 && phaseTimer > 6) {
+      document.getElementById('packing-overlay').classList.remove('active');
+      caption.classList.remove('show');
+      showTransition();
+      return;
+    }
+
+    requestAnimationFrame(packLoop);
+  };
+
+  // Start
+  caption.classList.add('show');
+  caption.textContent = 'Mr. Benson gets everything ready...';
+  packLoop();
+}
+
+function drawHeart(c, x, y, size) {
+  c.beginPath();
+  c.moveTo(x, y + size * 0.3);
+  c.bezierCurveTo(x, y, x - size, y, x - size, y + size * 0.3);
+  c.bezierCurveTo(x - size, y + size * 0.6, x, y + size, x, y + size * 1.2);
+  c.bezierCurveTo(x, y + size, x + size, y + size * 0.6, x + size, y + size * 0.3);
+  c.bezierCurveTo(x + size, y, x, y, x, y + size * 0.3);
+  c.fill();
+}
+
+// =====================================================
+//  TRANSITION
+// =====================================================
+function showTransition() {
+  const ts = document.getElementById('transition-screen');
+  ts.classList.add('active');
+  document.getElementById('transition-text').textContent = 'Heading Home...';
+  document.getElementById('transition-pet-name').textContent = 'with your new best friend 🐾';
+
+  setTimeout(() => {
+    ts.classList.remove('active');
+    showNamingScreen();
+  }, 3000);
+}
+
+// =====================================================
+//  NAMING SCREEN
+// =====================================================
+function showNamingScreen() {
+  game.phase = 'naming';
+  document.getElementById('naming-screen').classList.add('active');
+
+  // Draw home scene on naming canvas
+  const nCanvas = document.getElementById('naming-canvas');
+  const nCtx = nCanvas.getContext('2d');
+  nCanvas.width = W * DPR;
+  nCanvas.height = H * DPR;
+  nCanvas.style.width = W + 'px';
+  nCanvas.style.height = H + 'px';
+  nCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  let nTime = 0;
+  const pet = game.purchasedPet;
+
+  function drawNamingScene() {
+    if (game.phase !== 'naming') return;
+    nTime += 0.016;
+
+    // Clear
+    nCtx.clearRect(0, 0, W, H);
+
+    // Wall
+    const wallG = nCtx.createLinearGradient(0, 0, 0, H * 0.6);
+    wallG.addColorStop(0, '#E8D5C4');
+    wallG.addColorStop(1, '#D4B896');
+    nCtx.fillStyle = wallG;
+    nCtx.fillRect(0, 0, W, H * 0.6);
+
+    // Window
+    nCtx.fillStyle = '#8B7355';
+    nCtx.fillRect(W * 0.3, H * 0.08, W * 0.25, H * 0.22);
+    const skyG = nCtx.createLinearGradient(0, H * 0.08, 0, H * 0.3);
+    skyG.addColorStop(0, '#87CEEB');
+    skyG.addColorStop(1, '#E0F6FF');
+    nCtx.fillStyle = skyG;
+    nCtx.fillRect(W * 0.3 + 4, H * 0.08 + 4, W * 0.25 - 8, H * 0.22 - 8);
+    nCtx.fillStyle = 'rgba(255,240,150,0.8)';
+    nCtx.beginPath();
+    nCtx.arc(W * 0.47, H * 0.15, 15, 0, Math.PI * 2);
+    nCtx.fill();
+    nCtx.fillStyle = '#8B7355';
+    nCtx.fillRect(W * 0.3 + W * 0.125 - 2, H * 0.08, 4, H * 0.22);
+    nCtx.fillRect(W * 0.3, H * 0.08 + H * 0.11 - 2, W * 0.25, 4);
+
+    // Floor
+    const floorG = nCtx.createLinearGradient(0, H * 0.6, 0, H);
+    floorG.addColorStop(0, '#C4A26C');
+    floorG.addColorStop(1, '#A07838');
+    nCtx.fillStyle = floorG;
+    nCtx.fillRect(0, H * 0.6, W, H * 0.4);
+
+    // Floor planks
+    nCtx.strokeStyle = 'rgba(80,55,20,0.2)';
+    nCtx.lineWidth = 1;
+    for (let i = 1; i < 5; i++) {
+      const y = H * 0.6 + (H * 0.4) * (i / 5);
+      nCtx.beginPath();
+      nCtx.moveTo(0, y);
+      nCtx.lineTo(W, y);
+      nCtx.stroke();
+    }
+
+    // Pet carrier (closed)
+    const carrierX = W * 0.5;
+    const carrierY = H * 0.72;
+    const carrierW = 130;
+    const carrierH = 95;
+
+    // Carrier body
+    nCtx.fillStyle = '#8B5E3C';
+    nCtx.beginPath();
+    nCtx.roundRect(carrierX - carrierW/2, carrierY - carrierH/2, carrierW, carrierH, 12);
+    nCtx.fill();
+
+    // Carrier door (bars)
+    nCtx.fillStyle = '#3a2a1a';
+    nCtx.fillRect(carrierX - 40, carrierY - 25, 80, 50);
+    nCtx.fillStyle = '#5a4a3a';
+    for (let i = 0; i < 6; i++) {
+      nCtx.fillRect(carrierX - 40 + i * 14, carrierY - 25, 4, 50);
+    }
+
+    // Handle
+    nCtx.strokeStyle = '#3a2a1a';
+    nCtx.lineWidth = 6;
+    nCtx.beginPath();
+    nCtx.arc(carrierX, carrierY - carrierH/2 - 5, 30, Math.PI, 0);
+    nCtx.stroke();
+
+    // Eyes peeking through bars
+    const peekY = carrierY - 5;
+    const blink = (Math.sin(nTime * 0.6) % 5 > 4.8) ? 0.15 : 1;
+    nCtx.fillStyle = '#FFFFFF';
+    nCtx.beginPath();
+    nCtx.arc(carrierX - 8, peekY, 5, 0, Math.PI * 2);
+    nCtx.arc(carrierX + 8, peekY, 5, 0, Math.PI * 2);
+    nCtx.fill();
+    nCtx.fillStyle = pet.eyeColor;
+    nCtx.beginPath();
+    nCtx.arc(carrierX - 8, peekY, 3.5 * blink, 0, Math.PI * 2);
+    nCtx.arc(carrierX + 8, peekY, 3.5 * blink, 0, Math.PI * 2);
+    nCtx.fill();
+    nCtx.fillStyle = '#000';
+    nCtx.beginPath();
+    nCtx.arc(carrierX - 8, peekY, 2 * blink, 0, Math.PI * 2);
+    nCtx.arc(carrierX + 8, peekY, 2 * blink, 0, Math.PI * 2);
+    nCtx.fill();
+    if (blink > 0.5) {
+      nCtx.fillStyle = '#FFF';
+      nCtx.beginPath();
+      nCtx.arc(carrierX - 6, peekY - 1, 1.2, 0, Math.PI * 2);
+      nCtx.arc(carrierX + 10, peekY - 1, 1.2, 0, Math.PI * 2);
+      nCtx.fill();
+    }
+
+    // "Adopted" sign
+    nCtx.fillStyle = '#FFF';
+    nCtx.beginPath();
+    nCtx.roundRect(carrierX - 35, carrierY + carrierH/2 + 8, 70, 18, 9);
+    nCtx.fill();
+    nCtx.fillStyle = '#E67E22';
+    nCtx.font = 'bold 12px Segoe UI';
+    nCtx.textAlign = 'center';
+    nCtx.textBaseline = 'middle';
+    nCtx.fillText('No.' + pet.num + ' — ' + pet.breed, carrierX, carrierY + carrierH/2 + 17);
+
+    // Hearts floating
+    for (let i = 0; i < 4; i++) {
+      const hx = carrierX + Math.sin(nTime * 1.5 + i * 1.5) * 50;
+      const hy = carrierY - 80 - ((nTime * 15 + i * 40) % 100);
+      const alpha = 1 - ((nTime * 15 + i * 40) % 100) / 100;
+      nCtx.fillStyle = 'rgba(255,107,143,' + alpha + ')';
+      drawHeart(nCtx, hx, hy, 6);
+    }
+
+    requestAnimationFrame(drawNamingScene);
+  }
+  drawNamingScene();
+
+  // Focus input
+  setTimeout(() => {
+    document.getElementById('name-input').focus();
+  }, 300);
+}
+
+document.getElementById('name-confirm').addEventListener('click', () => {
+  const name = document.getElementById('name-input').value.trim();
+  if (!name) {
+    document.getElementById('name-input').style.borderColor = '#E74C3C';
+    document.getElementById('name-input').placeholder = 'Please enter a name!';
+    return;
+  }
+  game.petName = name;
+  document.getElementById('naming-screen').classList.remove('active');
+  document.getElementById('transition-text').textContent = 'Meet ' + name + '! 🐾';
+  document.getElementById('transition-pet-name').textContent = 'Your new life together begins now...';
+  document.getElementById('transition-screen').classList.add('active');
+  setTimeout(() => {
+    document.getElementById('transition-screen').classList.remove('active');
+    startHomeScene();
+  }, 2500);
+});
+
+document.getElementById('name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('name-confirm').click();
+  }
+});
+
+// =====================================================
+//  HOME SCENE — Pet Care Gameplay
+// =====================================================
+
+const INGREDIENTS = [
+  { id: 'chicken',      name: 'Chicken',      emoji: '🍗', price: 50 },
+  { id: 'beef',         name: 'Beef',         emoji: '🥩', price: 80 },
+  { id: 'fish',         name: 'Fish',         emoji: '🐟', price: 60 },
+  { id: 'rice',         name: 'Rice',         emoji: '🍚', price: 20 },
+  { id: 'cheese',       name: 'Cheese',       emoji: '🧀', price: 40 },
+  { id: 'carrot',       name: 'Carrot',       emoji: '🥕', price: 15 },
+  { id: 'sweet_potato', name: 'Sweet Potato', emoji: '🍠', price: 25 },
+  { id: 'egg',          name: 'Egg',          emoji: '🥚', price: 30 },
+  { id: 'salmon',       name: 'Salmon',       emoji: '🍤', price: 120 },
+  { id: 'pumpkin',      name: 'Pumpkin',      emoji: '🎃', price: 35 },
+  { id: 'broccoli',     name: 'Broccoli',     emoji: '🥦', price: 20 },
+  { id: 'banana',       name: 'Banana',       emoji: '🍌', price: 25 },
+  { id: 'apple',        name: 'Apple',        emoji: '🍎', price: 30 },
+  { id: 'yogurt',       name: 'Yogurt',       emoji: '🥛', price: 45 },
+  { id: 'peanut_butter',name: 'Peanut Butter',emoji: '🥜', price: 55 },
+  { id: 'turkey',       name: 'Turkey',       emoji: '🦃', price: 90 },
+];
+
+const PET_FAV_FOODS = {
+  1: ['chicken', 'rice'],
+  2: ['fish', 'sweet_potato'],
+  3: ['beef', 'cheese'],
+  4: ['beef', 'carrot'],
+  5: ['fish', 'rice'],
+  6: ['chicken', 'egg'],
+  7: ['salmon', 'yogurt'],
+  8: ['chicken', 'peanut_butter'],
+};
+
+// --- TOYS ---
+const TOYS = [
+  { id: 'ball',      name: 'Tennis Ball',  emoji: '🎾', desc: 'Bouncy classic' },
+  { id: 'rope',      name: 'Rope Toy',     emoji: '🧶', desc: 'Tug of war' },
+  { id: 'frisbee',   name: 'Frisbee',      emoji: '🥏', desc: 'Catch & chase' },
+  { id: 'mouse',     name: 'Mouse Toy',    emoji: '🐭', desc: 'Pounce & hunt' },
+  { id: 'laser',     name: 'Laser Pointer',emoji: '🔴', desc: 'Chase the dot' },
+  { id: 'bell',      name: 'Bell Ball',    emoji: '🔔', desc: 'Jingly fun' },
+  { id: 'feather',   name: 'Feather Wand', emoji: '🪶', desc: 'Leap & swat' },
+  { id: 'squeaky',   name: 'Squeaky Bone', emoji: '🦴', desc: 'Squeak squeak!' },
+];
+
+// Each pet has 2 favourite toys — matching them gives bonus happiness & intimacy
+const PET_FAV_TOYS = {
+  1: ['ball', 'rope'],
+  2: ['ball', 'frisbee'],
+  3: ['squeaky', 'ball'],
+  4: ['frisbee', 'rope'],
+  5: ['mouse', 'laser'],
+  6: ['bell', 'feather'],
+  7: ['feather', 'mouse'],
+  8: ['laser', 'bell'],
+};
+
+// --- DAY / NIGHT CYCLE ---
+// cycleLength seconds = one full day. Breakdown:
+//   0.00–0.55  Day        (clear sky, bright)
+//   0.55–0.65  Sunset     (orange/pink transition)
+//   0.65–0.88  Night      (dark, pet sleeps ~15s)
+//   0.88–1.00  Sunrise    (pink/gold transition back to day)
+let dayCycle = {
+  time: 0.05,       // start in early morning
+  cycleLength: 110, // seconds for full day
+};
+
+// Returns 0 (full day) → 1 (full night) with smooth transitions
+function getDarkness() {
+  const t = dayCycle.time;
+  if (t < 0.55) return 0;                          // day
+  if (t < 0.65) return (t - 0.55) / 0.10;          // sunset ramp
+  if (t < 0.88) return 1;                           // night
+  return 1 - (t - 0.88) / 0.12;                    // sunrise ramp
+}
+
+// Returns a label for the current time of day
+function getTimeLabel() {
+  const t = dayCycle.time;
+  if (t < 0.55) return 'Daytime';
+  if (t < 0.65) return 'Sunset';
+  if (t < 0.88) return 'Night';
+  return 'Sunrise';
+}
+
+// Returns sky colors for the current time: [topColor, midColor, bottomColor, celestialColor, isMoon]
+function getSkyColors() {
+  const d = getDarkness();
+  const t = dayCycle.time;
+  // Sunset / sunrise tint factor (peaks during transitions)
+  let sunsetTint = 0;
+  if (t >= 0.50 && t < 0.68) sunsetTint = 1 - Math.abs(t - 0.59) / 0.09;
+  if (t >= 0.84 && t < 1.0)  sunsetTint = 1 - Math.abs(t - 0.92) / 0.08;
+  sunsetTint = Math.max(0, Math.min(1, sunsetTint));
+
+  // Day colors
+  const dayTop  = [107, 182, 224];
+  const dayMid  = [155, 212, 240];
+  const dayBot  = [200, 232, 248];
+  // Night colors
+  const nightTop = [15, 20, 50];
+  const nightMid = [25, 30, 65];
+  const nightBot = [40, 45, 85];
+
+  function mix(a, b, f) { return [Math.round(a[0]+(b[0]-a[0])*f), Math.round(a[1]+(b[1]-a[1])*f), Math.round(a[2]+(b[2]-a[2])*f)]; }
+  let top = mix(dayTop, nightTop, d);
+  let mid = mix(dayMid, nightMid, d);
+  let bot = mix(dayBot, nightBot, d);
+
+  // Apply sunset/sunrise orange tint
+  if (sunsetTint > 0) {
+    const orange = [255, 140, 60];
+    const pink   = [255, 180, 130];
+    top = mix(top, orange, sunsetTint * 0.5);
+    mid = mix(mid, pink,   sunsetTint * 0.6);
+    bot = mix(bot, [255, 200, 150], sunsetTint * 0.4);
+  }
+
+  const topStr = 'rgb(' + top[0] + ',' + top[1] + ',' + top[2] + ')';
+  const midStr = 'rgb(' + mid[0] + ',' + mid[1] + ',' + mid[2] + ')';
+  const botStr = 'rgb(' + bot[0] + ',' + bot[1] + ',' + bot[2] + ')';
+
+  // Celestial body: sun during day, moon during night
+  // Position moves across the sky based on time
+  let celestialX, celestialY, celestialColor, isMoon;
+  if (d < 0.5) {
+    // Sun: arcs from left (morning) to right (evening)
+    const sunT = t < 0.55 ? t / 0.55 : 1 - (t - 0.55) / 0.10;
+    celestialX = 0.2 + sunT * 0.6;
+    celestialY = 0.15 + Math.abs(sunT - 0.5) * 0.3;
+    celestialColor = sunsetTint > 0.3 ? 'rgba(255,160,80,0.9)' : 'rgba(255,245,160,0.85)';
+    isMoon = false;
+  } else {
+    // Moon
+    const moonT = (t - 0.65) / 0.35;
+    celestialX = 0.2 + moonT * 0.6;
+    celestialY = 0.12 + Math.abs(moonT - 0.5) * 0.25;
+    celestialColor = 'rgba(240,240,220,0.8)';
+    isMoon = true;
+  }
+
+  return { top: topStr, mid: midStr, bot: botStr, celestialX: celestialX, celestialY: celestialY, celestialColor: celestialColor, isMoon: isMoon, darkness: d, sunsetTint: sunsetTint };
+}
+
+let homePet = {
+  x: 0, y: 0,
+  targetX: 0, targetY: 0,
+  facing: 1,
+  walkPhase: 0,
+  speed: 70,
+  state: 'idle',
+  stateTimer: 3,
+  hunger: 25,
+  happiness: 55,
+  energy: 75,
+  cleanliness: 85,
+  intimacy: 15,
+  thought: null,
+  reaction: null,
+  reactionTimer: 0,
+  foodInBowl: null,
+  needsBathroom: false,
+  bathroomTimer: 0,
+  hasMess: false,
+  isPlaying: false,
+  playTimer: 0,
+  nightSleep: false,
+  nightSleepDone: false,
+  mealsToday: 0,        // tracks meals eaten this day cycle
+  dayResetFlag: false,  // for resetting mealsToday at sunrise
+  boredomTimer: 0,      // time since last interaction
+  currentToy: null,     // toy currently being played with
+};
+
+let cookingState = {
+  active: false,
+  step: 'open_cabinet',
+  selectedIngredients: [],
+  cookProgress: 0,
+  spentGold: 0,   // tracks gold spent on ingredients this cooking session
+};
+
+let playState = {
+  active: false,
+  selectedToy: null,
+  playing: false,
+  playTimer: 0,       // counts down from 10
+  toyAnimPhase: 0,    // for toy animation
+};
+
+let walkState = {
+  active: false,
+  timer: 0,           // counts up to 10
+  personX: 0,         // person position on screen
+  petX: 0,            // pet position on screen
+  bgOffset: 0,        // scrolling background offset
+  personWalkPhase: 0, // for walk animation
+};
+
+let cleanState = {
+  active: false,
+  timer: 0,           // counts up to 3 seconds
+  duration: 3,
+};
+
+function getHomePositions() {
+  return {
+    petBed:    { x: W * 0.06, y: H * 0.80 },
+    foodBowl:  { x: W * 0.16, y: H * 0.85 },
+    waterBowl: { x: W * 0.21, y: H * 0.85 },
+    toyBasket: { x: W * 0.29, y: H * 0.82 },
+    stove:     { x: W * 0.45, y: H * 0.48 },
+    center:    { x: W * 0.50, y: H * 0.78 },
+    sofa:      { x: W * 0.10, y: H * 0.70 },
+    bed:       { x: W * 0.82, y: H * 0.70 },
+    door:      { x: W * 0.95, y: H * 0.78 },
+  };
+}
+
+// --- HOME INTERIOR ---
+function drawHomeInterior() {
+  const floorY = H * 0.55;
+
+  // ============ CEILING ============
+  const ceilGrad = ctx.createLinearGradient(0, 0, 0, H * 0.05);
+  ceilGrad.addColorStop(0, '#FAF5EC');
+  ceilGrad.addColorStop(1, '#F0E8DA');
+  ctx.fillStyle = ceilGrad;
+  ctx.fillRect(0, 0, W, H * 0.05);
+  // Crown molding
+  ctx.fillStyle = '#F5EFE2';
+  ctx.fillRect(0, H * 0.05, W, 7);
+  ctx.fillStyle = '#E2D8C6';
+  ctx.fillRect(0, H * 0.05 + 7, W, 3);
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  ctx.fillRect(0, H * 0.05 + 10, W, 1);
+
+  // ============ ROOM LAYOUT ============
+  // Living Room: 0 → wall1
+  // Kitchen:     wall1+arch → wall2
+  // Bedroom:     wall2+arch → W
+  const wall1X = W * 0.34;
+  const wall2X = W * 0.66;
+  const archW = Math.max(34, W * 0.035);
+
+  // --- Living room walls (warm cream with subtle pattern) ---
+  const lrGrad = ctx.createLinearGradient(0, H * 0.05 + 11, 0, floorY);
+  lrGrad.addColorStop(0, '#F4EAD6');
+  lrGrad.addColorStop(0.4, '#EFDFC6');
+  lrGrad.addColorStop(1, '#E6D2B4');
+  ctx.fillStyle = lrGrad;
+  ctx.fillRect(0, H * 0.05 + 11, wall1X, floorY - H * 0.05 - 11);
+  // Wallpaper vertical stripes
+  ctx.fillStyle = 'rgba(200,175,140,0.06)';
+  for (let sx = 16; sx < wall1X; sx += 30) {
+    ctx.fillRect(sx, H * 0.05 + 11, 2, floorY - H * 0.05 - 11);
+  }
+  // Wainscoting (lower wall panel)
+  const wainH = H * 0.12;
+  ctx.fillStyle = '#E8DBC4';
+  ctx.fillRect(0, floorY - wainH, wall1X, wainH);
+  ctx.strokeStyle = 'rgba(160,135,100,0.2)';
+  ctx.lineWidth = 1;
+  for (let sx = 10; sx < wall1X; sx += 36) {
+    ctx.beginPath();
+    ctx.moveTo(sx, floorY - wainH + 4);
+    ctx.lineTo(sx, floorY - 4);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sx + 16, floorY - wainH + 4);
+    ctx.lineTo(sx + 16, floorY - 4);
+    ctx.stroke();
+  }
+  // Chair rail
+  ctx.fillStyle = '#D8C8AA';
+  ctx.fillRect(0, floorY - wainH - 3, wall1X, 3);
+
+  // --- Kitchen walls (lighter, cooler) ---
+  const kGrad = ctx.createLinearGradient(0, H * 0.05 + 11, 0, floorY);
+  kGrad.addColorStop(0, '#EEEAE2');
+  kGrad.addColorStop(1, '#DCD4C6');
+  ctx.fillStyle = kGrad;
+  ctx.fillRect(wall1X + archW, H * 0.05 + 11, wall2X - wall1X - archW, floorY - H * 0.05 - 11);
+  // Tile backsplash
+  const bsY = floorY - H * 0.20;
+  const bsH = H * 0.13;
+  ctx.fillStyle = '#E8E4DC';
+  ctx.fillRect(wall1X + archW, bsY, wall2X - wall1X - archW, bsH);
+  ctx.strokeStyle = 'rgba(180,170,155,0.35)';
+  ctx.lineWidth = 1;
+  const tileS = 22;
+  for (let ty = bsY; ty < bsY + bsH; ty += tileS) {
+    ctx.beginPath();
+    ctx.moveTo(wall1X + archW, ty);
+    ctx.lineTo(wall2X, ty);
+    ctx.stroke();
+  }
+  for (let tx = wall1X + archW; tx < wall2X; tx += tileS) {
+    const offset = (Math.floor((tx - wall1X - archW) / tileS) % 2) * (tileS / 2);
+    for (let ty = bsY + offset; ty < bsY + bsH; ty += tileS) {
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx, ty + tileS);
+      ctx.stroke();
+    }
+  }
+
+  // --- Bedroom walls (soft blue-grey) ---
+  const brGrad = ctx.createLinearGradient(0, H * 0.05 + 11, 0, floorY);
+  brGrad.addColorStop(0, '#D8DFE5');
+  brGrad.addColorStop(0.5, '#CCD5DD');
+  brGrad.addColorStop(1, '#C0CAD4');
+  ctx.fillStyle = brGrad;
+  ctx.fillRect(wall2X + archW, H * 0.05 + 11, W - wall2X - archW, floorY - H * 0.05 - 11);
+  // Subtle dot pattern
+  ctx.fillStyle = 'rgba(150,160,170,0.06)';
+  for (let dx = wall2X + archW + 14; dx < W; dx += 26) {
+    for (let dy = H * 0.08; dy < floorY - H * 0.14; dy += 26) {
+      ctx.beginPath();
+      ctx.arc(dx, dy, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ============ INTERIOR WALLS (with archways) ============
+  function drawDividerWall(wx) {
+    const wallTop = H * 0.05 + 11;
+    // Wall body
+    const wg = ctx.createLinearGradient(0, wallTop, 0, floorY);
+    wg.addColorStop(0, '#D5CAB5');
+    wg.addColorStop(1, '#C5B89E');
+    ctx.fillStyle = wg;
+    ctx.fillRect(wx, wallTop, archW, floorY - wallTop);
+    // Wall thickness shadow (right edge)
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(wx + archW - 4, wallTop, 4, floorY - wallTop);
+    // Left highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(wx, wallTop, 2, floorY - wallTop);
+    // Arch top curve
+    ctx.fillStyle = wg;
+    ctx.beginPath();
+    ctx.arc(wx + archW / 2, wallTop + 8, archW / 2 + 2, Math.PI, 0);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.beginPath();
+    ctx.arc(wx + archW / 2, wallTop + 8, archW / 2 + 2, Math.PI, Math.PI * 1.5);
+    ctx.fill();
+    // Trim at arch base
+    ctx.fillStyle = '#E0D5BE';
+    ctx.fillRect(wx - 2, floorY - 6, 3, 6);
+    ctx.fillRect(wx + archW - 1, floorY - 6, 3, 6);
+  }
+  drawDividerWall(wall1X);
+  drawDividerWall(wall2X);
+
+  // ============ FLOOR (wooden, all rooms) ============
+  const flGrad = ctx.createLinearGradient(0, floorY, 0, H);
+  flGrad.addColorStop(0, '#B89866');
+  flGrad.addColorStop(0.25, '#A8855A');
+  flGrad.addColorStop(0.6, '#8E7048');
+  flGrad.addColorStop(1, '#765C38');
+  ctx.fillStyle = flGrad;
+  ctx.fillRect(0, floorY, W, H - floorY);
+
+  // Wood planks (horizontal lines with perspective spacing)
+  ctx.strokeStyle = 'rgba(50,32,10,0.3)';
+  ctx.lineWidth = 1.5;
+  const planks = 8;
+  for (let i = 1; i <= planks; i++) {
+    const t = Math.pow(i / (planks + 1), 0.85);
+    const y = floorY + (H - floorY) * t;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
+  }
+  // Plank seams (vertical, staggered per row)
+  ctx.strokeStyle = 'rgba(50,32,10,0.18)';
+  ctx.lineWidth = 1;
+  for (let row = 0; row < planks; row++) {
+    const t1 = Math.pow(row / planks, 0.85);
+    const t2 = Math.pow((row + 1) / planks, 0.85);
+    const y1 = floorY + (H - floorY) * t1;
+    const y2 = floorY + (H - floorY) * t2;
+    const off = (row % 2) * 55;
+    for (let x = off; x < W; x += 110) {
+      ctx.beginPath();
+      ctx.moveTo(x, y1);
+      ctx.lineTo(x, y2);
+      ctx.stroke();
+    }
+  }
+  // Wood grain hints
+  ctx.strokeStyle = 'rgba(100,70,30,0.06)';
+  ctx.lineWidth = 0.5;
+  for (let row = 0; row < planks; row++) {
+    const t1 = Math.pow(row / planks, 0.85);
+    const t2 = Math.pow((row + 1) / planks, 0.85);
+    const y1 = floorY + (H - floorY) * t1;
+    const y2 = floorY + (H - floorY) * t2;
+    const cy = (y1 + y2) / 2;
+    ctx.beginPath();
+    ctx.moveTo(0, cy);
+    for (let x = 0; x < W; x += 20) {
+      ctx.lineTo(x, cy + Math.sin(x * 0.05 + row) * 1.5);
+    }
+    ctx.stroke();
+  }
+  // Floor sheen
+  const sheenGrad = ctx.createLinearGradient(0, floorY, 0, floorY + (H - floorY) * 0.2);
+  sheenGrad.addColorStop(0, 'rgba(255,240,210,0.10)');
+  sheenGrad.addColorStop(1, 'rgba(255,240,210,0)');
+  ctx.fillStyle = sheenGrad;
+  ctx.fillRect(0, floorY, W, (H - floorY) * 0.2);
+
+  // ============ BASEBOARD ============
+  ctx.fillStyle = '#F2EADA';
+  ctx.fillRect(0, floorY - 9, W, 9);
+  ctx.fillStyle = '#E5DAC4';
+  ctx.fillRect(0, floorY - 9, W, 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(0, floorY, W, 2);
+
+  // ============ CEILING LIGHTS ============
+  drawCeilingLight(W * 0.16, H * 0.05 + 11);
+  drawCeilingLight(W * 0.50, H * 0.05 + 11);
+  drawCeilingLight(W * 0.83, H * 0.05 + 11);
+
+  // ============ WINDOWS ============
+  // Living room window
+  drawWindowDetailed(W * 0.04, H * 0.10, W * 0.14, H * 0.20, true);
+  // Bedroom window
+  drawWindowDetailed(W * 0.80, H * 0.10, W * 0.14, H * 0.20, true);
+
+  // ============ WALL DECOR ============
+  drawWallDecor();
+
+  // ============ LIVING ROOM FURNITURE ============
+  drawSofa(W * 0.02, H * 0.50);
+  drawCoffeeTable(W * 0.08, H * 0.66);
+  drawTV(W * 0.20, H * 0.42);
+  drawCarpet(W * 0.03, H * 0.68, W * 0.24, H * 0.16);
+  drawPetBed(W * 0.06, H * 0.80);
+  drawBowls(W * 0.16, H * 0.86, W * 0.21, H * 0.86);
+  drawToyBasket(W * 0.28, H * 0.80);
+  drawBookshelf(W * 0.25, H * 0.10);
+  drawFloorPlant(W * 0.005, H * 0.46);
+
+  // ============ KITCHEN FURNITURE ============
+  const cabinetOpen = cookingState.active && (cookingState.step === 'select' || cookingState.step === 'add_pot' || cookingState.step === 'open_cabinet');
+  drawCabinet(wall1X + archW + 4, H * 0.08, cabinetOpen);
+  drawRangeHood(W * 0.43, H * 0.14);
+  drawStove(W * 0.40, H * 0.48, cookingState.step === 'on_stove' || cookingState.step === 'cooking');
+  drawCounter2(W * 0.52, H * 0.48);
+  drawSink(W * 0.57, H * 0.50);
+  drawFridge(wall2X - W * 0.07, H * 0.30);
+
+  // ============ BEDROOM FURNITURE ============
+  drawWardrobe(W * 0.70, H * 0.14);
+  drawBed(W * 0.76, H * 0.50);
+  drawNightstand(W * 0.90, H * 0.55);
+  drawBedroomRug(W * 0.80, H * 0.80, W * 0.14, H * 0.10);
+
+  // ============ PET MESS ============
+  if (homePet.hasMess) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(139,90,43,0.45)';
+    ctx.beginPath();
+    ctx.ellipse(W * 0.45, H * 0.88, 20, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(100,70,30,0.35)';
+    ctx.beginPath();
+    ctx.arc(W * 0.43, H * 0.87, 4, 0, Math.PI * 2);
+    ctx.arc(W * 0.47, H * 0.88, 3.5, 0, Math.PI * 2);
+    ctx.arc(W * 0.45, H * 0.89, 3, 0, Math.PI * 2);
+    ctx.fill();
+    // Stink lines
+    ctx.strokeStyle = 'rgba(120,100,80,0.3)';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 3; i++) {
+      const wx2 = W * 0.44 + i * 6;
+      ctx.beginPath();
+      ctx.moveTo(wx2, H * 0.85);
+      ctx.quadraticCurveTo(wx2 + 3, H * 0.83, wx2, H * 0.81);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ============ AMBIENT LIGHTING ============
+  const ambGrad = ctx.createRadialGradient(W * 0.5, H * 0.15, 0, W * 0.5, H * 0.5, W * 0.7);
+  ambGrad.addColorStop(0, 'rgba(255,245,210,0.08)');
+  ambGrad.addColorStop(0.6, 'rgba(255,240,200,0.03)');
+  ambGrad.addColorStop(1, 'rgba(140,110,60,0.08)');
+  ctx.fillStyle = ambGrad;
+  ctx.fillRect(0, 0, W, H);
+  // Warm light pools under ceiling lights
+  ctx.fillStyle = 'rgba(255,235,180,0.06)';
+  for (const lx of [W * 0.16, W * 0.50, W * 0.83]) {
+    const lg = ctx.createRadialGradient(lx, H * 0.06, 0, lx, H * 0.4, H * 0.5);
+    lg.addColorStop(0, 'rgba(255,240,190,0.10)');
+    lg.addColorStop(1, 'rgba(255,240,190,0)');
+    ctx.fillStyle = lg;
+    ctx.fillRect(lx - H * 0.3, 0, H * 0.6, H);
+  }
+
+  // ============ DAY / NIGHT OVERLAY ============
+  var sc = getSkyColors();
+  if (sc.darkness > 0.01) {
+    // Dark blue tint over the whole room
+    ctx.fillStyle = 'rgba(10,15,40,' + (sc.darkness * 0.55) + ')';
+    ctx.fillRect(0, 0, W, H);
+    // Warm glow from ceiling lights at night (lights are "on")
+    for (var li = 0; li < 3; li++) {
+      var lx2 = [W * 0.16, W * 0.50, W * 0.83][li];
+      var glowR = H * 0.45;
+      var glowG = ctx.createRadialGradient(lx2, H * 0.10, 0, lx2, H * 0.40, glowR);
+      glowG.addColorStop(0, 'rgba(255,220,140,' + (sc.darkness * 0.25) + ')');
+      glowG.addColorStop(0.5, 'rgba(255,200,100,' + (sc.darkness * 0.08) + ')');
+      glowG.addColorStop(1, 'rgba(255,200,100,0)');
+      ctx.fillStyle = glowG;
+      ctx.fillRect(lx2 - glowR, 0, glowR * 2, H);
+    }
+    // Warm glow from TV (flickering)
+    if (sc.darkness > 0.3) {
+      var tvGlow = ctx.createRadialGradient(W * 0.24, H * 0.50, 0, W * 0.24, H * 0.50, W * 0.15);
+      var flicker = 0.7 + 0.3 * Math.sin(game.time * 8);
+      tvGlow.addColorStop(0, 'rgba(100,150,255,' + (sc.darkness * 0.12 * flicker) + ')');
+      tvGlow.addColorStop(1, 'rgba(100,150,255,0)');
+      ctx.fillStyle = tvGlow;
+      ctx.fillRect(0, H * 0.35, W * 0.5, H * 0.4);
+    }
+  }
+  // Sunset/sunrise warm wash
+  if (sc.sunsetTint > 0.05) {
+    ctx.fillStyle = 'rgba(255,140,60,' + (sc.sunsetTint * 0.08) + ')';
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+// --- Ceiling pendant light ---
+function drawCeilingLight(x, y) {
+  // Cord
+  ctx.strokeStyle = '#3a3a3a';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x, y - 11);
+  ctx.lineTo(x, y + 14);
+  ctx.stroke();
+  // Shade (cone)
+  ctx.fillStyle = '#D4C8A8';
+  ctx.beginPath();
+  ctx.moveTo(x - 16, y + 14);
+  ctx.lineTo(x + 16, y + 14);
+  ctx.lineTo(x + 10, y + 28);
+  ctx.lineTo(x - 10, y + 28);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.moveTo(x + 4, y + 14);
+  ctx.lineTo(x + 16, y + 14);
+  ctx.lineTo(x + 10, y + 28);
+  ctx.closePath();
+  ctx.fill();
+  // Bulb glow
+  ctx.fillStyle = 'rgba(255,250,200,0.7)';
+  ctx.beginPath();
+  ctx.arc(x, y + 26, 4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --- Detailed window with curtains ---
+function drawWindowDetailed(x, y, w, h, hasCurtains) {
+  // Frame
+  ctx.fillStyle = '#8B7355';
+  ctx.fillRect(x - 7, y - 7, w + 14, h + 14);
+  ctx.fillStyle = '#A08868';
+  ctx.fillRect(x - 7, y - 7, w + 14, 5);
+  // Sill
+  ctx.fillStyle = '#9C8466';
+  ctx.fillRect(x - 10, y + h + 7, w + 20, 5);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillRect(x - 10, y + h + 12, w + 20, 2);
+  // Sky — uses day/night cycle colors
+  var sc = getSkyColors();
+  var skyG = ctx.createLinearGradient(0, y, 0, y + h);
+  skyG.addColorStop(0, sc.top);
+  skyG.addColorStop(0.4, sc.mid);
+  skyG.addColorStop(0.7, sc.bot);
+  skyG.addColorStop(1, sc.darkness > 0.5 ? sc.bot : '#E8F6FF');
+  ctx.fillStyle = skyG;
+  ctx.fillRect(x, y, w, h);
+  // Stars at night
+  if (sc.darkness > 0.4) {
+    ctx.fillStyle = 'rgba(255,255,255,' + (sc.darkness * 0.8) + ')';
+    for (var si = 0; si < 8; si++) {
+      var sx = x + ((si * 37 + 13) % w);
+      var sy = y + ((si * 23 + 7) % (h * 0.6));
+      var twinkle = 0.5 + 0.5 * Math.sin(game.time * 3 + si);
+      ctx.globalAlpha = twinkle * sc.darkness;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Celestial body (sun or moon)
+  var cx = x + w * sc.celestialX;
+  var cy = y + h * sc.celestialY;
+  if (sc.isMoon) {
+    // Moon glow
+    ctx.fillStyle = 'rgba(240,240,220,0.15)';
+    ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2); ctx.fill();
+    // Moon body
+    ctx.fillStyle = sc.celestialColor;
+    ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI * 2); ctx.fill();
+    // Moon craters
+    ctx.fillStyle = 'rgba(180,180,160,0.3)';
+    ctx.beginPath(); ctx.arc(cx - 4, cy - 3, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 3, cy + 4, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 5, cy - 5, 1.5, 0, Math.PI * 2); ctx.fill();
+  } else {
+    // Sun glow
+    ctx.fillStyle = 'rgba(255,255,200,0.3)';
+    ctx.beginPath(); ctx.arc(cx, cy, 24, 0, Math.PI * 2); ctx.fill();
+    // Sun body
+    ctx.fillStyle = sc.celestialColor;
+    ctx.beginPath(); ctx.arc(cx, cy, 16, 0, Math.PI * 2); ctx.fill();
+  }
+  // Clouds (only visible during day / sunset)
+  if (sc.darkness < 0.6) {
+    var cloudAlpha = (1 - sc.darkness) * 0.85;
+    ctx.fillStyle = 'rgba(255,255,255,' + cloudAlpha + ')';
+    ctx.beginPath();
+    ctx.arc(x + w * 0.25, y + h * 0.35, 10, 0, Math.PI * 2);
+    ctx.arc(x + w * 0.32, y + h * 0.33, 13, 0, Math.PI * 2);
+    ctx.arc(x + w * 0.38, y + h * 0.36, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + w * 0.55, y + h * 0.6, 8, 0, Math.PI * 2);
+    ctx.arc(x + w * 0.6, y + h * 0.58, 11, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Distant hills
+  var hillAlpha = sc.darkness > 0.5 ? 0.25 : 0.4;
+  ctx.fillStyle = sc.darkness > 0.5 ? 'rgba(40,50,70,' + hillAlpha + ')' : 'rgba(120,160,100,' + hillAlpha + ')';
+  ctx.beginPath();
+  ctx.moveTo(x, y + h * 0.85);
+  ctx.quadraticCurveTo(x + w * 0.3, y + h * 0.7, x + w * 0.5, y + h * 0.82);
+  ctx.quadraticCurveTo(x + w * 0.75, y + h * 0.92, x + w, y + h * 0.78);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.closePath();
+  ctx.fill();
+  // Cross frames
+  ctx.fillStyle = '#8B7355';
+  ctx.fillRect(x + w / 2 - 2, y, 4, h);
+  ctx.fillRect(x, y + h / 2 - 2, w, 4);
+  // Inner frame highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillRect(x, y, w, 2);
+  ctx.fillRect(x, y, 2, h);
+  // Curtains
+  if (hasCurtains) {
+    const cGrad = ctx.createLinearGradient(x - 18, 0, x, 0);
+    cGrad.addColorStop(0, '#C4A0B8');
+    cGrad.addColorStop(0.5, '#D4B0C8');
+    cGrad.addColorStop(1, '#B898B0');
+    ctx.fillStyle = cGrad;
+    // Left curtain
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x - 18 + i * 5, y - 7);
+      ctx.lineTo(x - 18 + i * 5 + 5, y - 7);
+      ctx.quadraticCurveTo(x - 16 + i * 5, y + h * 0.5, x - 18 + i * 5 + 4, y + h + 7);
+      ctx.lineTo(x - 18 + i * 5, y + h + 7);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // Right curtain
+    const cGrad2 = ctx.createLinearGradient(x + w, 0, x + w + 18, 0);
+    cGrad2.addColorStop(0, '#B898B0');
+    cGrad2.addColorStop(0.5, '#D4B0C8');
+    cGrad2.addColorStop(1, '#C4A0B8');
+    ctx.fillStyle = cGrad2;
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x + w + 18 - i * 5 - 5, y - 7);
+      ctx.lineTo(x + w + 18 - i * 5, y - 7);
+      ctx.quadraticCurveTo(x + w + 16 - i * 5, y + h * 0.5, x + w + 18 - i * 5 - 4, y + h + 7);
+      ctx.lineTo(x + w + 18 - i * 5 - 5, y + h + 7);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // Curtain rod
+    ctx.fillStyle = '#6B5040';
+    ctx.fillRect(x - 20, y - 9, w + 40, 3);
+    ctx.fillStyle = '#8B7355';
+    ctx.beginPath();
+    ctx.arc(x - 20, y - 7, 4, 0, Math.PI * 2);
+    ctx.arc(x + w + 20, y - 7, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// --- Wall decorations ---
+function drawWallDecor() {
+  // Leash on hook (living room wall)
+  const lx = W * 0.30, ly = H * 0.12;
+  ctx.fillStyle = '#7B5F37';
+  ctx.fillRect(lx - 2, ly - 8, 4, 6);
+  ctx.beginPath();
+  ctx.arc(lx, ly - 9, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#D2691E';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(lx, ly);
+  ctx.quadraticCurveTo(lx - 14, ly + 12, lx - 10, ly + 28);
+  ctx.quadraticCurveTo(lx - 6, ly + 38, lx + 2, ly + 33);
+  ctx.quadraticCurveTo(lx + 8, ly + 28, lx + 6, ly + 18);
+  ctx.stroke();
+  // Leash clip
+  ctx.fillStyle = '#888';
+  ctx.beginPath();
+  ctx.arc(lx + 2, ly + 34, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pet sweater on hook
+  const cx = W * 0.30 + 28, cy = H * 0.12;
+  ctx.fillStyle = '#7B5F37';
+  ctx.fillRect(cx - 2, cy - 8, 4, 6);
+  ctx.beginPath();
+  ctx.arc(cx, cy - 9, 3, 0, Math.PI * 2);
+  ctx.fill();
+  // Sweater body
+  ctx.fillStyle = '#E74C3C';
+  ctx.beginPath();
+  ctx.moveTo(cx - 16, cy + 6);
+  ctx.lineTo(cx + 16, cy + 6);
+  ctx.lineTo(cx + 14, cy + 38);
+  ctx.lineTo(cx - 14, cy + 38);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#C0392B';
+  ctx.fillRect(cx - 16, cy + 6, 32, 4);
+  // Sleeves
+  ctx.fillStyle = '#E74C3C';
+  ctx.fillRect(cx - 22, cy + 8, 6, 18);
+  ctx.fillRect(cx + 16, cy + 8, 6, 18);
+  // Stripe
+  ctx.fillStyle = '#F5E6D3';
+  ctx.fillRect(cx - 14, cy + 18, 28, 4);
+
+  // Framed picture (living room)
+  drawFramedPicture(W * 0.15, H * 0.12, 56, 42);
+
+  // Clock (kitchen wall)
+  drawWallClock(W * 0.50, H * 0.16);
+
+  // Small shelf with items (bedroom)
+  const shX = W * 0.74, shY = H * 0.14;
+  ctx.fillStyle = '#9C8466';
+  ctx.fillRect(shX, shY, 50, 4);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillRect(shX, shY + 4, 50, 2);
+  // Items on shelf
+  ctx.fillStyle = '#5DADE2';
+  ctx.fillRect(shX + 4, shY - 18, 8, 18);
+  ctx.fillStyle = '#E74C3C';
+  ctx.fillRect(shX + 16, shY - 14, 6, 14);
+  ctx.fillStyle = '#7DCEA0';
+  ctx.beginPath();
+  ctx.arc(shX + 32, shY - 6, 7, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(shX + 30, shY - 3, 4, 3);
+}
+
+function drawFramedPicture(x, y, w, h) {
+  // Frame
+  ctx.fillStyle = '#9C8466';
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#B09878';
+  ctx.fillRect(x, y, w, 4);
+  ctx.fillRect(x, y, 4, h);
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(x + w - 4, y, 4, h);
+  ctx.fillRect(x, y + h - 4, w, 4);
+  // Mat
+  ctx.fillStyle = '#F8F0E0';
+  ctx.fillRect(x + 5, y + 5, w - 10, h - 10);
+  // Scene: sky
+  ctx.fillStyle = '#87CEEB';
+  ctx.fillRect(x + 7, y + 7, w - 14, (h - 14) * 0.5);
+  // Grass
+  ctx.fillStyle = '#7DCEA0';
+  ctx.fillRect(x + 7, y + 7 + (h - 14) * 0.5, w - 14, (h - 14) * 0.5);
+  // Sun
+  ctx.fillStyle = '#F5D547';
+  ctx.beginPath();
+  ctx.arc(x + w * 0.7, y + h * 0.3, 6, 0, Math.PI * 2);
+  ctx.fill();
+  // Little dog silhouette
+  ctx.fillStyle = '#8B5A2B';
+  ctx.beginPath();
+  ctx.ellipse(x + w * 0.35, y + h * 0.65, 7, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x + w * 0.42, y + h * 0.6, 4, 0, Math.PI * 2);
+  ctx.fill();
+  // Ears
+  ctx.beginPath();
+  ctx.moveTo(x + w * 0.40, y + h * 0.56);
+  ctx.lineTo(x + w * 0.38, y + h * 0.52);
+  ctx.lineTo(x + w * 0.42, y + h * 0.54);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawWallClock(x, y) {
+  // Outer ring
+  ctx.fillStyle = '#6B5337';
+  ctx.beginPath();
+  ctx.arc(x, y, 18, 0, Math.PI * 2);
+  ctx.fill();
+  // Face
+  ctx.fillStyle = '#F8F4EC';
+  ctx.beginPath();
+  ctx.arc(x, y, 15, 0, Math.PI * 2);
+  ctx.fill();
+  // Tick marks
+  ctx.strokeStyle = '#6B5337';
+  ctx.lineWidth = 1.5;
+  for (let a = 0; a < 12; a++) {
+    const ang = (a / 12) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + Math.cos(ang) * 12, y + Math.sin(ang) * 12);
+    ctx.lineTo(x + Math.cos(ang) * 14, y + Math.sin(ang) * 14);
+    ctx.stroke();
+  }
+  // Hands (animated)
+  const t = game.time;
+  ctx.strokeStyle = '#3a3a3a';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + Math.cos(t * 0.3 - Math.PI / 2) * 9, y + Math.sin(t * 0.3 - Math.PI / 2) * 9);
+  ctx.stroke();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + Math.cos(t * 0.05 - Math.PI / 2) * 11, y + Math.sin(t * 0.05 - Math.PI / 2) * 11);
+  ctx.stroke();
+  // Center dot
+  ctx.fillStyle = '#3a3a3a';
+  ctx.beginPath();
+  ctx.arc(x, y, 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --- Drop shadow helper ---
+function drawDropShadow(x, y, w, h) {
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h + 3, w * 0.48, h * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --- Detailed Sofa ---
+function drawSofa(x, y) {
+  const sw = W * 0.20, sh = H * 0.14;
+  const depth = 12;
+  drawDropShadow(x - 4, y, sw + 8, sh);
+
+  // Back panel (with depth)
+  ctx.fillStyle = '#5A4470';
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + sw, y);
+  ctx.lineTo(x + sw - depth, y + depth);
+  ctx.lineTo(x + depth, y + depth);
+  ctx.closePath();
+  ctx.fill();
+
+  // Main body
+  const bodyGrad = ctx.createLinearGradient(0, y, 0, y + sh);
+  bodyGrad.addColorStop(0, '#7B5E9E');
+  bodyGrad.addColorStop(0.5, '#6B4E8E');
+  bodyGrad.addColorStop(1, '#5A4470');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(x, y + depth, sw, sh - depth, [6, 6, 14, 14]);
+  ctx.fill();
+
+  // Seat cushions (2)
+  const cushW = (sw - 16) / 2;
+  for (let i = 0; i < 2; i++) {
+    const cx2 = x + 8 + i * (cushW + 2);
+    const cGrad = ctx.createLinearGradient(0, y + depth + 6, 0, y + sh - 8);
+    cGrad.addColorStop(0, '#9075B8');
+    cGrad.addColorStop(0.5, '#8065A8');
+    cGrad.addColorStop(1, '#7060A0');
+    ctx.fillStyle = cGrad;
+    ctx.beginPath();
+    ctx.roundRect(cx2, y + depth + 6, cushW, sh - depth - 14, 6);
+    ctx.fill();
+    // Cushion seam
+    ctx.strokeStyle = 'rgba(50,30,60,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx2 + 4, y + sh - 14);
+    ctx.lineTo(cx2 + cushW - 4, y + sh - 14);
+    ctx.stroke();
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath();
+    ctx.roundRect(cx2 + 3, y + depth + 8, cushW - 6, 6, 4);
+    ctx.fill();
+  }
+
+  // Back cushions (2)
+  for (let i = 0; i < 2; i++) {
+    const bx = x + 10 + i * (sw * 0.42);
+    ctx.fillStyle = '#8B6EAE';
+    ctx.beginPath();
+    ctx.roundRect(bx, y + depth + 4, sw * 0.38, sh * 0.35, [8, 8, 4, 4]);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath();
+    ctx.roundRect(bx + 3, y + depth + 6, sw * 0.32, 6, 4);
+    ctx.fill();
+  }
+
+  // Armrests
+  ctx.fillStyle = '#5A4470';
+  ctx.beginPath();
+  ctx.roundRect(x, y + depth + 2, 12, sh - depth - 4, [8, 4, 10, 6]);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(x + sw - 12, y + depth + 2, 12, sh - depth - 4, [4, 8, 6, 10]);
+  ctx.fill();
+  // Armrest tops
+  ctx.fillStyle = '#7B5E9E';
+  ctx.beginPath();
+  ctx.ellipse(x + 6, y + depth + 6, 7, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + sw - 6, y + depth + 6, 7, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Legs
+  ctx.fillStyle = '#3a2a1a';
+  ctx.fillRect(x + 6, y + sh - 4, 5, 10);
+  ctx.fillRect(x + sw - 11, y + sh - 4, 5, 10);
+  // Leg highlights
+  ctx.fillStyle = '#5a4a3a';
+  ctx.fillRect(x + 6, y + sh - 4, 2, 10);
+  ctx.fillRect(x + sw - 11, y + sh - 4, 2, 10);
+}
+
+// --- TV on media stand ---
+function drawTV(x, y) {
+  const tw = W * 0.11, th = H * 0.07;
+  const standW = tw * 1.3, standH = H * 0.05;
+  drawDropShadow(x - (standW - tw) / 2 - 4, y, standW + 8, standH + th * 0.3);
+
+  // Media stand
+  ctx.fillStyle = '#5a4330';
+  ctx.beginPath();
+  ctx.roundRect(x - (standW - tw) / 2, y + th + 4, standW, standH, 4);
+  ctx.fill();
+  // Stand top
+  ctx.fillStyle = '#6B5337';
+  ctx.fillRect(x - (standW - tw) / 2, y + th + 4, standW, 5);
+  // Stand door
+  ctx.fillStyle = '#4a3525';
+  ctx.beginPath();
+  ctx.roundRect(x - (standW - tw) / 2 + 4, y + th + 12, standW / 2 - 6, standH - 12, 3);
+  ctx.roundRect(x + 2, y + th + 12, standW / 2 - 6, standH - 12, 3);
+  ctx.fill();
+  // Handles
+  ctx.fillStyle = '#C0A878';
+  ctx.fillRect(x - (standW - tw) / 2 + standW / 2 - 8, y + th + 18, 4, 8);
+  ctx.fillRect(x + standW / 2 - 6 - 2, y + th + 18, 4, 8);
+  // Stand legs
+  ctx.fillStyle = '#3a2a1a';
+  ctx.fillRect(x - (standW - tw) / 2 + 2, y + th + 4 + standH, 4, 6);
+  ctx.fillRect(x + tw + (standW - tw) / 2 - 6, y + th + 4 + standH, 4, 6);
+
+  // TV frame
+  ctx.fillStyle = '#2a2a2a';
+  ctx.beginPath();
+  ctx.roundRect(x - 3, y - 3, tw + 6, th + 6, 5);
+  ctx.fill();
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath();
+  ctx.roundRect(x, y, tw, th, 3);
+  ctx.fill();
+  // Screen
+  const scrGrad = ctx.createLinearGradient(0, y, 0, y + th);
+  scrGrad.addColorStop(0, '#2a4a6a');
+  scrGrad.addColorStop(0.5, '#1a3a5a');
+  scrGrad.addColorStop(1, '#152a40');
+  ctx.fillStyle = scrGrad;
+  ctx.fillRect(x + 3, y + 3, tw - 6, th - 6);
+  // Screen content (animated subtle)
+  ctx.fillStyle = 'rgba(100,180,255,0.15)';
+  const flick = Math.sin(game.time * 3) * 0.5 + 0.5;
+  ctx.globalAlpha = 0.3 + flick * 0.2;
+  ctx.fillRect(x + 6, y + 6, tw - 12, th - 12);
+  ctx.globalAlpha = 1;
+  // Screen reflection
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath();
+  ctx.moveTo(x + 5, y + 5);
+  ctx.lineTo(x + tw * 0.5, y + 5);
+  ctx.lineTo(x + tw * 0.3, y + th * 0.4);
+  ctx.lineTo(x + 5, y + th * 0.4);
+  ctx.closePath();
+  ctx.fill();
+  // Stand neck
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillRect(x + tw / 2 - 4, y + th, 8, 6);
+  ctx.fillStyle = '#2a2a2a';
+  ctx.beginPath();
+  ctx.ellipse(x + tw / 2, y + th + 8, 14, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --- Coffee table ---
+function drawCoffeeTable(x, y) {
+  const tw = W * 0.07, th = H * 0.04;
+  drawDropShadow(x - 4, y, tw + 8, th);
+  // Table top
+  ctx.fillStyle = '#6B4E2E';
+  ctx.beginPath();
+  ctx.roundRect(x, y, tw, th * 0.4, 3);
+  ctx.fill();
+  ctx.fillStyle = '#8B6E3E';
+  ctx.fillRect(x, y, tw, 3);
+  ctx.fillStyle = 'rgba(255,235,200,0.1)';
+  ctx.fillRect(x + 2, y + 1, tw - 4, 2);
+  // Apron
+  ctx.fillStyle = '#5a3E1E';
+  ctx.fillRect(x + 2, y + th * 0.4, tw - 4, th * 0.3);
+  // Legs
+  ctx.fillStyle = '#4a3015';
+  ctx.fillRect(x + 3, y + th * 0.5, 4, th * 0.5);
+  ctx.fillRect(x + tw - 7, y + th * 0.5, 4, th * 0.5);
+  // Book on table
+  ctx.fillStyle = '#C0392B';
+  ctx.fillRect(x + tw * 0.2, y - 4, tw * 0.5, 5);
+  ctx.fillStyle = '#E8E8E8';
+  ctx.fillRect(x + tw * 0.22, y - 3, tw * 0.46, 3);
+  // Mug
+  ctx.fillStyle = '#F5F0E8';
+  ctx.beginPath();
+  ctx.roundRect(x + tw * 0.7, y - 6, 10, 8, 2);
+  ctx.fill();
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(x + tw * 0.72, y - 5, 6, 3);
+  ctx.strokeStyle = '#F5F0E8';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x + tw * 0.7 + 11, y - 2, 3, -Math.PI / 2, Math.PI / 2);
+  ctx.stroke();
+}
+
+// --- Detailed rug ---
+function drawCarpet(x, y, w, h) {
+  ctx.save();
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h + 3, w * 0.5, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Outer border
+  ctx.fillStyle = '#C0392B';
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 4);
+  ctx.fill();
+  // Border pattern
+  ctx.fillStyle = '#E8C547';
+  for (let i = 0; i < w / 12; i++) {
+    ctx.beginPath();
+    ctx.arc(x + 8 + i * 12, y + 5, 2, 0, Math.PI * 2);
+    ctx.arc(x + 8 + i * 12, y + h - 5, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Inner field
+  ctx.fillStyle = '#A93226';
+  ctx.beginPath();
+  ctx.roundRect(x + 8, y + 8, w - 16, h - 16, 3);
+  ctx.fill();
+  // Center medallion
+  ctx.fillStyle = '#E8C547';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h / 2, w * 0.15, h * 0.3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#C0392B';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h / 2, w * 0.10, h * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#F5E6D3';
+  ctx.beginPath();
+  ctx.arc(x + w / 2, y + h / 2, 3, 0, Math.PI * 2);
+  ctx.fill();
+  // Corner ornaments
+  ctx.fillStyle = '#E8C547';
+  for (const [cx2, cy2] of [[x+12,y+12],[x+w-12,y+12],[x+12,y+h-12],[x+w-12,y+h-12]]) {
+    ctx.beginPath();
+    ctx.arc(cx2, cy2, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Fringe
+  ctx.strokeStyle = '#D4A017';
+  ctx.lineWidth = 1.5;
+  for (let fx = x + 4; fx < x + w - 4; fx += 4) {
+    ctx.beginPath();
+    ctx.moveTo(fx, y);
+    ctx.lineTo(fx, y - 4);
+    ctx.moveTo(fx, y + h);
+    ctx.lineTo(fx, y + h + 4);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// --- Cozy pet bed ---
+function drawPetBed(x, y) {
+  drawDropShadow(x - 30, y - 6, 60, 20);
+  // Outer bed (basket style)
+  ctx.fillStyle = '#C4906E';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 6, 38, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#A87858';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 6, 38, 16, 0, 0, Math.PI);
+  ctx.fill();
+  // Rim
+  ctx.fillStyle = '#B8825E';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 38, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#9C6E4E';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 33, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Inner cushion
+  const cushGrad = ctx.createRadialGradient(x, y - 2, 5, x, y, 28);
+  cushGrad.addColorStop(0, '#FFE8E8');
+  cushGrad.addColorStop(0.6, '#F5D0D0');
+  cushGrad.addColorStop(1, '#E8B8B8');
+  ctx.fillStyle = cushGrad;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 2, 28, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Cushion quilt pattern
+  ctx.strokeStyle = 'rgba(180,120,120,0.2)';
+  ctx.lineWidth = 0.5;
+  for (let i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x + i * 8, y - 8);
+    ctx.lineTo(x + i * 8, y + 4);
+    ctx.stroke();
+  }
+  // Wicker texture lines
+  ctx.strokeStyle = 'rgba(120,80,50,0.2)';
+  ctx.lineWidth = 0.5;
+  for (let a = 0; a < Math.PI * 2; a += 0.2) {
+    ctx.beginPath();
+    ctx.moveTo(x + Math.cos(a) * 34, y + 4 + Math.sin(a) * 12);
+    ctx.lineTo(x + Math.cos(a) * 38, y + 6 + Math.sin(a) * 14);
+    ctx.stroke();
+  }
+}
+
+// --- Food and water bowls ---
+function drawBowls(fx, fy, wx, wy) {
+  // Food bowl
+  drawDropShadow(fx - 16, fy - 4, 32, 12);
+  // Bowl exterior
+  ctx.fillStyle = '#C0392B';
+  ctx.beginPath();
+  ctx.ellipse(fx, fy + 2, 17, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#E74C3C';
+  ctx.beginPath();
+  ctx.ellipse(fx, fy, 17, 7, 0, 0, Math.PI);
+  ctx.fill();
+  // Bowl interior
+  ctx.fillStyle = '#8B2A1A';
+  ctx.beginPath();
+  ctx.ellipse(fx, fy, 14, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Food
+  if (homePet.foodInBowl) {
+    const fGrad = ctx.createRadialGradient(fx, fy - 2, 2, fx, fy, 12);
+    fGrad.addColorStop(0, '#F5C542');
+    fGrad.addColorStop(0.5, '#D4A017');
+    fGrad.addColorStop(1, '#B8900D');
+    ctx.fillStyle = fGrad;
+    ctx.beginPath();
+    ctx.ellipse(fx, fy - 1, 12, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Kibble pieces
+    ctx.fillStyle = '#E8B530';
+    ctx.beginPath();
+    ctx.arc(fx - 5, fy - 2, 2, 0, Math.PI * 2);
+    ctx.arc(fx + 2, fy - 3, 2.5, 0, Math.PI * 2);
+    ctx.arc(fx + 6, fy - 1, 2, 0, Math.PI * 2);
+    ctx.arc(fx - 2, fy - 1, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Bowl highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(fx - 8, fy + 1, 5, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Paw print on bowl
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.arc(fx + 8, fy + 4, 2, 0, Math.PI * 2);
+  ctx.arc(fx + 6, fy + 2, 1.5, 0, Math.PI * 2);
+  ctx.arc(fx + 10, fy + 2, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Water bowl
+  drawDropShadow(wx - 14, wy - 4, 28, 10);
+  ctx.fillStyle = '#2980B9';
+  ctx.beginPath();
+  ctx.ellipse(wx, wy + 2, 15, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#3498DB';
+  ctx.beginPath();
+  ctx.ellipse(wx, wy, 15, 6, 0, 0, Math.PI);
+  ctx.fill();
+  ctx.fillStyle = '#1A5276';
+  ctx.beginPath();
+  ctx.ellipse(wx, wy, 12, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Water surface
+  ctx.fillStyle = '#5DADE2';
+  ctx.beginPath();
+  ctx.ellipse(wx, wy, 11, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Water shimmer
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  const shim = Math.sin(game.time * 2) * 2;
+  ctx.beginPath();
+  ctx.ellipse(wx - 3 + shim, wy - 1, 4, 1.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Bowl highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.beginPath();
+  ctx.ellipse(wx - 6, wy + 1, 4, 1.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --- Toy basket ---
+function drawToyBasket(x, y) {
+  drawDropShadow(x - 22, y - 8, 44, 24);
+  // Basket body
+  const bGrad = ctx.createLinearGradient(0, y - 10, 0, y + 14);
+  bGrad.addColorStop(0, '#A08456');
+  bGrad.addColorStop(1, '#7B6240');
+  ctx.fillStyle = bGrad;
+  ctx.beginPath();
+  ctx.roundRect(x - 20, y - 10, 40, 24, [6, 6, 10, 10]);
+  ctx.fill();
+  // Weave texture
+  ctx.strokeStyle = 'rgba(80,60,30,0.25)';
+  ctx.lineWidth = 1;
+  for (let wy2 = y - 6; wy2 < y + 12; wy2 += 4) {
+    ctx.beginPath();
+    ctx.moveTo(x - 18, wy2);
+    ctx.lineTo(x + 18, wy2);
+    ctx.stroke();
+  }
+  for (let wx2 = x - 14; wx2 <= x + 14; wx2 += 6) {
+    ctx.beginPath();
+    ctx.moveTo(wx2, y - 8);
+    ctx.lineTo(wx2, y + 12);
+    ctx.stroke();
+  }
+  // Rim
+  ctx.fillStyle = '#8B6F47';
+  ctx.beginPath();
+  ctx.roundRect(x - 21, y - 12, 42, 6, [4, 4, 2, 2]);
+  ctx.fill();
+  ctx.fillStyle = '#6B5337';
+  ctx.fillRect(x - 21, y - 8, 42, 2);
+
+  // Toys sticking out
+  // Ball
+  ctx.fillStyle = '#4ECDC4';
+  ctx.beginPath();
+  ctx.arc(x - 8, y - 12, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.arc(x - 10, y - 14, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#36A89F';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(x - 8, y - 12, 8, 0, Math.PI * 2);
+  ctx.stroke();
+  // Bone toy
+  ctx.fillStyle = '#F5E6D3';
+  ctx.beginPath();
+  ctx.arc(x + 6, y - 12, 4, 0, Math.PI * 2);
+  ctx.arc(x + 12, y - 12, 4, 0, Math.PI * 2);
+  ctx.arc(x + 6, y - 8, 3, 0, Math.PI * 2);
+  ctx.arc(x + 12, y - 8, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(x + 6, y - 13, 7, 5);
+  // Rope toy
+  ctx.strokeStyle = '#E74C3C';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x - 2, y - 14);
+  ctx.quadraticCurveTo(x + 2, y - 18, x + 4, y - 14);
+  ctx.stroke();
+  ctx.strokeStyle = '#F5E6D3';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x - 2 + i * 2, y - 14);
+    ctx.quadraticCurveTo(x + 2, y - 18, x + 4 + i * 2, y - 14);
+    ctx.stroke();
+  }
+}
+
+// --- Bookshelf ---
+function drawBookshelf(x, y) {
+  const bw = W * 0.06, bh = H * 0.22;
+  drawDropShadow(x - 4, y, bw + 8, bh);
+  // Frame
+  ctx.fillStyle = '#6B4E2E';
+  ctx.fillRect(x, y, bw, bh);
+  ctx.fillStyle = '#8B6E3E';
+  ctx.fillRect(x, y, bw, 4);
+  // Shelves
+  ctx.fillStyle = '#5a3E1E';
+  const shelfH = bh / 4;
+  for (let i = 1; i < 4; i++) {
+    ctx.fillRect(x, y + i * shelfH, bw, 3);
+  }
+  // Books on each shelf
+  const bookColors = ['#C0392B', '#2980B9', '#27AE60', '#8E44AD', '#E67E22', '#16A085', '#F39C12', '#D35400'];
+  for (let shelf = 0; shelf < 4; shelf++) {
+    let bx = x + 3;
+    const by = y + shelf * shelfH + 3;
+    const maxH = shelfH - 6;
+    let ci = 0;
+    while (bx < x + bw - 8) {
+      const bw2 = 5 + Math.random() * 4;
+      const bh2 = maxH * (0.7 + Math.random() * 0.3);
+      ctx.fillStyle = bookColors[(shelf * 3 + ci) % bookColors.length];
+      ctx.fillRect(bx, by + (maxH - bh2), bw2, bh2);
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      ctx.fillRect(bx, by + (maxH - bh2), bw2, 2);
+      bx += bw2 + 1;
+      ci++;
+    }
+  }
+  // Top decoration
+  ctx.fillStyle = '#5DADE2';
+  ctx.beginPath();
+  ctx.arc(x + bw * 0.3, y - 8, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(x + bw * 0.25, y - 4, bw * 0.1, 4);
+}
+
+// --- Floor plant ---
+function drawFloorPlant(x, y) {
+  drawDropShadow(x, y + 30, 30, 8);
+  // Pot
+  ctx.fillStyle = '#A0522D';
+  ctx.beginPath();
+  ctx.moveTo(x + 4, y + 30);
+  ctx.lineTo(x + 26, y + 30);
+  ctx.lineTo(x + 22, y + 48);
+  ctx.lineTo(x + 8, y + 48);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(x + 4, y + 30, 22, 5);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillRect(x + 18, y + 30, 8, 18);
+  // Soil
+  ctx.fillStyle = '#3a2a1a';
+  ctx.beginPath();
+  ctx.ellipse(x + 15, y + 31, 10, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Leaves
+  ctx.fillStyle = '#2E8B57';
+  for (let i = 0; i < 6; i++) {
+    const angle = -Math.PI / 2 + (i - 2.5) * 0.4;
+    const len = 28 + (i % 2) * 8;
+    ctx.save();
+    ctx.translate(x + 15, y + 30);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.ellipse(0, -len / 2, 5, len / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#3CB371';
+    ctx.beginPath();
+    ctx.ellipse(-1, -len / 2, 2, len / 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#2E8B57';
+    ctx.restore();
+  }
+  // Stem
+  ctx.strokeStyle = '#2E8B57';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 15, y + 30);
+  ctx.lineTo(x + 15, y + 10);
+  ctx.stroke();
+}
+
+// --- Kitchen upper cabinets ---
+function drawCabinet(x, y, isOpen) {
+  const cw = W * 0.20, ch = H * 0.08;
+  drawDropShadow(x, y, cw, ch);
+  // Cabinet body
+  ctx.fillStyle = '#7B6240';
+  ctx.beginPath();
+  ctx.roundRect(x, y, cw, ch, 4);
+  ctx.fill();
+  ctx.fillStyle = '#6B5230';
+  ctx.fillRect(x, y, cw, 4);
+  // Two doors
+  ctx.fillStyle = '#8B6F47';
+  ctx.beginPath();
+  ctx.roundRect(x + 3, y + 4, cw / 2 - 4, ch - 7, 3);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(x + cw / 2 + 1, y + 4, cw / 2 - 4, ch - 7, 3);
+  ctx.fill();
+  // Door panels
+  ctx.strokeStyle = 'rgba(60,40,15,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(x + 6, y + 7, cw / 2 - 10, ch - 13, 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.roundRect(x + cw / 2 + 4, y + 7, cw / 2 - 10, ch - 13, 2);
+  ctx.stroke();
+  // Handles
+  ctx.fillStyle = '#C0A878';
+  ctx.fillRect(x + cw / 2 - 6, y + ch / 2 - 3, 3, 6);
+  ctx.fillRect(x + cw / 2 + 3, y + ch / 2 - 3, 3, 6);
+  // Highlights
+  ctx.fillStyle = 'rgba(255,235,200,0.1)';
+  ctx.fillRect(x + 3, y + 5, cw / 2 - 4, 2);
+  ctx.fillRect(x + cw / 2 + 1, y + 5, cw / 2 - 4, 2);
+
+  // Open cabinet: show ingredients
+  if (isOpen) {
+    ctx.fillStyle = '#5a4020';
+    ctx.fillRect(x + 4, y + ch - 2, cw - 8, 6);
+    // Ingredient jars
+    const ings = [
+      { c: '#E8C842', label: '🍗' },
+      { c: '#E87A2D', label: '🥩' },
+      { c: '#7DCEA0', label: '🐟' },
+      { c: '#F5F0E0', label: '🍚' },
+      { c: '#F5D547', label: '🧀' },
+      { c: '#E67E22', label: '🥕' },
+    ];
+    const jarW = (cw - 12) / ings.length;
+    for (let i = 0; i < ings.length; i++) {
+      const jx = x + 6 + i * jarW;
+      ctx.fillStyle = ings[i].c;
+      ctx.beginPath();
+      ctx.roundRect(jx, y + ch - 1, jarW - 2, 10, 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillRect(jx + jarW - 4, y + ch - 1, 3, 10);
+    }
+  }
+}
+
+// --- Range hood ---
+function drawRangeHood(x, y) {
+  const hw = W * 0.08;
+  // Chimney
+  ctx.fillStyle = '#888';
+  ctx.fillRect(x - 3, y - H * 0.04, 6, H * 0.04);
+  // Hood body
+  ctx.fillStyle = '#AAA';
+  ctx.beginPath();
+  ctx.moveTo(x - hw / 2, y);
+  ctx.lineTo(x + hw / 2, y);
+  ctx.lineTo(x + hw / 2 - 8, y + 16);
+  ctx.lineTo(x - hw / 2 + 8, y + 16);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.moveTo(x + 4, y);
+  ctx.lineTo(x + hw / 2, y);
+  ctx.lineTo(x + hw / 2 - 8, y + 16);
+  ctx.lineTo(x + 4, y + 16);
+  ctx.closePath();
+  ctx.fill();
+  // Light strip
+  ctx.fillStyle = 'rgba(255,245,180,0.6)';
+  ctx.fillRect(x - hw / 2 + 10, y + 14, hw - 20, 3);
+}
+
+// --- Stove with oven ---
+function drawStove(x, y, hasPot) {
+  const sw = W * 0.08, sh = H * 0.07;
+  drawDropShadow(x - 4, y, sw + 8, sh + H * 0.08);
+  // Oven body
+  const ovenGrad = ctx.createLinearGradient(0, y, 0, y + sh + H * 0.08);
+  ovenGrad.addColorStop(0, '#555');
+  ovenGrad.addColorStop(0.5, '#444');
+  ovenGrad.addColorStop(1, '#3a3a3a');
+  ctx.fillStyle = ovenGrad;
+  ctx.beginPath();
+  ctx.roundRect(x, y, sw, sh + H * 0.08, 4);
+  ctx.fill();
+  // Cooktop
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillRect(x + 2, y, sw - 4, sh * 0.5);
+  ctx.fillStyle = '#1a1a1a';
+  // Burners
+  const bx1 = x + sw * 0.28, bx2 = x + sw * 0.72;
+  const by1 = y + sh * 0.22;
+  ctx.beginPath();
+  ctx.arc(bx1, by1, 7, 0, Math.PI * 2);
+  ctx.arc(bx2, by1, 7, 0, Math.PI * 2);
+  ctx.fill();
+  // Burner rings
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(bx1, by1, 5, 0, Math.PI * 2);
+  ctx.arc(bx2, by1, 5, 0, Math.PI * 2);
+  ctx.stroke();
+  // Burner glow when cooking
+  if (cookingState.step === 'cooking') {
+    ctx.fillStyle = 'rgba(255,100,30,0.4)';
+    ctx.beginPath();
+    ctx.arc(bx1, by1, 8, 0, Math.PI * 2);
+    ctx.arc(bx2, by1, 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Control knobs
+  ctx.fillStyle = '#666';
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.arc(x + sw * 0.15 + i * sw * 0.22, y + sh * 0.55, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#888';
+    ctx.beginPath();
+    ctx.arc(x + sw * 0.15 + i * sw * 0.22, y + sh * 0.55, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#666';
+  }
+  // Oven door
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.roundRect(x + 4, y + sh * 0.7, sw - 8, sh * 0.3 + H * 0.08 - 4, 3);
+  ctx.fill();
+  // Oven window
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath();
+  ctx.roundRect(x + 8, y + sh * 0.75, sw - 16, sh * 0.2, 2);
+  ctx.fill();
+  if (cookingState.step === 'cooking') {
+    ctx.fillStyle = 'rgba(255,120,30,0.2)';
+    ctx.beginPath();
+    ctx.roundRect(x + 8, y + sh * 0.75, sw - 16, sh * 0.2, 2);
+    ctx.fill();
+  }
+  // Oven handle
+  ctx.fillStyle = '#999';
+  ctx.fillRect(x + 6, y + sh * 0.68, sw - 12, 3);
+  ctx.fillStyle = '#BBB';
+  ctx.fillRect(x + 6, y + sh * 0.68, sw - 12, 1);
+
+  // Pot
+  if (hasPot) {
+    const px = x + sw * 0.2, py = y - 22;
+    // Pot body
+    const potGrad = ctx.createLinearGradient(0, py, 0, py + 24);
+    potGrad.addColorStop(0, '#666');
+    potGrad.addColorStop(0.5, '#555');
+    potGrad.addColorStop(1, '#444');
+    ctx.fillStyle = potGrad;
+    ctx.beginPath();
+    ctx.roundRect(px, py, sw * 0.6, 24, [4, 4, 6, 6]);
+    ctx.fill();
+    // Pot rim
+    ctx.fillStyle = '#777';
+    ctx.fillRect(px - 2, py, sw * 0.6 + 4, 4);
+    ctx.fillStyle = '#888';
+    ctx.fillRect(px - 2, py, sw * 0.6 + 4, 1);
+    // Handles
+    ctx.fillStyle = '#333';
+    ctx.fillRect(px - 5, py + 4, 4, 6);
+    ctx.fillRect(px + sw * 0.6 + 1, py + 4, 4, 6);
+    // Contents
+    if (cookingState.selectedIngredients && cookingState.selectedIngredients.length > 0) {
+      ctx.fillStyle = '#D4A017';
+      ctx.beginPath();
+      ctx.ellipse(px + sw * 0.3, py + 4, sw * 0.25, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Steam
+    if (cookingState.step === 'cooking') {
+      for (let i = 0; i < 4; i++) {
+        const sx = px + sw * 0.15 + i * sw * 0.12;
+        const phase = (game.time * 30 + i * 25) % 50;
+        const sy = py - 5 - phase;
+        const sa = 1 - phase / 50;
+        ctx.globalAlpha = sa * 0.4;
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 5 + i, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = sa * 0.2;
+        ctx.beginPath();
+        ctx.arc(sx + Math.sin(game.time + i) * 3, sy - 5, 4 + i, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+// --- Kitchen counter ---
+function drawCounter2(x, y) {
+  const cw = W * 0.07, ch = H * 0.08;
+  drawDropShadow(x - 4, y, cw + 8, ch);
+  // Cabinets
+  ctx.fillStyle = '#7B6240';
+  ctx.beginPath();
+  ctx.roundRect(x, y, cw, ch, 3);
+  ctx.fill();
+  // Counter top (granite look)
+  const topGrad = ctx.createLinearGradient(0, y, 0, y + 8);
+  topGrad.addColorStop(0, '#3a3a3a');
+  topGrad.addColorStop(0.5, '#444');
+  topGrad.addColorStop(1, '#555');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(x - 4, y, cw + 8, 8);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(x - 4, y, cw + 8, 2);
+  // Speckles
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+  for (let i = 0; i < 8; i++) {
+    ctx.beginPath();
+    ctx.arc(x + Math.random() * cw, y + Math.random() * 6, 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Cabinet doors
+  ctx.fillStyle = '#8B6F47';
+  ctx.beginPath();
+  ctx.roundRect(x + 3, y + 10, cw / 2 - 4, ch - 13, 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(x + cw / 2 + 1, y + 10, cw / 2 - 4, ch - 13, 2);
+  ctx.fill();
+  // Handles
+  ctx.fillStyle = '#C0A878';
+  ctx.fillRect(x + cw / 2 - 5, y + ch / 2, 3, 5);
+  ctx.fillRect(x + cw / 2 + 2, y + ch / 2, 3, 5);
+  // Cutting board on counter
+  ctx.fillStyle = '#A0825A';
+  ctx.fillRect(x + 5, y - 4, 16, 5);
+  ctx.fillStyle = '#8B6E3E';
+  ctx.fillRect(x + 5, y, 16, 1);
+}
+
+// --- Kitchen sink ---
+function drawSink(x, y) {
+  const sw = W * 0.06;
+  drawDropShadow(x - sw / 2 - 4, y, sw + 8, H * 0.08);
+  // Counter surround
+  ctx.fillStyle = '#555';
+  ctx.beginPath();
+  ctx.roundRect(x - sw / 2 - 4, y, sw + 8, H * 0.08, 3);
+  ctx.fill();
+  // Counter top
+  ctx.fillStyle = '#444';
+  ctx.fillRect(x - sw / 2 - 4, y, sw + 8, 6);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(x - sw / 2 - 4, y, sw + 8, 2);
+  // Basin
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.roundRect(x - sw / 2 + 2, y + 6, sw - 4, H * 0.08 - 10, 3);
+  ctx.fill();
+  // Water in basin
+  ctx.fillStyle = '#2E86C1';
+  ctx.beginPath();
+  ctx.roundRect(x - sw / 2 + 4, y + 8, sw - 8, H * 0.08 - 14, 2);
+  ctx.fill();
+  ctx.fillStyle = '#5DADE2';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 10, sw * 0.35, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Faucet
+  ctx.fillStyle = '#999';
+  ctx.fillRect(x - 2, y - 12, 4, 12);
+  ctx.beginPath();
+  ctx.arc(x, y - 12, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#BBB';
+  ctx.fillRect(x - 2, y - 12, 1, 12);
+  // Faucet spout
+  ctx.fillStyle = '#999';
+  ctx.beginPath();
+  ctx.moveTo(x, y - 4);
+  ctx.lineTo(x + 8, y - 4);
+  ctx.lineTo(x + 8, y);
+  ctx.lineTo(x + 4, y);
+  ctx.lineTo(x + 4, y - 2);
+  ctx.lineTo(x, y - 2);
+  ctx.closePath();
+  ctx.fill();
+  // Water drop
+  ctx.fillStyle = '#5DADE2';
+  ctx.beginPath();
+  ctx.arc(x + 6, y + 2, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --- Refrigerator ---
+function drawFridge(x, y) {
+  const fw = W * 0.05, fh = H * 0.26;
+  drawDropShadow(x - 4, y, fw + 8, fh);
+  // Body
+  const fGrad = ctx.createLinearGradient(x, 0, x + fw, 0);
+  fGrad.addColorStop(0, '#E8E4DC');
+  fGrad.addColorStop(0.3, '#F0EDE5');
+  fGrad.addColorStop(0.7, '#E0DCD4');
+  fGrad.addColorStop(1, '#D0CCC4');
+  ctx.fillStyle = fGrad;
+  ctx.beginPath();
+  ctx.roundRect(x, y, fw, fh, 6);
+  ctx.fill();
+  // Top freezer door
+  ctx.fillStyle = '#D8D4CC';
+  ctx.beginPath();
+  ctx.roundRect(x + 2, y + 2, fw - 4, fh * 0.3, [4, 4, 2, 2]);
+  ctx.fill();
+  // Fridge door
+  ctx.fillStyle = '#E8E4DC';
+  ctx.beginPath();
+  ctx.roundRect(x + 2, y + fh * 0.32, fw - 4, fh * 0.66, [2, 2, 4, 4]);
+  ctx.fill();
+  // Door seam
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  ctx.fillRect(x + 2, y + fh * 0.31, fw - 4, 2);
+  // Handles
+  ctx.fillStyle = '#888';
+  ctx.fillRect(x + fw - 8, y + 6, 3, fh * 0.22);
+  ctx.fillRect(x + fw - 8, y + fh * 0.38, 3, fh * 0.45);
+  ctx.fillStyle = '#AAA';
+  ctx.fillRect(x + fw - 8, y + 6, 1, fh * 0.22);
+  ctx.fillRect(x + fw - 8, y + fh * 0.38, 1, fh * 0.45);
+  // Magnets
+  ctx.fillStyle = '#E74C3C';
+  ctx.beginPath();
+  ctx.arc(x + 8, y + fh * 0.5, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#3498DB';
+  ctx.fillRect(x + 6, y + fh * 0.6, 10, 8);
+}
+
+// --- Wardrobe ---
+function drawWardrobe(x, y) {
+  const ww = W * 0.05, wh = H * 0.28;
+  drawDropShadow(x - 4, y, ww + 8, wh);
+  // Body
+  ctx.fillStyle = '#6B4E2E';
+  ctx.beginPath();
+  ctx.roundRect(x, y, ww, wh, 4);
+  ctx.fill();
+  // Top
+  ctx.fillStyle = '#7B5E3E';
+  ctx.fillRect(x - 2, y, ww + 4, 5);
+  // Doors
+  ctx.fillStyle = '#5a3E1E';
+  ctx.beginPath();
+  ctx.roundRect(x + 3, y + 6, ww / 2 - 4, wh - 9, 3);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(x + ww / 2 + 1, y + 6, ww / 2 - 4, wh - 9, 3);
+  ctx.fill();
+  // Door panels
+  ctx.strokeStyle = 'rgba(40,25,10,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(x + 6, y + 10, ww / 2 - 10, wh - 17, 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.roundRect(x + ww / 2 + 4, y + 10, ww / 2 - 10, wh - 17, 2);
+  ctx.stroke();
+  // Handles
+  ctx.fillStyle = '#C0A878';
+  ctx.fillRect(x + ww / 2 - 5, y + wh * 0.45, 3, 8);
+  ctx.fillRect(x + ww / 2 + 2, y + wh * 0.45, 3, 8);
+  // Legs
+  ctx.fillStyle = '#3a2a1a';
+  ctx.fillRect(x + 3, y + wh - 4, 4, 6);
+  ctx.fillRect(x + ww - 7, y + wh - 4, 4, 6);
+}
+
+// --- Detailed bed ---
+function drawBed(x, y) {
+  const bw = W * 0.16, bh = H * 0.14;
+  drawDropShadow(x - 4, y, bw + 8, bh + 4);
+
+  // Headboard
+  ctx.fillStyle = '#7B5E3E';
+  ctx.beginPath();
+  ctx.roundRect(x, y - H * 0.06, 10, bh + H * 0.06, [6, 2, 2, 6]);
+  ctx.fill();
+  ctx.fillStyle = '#6B4E2E';
+  ctx.beginPath();
+  ctx.roundRect(x + 2, y - H * 0.05, 6, bh + H * 0.05 - 2, [4, 1, 1, 4]);
+  ctx.fill();
+  // Headboard top
+  ctx.fillStyle = '#8B6E3E';
+  ctx.beginPath();
+  ctx.roundRect(x - 2, y - H * 0.06, 14, 5, 3);
+  ctx.fill();
+
+  // Bed frame
+  ctx.fillStyle = '#5a3E1E';
+  ctx.beginPath();
+  ctx.roundRect(x + 8, y, bw - 8, bh, [2, 4, 4, 2]);
+  ctx.fill();
+
+  // Mattress
+  const mattGrad = ctx.createLinearGradient(0, y + 2, 0, y + bh * 0.5);
+  mattGrad.addColorStop(0, '#FFF');
+  mattGrad.addColorStop(1, '#E8E8E8');
+  ctx.fillStyle = mattGrad;
+  ctx.beginPath();
+  ctx.roundRect(x + 10, y + 2, bw - 12, bh * 0.45, 3);
+  ctx.fill();
+
+  // Blanket
+  const blGrad = ctx.createLinearGradient(0, y + bh * 0.3, 0, y + bh);
+  blGrad.addColorStop(0, '#5DADE2');
+  blGrad.addColorStop(0.5, '#3498DB');
+  blGrad.addColorStop(1, '#2980B9');
+  ctx.fillStyle = blGrad;
+  ctx.beginPath();
+  ctx.roundRect(x + 10, y + bh * 0.35, bw - 12, bh * 0.6, [3, 3, 4, 4]);
+  ctx.fill();
+  // Blanket fold
+  ctx.fillStyle = '#2980B9';
+  ctx.beginPath();
+  ctx.roundRect(x + 10, y + bh * 0.35, bw - 12, 8, [3, 3, 0, 0]);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(x + 12, y + bh * 0.36, bw - 16, 3);
+
+  // Pillows
+  const pw = (bw - 24) / 2;
+  for (let i = 0; i < 2; i++) {
+    const px = x + 14 + i * (pw + 4);
+    const pGrad = ctx.createRadialGradient(px + pw / 2, y + 8, 2, px + pw / 2, y + 8, pw / 2);
+    pGrad.addColorStop(0, '#FFF');
+    pGrad.addColorStop(1, '#E0DDD5');
+    ctx.fillStyle = pGrad;
+    ctx.beginPath();
+    ctx.roundRect(px, y + 4, pw, bh * 0.2, 5);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.beginPath();
+    ctx.roundRect(px, y + 4 + bh * 0.18, pw, 3, [0, 0, 5, 5]);
+    ctx.fill();
+  }
+
+  // Bed legs
+  ctx.fillStyle = '#3a2a1a';
+  ctx.fillRect(x + bw - 14, y + bh - 2, 5, 8);
+  ctx.fillRect(x + 12, y + bh - 2, 5, 8);
+}
+
+// --- Nightstand with lamp ---
+function drawNightstand(x, y) {
+  const nw = W * 0.05, nh = H * 0.07;
+  drawDropShadow(x - 4, y, nw + 8, nh);
+  // Body
+  ctx.fillStyle = '#7B5E3E';
+  ctx.beginPath();
+  ctx.roundRect(x, y, nw, nh, 3);
+  ctx.fill();
+  // Top
+  ctx.fillStyle = '#8B6E3E';
+  ctx.fillRect(x, y, nw, 4);
+  ctx.fillStyle = 'rgba(255,235,200,0.1)';
+  ctx.fillRect(x, y, nw, 2);
+  // Drawer
+  ctx.fillStyle = '#6B4E2E';
+  ctx.beginPath();
+  ctx.roundRect(x + 3, y + 7, nw - 6, nh * 0.4, 2);
+  ctx.fill();
+  // Handle
+  ctx.fillStyle = '#C0A878';
+  ctx.beginPath();
+  ctx.roundRect(x + nw / 2 - 5, y + 10, 10, 3, 1);
+  ctx.fill();
+  // Lower opening
+  ctx.fillStyle = '#5a3E1E';
+  ctx.beginPath();
+  ctx.roundRect(x + 3, y + nh * 0.55, nw - 6, nh * 0.38, 2);
+  ctx.fill();
+  // Legs
+  ctx.fillStyle = '#3a2a1a';
+  ctx.fillRect(x + 2, y + nh - 2, 3, 5);
+  ctx.fillRect(x + nw - 5, y + nh - 2, 3, 5);
+
+  // Lamp
+  const lx = x + nw / 2, ly = y;
+  // Base
+  ctx.fillStyle = '#5a4330';
+  ctx.beginPath();
+  ctx.ellipse(lx, ly - 2, 8, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Stem
+  ctx.fillStyle = '#888';
+  ctx.fillRect(lx - 1, ly - 18, 2, 16);
+  // Shade
+  const shadeGrad = ctx.createLinearGradient(0, ly - 26, 0, ly - 12);
+  shadeGrad.addColorStop(0, '#F5E6C8');
+  shadeGrad.addColorStop(1, '#E8D5A8');
+  ctx.fillStyle = shadeGrad;
+  ctx.beginPath();
+  ctx.moveTo(lx - 10, ly - 12);
+  ctx.lineTo(lx + 10, ly - 12);
+  ctx.lineTo(lx + 7, ly - 24);
+  ctx.lineTo(lx - 7, ly - 24);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.beginPath();
+  ctx.moveTo(lx + 3, ly - 12);
+  ctx.lineTo(lx + 10, ly - 12);
+  ctx.lineTo(lx + 7, ly - 24);
+  ctx.lineTo(lx + 3, ly - 24);
+  ctx.closePath();
+  ctx.fill();
+  // Light glow
+  ctx.fillStyle = 'rgba(255,240,180,0.12)';
+  ctx.beginPath();
+  ctx.arc(lx, ly - 16, 24, 0, Math.PI * 2);
+  ctx.fill();
+  // Bulb glow
+  ctx.fillStyle = 'rgba(255,250,200,0.4)';
+  ctx.beginPath();
+  ctx.arc(lx, ly - 15, 3, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --- Bedroom rug ---
+function drawBedroomRug(x, y, w, h) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h + 2, w * 0.5, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Oval rug
+  ctx.fillStyle = '#8E44AD';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#7D3C98';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h / 2, w * 0.4, h * 0.35, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#F5E6D3';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h / 2, w * 0.12, h * 0.15, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Tassels
+  ctx.strokeStyle = '#9B59B6';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const rx = x + w / 2 + Math.cos(a) * w / 2;
+    const ry = y + h / 2 + Math.sin(a) * h / 2;
+    ctx.beginPath();
+    ctx.moveTo(rx, ry);
+    ctx.lineTo(rx + Math.cos(a) * 4, ry + Math.sin(a) * 4);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+
+// --- HOME PET DRAWING ---
+function drawHomePet(t) {
+  const pet = game.purchasedPet;
+  if (!pet) return;
+
+  const breath = Math.sin(t * 2 + pet.animOffset) * 1.5;
+  const isWalking = homePet.state === 'walking' || homePet.state === 'sad' ||
+    homePet.state === 'walking_to_bed' || homePet.state === 'walking_to_eat' ||
+    homePet.state === 'walking_to_rest';
+  const walkBob = isWalking ? Math.abs(Math.sin(homePet.walkPhase)) * 3 : 0;
+  const blinkPhase = (t * 0.6 + pet.animOffset) % 5;
+  let blink = blinkPhase > 4.8 ? 0.15 : 1;
+  if (homePet.state === 'sleeping' || homePet.state === 'resting') blink = blinkPhase > 4.5 ? 0.1 : 1;
+
+  let headRot = 0;
+  let extraBounce = 0;
+  let isHappy = homePet.reaction === 'happy';
+  let isSad = homePet.state === 'sad' || homePet.reaction === 'sad';
+  let isPlaying = homePet.state === 'playing';
+  let isResting = homePet.state === 'resting';
+
+  if (homePet.state === 'eating') headRot = 0.3;
+  if (isSad) headRot = -0.15;
+  if (isHappy) extraBounce = Math.abs(Math.sin(t * 5)) * 6;
+  if (isPlaying) extraBounce = Math.abs(Math.sin(playState.toyAnimPhase * 1.5)) * 10;
+  if (isResting) extraBounce = 0;
+
+  ctx.save();
+  ctx.translate(homePet.x, homePet.y - walkBob - extraBounce);
+  ctx.scale(homePet.facing * 1.3, 1.3);
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(0, 42, 30, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (pet.type === 'dog') {
+    drawDog(pet, breath, blink, t, headRot, false);
+  } else {
+    drawCat(pet, breath, blink, t, headRot, false);
+  }
+
+  ctx.restore();
+
+  // Draw toy being played with
+  if (isPlaying && homePet.currentToy) {
+    var toy = TOYS.find(function(t) { return t.id === homePet.currentToy; });
+    if (toy) {
+      var toyX = homePet.x + Math.sin(playState.toyAnimPhase) * 30;
+      var toyY = homePet.y - 20 - Math.abs(Math.sin(playState.toyAnimPhase * 2)) * 25;
+      ctx.font = '28px Segoe UI';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(toy.emoji, toyX, toyY);
+      // Sparkles around toy
+      for (var i = 0; i < 4; i++) {
+        var sx = toyX + Math.sin(playState.toyAnimPhase * 2 + i * 1.6) * 20;
+        var sy = toyY + Math.cos(playState.toyAnimPhase * 2 + i * 1.6) * 20;
+        ctx.fillStyle = 'rgba(255,215,0,0.6)';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // Thought bubble
+  if (homePet.thought) {
+    drawThoughtBubble(homePet.x, homePet.y - 60, homePet.thought);
+  }
+  if (isHappy || isPlaying) {
+    drawFloatingHearts(homePet.x, homePet.y - 40, t);
+  }
+  if (homePet.state === 'sleeping') {
+    drawSleepingZ(homePet.x + 20, homePet.y - 50, t);
+  }
+  if (isResting) {
+    // Bored squiggle above pet
+    ctx.strokeStyle = 'rgba(150,150,180,0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var i = 0; i < 20; i++) {
+      var wx = homePet.x - 15 + i * 1.5;
+      var wy = homePet.y - 50 + Math.sin(t * 3 + i * 0.5) * 4;
+      if (i === 0) ctx.moveTo(wx, wy);
+      else ctx.lineTo(wx, wy);
+    }
+    ctx.stroke();
+  }
+  if (isSad) {
+    ctx.fillStyle = 'rgba(100,100,120,0.4)';
+    for (let i = 0; i < 3; i++) {
+      const sx = homePet.x + Math.sin(t * 2 + i * 2) * 15;
+      const sy = homePet.y - 30 - (t * 10 + i * 20) % 50;
+      ctx.globalAlpha = 0.3 * (1 - ((t * 10 + i * 20) % 50) / 50);
+      ctx.beginPath();
+      ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawThoughtBubble(x, y, thought) {
+  const emojis = { hungry: '🍖', sleepy: '😴', bathroom: '🚽', sad: '💔', play: '🎾', bored: '🥱' };
+  const emoji = emojis[thought] || '?';
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.beginPath();
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x - 8, y + 16, 5, 0, Math.PI * 2);
+  ctx.arc(x - 12, y + 24, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.font = '22px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, x, y);
+}
+
+function drawFloatingHearts(x, y, t) {
+  for (let i = 0; i < 4; i++) {
+    const hx = x + Math.sin(t * 2 + i * 1.5) * 25;
+    const hy = y - (t * 30 + i * 25) % 80;
+    const alpha = 1 - ((t * 30 + i * 25) % 80) / 80;
+    ctx.fillStyle = 'rgba(255,107,143,' + alpha + ')';
+    drawHeart(ctx, hx, hy, 7);
+  }
+}
+
+function drawSleepingZ(x, y, t) {
+  for (let i = 0; i < 3; i++) {
+    const zx = x + i * 12;
+    const zy = y - (t * 15 + i * 20) % 60;
+    const alpha = 1 - ((t * 15 + i * 20) % 60) / 60;
+    ctx.fillStyle = 'rgba(100,100,200,' + alpha + ')';
+    ctx.font = 'bold 18px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('Z', zx, zy);
+  }
+}
+
+// --- HOME PET AI ---
+function updateHomePet(dt) {
+  if (game.phase !== 'home') return;
+
+  // Freeze pet movement while being cleaned
+  if (cleanState.active) return;
+
+  // Faster hunger drain so the pet needs at least 2 meals per day cycle
+  homePet.hunger += dt * 0.85;
+  homePet.energy -= dt * 0.2;
+  homePet.happiness -= dt * 0.1;
+
+  if (homePet.needsBathroom) {
+    homePet.bathroomTimer -= dt;
+    if (homePet.bathroomTimer <= 0 && homePet.state !== 'walking_to_bed' && homePet.state !== 'walking_to_eat') {
+      homePet.hasMess = true;
+      homePet.needsBathroom = false;
+      homePet.happiness -= 10;
+      homePet.cleanliness -= 20;
+      showToast('Oh no! Your pet had an accident! 🐾');
+    }
+  }
+
+  homePet.hunger = clamp(homePet.hunger, 0, 100);
+  homePet.energy = clamp(homePet.energy, 0, 100);
+  homePet.happiness = clamp(homePet.happiness, 0, 100);
+  homePet.cleanliness = clamp(homePet.cleanliness, 0, 100);
+
+  // Track boredom — increment when not playing, being petted, or walking
+  if (homePet.state !== 'playing' && !walkState.active && !cleanState.active) {
+    homePet.boredomTimer += dt;
+  }
+
+  if (homePet.happiness > 70) homePet.intimacy += dt * 0.3;
+  if (homePet.happiness < 20) homePet.intimacy -= dt * 0.2;
+  homePet.intimacy = clamp(homePet.intimacy, 0, 100);
+
+  // Thought bubble priority
+  if (homePet.hasMess) homePet.thought = 'sad';
+  else if (homePet.needsBathroom) homePet.thought = 'bathroom';
+  else if (homePet.hunger > 65) homePet.thought = 'hungry';
+  else if (homePet.energy < 25 && homePet.state !== 'sleeping') homePet.thought = 'sleepy';
+  else if (homePet.happiness < 25) homePet.thought = 'sad';
+  else if (homePet.boredomTimer > 15 && homePet.state !== 'sleeping' && homePet.state !== 'resting') homePet.thought = 'play';
+  else homePet.thought = null;
+
+  if (homePet.reaction) {
+    homePet.reactionTimer -= dt;
+    if (homePet.reactionTimer <= 0) homePet.reaction = null;
+  }
+
+  // Handle active play animation (10 second timer)
+  if (homePet.state === 'playing') {
+    homePet.playTimer -= dt;
+    playState.toyAnimPhase += dt * 6;
+    homePet.happiness = clamp(homePet.happiness + dt * 4, 0, 100);
+    homePet.energy = clamp(homePet.energy - dt * 0.8, 0, 100);
+    if (homePet.playTimer <= 0) {
+      homePet.state = 'idle';
+      homePet.stateTimer = 3;
+      homePet.currentToy = null;
+      homePet.boredomTimer = 0;
+      homePet.thought = null;
+    }
+  }
+
+  const pos = getHomePositions();
+
+  switch (homePet.state) {
+    case 'idle':
+      homePet.stateTimer -= dt;
+      if (homePet.stateTimer <= 0) {
+        if (homePet.energy < 20) {
+          homePet.targetX = pos.petBed.x;
+          homePet.targetY = pos.petBed.y;
+          homePet.state = 'walking_to_bed';
+        } else if (homePet.foodInBowl && homePet.hunger > 50) {
+          homePet.targetX = pos.foodBowl.x;
+          homePet.targetY = pos.foodBowl.y - 10;
+          homePet.state = 'walking_to_eat';
+        } else if (homePet.boredomTimer > 20 && homePet.happiness < 45) {
+          // Bored — go lie on the cushion and wait for owner to play
+          homePet.targetX = pos.petBed.x;
+          homePet.targetY = pos.petBed.y;
+          homePet.state = 'walking_to_rest';
+        } else {
+          pickNewTarget();
+          homePet.state = 'walking';
+        }
+      }
+      break;
+
+    case 'walking':
+    case 'walking_to_bed':
+    case 'walking_to_eat':
+    case 'walking_to_rest':
+    case 'sad':
+      movePetTowardsTarget(dt);
+      var dx = homePet.targetX - homePet.x;
+      var dy = homePet.targetY - homePet.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 5) {
+        if (homePet.state === 'walking_to_bed') {
+          homePet.state = 'sleeping';
+          homePet.stateTimer = homePet.nightSleep ? 15 : 12;
+          homePet.thought = null;
+        } else if (homePet.state === 'walking_to_eat') {
+          homePet.state = 'eating';
+          homePet.stateTimer = 4;
+          homePet.thought = null;
+          homePet.mealsToday++;
+          checkFoodReaction();
+        } else if (homePet.state === 'walking_to_rest') {
+          homePet.state = 'resting';
+          homePet.stateTimer = rand(8, 15);
+          homePet.thought = 'play';
+        } else if (homePet.state === 'sad') {
+          homePet.state = 'idle';
+          homePet.stateTimer = 4;
+        } else {
+          homePet.state = 'idle';
+          homePet.stateTimer = rand(2, 5);
+        }
+      }
+      break;
+
+    case 'resting':
+      // Pet lies on cushion, bored, waiting for owner to play
+      homePet.stateTimer -= dt;
+      // If owner starts playing, break out of rest
+      if (homePet.stateTimer <= 0) {
+        homePet.state = 'idle';
+        homePet.stateTimer = 3;
+      }
+      break;
+
+    case 'eating':
+      homePet.stateTimer -= dt;
+      homePet.hunger -= dt * 22;  // much faster hunger restoration while eating
+      if (homePet.stateTimer <= 0) {
+        homePet.foodInBowl = null;
+        homePet.state = 'idle';
+        homePet.stateTimer = 3;
+        homePet.needsBathroom = true;
+        homePet.bathroomTimer = 35;
+      }
+      break;
+
+    case 'sleeping':
+      homePet.stateTimer -= dt;
+      homePet.energy += dt * 4;
+      // Night sleep lasts 15 seconds; naps wake when energy is high enough
+      if (homePet.nightSleep) {
+        if (homePet.stateTimer <= 0) {
+          homePet.nightSleep = false;
+          homePet.nightSleepDone = true;
+          homePet.state = 'idle';
+          homePet.stateTimer = 3;
+          showToast('Good morning! Your pet woke up refreshed. ☀️');
+        }
+      } else if (homePet.energy > 85 || homePet.stateTimer <= 0) {
+        homePet.state = 'idle';
+        homePet.stateTimer = 3;
+      }
+      break;
+  }
+
+  if (homePet.energy < 15 && homePet.state === 'idle') {
+    homePet.targetX = pos.petBed.x;
+    homePet.targetY = pos.petBed.y;
+    homePet.state = 'walking_to_bed';
+  }
+
+  // --- NIGHT TIME: force sleep for 15 seconds ---
+  var darkness = getDarkness();
+  if (darkness > 0.8 && homePet.state !== 'sleeping' && homePet.state !== 'walking_to_bed' && !homePet.nightSleepDone) {
+    // It's night — pet goes to bed
+    homePet.targetX = pos.petBed.x;
+    homePet.targetY = pos.petBed.y;
+    homePet.state = 'walking_to_bed';
+    homePet.nightSleep = true; // flag: this is a night sleep, not a nap
+  }
+  // Reset the nightSleepDone flag and meals when a new day starts
+  if (darkness < 0.2 && homePet.nightSleepDone) {
+    homePet.nightSleepDone = false;
+    homePet.nightSleep = false;
+    // Warn if the pet didn't eat enough today
+    if (homePet.mealsToday < 2) {
+      showToast('Your pet only ate ' + homePet.mealsToday + ' meal(s) yesterday. They seem hungry! 🍽️');
+      homePet.happiness = clamp(homePet.happiness - 10, 0, 100);
+    }
+    homePet.mealsToday = 0;
+  }
+  // updateHomeUI() is now called from the game loop with throttling
+}
+
+function movePetTowardsTarget(dt) {
+  const dx = homePet.targetX - homePet.x;
+  const dy = homePet.targetY - homePet.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist > 1) {
+    const speed = homePet.state === 'sad' ? 30 : homePet.speed;
+    homePet.x += (dx / dist) * speed * dt;
+    homePet.y += (dy / dist) * speed * dt;
+    homePet.facing = dx > 0 ? 1 : -1;
+    homePet.walkPhase += dt * (homePet.state === 'sad' ? 4 : 8);
+  }
+}
+
+function pickNewTarget() {
+  const pos = getHomePositions();
+  const targets = [
+    pos.center, pos.sofa, pos.bed, pos.toyBasket,
+    { x: W * 0.35, y: H * 0.78 },
+    { x: W * 0.60, y: H * 0.78 },
+    { x: W * 0.70, y: H * 0.80 },
+  ];
+  const target = targets[Math.floor(Math.random() * targets.length)];
+  homePet.targetX = target.x;
+  homePet.targetY = target.y;
+}
+
+function checkFoodReaction() {
+  const pet = game.purchasedPet;
+  if (!pet || !homePet.foodInBowl) return;
+
+  const favs = PET_FAV_FOODS[pet.num] || ['chicken', 'rice'];
+  let matches = 0;
+  homePet.foodInBowl.forEach(function(ing) {
+    if (favs.indexOf(ing) >= 0) matches++;
+  });
+
+  if (matches === 2) {
+    homePet.reaction = 'happy';
+    homePet.reactionTimer = 4;
+    homePet.happiness = clamp(homePet.happiness + 25, 0, 100);
+    homePet.intimacy = clamp(homePet.intimacy + 15, 0, 100);
+    homePet.hunger = clamp(homePet.hunger - 20, 0, 100); // extra satisfaction
+    showToast('They LOVE it! 💕 Intimacy +15');
+  } else if (matches === 1) {
+    homePet.reaction = 'happy';
+    homePet.reactionTimer = 2;
+    homePet.happiness = clamp(homePet.happiness + 8, 0, 100);
+    homePet.intimacy = clamp(homePet.intimacy + 5, 0, 100);
+    homePet.hunger = clamp(homePet.hunger - 10, 0, 100);
+    showToast('They liked it! Intimacy +5');
+  } else {
+    homePet.reaction = 'sad';
+    homePet.reactionTimer = 5;
+    homePet.happiness = clamp(homePet.happiness - 12, 0, 100);
+    homePet.intimacy = clamp(homePet.intimacy - 5, 0, 100);
+    homePet.hunger = clamp(homePet.hunger - 5, 0, 100); // barely eats
+    var pos = getHomePositions();
+    homePet.targetX = pos.center.x + rand(-50, 50);
+    homePet.targetY = pos.center.y;
+    homePet.state = 'sad';
+    showToast('They didn\'t like that... 😔 Intimacy -5');
+  }
+}
+
+// --- COOKING SYSTEM ---
+function startCooking() {
+  cookingState.active = true;
+  cookingState.step = 'open_cabinet';
+  cookingState.selectedIngredients = [];
+  cookingState.cookProgress = 0;
+  cookingState.spentGold = 0;
+  document.getElementById('cooking-overlay').classList.add('active');
+  updateCookingUI();
+}
+
+function cancelCooking() {
+  // Only refund if still in ingredient selection phase
+  if (cookingState.spentGold > 0 && (cookingState.step === 'open_cabinet' || cookingState.step === 'select')) {
+    game.gold += cookingState.spentGold;
+    cookingState.spentGold = 0;
+    updateGoldDisplay();
+    showToast('Ingredients returned. Gold refunded. 💰');
+  }
+  cookingState.active = false;
+  cookingState.selectedIngredients = [];
+  cookingState.spentGold = 0;
+  document.getElementById('cooking-overlay').classList.remove('active');
+}
+
+function updateCookingUI() {
+  var stepText = document.getElementById('cooking-step-text');
+  var content = document.getElementById('cooking-content');
+  var buttons = document.getElementById('cooking-buttons');
+  var cancelBtn = document.getElementById('cook-cancel-btn');
+
+  // Show cancel button only during selection phases
+  if (cancelBtn) {
+    cancelBtn.style.display = (cookingState.step === 'open_cabinet' || cookingState.step === 'select') ? 'inline-block' : 'none';
+  }
+
+  if (cookingState.step === 'open_cabinet') {
+    stepText.textContent = 'Step 1: Open the pantry to see ingredients';
+    content.innerHTML = '<div style="font-size:60px;">🚪</div><p style="color:#888;margin-top:8px;">The pantry is closed.</p>';
+    buttons.innerHTML = '<button class="cook-btn cook-btn-primary" id="open-cabinet-btn">Open Pantry</button>';
+    document.getElementById('open-cabinet-btn').addEventListener('click', function() {
+      cookingState.step = 'select';
+      updateCookingUI();
+    });
+  } else if (cookingState.step === 'select') {
+    stepText.textContent = 'Step 2: Buy & choose up to 2 ingredients';
+    var grid = '<div class="ingredient-grid">';
+    for (var i = 0; i < INGREDIENTS.length; i++) {
+      var ing = INGREDIENTS[i];
+      var selected = cookingState.selectedIngredients.indexOf(ing.id) >= 0;
+      var canAfford = game.gold >= ing.price;
+      var disabled = (!selected && (cookingState.selectedIngredients.length >= 2 || !canAfford));
+      grid += '<button class="ingredient-btn' + (selected ? ' selected' : '') + (disabled && !selected ? ' cant-afford' : '') + '" data-id="' + ing.id + '"' + (disabled ? ' disabled' : '') + '>';
+      grid += '<span class="ing-emoji">' + ing.emoji + '</span>';
+      grid += '<span class="ing-name">' + ing.name + '</span>';
+      grid += '<span class="ing-price">' + ing.price + 'g</span>';
+      grid += '</button>';
+    }
+    grid += '</div>';
+    grid += '<div style="margin-top:12px;font-size:13px;color:#888;">Your gold: <b style="color:#D4AC0D;">' + game.gold.toLocaleString() + 'g</b></div>';
+    content.innerHTML = grid;
+    content.querySelectorAll('.ingredient-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = btn.getAttribute('data-id');
+        var ing = INGREDIENTS.find(function(x) { return x.id === id; });
+        var idx = cookingState.selectedIngredients.indexOf(id);
+        if (idx >= 0) {
+          // Deselect — refund gold
+          cookingState.selectedIngredients.splice(idx, 1);
+          if (ing) { game.gold += ing.price; cookingState.spentGold -= ing.price; }
+        } else if (cookingState.selectedIngredients.length < 2 && ing && game.gold >= ing.price) {
+          // Select — deduct gold
+          cookingState.selectedIngredients.push(id);
+          game.gold -= ing.price;
+          cookingState.spentGold += ing.price;
+        }
+        updateGoldDisplay();
+        updateCookingUI();
+      });
+    });
+    var canProceed = cookingState.selectedIngredients.length > 0;
+    buttons.innerHTML = '<button class="cook-btn cook-btn-primary" id="add-pot-btn"' + (canProceed ? '' : ' disabled') + '>Add to Pot</button>';
+    if (canProceed) {
+      document.getElementById('add-pot-btn').addEventListener('click', function() {
+        cookingState.step = 'on_stove';
+        updateCookingUI();
+      });
+    }
+  } else if (cookingState.step === 'on_stove') {
+    stepText.textContent = 'Step 3: Place the pot on the stove';
+    var pd = '<div class="pot-display">🍲</div><div class="pot-ingredients">';
+    for (var i = 0; i < cookingState.selectedIngredients.length; i++) {
+      var ing = INGREDIENTS.find(function(x) { return x.id === cookingState.selectedIngredients[i]; });
+      if (ing) pd += ing.emoji;
+    }
+    pd += '</div>';
+    content.innerHTML = pd;
+    buttons.innerHTML = '<button class="cook-btn cook-btn-primary" id="place-stove-btn">Place on Stove & Cook</button>';
+    document.getElementById('place-stove-btn').addEventListener('click', function() {
+      cookingState.step = 'cooking';
+      cookingState.cookProgress = 0;
+      updateCookingUI();
+      startCookingAnimation();
+    });
+  } else if (cookingState.step === 'cooking') {
+    stepText.textContent = 'Step 4: Cooking...';
+    content.innerHTML = '<div class="pot-display">🍲</div><div class="cooking-progress"><div class="cooking-progress-fill" id="cook-progress" style="width:' + cookingState.cookProgress + '%"></div></div>';
+    buttons.innerHTML = '';
+  } else if (cookingState.step === 'serve') {
+    stepText.textContent = 'Step 5: The food is ready! Serve it to your pet.';
+    var sd = '<div class="pot-display">🥘</div><div class="pot-ingredients">';
+    for (var i = 0; i < cookingState.selectedIngredients.length; i++) {
+      var ing = INGREDIENTS.find(function(x) { return x.id === cookingState.selectedIngredients[i]; });
+      if (ing) sd += ing.emoji;
+    }
+    sd += '</div><p style="color:#888;margin-top:8px;">Click serve to put food in the bowl.</p>';
+    content.innerHTML = sd;
+    buttons.innerHTML = '<button class="cook-btn cook-btn-primary" id="serve-btn">🍽️ Serve to Bowl</button>';
+    document.getElementById('serve-btn').addEventListener('click', function() {
+      serveFood();
+    });
+  }
+}
+
+function startCookingAnimation() {
+  var cookInterval = setInterval(function() {
+    cookingState.cookProgress += 2;
+    var bar = document.getElementById('cook-progress');
+    if (bar) bar.style.width = cookingState.cookProgress + '%';
+    if (cookingState.cookProgress >= 100) {
+      clearInterval(cookInterval);
+      cookingState.step = 'serve';
+      updateCookingUI();
+    }
+  }, 50);
+}
+
+function serveFood() {
+  homePet.foodInBowl = cookingState.selectedIngredients.slice();
+  cookingState.active = false;
+  cookingState.spentGold = 0; // gold is consumed, no more refund
+  document.getElementById('cooking-overlay').classList.remove('active');
+  showToast('Food served! Your pet is coming to eat. 🍽️');
+  if (homePet.hunger > 30) {
+    var pos = getHomePositions();
+    homePet.targetX = pos.foodBowl.x;
+    homePet.targetY = pos.foodBowl.y - 10;
+    homePet.state = 'walking_to_eat';
+  }
+}
+
+// --- CARE ACTIONS ---
+
+// ===== PLAY: toy selection overlay =====
+function doPlay() {
+  if (homePet.energy < 15) { showToast('Your pet is too tired to play. 😴'); return; }
+  if (homePet.state === 'sleeping') { showToast(homePet.nightSleep ? 'It\'s bedtime. Your pet is sleeping soundly. 🌙' : 'Shh... your pet is napping. 😴'); return; }
+  if (getDarkness() > 0.7) { showToast('It\'s too late to play. Your pet is getting sleepy. 🌙'); return; }
+  if (homePet.state === 'playing') { showToast('Already playing! 🎾'); return; }
+  startPlay();
+}
+
+function startPlay() {
+  playState.active = true;
+  playState.selectedToy = null;
+  playState.playing = false;
+  document.getElementById('play-overlay').classList.add('active');
+  updatePlayUI();
+}
+
+function updatePlayUI() {
+  var stepText = document.getElementById('play-step-text');
+  var content = document.getElementById('play-content');
+  var buttons = document.getElementById('play-buttons');
+
+  stepText.textContent = 'Pick a toy to play with your pet!';
+
+  // Get pet's favourite toys
+  var pet = game.purchasedPet;
+  var favToys = pet ? (PET_FAV_TOYS[pet.num] || []) : [];
+
+  var grid = '<div class="toy-grid">';
+  for (var i = 0; i < TOYS.length; i++) {
+    var toy = TOYS[i];
+    var selected = playState.selectedToy === toy.id;
+    var isFav = favToys.indexOf(toy.id) >= 0;
+    grid += '<button class="toy-btn' + (selected ? ' selected' : '') + '" data-id="' + toy.id + '">';
+    grid += '<span class="toy-emoji">' + toy.emoji + '</span>';
+    grid += '<span class="toy-name">' + toy.name + '</span>';
+    grid += '<span class="toy-desc">' + toy.desc + '</span>';
+    if (isFav) grid += '<span class="toy-fav">♥ Favorite</span>';
+    grid += '</button>';
+  }
+  grid += '</div>';
+  content.innerHTML = grid;
+
+  content.querySelectorAll('.toy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      playState.selectedToy = btn.getAttribute('data-id');
+      updatePlayUI();
+    });
+  });
+
+  var canProceed = playState.selectedToy !== null;
+  buttons.innerHTML = '<button class="cook-btn cook-btn-primary" id="play-start-btn"' + (canProceed ? '' : ' disabled') + ' style="background:linear-gradient(135deg,#2ECC71,#27AE60);box-shadow:0 4px 12px rgba(46,204,113,0.4);">🎾 Play!</button>';
+  if (canProceed) {
+    document.getElementById('play-start-btn').addEventListener('click', function() {
+      confirmPlay();
+    });
+  }
+}
+
+function confirmPlay() {
+  var toyId = playState.selectedToy;
+  var pet = game.purchasedPet;
+  var favToys = pet ? (PET_FAV_TOYS[pet.num] || []) : [];
+  var isFav = favToys.indexOf(toyId) >= 0;
+
+  playState.active = false;
+  document.getElementById('play-overlay').classList.remove('active');
+
+  // Start 10-second play animation
+  homePet.currentToy = toyId;
+  homePet.state = 'playing';
+  homePet.playTimer = 10;  // 10 seconds of play
+  playState.toyAnimPhase = 0;
+  homePet.boredomTimer = 0;
+
+  // Position pet in center for play
+  var pos = getHomePositions();
+  homePet.targetX = pos.center.x;
+  homePet.targetY = pos.center.y;
+  homePet.x = pos.center.x;
+  homePet.y = pos.center.y;
+
+  if (isFav) {
+    homePet.happiness = clamp(homePet.happiness + 20, 0, 100);
+    homePet.intimacy = clamp(homePet.intimacy + 12, 0, 100);
+    homePet.energy = clamp(homePet.energy - 12, 0, 100);
+    var toyName = TOYS.find(function(t){return t.id===toyId;}).name;
+    showToast('They LOVE the ' + toyName + '! 💕 Playing for 10 seconds...');
+  } else {
+    homePet.happiness = clamp(homePet.happiness + 10, 0, 100);
+    homePet.intimacy = clamp(homePet.intimacy + 5, 0, 100);
+    homePet.energy = clamp(homePet.energy - 10, 0, 100);
+    showToast('Playing together! 🎾 10 seconds of fun!');
+  }
+}
+
+function cancelPlay() {
+  playState.active = false;
+  playState.selectedToy = null;
+  document.getElementById('play-overlay').classList.remove('active');
+}
+
+// ===== WALK: outdoor scene with person walking the dog =====
+function doWalk() {
+  if (homePet.state === 'sleeping') { showToast(homePet.nightSleep ? 'It\'s bedtime. Let your pet rest. 🌙' : 'Your pet is sleeping. 😴'); return; }
+  if (getDarkness() > 0.7) { showToast('It\'s dark outside. Maybe wait until morning. 🌙'); return; }
+  if (homePet.state === 'playing') { showToast('Finish playing first! 🎾'); return; }
+  startWalk();
+}
+
+function startWalk() {
+  walkState.active = true;
+  walkState.timer = 0;
+  walkState.personX = -60;
+  walkState.petX = -20;
+  walkState.bgOffset = 0;
+  walkState.personWalkPhase = 0;
+  document.getElementById('walk-overlay').classList.add('active');
+  // Add timer bar + skip button elements
+  var overlay = document.getElementById('walk-overlay');
+  if (!document.getElementById('walk-timer-bar')) {
+    var bar = document.createElement('div');
+    bar.className = 'walk-timer-bar';
+    bar.id = 'walk-timer-bar';
+    bar.innerHTML = '<div class="walk-timer-fill" id="walk-timer-fill"></div>';
+    overlay.appendChild(bar);
+    var label = document.createElement('div');
+    label.className = 'walk-label';
+    label.id = 'walk-label';
+    label.textContent = '🦮 Walking...';
+    overlay.appendChild(label);
+    var skipBtn = document.createElement('button');
+    skipBtn.className = 'walk-skip-btn';
+    skipBtn.id = 'walk-skip-btn';
+    skipBtn.textContent = '✕ End Walk';
+    skipBtn.addEventListener('click', function() { endWalk(); });
+    overlay.appendChild(skipBtn);
+  }
+  showToast('Off for a walk! 🦮');
+}
+
+function endWalk() {
+  walkState.active = false;
+  document.getElementById('walk-overlay').classList.remove('active');
+  // Apply walk effects
+  homePet.needsBathroom = false;
+  homePet.hasMess = false;
+  homePet.cleanliness = clamp(homePet.cleanliness + 15, 0, 100);
+  homePet.happiness = clamp(homePet.happiness + 15, 0, 100);
+  homePet.energy = clamp(homePet.energy - 12, 0, 100);
+  homePet.intimacy = clamp(homePet.intimacy + 8, 0, 100);
+  homePet.boredomTimer = 0;
+  homePet.state = 'idle';
+  homePet.stateTimer = 3;
+  var pos = getHomePositions();
+  homePet.x = pos.door.x;
+  homePet.y = pos.door.y;
+  homePet.targetX = pos.center.x;
+  homePet.targetY = pos.center.y;
+  showToast('Great walk! Your pet feels refreshed. 🦮');
+}
+
+function drawWalkScene(dt) {
+  walkState.timer += dt;
+  walkState.bgOffset += dt * 60; // scroll speed
+  walkState.personWalkPhase += dt * 6;
+
+  // Move person and pet across screen, loop back
+  var progress = walkState.timer / 10; // 0 to 1
+  var screenW = W;
+  walkState.personX = -80 + progress * (screenW + 160);
+  walkState.petX = walkState.personX - 45;
+
+  var groundY = H * 0.72;
+
+  // ===== SKY (time-of-day aware) =====
+  var skyColors = getSkyColors();
+  var skyG = ctx.createLinearGradient(0, 0, 0, groundY);
+  skyG.addColorStop(0, skyColors.top);
+  skyG.addColorStop(0.5, skyColors.mid);
+  skyG.addColorStop(1, skyColors.bot);
+  ctx.fillStyle = skyG;
+  ctx.fillRect(0, 0, W, groundY);
+
+  // Sun or moon
+  var darkness = getDarkness();
+  if (darkness < 0.5) {
+    // Sun
+    var sunAlpha = 1 - darkness * 2;
+    ctx.fillStyle = 'rgba(255,245,160,' + (0.85 * sunAlpha) + ')';
+    ctx.beginPath();
+    ctx.arc(W * 0.82, H * 0.18, 28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,200,' + (0.3 * sunAlpha) + ')';
+    ctx.beginPath();
+    ctx.arc(W * 0.82, H * 0.18, 42, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (darkness > 0.3) {
+    // Moon
+    var moonAlpha = (darkness - 0.3) / 0.7;
+    ctx.fillStyle = 'rgba(240,240,220,' + moonAlpha + ')';
+    ctx.beginPath();
+    ctx.arc(W * 0.82, H * 0.18, 24, 0, Math.PI * 2);
+    ctx.fill();
+    // Stars
+    ctx.fillStyle = 'rgba(255,255,255,' + (moonAlpha * 0.7) + ')';
+    for (var i = 0; i < 30; i++) {
+      var sx = (i * 137.5 + walkState.bgOffset * 0.1) % W;
+      var sy = (i * 89.3) % (groundY * 0.6);
+      var twinkle = 0.5 + 0.5 * Math.sin(walkState.timer * 3 + i);
+      ctx.globalAlpha = moonAlpha * twinkle * 0.8;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Clouds (parallax)
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  for (var ci = 0; ci < 4; ci++) {
+    var cx = ((ci * 280 - walkState.bgOffset * 0.15) % (W + 200)) - 100;
+    if (cx < -100) cx += W + 200;
+    var cy = H * 0.1 + ci * 30;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+    ctx.arc(cx + 22, cy + 3, 22, 0, Math.PI * 2);
+    ctx.arc(cx + 48, cy, 16, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ===== DISTANT HILLS (parallax) =====
+  ctx.fillStyle = 'rgba(120,170,100,0.5)';
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  for (var hx = 0; hx <= W; hx += 20) {
+    var hy = groundY - 50 - Math.sin((hx + walkState.bgOffset * 0.3) * 0.01) * 30;
+    ctx.lineTo(hx, hy);
+  }
+  ctx.lineTo(W, groundY);
+  ctx.closePath();
+  ctx.fill();
+
+  // ===== TREES (parallax, mid-ground) =====
+  for (var ti = 0; ti < 6; ti++) {
+    var tx = ((ti * 200 - walkState.bgOffset * 0.5) % (W + 200)) - 100;
+    if (tx < -100) tx += W + 200;
+    var ty = groundY;
+    // Tree trunk
+    ctx.fillStyle = '#7A5230';
+    ctx.fillRect(tx - 4, ty - 50, 8, 50);
+    // Tree foliage
+    ctx.fillStyle = '#4A8B3A';
+    ctx.beginPath();
+    ctx.arc(tx, ty - 55, 22, 0, Math.PI * 2);
+    ctx.arc(tx - 12, ty - 48, 16, 0, Math.PI * 2);
+    ctx.arc(tx + 12, ty - 48, 16, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ===== GROUND / PATH =====
+  var pathG = ctx.createLinearGradient(0, groundY, 0, H);
+  pathG.addColorStop(0, '#C4A868');
+  pathG.addColorStop(0.3, '#B89858');
+  pathG.addColorStop(1, '#A08840');
+  ctx.fillStyle = pathG;
+  ctx.fillRect(0, groundY, W, H - groundY);
+
+  // Path dashed line (scrolling)
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([20, 15]);
+  ctx.lineDashOffset = -walkState.bgOffset * 0.8;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY + 30);
+  ctx.lineTo(W, groundY + 30);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Grass tufts (scrolling)
+  ctx.strokeStyle = '#5A9A4A';
+  ctx.lineWidth = 2;
+  for (var gi = 0; gi < 20; gi++) {
+    var gx = ((gi * 60 - walkState.bgOffset * 0.8) % (W + 60)) - 30;
+    if (gx < -30) gx += W + 60;
+    ctx.beginPath();
+    ctx.moveTo(gx, groundY);
+    ctx.lineTo(gx - 2, groundY - 8);
+    ctx.moveTo(gx, groundY);
+    ctx.lineTo(gx + 2, groundY - 8);
+    ctx.moveTo(gx, groundY);
+    ctx.lineTo(gx, groundY - 10);
+    ctx.stroke();
+  }
+
+  // ===== PERSON (stick figure with body) =====
+  var px = walkState.personX;
+  var py = groundY;
+  var bob = Math.abs(Math.sin(walkState.personWalkPhase)) * 4;
+  var legSwing = Math.sin(walkState.personWalkPhase) * 12;
+  var armSwing = Math.sin(walkState.personWalkPhase + Math.PI) * 10;
+
+  ctx.save();
+  ctx.translate(px, py - bob);
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(0, 4, 16, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Legs
+  ctx.strokeStyle = '#2C3E50';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-3, -30);
+  ctx.lineTo(-3 + legSwing * 0.5, 0);
+  ctx.moveTo(3, -30);
+  ctx.lineTo(3 - legSwing * 0.5, 0);
+  ctx.stroke();
+
+  // Body / shirt
+  ctx.fillStyle = '#E74C3C';
+  ctx.beginPath();
+  ctx.roundRect(-10, -50, 20, 24, 4);
+  ctx.fill();
+
+  // Arms
+  ctx.strokeStyle = '#E74C3C';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  // Left arm holding leash
+  ctx.moveTo(-8, -45);
+  ctx.lineTo(-8 + armSwing * 0.3 - 8, -30);
+  ctx.stroke();
+  // Right arm swinging
+  ctx.strokeStyle = '#F5C6A0';
+  ctx.beginPath();
+  ctx.moveTo(8, -45);
+  ctx.lineTo(8 + armSwing, -32);
+  ctx.stroke();
+
+  // Head
+  ctx.fillStyle = '#F5C6A0';
+  ctx.beginPath();
+  ctx.arc(0, -58, 10, 0, Math.PI * 2);
+  ctx.fill();
+  // Hair
+  ctx.fillStyle = '#3E2723';
+  ctx.beginPath();
+  ctx.arc(0, -62, 10, Math.PI, Math.PI * 2);
+  ctx.fill();
+  // Eye
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.arc(3, -58, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Smile
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(2, -55, 3, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+
+  ctx.restore();
+
+  // ===== LEASH =====
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(px - 16, py - 32 + bob);
+  ctx.lineTo(walkState.petX + 10, py - 15 - Math.abs(Math.sin(walkState.personWalkPhase)) * 3);
+  ctx.stroke();
+
+  // ===== PET =====
+  var pet = game.purchasedPet;
+  if (pet) {
+    var petBob = Math.abs(Math.sin(walkState.personWalkPhase + 0.3)) * 4;
+    ctx.save();
+    ctx.translate(walkState.petX, py - petBob);
+    ctx.scale(1.2, 1.2);
+
+    // Pet shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(0, 38, 26, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    var petBreath = Math.sin(walkState.timer * 4) * 1.5;
+    var petBlink = (walkState.timer * 0.8) % 5 > 4.7 ? 0.2 : 1;
+    if (pet.type === 'dog') {
+      drawDog(pet, petBreath, petBlink, walkState.timer, 0, false);
+    } else {
+      drawCat(pet, petBreath, petBlink, walkState.timer, 0, false);
+    }
+    ctx.restore();
+  }
+
+  // ===== TIMER UI =====
+  var remaining = Math.max(0, 10 - walkState.timer);
+  var fillEl = document.getElementById('walk-timer-fill');
+  if (fillEl) fillEl.style.width = (remaining / 10 * 100) + '%';
+  var labelEl = document.getElementById('walk-label');
+  if (labelEl) labelEl.textContent = '🦮 Walking... ' + Math.ceil(remaining) + 's';
+
+  // End walk after 10 seconds
+  if (walkState.timer >= 10) {
+    endWalk();
+  }
+}
+
+// ===== PET (petting) =====
+function doPet() {
+  if (homePet.state === 'sleeping') { showToast('Shh... your pet is sleeping. 😴'); return; }
+  if (homePet.state === 'playing') { showToast('They\'re busy playing! 🎾'); return; }
+  homePet.happiness = clamp(homePet.happiness + 5, 0, 100);
+  homePet.intimacy = clamp(homePet.intimacy + 3, 0, 100);
+  homePet.boredomTimer = Math.max(0, homePet.boredomTimer - 10);
+  homePet.reaction = 'happy';
+  homePet.reactionTimer = 2;
+  showToast('Your pet loves being petted! 💕');
+}
+
+// ===== CLEAN (with animation) =====
+function doClean() {
+  if (cleanState.active) { showToast('Already cleaning! 🧹'); return; }
+  if (!homePet.hasMess) { showToast('Nothing to clean. Everything looks good! ✨'); return; }
+  // Start cleaning animation
+  cleanState.active = true;
+  cleanState.timer = 0;
+  document.getElementById('clean-progress-bar').classList.add('active');
+  document.getElementById('clean-progress-fill').style.width = '0%';
+  showToast('Cleaning up... 🧹');
+}
+
+function updateClean(dt) {
+  if (!cleanState.active) return;
+  cleanState.timer += dt;
+  var progress = cleanState.timer / cleanState.duration;
+  var fillEl = document.getElementById('clean-progress-fill');
+  if (fillEl) fillEl.style.width = (progress * 100) + '%';
+
+  if (cleanState.timer >= cleanState.duration) {
+    cleanState.active = false;
+    document.getElementById('clean-progress-bar').classList.remove('active');
+    homePet.hasMess = false;
+    homePet.cleanliness = clamp(homePet.cleanliness + 25, 0, 100);
+    homePet.happiness = clamp(homePet.happiness + 5, 0, 100);
+    showToast('All cleaned up! ✨ Sparkling clean!');
+  }
+}
+
+// Visual clean effect — animated soap bubbles + sparkles around the mess
+function drawCleanEffect(t) {
+  if (!cleanState.active) return;
+  var messX = W * 0.45;
+  var messY = H * 0.88;
+  var progress = cleanState.timer / cleanState.duration;
+
+  ctx.save();
+
+  // Soap bubbles rising
+  for (var i = 0; i < 12; i++) {
+    var seed = i * 2.3;
+    var lifeT = (cleanState.timer * 1.5 + seed) % 1.5;
+    var bx = messX + Math.sin(t * 3 + seed) * 35;
+    var by = messY - lifeT * 60 - 10;
+    var br = 4 + Math.sin(seed) * 3;
+    var alpha = (1 - lifeT / 1.5) * 0.7;
+    if (alpha <= 0) continue;
+    ctx.fillStyle = 'rgba(173,216,255,' + alpha + ')';
+    ctx.beginPath();
+    ctx.arc(bx, by, br, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,' + alpha * 0.8 + ')';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // shine
+    ctx.fillStyle = 'rgba(255,255,255,' + alpha * 0.5 + ')';
+    ctx.beginPath();
+    ctx.arc(bx - br * 0.3, by - br * 0.3, br * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Sparkles
+  for (var s = 0; s < 8; s++) {
+    var seed2 = s * 1.7;
+    var phase = (t * 4 + seed2) % 2;
+    if (phase > 1) continue;
+    var sx = messX + Math.cos(seed2 * 3.7) * 50 * (0.5 + phase * 0.5);
+    var sy = messY + Math.sin(seed2 * 2.3) * 30 - phase * 20;
+    var sz = (1 - phase) * 3;
+    ctx.fillStyle = 'rgba(255,255,150,' + (1 - phase) + ')';
+    ctx.font = (10 + sz * 2) + 'px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✨', sx, sy);
+  }
+
+  // Broom sweeping motion indicator
+  var broomX = messX + Math.sin(t * 8) * 25;
+  var broomY = messY - 5;
+  ctx.font = '22px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.globalAlpha = 0.8;
+  ctx.fillText('🧹', broomX, broomY);
+
+  ctx.restore();
+}
+
+// --- HOME UI ---
+function updateHomeUI() {
+  var intFill = document.getElementById('intimacy-fill');
+  var intVal = document.getElementById('intimacy-value');
+  if (intFill) {
+    intFill.style.width = homePet.intimacy + '%';
+    if (homePet.intimacy > 60) {
+      intFill.style.background = 'linear-gradient(90deg, #2ECC71, #27AE60)';
+    } else if (homePet.intimacy > 30) {
+      intFill.style.background = 'linear-gradient(90deg, #F1C40F, #E67E22)';
+    } else {
+      intFill.style.background = 'linear-gradient(90deg, #E74C3C, #C0392B)';
+    }
+  }
+  if (intVal) intVal.textContent = Math.round(homePet.intimacy);
+  var hFill = document.getElementById('hunger-fill');
+  var haFill = document.getElementById('happiness-fill');
+  var eFill = document.getElementById('energy-fill');
+  if (hFill) hFill.style.width = (100 - homePet.hunger) + '%';
+  if (haFill) haFill.style.width = homePet.happiness + '%';
+  if (eFill) eFill.style.width = homePet.energy + '%';
+
+  // Update day/night indicator
+  var timeIcon = document.getElementById('time-icon');
+  var timeLabel = document.getElementById('time-label');
+  if (timeIcon && timeLabel) {
+    var label = getTimeLabel();
+    var darkness = getDarkness();
+    if (label === 'Daytime') { timeIcon.textContent = '☀️'; }
+    else if (label === 'Sunset') { timeIcon.textContent = '🌅'; }
+    else if (label === 'Night') { timeIcon.textContent = '🌙'; }
+    else { timeIcon.textContent = '🌄'; }
+    timeLabel.textContent = label;
+    if (darkness > 0.7) {
+      timeLabel.style.color = '#AAB8E0';
+    } else if (darkness > 0.3) {
+      timeLabel.style.color = '#FFB347';
+    } else {
+      timeLabel.style.color = '#FFD700';
+    }
+  }
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+function updateGoldDisplay() {
+  var el = document.getElementById('gold-display-num');
+  if (el) el.textContent = game.gold.toLocaleString();
+}
+
+// --- START HOME SCENE ---
+function startHomeScene() {
+  game.phase = 'home';
+  var pos = getHomePositions();
+  homePet.x = pos.center.x;
+  homePet.y = pos.center.y;
+  homePet.targetX = homePet.x;
+  homePet.targetY = homePet.y;
+  homePet.state = 'idle';
+  homePet.stateTimer = 2;
+  var pet = game.purchasedPet;
+  if (pet) {
+    homePet.favFoods = PET_FAV_FOODS[pet.num] || ['chicken', 'rice'];
+  }
+  document.getElementById('home-top-bar').classList.add('active');
+  document.getElementById('stats-display').classList.add('active');
+  document.getElementById('action-bar').classList.add('active');
+  document.getElementById('gold-display').style.display = 'flex';
+  document.getElementById('gold-display').style.position = 'absolute';
+  document.getElementById('gold-display').style.bottom = '80px';
+  document.getElementById('gold-display').style.right = '20px';
+  document.getElementById('gold-display').style.zIndex = '25';
+  updateGoldDisplay();
+  document.getElementById('pet-name-text').textContent = game.petName;
+  if (pet) {
+    document.getElementById('pet-breed-text').textContent = pet.type === 'dog' ? ('🐕 ' + pet.breed) : ('🐱 ' + pet.breed);
+  }
+  updateHomeUI();
+  showToast('Welcome home! Take care of ' + game.petName + '. 🐾');
+}
+
+// --- ACTION BAR HANDLERS ---
+document.querySelectorAll('.action-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var action = btn.getAttribute('data-action');
+    if (action === 'cook') startCooking();
+    else if (action === 'play') doPlay();
+    else if (action === 'walk') doWalk();
+    else if (action === 'pet') doPet();
+    else if (action === 'clean') doClean();
+  });
+});
+
+// Cancel cooking button
+document.getElementById('cook-cancel-btn').addEventListener('click', function() {
+  cancelCooking();
+});
+
+// Click on pet to pet it
+canvas.addEventListener('click', function(e) {
+  if (game.phase !== 'home') return;
+  if (walkState.active || playState.active || cookingState.active || cleanState.active) return;
+  var rect = canvas.getBoundingClientRect();
+  var mx = e.clientX - rect.left;
+  var my = e.clientY - rect.top;
+  var dx = mx - homePet.x;
+  var dy = my - homePet.y;
+  if (Math.sqrt(dx * dx + dy * dy) < 50) {
+    doPet();
+  }
+});
+
+// Close cooking overlay when clicking outside
+document.getElementById('cooking-overlay').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('cooking-overlay')) {
+    if (cookingState.step !== 'cooking') {
+      cookingState.active = false;
+      document.getElementById('cooking-overlay').classList.remove('active');
+    }
+  }
+});
+
+// Play cancel button
+document.getElementById('play-cancel-btn').addEventListener('click', function() {
+  cancelPlay();
+});
+
+// Close play overlay when clicking outside
+document.getElementById('play-overlay').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('play-overlay')) {
+    cancelPlay();
+  }
+});
+
+// =====================================================
+//  MAIN GAME LOOP
+// =====================================================
+let lastTime = performance.now();
+let uiUpdateTimer = 0;
+
+// Global error handler — prevents a single JS error from
+// killing the requestAnimationFrame chain. Without this,
+// any thrown error freezes the canvas, and the preview
+// panel auto-reloads the page back to the start.
+window.addEventListener('error', function(e) {
+  console.error('[Game Error]', e.message);
+  e.preventDefault();
+});
+
+function gameLoop(now) {
+  try {
+    const dt = Math.min((now - lastTime) / 1000, 0.1);
+    lastTime = now;
+    game.time += dt;
+
+    // Clear
+    ctx.clearRect(0, 0, W, H);
+
+    if (game.phase === 'home') {
+      // Advance day/night cycle
+      dayCycle.time += dt / dayCycle.cycleLength;
+      if (dayCycle.time >= 1) dayCycle.time -= 1;
+
+      if (walkState.active) {
+        // Draw outdoor walk scene instead of home
+        drawWalkScene(dt);
+      } else {
+        // Draw home scene
+        drawHomeInterior();
+        drawHomePet(game.time);
+        // Visual clean effect on canvas
+        if (cleanState.active) drawCleanEffect(game.time);
+        updateHomePet(dt);
+        // Update clean animation
+        if (cleanState.active) updateClean(dt);
+      }
+      // Throttle DOM updates to ~3x/second instead of 60x
+      uiUpdateTimer += dt;
+      if (uiUpdateTimer > 0.3) {
+        updateHomeUI();
+        uiUpdateTimer = 0;
+      }
+    } else if (game.phase !== 'gold_notify' && game.phase !== 'packing' && game.phase !== 'naming') {
+      // Draw shop scene
+      drawShopInterior();
+      drawAmbientParticles(dt);
+
+      if (game.phase === 'browsing' || game.phase === 'intro_dialogue' || game.phase === 'purchase_confirm') {
+        drawEnclosures();
+
+        // Draw pets
+        const positions = getPetPositions();
+        PETS.forEach((pet, i) => {
+          const pos = positions[i];
+          const isHovered = game.hoveredPet === pet || game.selectedPet === pet;
+          drawPet(pet, pos.x, pos.y + 5, 1.0, game.time, isHovered);
+        });
+      }
+
+      // Update dialogue
+      updateDialogue(dt);
+    }
+  } catch (err) {
+    // Catch any error so the RAF chain never breaks.
+    console.error('[Game Loop Error]', err);
+  }
+
+  // ALWAYS schedule the next frame, even if an error occurred.
+  requestAnimationFrame(gameLoop);
+}
+
+// =====================================================
+//  START
+// =====================================================
+startGoldNotification();
+requestAnimationFrame(gameLoop);
+
+// roundRect polyfill
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    if (typeof r === 'number') r = [r, r, r, r];
+    else if (Array.isArray(r) && r.length === 1) r = [r[0], r[0], r[0], r[0]];
+    else if (Array.isArray(r) && r.length === 2) r = [r[0], r[1], r[0], r[1]];
+    this.beginPath();
+    this.moveTo(x + r[0], y);
+    this.arcTo(x + w, y, x + w, y + h, r[1]);
+    this.arcTo(x + w, y + h, x, y + h, r[2]);
+    this.arcTo(x, y + h, x, y, r[3]);
+    this.arcTo(x, y, x + w, y, r[0]);
+    this.closePath();
+    return this;
+  };
+}
+</script>
+</body>
+</html>

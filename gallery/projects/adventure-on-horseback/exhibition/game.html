@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play - An Adventure on Horseback</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="game-container">
+    <canvas id="gameCanvas" width="1920" height="1080"></canvas>
+
+    <div class="controls-hint" id="controlsHint">
+      <h2>Loading...</h2>
+    </div>
+  </div>
+
+  <script src="assets/game.js"></script>
+  <script>
+    // ========================================================================
+    // GAME BOOTSTRAP
+    // ========================================================================
+    (function () {
+      'use strict';
+
+      // Defensive guard: if the engine script (assets/game.js) did not load
+      // (e.g. game.html opened without the assets/ folder next to it), show a
+      // clear message instead of a silent black/empty screen.
+      if (typeof window.HorseGame === 'undefined') {
+        var hintEl = document.getElementById('controlsHint');
+        if (hintEl) {
+          hintEl.style.opacity = '1';
+          hintEl.innerHTML =
+            '<h2>Game could not load</h2>' +
+            '<p>The game engine (<code>assets/game.js</code>) was not found.</p>' +
+            '<p>Make sure <b>game.html</b> sits in the same folder as the <b>assets</b> folder, ' +
+            'then refresh. If you opened this from inside a .zip, extract the whole folder first.</p>';
+        }
+        return;
+      }
+
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const hint = document.getElementById('controlsHint');
+
+      // Resize canvas to fit window while maintaining aspect ratio
+      function resize() {
+        const aspect = 1920 / 1080;
+        const winAspect = window.innerWidth / window.innerHeight;
+        let w, h;
+        if (winAspect > aspect) {
+          h = window.innerHeight;
+          w = h * aspect;
+        } else {
+          w = window.innerWidth;
+          h = w / aspect;
+        }
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        canvas.style.marginLeft = ((window.innerWidth - w) / 2) + 'px';
+        canvas.style.marginTop = ((window.innerHeight - h) / 2) + 'px';
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // ------------ Input handling ------------
+      const keys = {};
+      window.addEventListener('keydown', (e) => {
+        const k = e.key.toLowerCase();
+        keys[k] = true;
+        if (k === ' ') {
+          e.preventDefault();
+          if (HorseGame.Game.state === 'gameintro') {
+            HorseGame.setState('menu');
+          } else if (HorseGame.Game.state === 'intro') {
+            HorseGame.setState('playing');
+          } else if (HorseGame.Game.state === 'playing') {
+            HorseGame.Input.jumpPressed = true;
+          } else if (HorseGame.Game.state === 'menu') {
+            // ignored - click instead
+          }
+        }
+        if (k === 'v') {
+          HorseGame.cycleView();
+        }
+        if (k === 'p') {
+          if (HorseGame.Game.state === 'playing') {
+            HorseGame.setState('paused');
+          } else if (HorseGame.Game.state === 'paused') {
+            HorseGame.setState('playing');
+          }
+        }
+        if (k === 'r') {
+          if (HorseGame.Game.state !== 'menu') {
+            HorseGame.startLevel(HorseGame.Game.levelIndex);
+          }
+        }
+        if (k === 'escape') {
+          if (HorseGame.Game.state !== 'menu') {
+            HorseGame.setState('menu');
+          }
+        }
+      });
+      window.addEventListener('keyup', (e) => {
+        keys[e.key.toLowerCase()] = false;
+      });
+
+      // Update input state every frame
+      function updateInput() {
+        HorseGame.Input.forward = !!(keys['w'] || keys['arrowup']);
+        HorseGame.Input.back = !!(keys['s'] || keys['arrowdown']);
+        HorseGame.Input.left = !!(keys['a'] || keys['arrowleft']);
+        HorseGame.Input.right = !!(keys['d'] || keys['arrowright']);
+        HorseGame.Input.jump = !!(keys[' ']);
+
+        // E for soothe (hold to continuously soothe on press, but with cooldown)
+        if (keys['e'] && !HorseGame.Input._eWasDown) {
+          HorseGame.Input.soothePressed = true;
+        }
+        HorseGame.Input._eWasDown = !!keys['e'];
+
+        if (keys['f'] && !HorseGame.Input._fWasDown) {
+          HorseGame.Input.whipPressed = true;
+        }
+        HorseGame.Input._fWasDown = !!keys['f'];
+      }
+
+      // ------------ Click handling for menu/buttons ------------
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = 1920 / rect.width;
+        const scaleY = 1080 / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        handleClick(x, y);
+      });
+
+      function handleClick(x, y) {
+        const state = HorseGame.Game.state;
+        if (state === 'gameintro') {
+          HorseGame.setState('menu');
+        } else if (state === 'menu') {
+          // Check level cards
+          const cardW = 380, cardH = 320, gap = 40;
+          const startX = (1920 - (cardW * 3 + gap * 2)) / 2;
+          const cardY = 420;
+          for (let i = 0; i < HorseGame.LEVELS.length; i++) {
+            const cx = startX + i * (cardW + gap);
+            if (x >= cx && x <= cx + cardW && y >= cardY && y <= cardY + cardH) {
+              HorseGame.startLevel(i);
+              HorseGame.setState('intro');
+              return;
+            }
+          }
+        } else if (state === 'intro') {
+          HorseGame.setState('playing');
+        } else if (state === 'paused') {
+          HorseGame.setState('playing');
+        } else if (state === 'won' || state === 'lost') {
+          // Check buttons
+          const btnW = 280, btnH = 70;
+          const lines = state === 'won' ? 3 : 1;
+          const btnY = 1080 / 2 + 60 + lines * 38;
+          // Restart
+          if (x >= 1920 / 2 - btnW - 20 && x <= 1920 / 2 - 20 && y >= btnY && y <= btnY + btnH) {
+            HorseGame.startLevel(HorseGame.Game.levelIndex);
+          }
+          // Next / Menu
+          if (x >= 1920 / 2 + 20 && x <= 1920 / 2 + 20 + btnW && y >= btnY && y <= btnY + btnH) {
+            if (state === 'won' && HorseGame.Game.levelIndex < HorseGame.LEVELS.length - 1) {
+              const next = HorseGame.Game.levelIndex + 1;
+              HorseGame.startLevel(next);
+              HorseGame.setState('intro');
+            } else {
+              HorseGame.setState('menu');
+            }
+          }
+        }
+      }
+
+      // ------------ Main loop ------------
+      let lastTime = performance.now();
+      function loop(now) {
+        const dt = Math.min(0.05, (now - lastTime) / 1000);
+        lastTime = now;
+
+        updateInput();
+        HorseGame.update(dt);
+        // Clear with proper background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, 1920, 1080);
+        HorseGame.render(ctx);
+
+        requestAnimationFrame(loop);
+      }
+
+      // Initial hint text
+      hint.innerHTML = '<h2>Press SPACE or click to begin</h2>';
+
+      // Auto-start from query string for testing: ?level=1&state=playing&view=top&mood=8
+      const params = new URLSearchParams(window.location.search);
+      const autoLevel = params.get('level');
+      const autoState = params.get('state');
+      if (autoLevel !== null) {
+        const idx = parseInt(autoLevel, 10);
+        if (idx >= 0 && idx < HorseGame.LEVELS.length) {
+          HorseGame.startLevel(idx);
+          HorseGame.setState(autoState || 'intro');
+        }
+        // Optional: force a camera view (behind / top / side)
+        const autoView = params.get('view');
+        if (autoView) {
+          let guard = 0;
+          while (HorseGame.getView().toLowerCase() !== autoView.toLowerCase() && guard < 6) {
+            HorseGame.cycleView();
+            guard++;
+          }
+        }
+        // Optional: force horse mood (0-100) to test disobedience / calm states
+        const autoMood = params.get('mood');
+        if (autoMood !== null) {
+          HorseGame.Game.horseEmotion = parseFloat(autoMood);
+        }
+        // Optional: jump the camera forward to a given z (to inspect an obstacle)
+        const autoZ = params.get('z');
+        if (autoZ !== null) {
+          HorseGame.Game.camera.z = parseFloat(autoZ);
+        }
+      } else {
+        // Hide hint when on a normal page
+        hint.style.opacity = '0';
+      }
+
+      // Start loop
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

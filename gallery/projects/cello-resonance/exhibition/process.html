@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>弦境回响 — 开发过程</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">项目主页</a>
+    <a href="game.html">开始游戏</a>
+    <a href="process.html" class="active">开发过程</a>
+  </nav>
+
+  <div class="container">
+    <h1>开发过程</h1>
+    <p class="subtitle">从演奏模拟器到叙事解谜——游戏概念的三次演变</p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time">v1 — Cello Tune-Up (演奏模拟器)</div>
+        <div class="event">键盘操控大提琴：按键选弦、调指位、控制弓速/弓压。
+        核心学习转变是"初学者只关注弓→专家精确调整手指位置"。
+        模拟器风格，3个挑战预设从空弦到换把。</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">v2 — 鼠标运弓 (写实大提琴)</div>
+        <div class="event">根据用户反馈改为鼠标拖拽运弓，大提琴视觉用贝塞尔曲线绘制写实琴身。
+        琴弦垂直方向显示，弓横跨琴弦。
+        操控更直观但仍然是演奏模拟器。</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">v3 — 弦境回响 (叙事解谜) ★ 当前版本</div>
+        <div class="event">用户提供AI绘图提示词，定义了全新概念：
+        <strong>2D叙事解谜冒险游戏，非演奏模拟器</strong>。
+        大提琴不再是练习工具，而是与世界互动的叙事道具。
+        音高→光桥、弓压→碎石/生藤、和声→驱散守护者。</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">引擎重构</div>
+        <div class="event">完全重写 game.js：从 650行模拟器代码 → 850行叙事解谜引擎。
+        新增：PaintFX 绘图辅助（树、雾、光桥、藤蔓、碎岩），
+        场景系统（BRIDGE/RUINS/BOSS/VICTORY），
+        谜题状态追踪，
+        Boss 和声共鸣机制。</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">视觉风格转换</div>
+        <div class="event">从深蓝紫色模拟器UI → 暖土色+深绿森林氛围。
+        CSS变量从 --cello-wood:#d4a056 → --accent:#d4a855(金色) + --forest:#3a5a3a。
+        游戏画面：手绘树、雾气粒子、噪声纹理、发光光桥、屏幕震动。</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">操控简化</div>
+        <div class="event">从多按键操控 → 鼠标拖拽运弓 + WASD移动。
+        运弓=鼠标左右拖拽，音高=Y位置，弓压=拖拽力度。
+        5个参数（弦/指位/弓速/弓压/运弓开关）→ 2个参数（音高/弓压），
+        符合叙事解谜游戏"直觉操控"的设计哲学。</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time">音频适配</div>
+        <div class="event">AudioEngine 从"4弦×5指位×弓速×弓压"矩阵 →
+        "连续音高(65-440Hz)×弓压(0-1)"连续函数。
+        新增 startResonance() 用于Boss持续共鸣音（基频+五度+八度）。</div>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <strong>设计哲学转变：</strong>
+      <br>v1/v2 的学习目标是"演奏技能" → v3 的学习目标是"声音与世界的关系"。
+      琴的音高不是要"准确演奏"，而是要"选择正确的声音来解决问题"。
+      这是从"练习工具"到"叙事媒介"的根本转变。
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="game.html" class="play-btn">体验弦境回响</a>
+    </div>
+  </div>
+
+  <footer>弦境回响 Cello Resonance — 纯 HTML5 Canvas + Web Audio API</footer>
+</body>
+</html>

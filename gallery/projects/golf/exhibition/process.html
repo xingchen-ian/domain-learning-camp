@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Development Process — Golf</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-title">Golf<span class="dot"> · </span><span style="font-weight:400;color:var(--ink-soft);font-size:14px;">by Zoe</span></div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="design.html">Domain &amp; System</a>
+      <a href="process.html" class="active">Development</a>
+      <a href="game.html">Play</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Development process</h1>
+    <p class="lede">
+      This page is a public summary of the build log. The full, raw
+      <code>agent-development-log.md</code> is in the project root and shows every change,
+      every failed idea, and every decision in order.
+    </p>
+
+    <div class="card">
+      <h2>Timeline</h2>
+      <ul class="timeline">
+        <li>
+          <time>2026-07-15 · Session 1</time>
+          <h4>Project setup &amp; first playable (Level 1)</h4>
+          <p>
+            Read the design brief and system graph. Locked in: 2D top-down view, 5 clubs,
+            traps reset ball to last good position with +1 stroke penalty. Built the
+            project structure, the website shell (Home, Domain &amp; System, Development,
+            Play), and Level 1 (Par 3, 100 yards, no traps) end-to-end. Player can aim,
+            pick a club, set power, swing, and either hole out or be told why they missed.
+          </p>
+        </li>
+        <li>
+          <time>Next · planned</time>
+          <h4>Add Levels 2 &amp; 3 with traps</h4>
+          <p>
+            Add water and sand traps plus trees. Make the canvas handle the longer holes
+            (Level 2 = 200 yds, Level 3 = 330 yds). Verify win/lose flow on each level.
+          </p>
+        </li>
+        <li>
+          <time>Later · planned</time>
+          <h4>Polish &amp; submission</h4>
+          <p>
+            Sounds for water splash and sand thud, score screen, submission manifest,
+            preview screenshot, ZIP packaging, and final exhibition test on a static
+            server.
+          </p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>How the AI helped so far</h2>
+      <ul class="tight">
+        <li>Turned the written brief into a concrete Track-A implementation plan.</li>
+        <li>Set up the project folders and website shell with relative paths so it
+        works inside <code>gallery/projects/group-XX/</code>.</li>
+        <li>Wrote the Canvas 2D game loop, swing physics, club table, and trap logic.</li>
+        <li>Wrote the <code>agent-development-log.md</code> skeleton and this summary.</li>
+      </ul>
+      <h3>My decisions (Zoe)</h3>
+      <ul class="tight">
+        <li>Picked 2D top-down instead of side view — the traps and trees are easier to read.</li>
+        <li>Picked 5 clubs — driver / 3-wood / 5-iron / 7-iron / wedge.</li>
+        <li>Picked "ball resets to last good position +1 stroke" for traps — feels fairer
+        than restarting the hole.</li>
+      </ul>
+    </div>
+  </main>
+
+  <footer>Golf · First Playable · Built with HTML, CSS, plain JavaScript &amp; Canvas 2D</footer>
+</body>
+</html>

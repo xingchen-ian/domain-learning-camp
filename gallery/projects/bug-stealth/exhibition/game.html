@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Bug Stealth — Play</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <span class="brand">Bug Stealth</span>
+    <a href="index.html">Home</a>
+    <a href="domain.html">Domain</a>
+    <a href="system.html">System</a>
+    <a href="process.html">Process</a>
+    <a href="game.html">Play</a>
+  </nav>
+
+  <main class="game-wrap">
+    <div class="game-viewport">
+      <div class="game-toolbar">
+        <div class="level-picker">
+          <button class="btn btn-secondary" onclick="loadLevel(0)">L1</button>
+          <button class="btn btn-secondary" onclick="loadLevel(1)">L2</button>
+          <button class="btn btn-secondary" onclick="loadLevel(2)">L3</button>
+        </div>
+        <button class="btn" onclick="game.phase='menu'">Menu</button>
+      </div>
+
+      <div class="game-canvas-area">
+        <canvas id="game" width="1024" height="640"></canvas>
+
+        <!-- ============ Mobile touch controls ============ -->
+        <div id="touchControls" class="touch-controls">
+          <div class="dpad">
+            <button class="tbtn dpad-up"    data-key="w">▲</button>
+            <button class="tbtn dpad-left"  data-key="a">◀</button>
+            <button class="tbtn dpad-down"  data-key="s">▼</button>
+            <button class="tbtn dpad-right" data-key="d">▶</button>
+          </div>
+          <button class="tbtn hide-btn" data-key="q">HIDE</button>
+          <div class="action-pad">
+            <button class="tbtn act-btn act-interact" data-action="interact">E</button>
+            <button class="tbtn act-btn act-rotate-l"  data-action="rotateLeft">↺</button>
+            <button class="tbtn act-btn act-rotate-r"  data-action="rotateRight">↻</button>
+            <button class="tbtn act-btn act-pause"     data-action="pause">II</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <details class="info-section" open>
+      <summary>&#9733; How to Win</summary>
+      <div style="color:#c9d3a8; line-height:1.7; font-size:0.95rem; padding:0.4rem 0;">
+        <p style="margin:0.3rem 0;"><b style="color:#e6d8a1;">Goal:</b> Grow the flycatcher plant to full size, then climb it to escape over the wall!</p>
+        <ol style="margin:0.3rem 0; padding-left:1.4rem;">
+          <li><b style="color:#3a7a9a;">Pick up items</b> &mdash; walk near water bottles and fertilizer bags, press <b>E</b> to grab them.</li>
+          <li><b style="color:#7a5e30;">Feed the plant</b> &mdash; stand next to the flycatcher, press <b>E</b> to place items on it.</li>
+          <li><b style="color:#ffd840;">Aim sunlight</b> (L2/L3 only) &mdash; <b>drag mirrors</b> with the mouse to bounce the sun beam onto the plant.</li>
+          <li><b style="color:#6aaa4a;">Climb &amp; escape!</b> &mdash; when the plant is fully grown (all items delivered + sunlight), stand next to it and <b>hold W / &uarr;</b> to climb up and win!</li>
+        </ol>
+        <p style="margin:0.3rem 0; color:rgba(200,60,50,0.7);">&#9888; Avoid the insects! If they spot you, hide in <b style="color:rgba(0,0,0,0.78); background:rgba(50,50,50,0.3); padding:0 4px;">shadows</b> (press <b>Q</b>). Don't let them touch you or you lose!</p>
+        <p style="margin:0.3rem 0; color:rgba(100,200,60,0.6); font-style:italic;">Bonus: a fully grown flytrap lures and eats nearby insects &mdash; grow it early to clear the path!</p>
+      </div>
+    </details>
+
+    <details class="info-section">
+      <summary>Controls &amp; Keys</summary>
+      <dl class="controls">
+        <dt>A / &larr;</dt><dd>Walk left <span style="color:#6b7d4b">(or on-screen ◀)</span></dd>
+        <dt>D / &rarr;</dt><dd>Walk right <span style="color:#6b7d4b">(or on-screen ▶)</span></dd>
+        <dt>W / &uarr;</dt><dd>Move up. When the plant is fully grown and you stand next to it, hold W to climb to the wall top. <span style="color:#6b7d4b">(or ▲)</span></dd>
+        <dt>S / &darr;</dt><dd>Move down <span style="color:#6b7d4b">(or ▼)</span> — does NOT hide you.</dd>
+        <dt>Q</dt><dd>Crouch / hide in shadow <span style="color:#6b7d4b">(or HIDE button)</span></dd>
+        <dt>E</dt><dd>Pick up / place / drop item <span style="color:#6b7d4b">(or E button)</span></dd>
+        <dt>Mouse left-drag</dt><dd>Rotate the nearest mirror.</dd>
+        <dt>↺ / ↻</dt><dd>On mobile: rotate mirror left / right.</dd>
+        <dt>Esc / II</dt><dd>Pause / resume.</dd>
+        <dt>Tab</dt><dd>Expand / collapse the Mission tracker panel.</dd>
+        <dt>H</dt><dd>Show / hide on-screen key hints.</dd>
+        <dt>1 / 2 / 3</dt><dd>Select level from title screen.</dd>
+        <dt>R / M</dt><dd>After game ends: R retries, M menu.</dd>
+      </dl>
+    </details>
+
+    <details class="info-section" open>
+      <summary>Legend</summary>
+      <div class="legend">
+        <span><i style="background:#8a7a5a"></i> Player</span>
+        <span><i style="background:#5a4a3a"></i> Patrol insect</span>
+        <span><i style="background:#8a2a2a"></i> Diving insect</span>
+        <span><i style="background:#3a7a9a"></i> Water bottle</span>
+        <span><i style="background:#7a5e30"></i> Fertilizer bag</span>
+        <span><i style="background:rgba(200,220,230,0.85)"></i> Mirror</span>
+        <span><i style="background:#4a7a3e"></i> Flytrap (grows)</span>
+        <span><i style="background:rgba(100,220,70,0.3)"></i> Full-grown = eats insects!</span>
+        <span><i style="background:rgba(0,0,0,0.78)"></i> Shadow (hide here)</span>
+        <span><i style="background:#3a342a"></i> Wall-top (escape)</span>
+      </div>
+      <p style="margin-top:0.6rem; color:rgba(100,255,80,0.5); font-size:0.9rem; font-style:italic;">
+        Tip: when the flytrap is fully grown, it lures nearby insects with nectar and devours them.
+        Grow it early to clear the area before you climb!
+      </p>
+    </details>
+  </main>
+
+  <footer>© 2026 Bug Stealth — plant-care learning game by 陈晴晴, built with WorkBuddy.</footer>
+
+  <script src="assets/js/levels.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

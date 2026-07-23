@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To the End - Development Process</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="process.html" class="nav-link active">Process</a>
+      <a href="game.html" class="nav-link">Play</a>
+    </nav>
+  </header>
+
+  <main class="content-page">
+    <h1>Development Process</h1>
+    <p>
+      This timeline records how the game was built through human-AI collaboration.
+      It is updated after each meaningful development interaction.
+    </p>
+
+    <div class="timeline">
+      <div class="timeline-entry">
+        <h3>Project Setup & First Playable</h3>
+        <time>2026-07-16</time>
+        <p>
+          Hanson Liu shared the design brief and system graph. The AI agent read both documents,
+          confirmed the core learning shift, and planned a no-build (Track A) HTML/CSS/JS game.
+        </p>
+        <p>
+          Implemented the first playable version with a side-view canvas, visibly slanted road segments,
+          player controls (pedaling speed, power output, riding position, gears), a dashboard with all exposed data,
+          and three challenge presets based on the system graph.
+        </p>
+      </div>
+
+      <div class="timeline-entry">
+        <h3>Visual Layout & Logic Map Update</h3>
+        <time>2026-07-16</time>
+        <p>
+          Hanson Liu shared a screenshot of the desired in-game layout and a detailed logic map.
+          The AI agent updated the game visuals to match: layered hills, sun, dark road with dashed lane markers,
+          a top bar showing the incline sequence, and an in-game "5% INCLINE" label.
+        </p>
+        <p>
+          The physics were also updated to follow the logic map exactly: gear and pedal speed affect speed and stamina,
+          wind and riding position affect speed, road condition affects speed and stamina, and power and riding position
+          affect heart rate. Failure conditions now match the logic map: stop for 3 seconds below 9 km/h, heart rate above 185 bpm for 2 seconds, or run out of stamina/time.
+        </p>
+      </div>
+    </div>
+
+    <h2>Key Design Decisions</h2>
+    <ul>
+      <li><strong>Track A (no build):</strong> The game uses plain HTML, CSS, and JavaScript so it can run from any static HTTP server without Node.js or npm.</li>
+      <li><strong>Slanted inclines:</strong> Road segments are drawn at exaggerated angles so players can immediately see when the road goes uphill or flat.</li>
+      <li><strong>Visible feedback:</strong> Stamina, heart rate, speed, and incline are all shown on screen so players can learn the relationships between actions and results.</li>
+      <li><strong>Three levels:</strong> Each level changes variables (wind, incline, road condition, distance, time limit) rather than only visual decoration.</li>
+    </ul>
+
+    <h2>Open Questions</h2>
+    <ul>
+      <li>Does the current gear-incline relationship feel clear and fair?</li>
+      <li>Should the heart-rate penalty be more forgiving for new players?</li>
+      <li>Are the slanted inclines visually understandable, or should they be exaggerated more?</li>
+    </ul>
+  </main>
+
+  <footer class="site-footer">
+    <p>Hanson Liu — To the End</p>
+  </footer>
+</body>
+</html>

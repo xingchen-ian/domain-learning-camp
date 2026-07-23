@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forest Drone Navigator · 3D</title>
+  <link rel="stylesheet" href="assets/css/home.css" />
+</head>
+<body>
+  <div id="lang-switch">
+    <button type="button" data-setlang="zh">中文</button>
+    <span class="sep">/</span>
+    <button type="button" data-setlang="en">English</button>
+  </div>
+
+  <nav>
+    <span class="brand" data-i18n="nav_brand">🚁 Forest Drone Navigator · 3D</span>
+    <a href="index.html" class="active" data-i18n="nav_home">Home</a>
+    <a href="game.html" data-i18n="nav_play">Play Game</a>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="sub" data-i18n="hero_sub">3D · Three.js · Runs right in your browser · Fully offline</div>
+      <h1 data-i18n="hero_h1">Forest Drone Navigator · 3D</h1>
+      <p data-i18n="hero_domain"><strong>Domain:</strong> Drone flight with wind compensation and momentum control</p>
+      <p data-i18n="hero_goal"><strong>Goal:</strong> Pilot your drone through a dense forest, dodge tall trees and overhead cables, and reach the <strong>LAND</strong> pad at the far end—then bring it down to <strong>0</strong> altitude for a smooth landing. All the while you're fighting a constant crosswind that pushes you off course, and you must finish <strong>before time runs out</strong>.</p>
+      <p>
+        <span class="tag" data-i18n="tag1">Observe</span><span class="tag" data-i18n="tag2">Decide</span>
+        <span class="tag" data-i18n="tag3">Operate</span><span class="tag" data-i18n="tag4">Feedback</span>
+        <span class="tag" data-i18n="tag5">Adjust</span>
+      </p>
+      <p style="margin-top:16px;">
+        <a class="btn" href="game.html" data-i18n="hero_btn">▶ Start Playing Now</a>
+      </p>
+    </section>
+
+    <!-- HOW TO PLAY / CONTROLS -->
+    <section class="card">
+      <h2 data-i18n="ctrl_h2">Controls</h2>
+      <p data-i18n="ctrl_p">No install, no internet—just open and play. Inside a level, press <kbd>Space</kbd> to see the controls and begin; press <kbd>Space</kbd> any time to pause / resume (the timer freezes with you).</p>
+      <div class="keys-grid">
+        <div class="k" data-i18n="ctrl_k1"><kbd>W</kbd> / <kbd>S</kbd> — throttle forward / brake &amp; reverse</div>
+        <div class="k" data-i18n="ctrl_k2"><kbd>A</kbd> — strafe <b>left</b>　<kbd>D</kbd> — strafe <b>right</b></div>
+        <div class="k" data-i18n="ctrl_k3"><kbd>U</kbd> / <kbd>H</kbd> — ascend / descend</div>
+        <div class="k" data-i18n="ctrl_k4"><kbd>Space</kbd> — pause / resume (shows this guide)</div>
+      </div>
+      <div class="quote" data-i18n="ctrl_quote">When you let go, the drone doesn't stop instantly—it keeps <strong>gliding</strong> on its <strong>momentum</strong>, and the wind keeps nudging it off course. To hold a straight line you have to <strong>anticipate</strong> the drift and steer against it early.</div>
+    </section>
+
+    <!-- DOMAIN KNOWLEDGE -->
+    <section class="card">
+      <h2 data-i18n="dom_h2">Domain Knowledge</h2>
+      <div class="grid2">
+        <div>
+          <h3 data-i18n="dom_real_h3">The Real Domain</h3>
+          <p data-i18n="dom_real_p">The creator loves flying drones but finds plain sightseeing boring. The real fun is <em>navigation</em>—threading through an obstacle-filled forest, with the wind as an invisible enemy.</p>
+        </div>
+        <div>
+          <h3 data-i18n="dom_mistakes_h3">Common Beginner Mistakes</h3>
+          <ul class="clean">
+            <li data-i18n="dom_mistakes_li1">Assuming the drone flies straight wherever the nose points.</li>
+            <li data-i18n="dom_mistakes_li2">Not realizing the drone keeps <strong>drifting forward</strong> on momentum after you release the controls.</li>
+            <li data-i18n="dom_mistakes_li3">Ignoring how the <strong>wind</strong> keeps changing your actual heading.</li>
+            <li data-i18n="dom_mistakes_li4">Only letting go when a crash is already unavoidable—too late.</li>
+          </ul>
+        </div>
+      </div>
+      <h3 data-i18n="dom_expert_h3">What Experts Do</h3>
+      <div class="quote" data-i18n="dom_expert_quote">Beginners hold throttle and hope for a straight line; experts <strong>anticipate</strong>, make small corrections early, and counter the wind's push with opposite inputs to keep their path straight.</div>
+      <h3 data-i18n="dom_why_h3">Why It Works as a Game</h3>
+      <p data-i18n="dom_why_p">The game makes the invisible <strong>visible</strong>: the WIND readout shows speed and direction, momentum lets you feel the drone keep gliding after you let go, and the enlarged ALTITUDE gauge plus distance-to-LAND bar give instant feedback. Through repeated failures and adjustments, players shift their thinking from novice to expert.</p>
+    </section>
+
+    <!-- SYSTEM DESIGN -->
+    <section class="card">
+      <h2 data-i18n="sys_h2">System Design</h2>
+      <p data-i18n="sys_intro">The game is driven by three clearly separated groups of data:</p>
+      <div class="grid2">
+        <div>
+          <h3 data-i18n="sys_env_h3">Environment Data (the world)</h3>
+          <ul class="clean">
+            <li data-i18n="sys_env_li1"><strong>Wind</strong>—speed + direction, constantly pushing the drone off course.</li>
+            <li data-i18n="sys_env_li2"><strong>Tall trees</strong>—fly <b>over</b> them (some tower above the 70 m start height).</li>
+            <li data-i18n="sys_env_li3"><strong>Overhead cables</strong>—dip <b>below</b> the marked height to slip under.</li>
+            <li data-i18n="sys_env_li4"><strong>LAND pad</strong>—the landing target at the end of the course.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 data-i18n="sys_ctrl_h3">Data From Player Controls</h3>
+          <ul class="clean">
+            <li data-i18n="sys_ctrl_li1"><b>W</b>/<b>S</b> forward / reverse thrust.</li>
+            <li data-i18n="sys_ctrl_li2"><b>A</b>/<b>D</b> strafe left / right.</li>
+            <li data-i18n="sys_ctrl_li3"><b>U</b>/<b>H</b> ascend / descend.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 data-i18n="sys_res_h3">Results the System Computes</h3>
+          <ul class="clean">
+            <li data-i18n="sys_res_li1">Drone position, velocity, altitude.</li>
+            <li data-i18n="sys_res_li2">Whether it hit a tree / cable / touched ground off the pad.</li>
+            <li data-i18n="sys_res_li3">Whether it reached the pad and dropped to 0 m.</li>
+            <li data-i18n="sys_res_li4">Whether the <strong>countdown</strong> has run out.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 data-i18n="sys_fb_h3">Feedback Translation</h3>
+          <ul class="clean">
+            <li data-i18n="sys_fb_li1"><strong>WIND indicator</strong>—arrow shows direction, number shows speed.</li>
+            <li data-i18n="sys_fb_li2"><strong>ALTITUDE gauge</strong>—large readout + vertical bar + pad marker line.</li>
+            <li data-i18n="sys_fb_li3"><strong>⏱ Timer</strong>—turns red and flashes when 10 seconds remain.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 data-i18n="sys_wl_h3">Win / Lose</h3>
+      <ul class="clean">
+        <li data-i18n="sys_wl_li1"><strong>Win:</strong> Fly above the <strong>LAND</strong> pad and hold <kbd>H</kbd> to bring altitude down to <strong>0 m</strong> for a smooth touchdown.</li>
+        <li data-i18n="sys_wl_li2"><strong>Lose:</strong> Hit a tree, hit a cable, touch ground off the pad, or let the <strong>countdown hit zero</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- CHALLENGE PRESETS -->
+    <section class="card">
+      <h2 data-i18n="tiers_h2">Three Difficulty Tiers (different variables, not just looks)</h2>
+      <div class="grid3">
+        <div class="preset">
+          <div class="lvl" data-i18n="tier_p1_lvl">P1 · Beginner</div>
+          <h3 data-i18n="tier_p1_name">Calm Glade</h3>
+          <ul>
+            <li data-i18n="tier_p1_li1">Short trees, light breeze</li>
+            <li data-i18n="tier_p1_li2">No cable obstacles</li>
+            <li data-i18n="tier_p1_li3">Shortest course</li>
+          </ul>
+          <span class="time" data-i18n="tier_p1_time">⏱ Time limit 60 s</span>
+        </div>
+        <div class="preset">
+          <div class="lvl" data-i18n="tier_p2_lvl">P2 · Intermediate</div>
+          <h3 data-i18n="tier_p2_name">Crosswind Pass</h3>
+          <ul>
+            <li data-i18n="tier_p2_li1">Tall trees (some above start height)</li>
+            <li data-i18n="tier_p2_li2">Moderate wind · 3 cables</li>
+            <li data-i18n="tier_p2_li3">Alternate tree / cable gates</li>
+          </ul>
+          <span class="time" data-i18n="tier_p2_time">⏱ Time limit 40 s</span>
+        </div>
+        <div class="preset">
+          <div class="lvl" data-i18n="tier_p3_lvl">P3 · Challenge</div>
+          <h3 data-i18n="tier_p3_name">Gust Maze</h3>
+          <ul>
+            <li data-i18n="tier_p3_li1">Tallest trees · strong wind</li>
+            <li data-i18n="tier_p3_li2">4 cables · longest course</li>
+            <li data-i18n="tier_p3_li3">Climb over trees / dive under cables</li>
+          </ul>
+          <span class="time" data-i18n="tier_p3_time">⏱ Time limit 30 s</span>
+        </div>
+      </div>
+      <p style="margin-top:14px; color:var(--muted);" data-i18n="tiers_note">The harder the tier, the <strong>shorter the time limit</strong> (60 / 40 / 30 s)—you must fly right and fly fast.</p>
+    </section>
+
+    <!-- TECH -->
+    <section class="card">
+      <h2 data-i18n="about_h2">About This 3D Version</h2>
+      <ul class="clean">
+        <li data-i18n="about_li1">Rendered with <strong>Three.js (r128)</strong> in true 3D: chase camera, 3D drone / trees / cables / pad, and floating labels.</li>
+        <li data-i18n="about_li2">Three.js is <strong>bundled locally</strong> (<code>vendor/</code>), so it runs fully offline with zero network calls.</li>
+        <li data-i18n="about_li3">Independent from the 2D version: this 3D build runs on its own port and never touches the original 2D game.</li>
+        <li data-i18n="about_li4">Levels use a deterministic 'gate scheduler' (tree gates and cable gates at fixed spacing) that guarantees every level is <strong>completable</strong>.</li>
+      </ul>
+      <p style="margin-top:16px;">
+        <a class="btn" href="game.html" data-i18n="about_btn">▶ Launch Forest Drone Navigator · 3D</a>
+      </p>
+    </section>
+
+  </div>
+
+  <footer data-i18n="footer">Forest Drone Navigator · 3D learning game · Built from domain-learning-brief.md</footer>
+
+  <script src="assets/js/lang.js"></script>
+</body>
+</html>

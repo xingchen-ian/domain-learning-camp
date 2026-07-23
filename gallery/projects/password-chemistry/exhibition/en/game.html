@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PASSWORD — Chemistry Escape Room</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8fab'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%F0%9F%A7%AA%3C/text%3E%3C/svg%3E">
+</head>
+<body class="game-page">
+  <div class="game-shell">
+    <!-- Top bar -->
+    <div class="game-bar">
+      <div class="game-bar-left">
+        <a href="index.html" class="game-back">← Home</a>
+        <span class="game-title">PASSWORD</span>
+        <a href="../game.html" class="game-back" style="margin-left:8px;font-size:11px;opacity:0.6;">中文</a>
+      </div>
+      <div class="game-bar-right">
+        <a href="domain.html" class="game-back">Design</a>
+        <a href="process.html" class="game-back">Log</a>
+      </div>
+    </div>
+
+    <!-- Game stage -->
+    <div class="game-stage" id="game-stage">
+      <canvas id="game-canvas" width="1024" height="640"></canvas>
+
+      <!-- HUD overlay -->
+      <div class="hud">
+        <div class="hud-panel">
+          <div class="hud-label" id="hud-level">Level 1</div>
+          <div class="hud-value" id="hud-level-name" style="font-size: 16px;">—</div>
+          <div class="hud-label" style="margin-top: 10px;">HP</div>
+          <div class="hp-bar" id="hud-hp"></div>
+        </div>
+        <div class="hud-panel" style="text-align: center;">
+          <div class="hud-label">Time Left</div>
+          <div class="hud-value" id="hud-time">—</div>
+        </div>
+        <div class="hud-panel" style="text-align: right;">
+          <div class="hud-label">Chemicals</div>
+          <div class="hud-value" id="hud-chem">0 / 0</div>
+          <div class="hud-label" style="margin-top: 6px; font-size: 10px;">Recipe</div>
+        </div>
+      </div>
+
+      <!-- Objective hint bar -->
+      <div class="objective-hint" id="objective-hint"></div>
+
+      <!-- Story intro cutscene -->
+      <div class="story-intro" id="story-intro" hidden>
+        <div class="story-intro-bg" id="story-intro-bg"></div>
+        <video class="story-video" id="story-video-1" src="assets/videos/bg-hospital.mp4" muted loop playsinline preload="auto"></video>
+        <video class="story-video" id="story-video-2" src="assets/videos/bg-factory.mp4" muted loop playsinline preload="auto"></video>
+        <video class="story-video" id="story-video-3" src="assets/videos/bg-darkroom.mp4" muted loop playsinline preload="auto"></video>
+        <div class="story-particles" id="story-particles"></div>
+        <div class="story-intro-card">
+          <button class="story-skip" id="story-skip">Skip →</button>
+          <div class="story-character">
+            <div class="story-char-head">
+              <div class="story-char-eye left"></div>
+              <div class="story-char-eye right"></div>
+              <div class="story-char-mouth"></div>
+            </div>
+            <div class="story-char-body"></div>
+            <div class="story-char-arm left"></div>
+            <div class="story-char-arm right"></div>
+            <div class="story-char-flask"></div>
+          </div>
+          <div class="story-title" id="story-title">Mission Briefing</div>
+          <div class="story-scene" id="story-scene">Loading...</div>
+          <div class="story-body" id="story-body"></div>
+          <button class="story-begin hidden-btn" id="story-begin">Begin Mission ▶</button>
+        </div>
+      </div>
+
+      <!-- Level announcement banner -->
+      <div class="banner" id="banner" hidden>
+        <h2 id="banner-title">Level 1</h2>
+        <p id="banner-sub">—</p>
+      </div>
+
+      <!-- SUCCEED celebration overlay -->
+      <div class="succeed-overlay" id="succeed-overlay" hidden>
+        <div class="succeed-text">SUCCEED!</div>
+        <div id="succeed-stars"></div>
+      </div>
+
+      <!-- Fullscreen toggle (mobile) -->
+      <button class="fullscreen-btn" id="fullscreen-btn" aria-label="Fullscreen" title="Fullscreen">
+        <span class="fullscreen-icon">⛶</span>
+      </button>
+
+      <!-- Controls hint (keyboard) -->
+      <div class="controls-hint">
+        <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> Move</span>
+        <span><kbd>E</kbd>/<kbd>Space</kbd> Interact / Read Notes</span>
+        <span><kbd>R</kbd> Restart</span>
+      </div>
+
+      <!-- Touch controls (mobile) -->
+      <div class="touch-controls" id="touch-controls" style="display:none;">
+        <div class="touch-stick-area">
+          <div class="touch-stick" id="touch-stick">
+            <div class="touch-stick-base">
+              <svg class="touch-stick-guide" viewBox="0 0 160 160">
+                <polygon points="80,16 72,36 88,36" fill="rgba(255,255,255,0.15)"/>
+                <polygon points="80,144 72,124 88,124" fill="rgba(255,255,255,0.15)"/>
+                <polygon points="16,80 36,72 36,88" fill="rgba(255,255,255,0.15)"/>
+                <polygon points="144,80 124,72 124,88" fill="rgba(255,255,255,0.15)"/>
+                <circle cx="80" cy="80" r="38" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-dasharray="4,6"/>
+                <circle cx="80" cy="80" r="58" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+              </svg>
+            </div>
+            <div class="touch-knob" id="touch-knob"></div>
+          </div>
+        </div>
+        <div class="touch-buttons">
+          <button class="touch-btn touch-action" id="touch-action" aria-label="Interact">
+            <span class="touch-btn-icon">👆</span>
+            <span class="touch-btn-label">Interact</span>
+          </button>
+          <button class="touch-btn touch-lab" id="touch-lab" aria-label="Lab">
+            <span class="touch-btn-icon">⚗️</span>
+            <span class="touch-btn-label">Lab</span>
+          </button>
+          <button class="touch-btn touch-restart" id="touch-restart" aria-label="Restart">
+            <span class="touch-btn-icon">🔄</span>
+            <span class="touch-btn-label">Retry</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Orientation hint -->
+      <div class="orientation-hint" id="orientation-hint" hidden>
+        <div class="orientation-card">
+          <div class="orientation-icon">📱</div>
+          <p>Rotate your phone to <b>landscape</b> for the best experience</p>
+        </div>
+      </div>
+
+      <!-- Note reading modal -->
+      <div class="note-modal" id="note-modal" hidden>
+        <div class="note-card">
+          <div class="note-card-header">📝 Note</div>
+          <div class="note-content" id="note-content"></div>
+          <button class="btn btn-primary" id="btn-close-note">Got it (E / Esc)</button>
+        </div>
+      </div>
+
+      <!-- Start / menu overlay -->
+      <div class="overlay" id="menu" hidden>
+        <video class="menu-video" id="menu-video" src="assets/videos/bg-hospital.mp4" muted loop playsinline preload="auto"></video>
+        <div class="overlay-card">
+          <div class="overlay-eyebrow">Chemistry Escape Room — Hardcore</div>
+          <h2>PASSWORD</h2>
+          <p>Find notes on the floor for chemistry clues. Collect the right chemicals — wrong picks cost HP. Complete the reaction at the lab table. Escape before time runs out.</p>
+          <div class="level-select" id="level-select"></div>
+          <div class="overlay-actions">
+            <a class="btn btn-secondary" href="index.html">Back to Home</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Win / Lose overlay -->
+      <div class="overlay" id="overlay" hidden>
+        <div class="overlay-card">
+          <div class="overlay-eyebrow" id="overlay-eyebrow">Result</div>
+          <h2 id="overlay-title">Result</h2>
+          <p id="overlay-msg"></p>
+          <div class="overlay-stats">
+            <div class="overlay-stat">
+              <div class="overlay-stat-label">Time</div>
+              <div class="overlay-stat-value" id="stat-time">0s</div>
+            </div>
+            <div class="overlay-stat">
+              <div class="overlay-stat-label">Mistakes</div>
+              <div class="overlay-stat-value" id="stat-deaths">0</div>
+            </div>
+            <div class="overlay-stat">
+              <div class="overlay-stat-label">Chemicals</div>
+              <div class="overlay-stat-value" id="stat-chem">0</div>
+            </div>
+          </div>
+          <div class="overlay-actions">
+            <button class="btn btn-secondary" id="btn-menu">Level Select</button>
+            <button class="btn btn-primary" id="btn-retry">Try Again</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab modal -->
+      <div class="lab-modal" id="lab-modal" hidden>
+        <div class="lab-card">
+          <h2>⚗️ Lab Table</h2>
+          <div class="lab-card-sub">Apply your chemistry knowledge. Wrong chemicals or wrong operation order = lose HP.</div>
+          <div class="lab-clue" id="lab-clue"></div>
+          <div class="lab-section-title">Notes Found</div>
+          <div class="lab-notes" id="lab-notes"></div>
+          <div class="lab-progress">
+            <div class="lab-progress-track">
+              <div class="lab-progress-bar" id="lab-progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="lab-progress-text">
+              <span>Progress</span>
+              <span id="lab-progress-pct">0%</span>
+            </div>
+          </div>
+          <div class="lab-section-title">Your Chemicals (click to add to beaker)</div>
+          <div class="lab-chemicals" id="lab-chemicals"></div>
+          <div class="lab-section-title">Tools</div>
+          <div class="lab-tools" id="lab-tools"></div>
+          <div class="lab-status info" id="lab-status">Loading...</div>
+          <div class="lab-footer">
+            <div class="lab-hint">⚠️ Wrong chemicals or wrong order = -1 HP. <kbd>1</kbd>–<kbd>4</kbd> use tools, <kbd>Esc</kbd> to close.</div>
+            <button class="btn btn-secondary" id="btn-close-lab">Close (Esc)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/game.js"></script>
+  <script>
+    (function () {
+      var cfg = {
+        1: { name: 'Emergency Neutralization', desc: 'HCl + NaOH → NaCl + H₂O | 60s | 3 HP', diff: 'Medium' },
+        2: { name: 'Wastewater Treatment', desc: 'CuSO₄ + NaOH → Precipitate | 50s | 3 HP', diff: 'Hard' },
+        3: { name: 'Darkroom Silver Recovery', desc: 'AgNO₃ + NaCl/KI → Salt | 60s | 3 HP', diff: 'Extreme' }
+      };
+      var el = document.getElementById('level-select');
+      el.innerHTML = Object.keys(cfg).map(function(id) {
+        return '<div class="level-pick" data-level="' + id + '">' +
+          '<div class="level-pick-num">' + id + '</div>' +
+          '<div class="level-pick-info">' +
+          '<div class="level-pick-name">Level ' + id + ' — ' + cfg[id].name + '</div>' +
+          '<div class="level-pick-desc">' + cfg[id].desc + '</div>' +
+          '</div>' +
+          '<div class="level-pick-stats">' +
+          '<span class="level-pick-stat">' + cfg[id].diff + '</span>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+
+      el.querySelectorAll('.level-pick').forEach(function(pick) {
+        pick.addEventListener('click', function() {
+          startLevel(parseInt(pick.dataset.level, 10));
+        });
+      });
+
+      document.getElementById('btn-menu').addEventListener('click', function() { showMenu(); });
+      document.getElementById('btn-retry').addEventListener('click', function() { restartLevel(); });
+      document.getElementById('btn-close-lab').addEventListener('click', function() { closeLab(); });
+      document.getElementById('btn-close-note').addEventListener('click', function() { closeNoteModal(); });
+
+      document.getElementById('story-begin').addEventListener('click', function() {
+        var lv = parseInt(document.getElementById('story-intro').dataset.level, 10);
+        document.getElementById('story-intro').hidden = true;
+        window._beginGame(lv);
+      });
+      document.getElementById('story-skip').addEventListener('click', function() {
+        var lv = parseInt(document.getElementById('story-intro').dataset.level, 10);
+        document.getElementById('story-intro').hidden = true;
+        window._beginGame(lv);
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.key === 'e' || e.key === 'E') {
+          var noteModal = document.getElementById('note-modal');
+          if (noteModal && !noteModal.hidden) {
+            closeNoteModal();
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+      }, true);
+
+      var params = new URLSearchParams(window.location.search);
+      var auto = parseInt(params.get('level'), 10);
+      if (auto >= 1 && auto <= 3) {
+        requestAnimationFrame(function() {
+          startLevel(auto);
+          if (params.get('lab') === '1') {
+            setTimeout(function() { openLab(); }, 200);
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

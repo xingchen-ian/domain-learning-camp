@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Critter Kitchen: 5 Levels Challenge</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; color: white; text-align: center; margin: 0; padding: 10px; overflow: hidden; }
+        canvas { background: #34495e; display: block; border: 4px solid #ecf0f1; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .header { max-width: 900px; margin: 0 auto 10px auto; font-size: 13px; line-height: 1.5; color: #bdc3c7; }
+        span.cat { color: #3498db; font-weight: bold; }
+        span.monkey { color: #e67e22; font-weight: bold; }
+        
+        #startScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(44,62,80,0.97); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10;
+        }
+        .tutorial-box {
+            max-width: 650px; text-align: left; font-size: 15px; line-height: 1.6;
+            background: #34495e; padding: 20px 30px; border-radius: 10px; border: 2px solid #ecf0f1;
+        }
+        .start-btn {
+            margin-top: 25px; padding: 15px 50px; font-size: 22px; font-weight: bold;
+            background: #2ecc71; color: white; border: none; border-radius: 8px; cursor: pointer;
+            transition: 0.2s;
+        }
+        .start-btn:hover { background: #27ae60; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <b>Critter Kitchen: Dodge & Dish (5 Levels Mode)</b><br>
+        <span class="cat">🐱 Cat (P1):</span> WASD Move, SPACE Dash (Invincible to 🔥!), [E] Discard at 🗑️. &nbsp;|&nbsp; 
+        <span class="monkey">🐵 Monkey (P2):</span> Arrows Move, [ENTER] Throw to Partner OR Discard at 🗑️.
+    </div>
+
+    <div style="position: relative; width: 900px; margin: 0 auto;">
+        <div id="startScreen">
+            <h1 style="color: #f1c40f; font-size: 40px; margin-bottom: 10px;">🐱🐵 Critter Kitchen 🍳</h1>
+            <div class="tutorial-box">
+                <b>Welcome Master Chefs!</b><br><br>
+                🍎 <b>Goal:</b> Follow the Order on top! Reach the TARGET SCORE in 60s to clear the level.<br><br>
+                🕹️ <b>Controls:</b><br>
+                &nbsp;&nbsp; - <span class="cat">🐱 Cat:</span> WASD move, SPACE Dash (dodge 🔥), [E] trash food.<br>
+                &nbsp;&nbsp; - <span class="monkey">🐵 Monkey:</span> Arrows move, [ENTER] throw to Cat or trash.<br><br>
+                📖 <b>Level 1-2:</b> 🥬->🔪(🥗), 🐟->🔪(🍲), 🥚->🔥(🍳). Plate & Serve!<br><br>
+                📖 <b>Level 3+ Juice Bar:</b><br>
+                &nbsp;&nbsp; - Only fruits 🫐🍏🍈 will drop!<br>
+                &nbsp;&nbsp; - Chop fruits at 🔪 FIRST.<br>
+                &nbsp;&nbsp; - Put the EXACT 2 fruits (from Order) into 🥣 (MIX) to make 🥤 Juice!<br>
+                &nbsp;&nbsp; - Plate at 🍽️ and Serve at 🚪!<br><br>
+                ⚠️ <b>Warning:</b> More 🔥 Fireballs now! Move fast and dodge them!
+            </div>
+            <button class="start-btn" onclick="startGame()">START GAME</button>
+        </div>
+
+        <canvas id="gameCanvas" width="900" height="600"></canvas>
+    </div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const keys = {};
+    window.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        if (gameState === 'level_clear' && e.code === 'Enter') startLevel(currentLevel + 1);
+        if (gameState === 'level_failed' && e.code === 'KeyR') startLevel(currentLevel);
+        if (gameState === 'game_won' && e.code === 'KeyR') startLevel(1);
+        if (gameState === 'level3_intro' && e.code === 'Enter') { gameState = 'playing'; frames = 0; }
+    });
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    function getIcon(type, state) {
+        if (state === 'chopped') {
+            if (type === 'veg') return '🥗';
+            if (type === 'fish') return '🍲';
+            if (type === 'blueberry') return '🫐';
+            if (type === 'apple') return '🍏';
+            if (type === 'melon') return '🍈';
+	    return '❓';
+        }
+        if (state === 'baked') return '🍳';
+        if (state === 'plated') return '🍱';
+        if (state === 'mixed') return '🥤';
+        if (type === 'veg') return '🥬';
+        if (type === 'fish') return '🐟';
+        if (type === 'egg') return '🥚';
+        if (type === 'blueberry') return '🫐';
+        if (type === 'apple') return '🍏';
+        if (type === 'melon') return '🍈';
+        if (type === 'juice') return '🥤';
+	return '❓';
+    }
+
+    class Player {
+        constructor(x, y, color, isCat) {
+            this.x = x; this.y = y; this.color = color; this.isCat = isCat;
+            this.radius = 25; this.stun = 0; this.holding = null; 
+            this.dash = 0; this.dashCd = 0; this.threwFlag = false;
+            this.interactCd = 0; 
+        }
+        update() {
+            if (this.interactCd > 0) this.interactCd--;
+            if (this.stun > 0) { this.stun--; return; }
+            
+            // 移动速度提升
+            let speed = this.isCat ? 6.5 : 5.5; 
+            if (this.isCat && this.dash > 0) { speed = 12; this.dash--; }
+            if (this.isCat && this.dashCd > 0) this.dashCd--;
+            
+            if (this.isCat) {
+                if (keys['KeyW']) this.y -= speed; if (keys['KeyS']) this.y += speed;
+                if (keys['KeyA']) this.x -= speed; if (keys['KeyD']) this.x += speed;
+                if (keys['Space'] && this.dashCd === 0) { this.dash = 15; this.dashCd = 90; }
+            } else {
+                if (keys['ArrowUp']) this.y -= speed; if (keys['ArrowDown']) this.y += speed;
+                if (keys['ArrowLeft']) this.x -= speed; if (keys['ArrowRight']) this.x += speed;
+                if (keys['Enter'] && this.holding && !this.threwFlag && !rectCircleCollide(stations.trash, this.x, this.y, this.radius)) {
+                    let partner = players.find(p => p !== this);
+                    projectiles.push(new Projectile(this.x, this.y, partner, this.holding));
+                    this.holding = null; this.threwFlag = true; 
+                }
+            }
+            if (!keys['Enter']) this.threwFlag = false;
+            
+            this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+            this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+            
+            for (let key in stations) {
+                let s = stations[key];
+                if (rectCircleCollide(s, this.x, this.y, this.radius)) {
+                    if (key === 'trash') {
+                        if (this.isCat && keys['KeyE']) this.holding = null;
+                        if (!this.isCat && keys['Enter']) { this.holding = null; this.threwFlag = true; }
+                    }
+                    if (key.startsWith('chop')) {
+                        if (this.holding && this.holding.state === 'raw') { this.holding.state = 'chopped'; this.interactCd = 10; }
+                    }
+                    if (key === 'oven') {
+                        if (this.holding && this.holding.type === 'egg' && this.holding.state === 'raw') { this.holding.state = 'baked'; this.interactCd = 10; }
+                    }
+                    if (key.startsWith('mix')) {
+                        let bowl = mixBowls[key];
+                        let fruits = ['blueberry', 'apple', 'melon'];
+                        if (this.holding && this.holding.state === 'chopped' && fruits.includes(this.holding.type) && (!bowl || !bowl.mixed)) {
+                            if (!bowl) bowl = [];
+                            if (bowl.length < 2) {
+                                bowl.push(this.holding.type);
+                                this.holding = null;
+                                this.interactCd = 15; 
+                                if (bowl.length === 2) mixBowls[key] = { mixed: true, combo: bowl.slice() };
+                                else mixBowls[key] = bowl;
+                            }
+                        } else if (!this.holding && bowl && bowl.mixed && this.interactCd === 0) {
+                            this.holding = {type: 'juice', state: 'mixed', combo: bowl.combo};
+                            mixBowls[key] = null; 
+                            this.interactCd = 15;
+                        }
+                    }
+                    if ((key === 'plate') && this.holding && this.holding.state !== 'plated' && this.holding.state !== 'raw') { this.holding.state = 'plated'; this.interactCd = 10; }
+                    if ((key === 'door') && this.holding && this.holding.state === 'plated') {
+                        let isMatch = false;
+                        if (this.holding.type === currentOrder.item) {
+                            if (this.holding.type === 'juice' && currentOrder.combo) {
+                                let pCombo = this.holding.combo.slice().sort().join(',');
+                                let oCombo = currentOrder.combo.slice().sort().join(',');
+                                if (pCombo === oCombo) isMatch = true;
+                            } else { isMatch = true; }
+                        }
+                        if (isMatch) {
+                            score += 10;
+                            let pool = currentLevel >= 3 ? RECIPES_L3 : RECIPES_L1;
+                            currentOrder = pool[Math.floor(Math.random() * pool.length)];
+                        } else {
+                            score = Math.max(0, score - 5); 
+                        }
+                        this.holding = null;
+                    }
+                }
+            }
+        }
+        draw() {
+            ctx.fillStyle = this.stun > 0 ? '#95a5a6' : (this.dash > 0 ? '#fff' : this.color);
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2); ctx.fill();
+            ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(this.isCat ? '🐱' : '🐵', this.x, this.y);
+            if (this.holding) {
+                ctx.font = '20px Arial';
+                ctx.fillText(getIcon(this.holding.type, this.holding.state), this.x, this.y - this.radius - 15);
+            }
+            if (this.isCat && this.dashCd > 0) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius+8, -Math.PI/2, -Math.PI/2 + Math.PI*2 * (1 - this.dashCd/90)); ctx.stroke();
+            }
+        }
+    }
+
+    class Projectile {
+        constructor(x, y, target, item) {
+            this.x = x; this.y = y; this.target = target; this.item = item; this.speed = 8;
+            let dx = target.x - x; let dy = target.y - y;
+            let dist = Math.hypot(dx, dy) || 1;
+            this.vx = (dx/dist) * this.speed; this.vy = (dy/dist) * this.speed;
+        }
+        update() {
+            this.x += this.vx; this.y += this.vy;
+            if (Math.hypot(this.x - this.target.x, this.y - this.target.y) < this.target.radius + 10) {
+                if (!this.target.holding) this.target.holding = this.item; 
+                return true; 
+            }
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) return true;
+            return false;
+        }
+        draw() {
+            ctx.font = '20px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(getIcon(this.item.type, this.item.state), this.x, this.y);
+        }
+    }
+
+    let score = 0, timeLeft = 60, frames = 0, currentLevel = 1;
+    const targetScores = [0, 20, 30, 30, 40, 50]; 
+    let gameState = 'menu'; 
+    let players = [], ingredients = [], hazards = [], projectiles = [], stations = {}, mixBowls = {};
+
+    const RECIPES_L1 = [
+        { item: 'veg', icon: '🥗', text: '🥬 -> 🔪' },
+        { item: 'fish', icon: '🍲', text: '🐟 -> 🔪' },
+        { item: 'egg', icon: '🍳', text: '🥚 -> 🔥' }
+    ];
+    const RECIPES_L3 = [
+        { item: 'juice', combo: ['blueberry', 'melon'], icon: '🥤', text: '🫐+🍈 -> 🔪 -> 🥣' },
+        { item: 'juice', combo: ['melon', 'apple'], icon: '🥤', text: '🍈+🍏 -> 🔪 -> 🥣' },
+        { item: 'juice', combo: ['apple', 'blueberry'], icon: '🥤', text: '🍏+🫐 -> 🔪 -> 🥣' }
+    ];
+    let currentOrder = RECIPES_L1[0];
+
+    function getStationsForLevel(level) {
+        if (level <= 2) {
+            return {
+                chop:  {x: 100, y: 150, w: 80, h: 80, icon: '🔪', name: 'CHOP'},
+                oven:  {x: 100, y: 400, w: 80, h: 80, icon: '🔥', name: 'BAKE'},
+                plate: {x: 720, y: 150, w: 80, h: 80, icon: '🍽️', name: 'PLATE'},
+                door:  {x: 720, y: 400, w: 80, h: 80, icon: '🚪', name: 'SERVE'},
+                trash: {x: 410, y: 480, w: 80, h: 80, icon: '🗑️', name: 'TRASH'}
+            };
+        } else {
+            return {
+                chop1: {x: 80, y: 150, w: 80, h: 80, icon: '🔪', name: 'CHOP'},
+                chop2: {x: 80, y: 400, w: 80, h: 80, icon: '🔪', name: 'CHOP'},
+                mix1:  {x: 380, y: 150, w: 80, h: 80, icon: '🥣', name: 'MIX'},
+                mix2:  {x: 380, y: 400, w: 80, h: 80, icon: '🥣', name: 'MIX'},
+                plate: {x: 720, y: 150, w: 80, h: 80, icon: '🍽️', name: 'PLATE'},
+                door:  {x: 720, y: 400, w: 80, h: 80, icon: '🚪', name: 'SERVE'},
+                trash: {x: 550, y: 500, w: 80, h: 80, icon: '🗑️', name: 'TRASH'}
+            };
+        }
+    }
+
+    function startGame() {
+        document.getElementById('startScreen').style.display = 'none';
+        startLevel(1);
+    }
+
+    function startLevel(level) {
+        currentLevel = level;
+        score = 0; timeLeft = 60; frames = 0; 
+        ingredients = []; hazards = []; projectiles = []; 
+        stations = getStationsForLevel(level);
+        mixBowls = (level >= 3) ? { mix1: null, mix2: null } : {};
+        
+        players = [
+            new Player(400, 300, '#3498db', true),
+            new Player(500, 300, '#e67e22', false)
+        ];
+        currentOrder = level >= 3 ? RECIPES_L3[Math.floor(Math.random()*RECIPES_L3.length)] : RECIPES_L1[Math.floor(Math.random()*RECIPES_L1.length)];
+        
+        if (level === 3) gameState = 'level3_intro';
+        else gameState = 'playing';
+    }
+
+    function rectCircleCollide(rect, cx, cy, r) {
+        let testX = cx; let testY = cy;
+        if (cx < rect.x) testX = rect.x; else if (cx > rect.x + rect.w) testX = rect.x + rect.w;
+        if (cy < rect.y) testY = rect.y; else if (cy > rect.y + rect.h) testY = rect.y + rect.h;
+        return Math.hypot(cx - testX, cy - testY) <= r;
+    }
+
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let key in stations) {
+            let s = stations[key];
+            ctx.fillStyle = '#2c3e50'; ctx.fillRect(s.x, s.y, s.w, s.h);
+            ctx.strokeStyle = '#ecf0f1'; ctx.lineWidth = 2; ctx.strokeRect(s.x, s.y, s.w, s.h);
+            ctx.font = '30px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(s.icon, s.x + s.w/2, s.y + s.h/2 - 10);
+            ctx.font = '12px Arial'; ctx.fillStyle = '#fff'; ctx.fillText(s.name, s.x + s.w/2, s.y + s.h - 15);
+            
+            if (key.startsWith('mix') && mixBowls[key]) {
+                let bowl = mixBowls[key];
+                if (bowl.mixed) {
+                    ctx.font = '20px Arial'; ctx.fillText('🥤', s.x + s.w/2, s.y + s.h/2 + 15);
+                } else {
+                    let icon1 = getIcon(bowl[0], 'chopped');
+                    let txt = icon1 + (bowl.length === 2 ? getIcon(bowl[1], 'chopped') : '');
+                    ctx.font = '16px Arial'; ctx.fillText(txt, s.x + s.w/2, s.y + s.h/2 + 15);
+                }
+            }
+        }
+
+        if (gameState === 'level3_intro') {
+            ctx.fillStyle = 'rgba(0,0,0,0.92)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#f1c40f'; ctx.font = '45px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(`Level 3: Juice Bar! 🍹`, canvas.width/2, canvas.height/2 - 90);
+            ctx.fillStyle = '#fff'; ctx.font = '20px Arial';
+            ctx.fillText(`Exact Fruit Combos Required!`, canvas.width/2, canvas.height/2 - 40);
+            ctx.fillText(`1. Catch falling fruits 🫐🍏🍈`, canvas.width/2, canvas.height/2);
+            ctx.fillText(`2. Chop them at 🔪 (CHOP) to cut them up`, canvas.width/2, canvas.height/2 + 35);
+            ctx.fillText(`3. Put the EXACT 2 fruits from Order into 🥣 (MIX)`, canvas.width/2, canvas.height/2 + 70);
+            ctx.fillText(`4. Plate at 🍽️ and Serve at 🚪!`, canvas.width/2, canvas.height/2 + 105);
+            ctx.fillStyle = '#2ecc71'; ctx.font = '24px Arial';
+            ctx.fillText(`Press [ENTER] to Start Level 3`, canvas.width/2, canvas.height/2 + 160);
+            requestAnimationFrame(gameLoop);
+            return;
+        }
+
+        if (gameState === 'playing') {
+            if (frames % 60 === 0 && timeLeft > 0) timeLeft--;
+            frames++;
+
+            let availTypes = ['veg', 'fish', 'egg'];
+            if (currentLevel >= 3) availTypes = ['blueberry', 'apple', 'melon'];
+            if (frames % 45 === 0) {
+                let t = availTypes[Math.floor(Math.random() * availTypes.length)];
+                ingredients.push({x: Math.random() * (canvas.width-200) + 100, y: -20, r: 15, type: t, vy: 1.5 + Math.random()});
+            }
+
+            // 火焰数量翻倍 (刷新频率大幅提升)
+            let spawnRate = [0, 90, 70, 55, 40, 30][currentLevel];
+            let hSpeed = 1 + (currentLevel * 0.1); 
+            if (frames % spawnRate === 0) {
+                let fromLeft = Math.random() > 0.5;
+                hazards.push({
+                    x: fromLeft ? -20 : canvas.width + 20,
+                    y: Math.random() * (canvas.height - 200) + 100,
+                    vx: (fromLeft ? 3.5 : -3.5) * hSpeed, // 速度也略微提升
+                    vy: (Math.random() - 0.5) * 2 * hSpeed,
+                    r: 15
+                });
+            }
+
+            ingredients.forEach((ing, i) => {
+                ing.y += ing.vy;
+                if (ing.y > canvas.height) ingredients.splice(i, 1);
+                ctx.font = '20px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(getIcon(ing.type, 'raw'), ing.x, ing.y);
+                players.forEach(p => {
+                    if (!p.holding && Math.hypot(p.x - ing.x, p.y - ing.y) < p.radius + ing.r) {
+                        p.holding = {type: ing.type, state: 'raw'}; ingredients.splice(i, 1);
+                    }
+                });
+            });
+
+            hazards.forEach((h, i) => {
+                h.x += h.vx; h.y += h.vy;
+                if (h.y < 50 || h.y > canvas.height - 20) h.vy *= -1;
+                if (h.x < -50 || h.x > canvas.width + 50) hazards.splice(i, 1);
+                ctx.font = '24px Arial'; ctx.fillText('🔥', h.x, h.y);
+                players.forEach(p => {
+                    if (p.stun === 0 && p.dash === 0 && Math.hypot(p.x - h.x, p.y - h.y) < p.radius + h.r) {
+                        p.stun = 60; p.holding = null; 
+                    }
+                });
+            });
+
+            projectiles.forEach((proj, i) => { if (proj.update()) projectiles.splice(i, 1); else proj.draw(); });
+            players.forEach(p => { p.update(); p.draw(); });
+
+            if (timeLeft <= 0) {
+                if (score >= targetScores[currentLevel]) gameState = currentLevel < 5 ? 'level_clear' : 'game_won';
+                else gameState = 'level_failed';
+            }
+        } else {
+            ingredients.forEach(ing => ctx.fillText(getIcon(ing.type, 'raw'), ing.x, ing.y));
+            hazards.forEach(h => ctx.fillText('🔥', h.x, h.y));
+            projectiles.forEach(proj => proj.draw());
+            players.forEach(p => p.draw());
+        }
+
+        if (gameState !== 'menu' && gameState !== 'level3_intro') {
+            ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(canvas.width/2 - 240, 15, 480, 50);
+            ctx.fillStyle = '#f1c40f'; ctx.font = '20px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(`Order: ${currentOrder.text} -> 🍽️ -> 🚪`, canvas.width/2, 40);
+
+            ctx.fillStyle = timeLeft <= 10 && gameState === 'playing' ? '#e74c3c' : '#fff';
+            ctx.font = '20px Arial'; ctx.textAlign = 'left';
+            ctx.fillText(`Time: ${timeLeft}s`, 20, 40);
+            ctx.fillText(`Level: ${currentLevel}/5`, 20, 70);
+            ctx.textAlign = 'right';
+            ctx.fillText(`Score: ${score}`, canvas.width - 20, 40);
+            ctx.fillStyle = '#2ecc71'; ctx.fillText(`Target: ${targetScores[currentLevel]}`, canvas.width - 20, 70);
+        }
+
+        if (gameState === 'level_clear') {
+            ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#2ecc71'; ctx.font = '45px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(`Level ${currentLevel} Cleared!`, canvas.width/2, canvas.height/2 - 30);
+            ctx.fillStyle = '#fff'; ctx.font = '22px Arial';
+            ctx.fillText(`Score: ${score} / Target: ${targetScores[currentLevel]}`, canvas.width/2, canvas.height/2 + 20);
+            ctx.fillStyle = '#f1c40f'; ctx.fillText(`Press [ENTER] to go to Level ${currentLevel + 1}`, canvas.width/2, canvas.height/2 + 70);
+        } else if (gameState === 'level_failed') {
+            ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#e74c3c'; ctx.font = '45px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(`Level ${currentLevel} Failed!`, canvas.width/2, canvas.height/2 - 30);
+            ctx.fillStyle = '#fff'; ctx.font = '22px Arial';
+            ctx.fillText(`You got: ${score} / Need: ${targetScores[currentLevel]}`, canvas.width/2, canvas.height/2 + 20);
+            ctx.fillStyle = '#f1c40f'; ctx.fillText(`Press [R] to Retry Level ${currentLevel}`, canvas.width/2, canvas.height/2 + 70);
+        } else if (gameState === 'game_won') {
+            ctx.fillStyle = 'rgba(0,0,0,0.95)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#f1c40f'; ctx.font = '55px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(`🏆 YOU WON! 🏆`, canvas.width/2, canvas.height/2 - 30);
+            ctx.fillStyle = '#fff'; ctx.font = '25px Arial';
+            ctx.fillText(`All 5 Levels Cleared! Master Chefs!`, canvas.width/2, canvas.height/2 + 20);
+            ctx.fillStyle = '#3498db'; ctx.fillText(`Press [R] to Play Again`, canvas.width/2, canvas.height/2 + 70);
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
+</script>
+</body>
+</html>

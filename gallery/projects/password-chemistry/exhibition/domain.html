@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>领域与系统 — PASSWORD</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff8fab'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%F0%9F%A7%AA%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-mark">🧪</span>
+      PASSWORD
+    </a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="domain.html" class="active">领域与系统</a>
+      <a href="process.html">开发过程</a>
+      <a href="game.html">试玩</a>
+      <a href="en/domain.html" style="font-size:0.85em;opacity:0.6;">EN</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">第一节</div>
+        <h1 class="section-title">领域知识</h1>
+        <p class="section-lead">
+          化学和密室逃脱看似无关，但两者都奖励同一种习惯：
+          <strong>先看懂局面，然后用最小的工具解决问题。</strong>
+          本页解释真实世界的领域、典型的新手陷阱，以及游戏旨在培养的专家判断力。
+        </p>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="grid-2">
+          <div class="card">
+            <h3>🔬 真实领域：化学</h3>
+            <p>
+              化学是研究物质相遇时发生什么变化的科学。一个反应不只是"两样东西放在烧杯里"——
+              它取决于顺序、温度，以及混合物是否经过过滤或蒸发。先倒入错误的东西，就会产生副反应。
+              跳过了过滤，固体废物就留在产物里。忘记了蒸发，溶剂就稀释了结果。
+            </p>
+            <p style="margin-top: 12px;">
+              在学校实验室，答案在实验步骤单上。在这个游戏里，实验步骤单藏在房间里，
+              你必须在时间压力下、在游荡的精灵附近找到它、阅读它、遵循它。
+            </p>
+          </div>
+          <div class="card">
+            <h3>🚪 真实领域：密室逃脱</h3>
+            <p>
+              密室逃脱是一个小型的解谜空间。出口很少是最难的部分——最难的是及时收集
+              正确的信息碎片。线索散落在房间里：桌上的涂鸦、镜子里的倒写信息、瓶子上
+              的化学标签。房间被设计成新手会慌张、混淆线索、浪费前十分钟的样子。
+              专家则会慢下来，列出已有的信息，只有在知道自己在找什么的时候才行动。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">常见误区</div>
+        <h2 class="section-title">新手会犯什么错误</h2>
+        <p class="section-lead">
+          最常见的陷阱是一种心理捷径：<em>目标是逃脱，所以朝出口走。</em>
+          在化学密室逃脱中，这种直觉恰恰相反。出口不会打开，直到你完成配方，
+          而配方藏在被新手略过的线索中。
+        </p>
+        <div class="grid-3">
+          <div class="card">
+            <h3>🏃 直奔出口</h3>
+            <p>
+              <strong>新手：</strong>"我看到传送门了。我要过去。"
+              <br><br>
+              <strong>现实：</strong>传送门锁着。没有完成试剂混合，它不会打开。
+            </p>
+          </div>
+          <div class="card">
+            <h3>🧪 慌乱全倒进去</h3>
+            <p>
+              <strong>新手：</strong>"我就全倒进去然后加热。"
+              <br><br>
+              <strong>现实：</strong>顺序错误 = 紫色烟雾、扣血、试剂浪费。
+            </p>
+          </div>
+          <div class="card">
+            <h3>👀 忽略房间</h3>
+            <p>
+              <strong>新手：</strong>"我只要收集彩色瓶子就行。"
+              <br><br>
+              <strong>现实：</strong>其中三个是诱饵。配方只需要两种。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="section-eyebrow">第二节</div>
+        <h1 class="section-title">系统设计</h1>
+        <p class="section-lead">
+          游戏被构建为一个明确的系统，包含<em>环境数据</em>、<em>玩家控制数据</em>
+          和<em>计算结果</em>——它们之间有清晰的反馈转换。下面的映射图反映了原始设计白板。
+        </p>
+        <div class="system-graph">
+          <table>
+            <thead>
+              <tr>
+                <th>环境数据</th>
+                <th>玩家控制数据</th>
+                <th>计算结果</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <ul>
+                    <li>灯光（可见度和氛围）</li>
+                    <li>精灵 — 出现/消失、速度、数量</li>
+                    <li>物品 — 化学试剂、工具（线索和工具）</li>
+                    <li>区域状态：<span class="accent">安全/危险</span>，容易/难以逃脱</li>
+                    <li>直接空间 / 精灵生成空间</li>
+                  </ul>
+                </td>
+                <td>
+                  <ul>
+                    <li><strong>物理动作：</strong>前后移动、跳跃/攀爬、蹲下/趴下</li>
+                    <li><strong>化学动作（实验台）：</strong>选择正确的化学品和设备、混合试剂、过滤混合物、加热、蒸发溶剂</li>
+                  </ul>
+                </td>
+                <td>
+                  <ul>
+                    <li>损失的生命 — 角色受伤次数</li>
+                    <li>完成总时间</li>
+                    <li>使用化学品的种类/数量</li>
+                    <li>胜利/失败状态</li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grid-2" style="margin-top: 32px;">
+          <div class="card">
+            <h3>✅ 成功条件</h3>
+            <p>
+              找到出口传送门，在时限内使用正确的化学品和工具顺序逃脱——
+              并且在生命值归零之前完成。
+            </p>
+          </div>
+          <div class="card">
+            <h3>❌ 失败条件</h3>
+            <p>
+              时间耗尽、被精灵抓住太多次、生命值归零。失败的尝试不是终点——
+              它是下一次计划的数据。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-eyebrow">反馈转换</div>
+        <h2 class="section-title">梦境如何与你对话</h2>
+        <p class="section-lead">
+          看不见的状态被转化为可见、可读的反馈。玩家随时知道为什么输、下次试什么。
+        </p>
+        <div class="grid-3">
+          <div class="card">
+            <h3>💔 生命条</h3>
+            <p>
+              任何伤害——紫色烟雾、精灵接触、错误工具顺序——都会扣减生命条。生命清空 = 梦境结束。
+            </p>
+          </div>
+          <div class="card">
+            <h3>⏱ 倒计时器</h3>
+            <p>
+              时间是第二资源。20 秒以下计时器变橙色；10 秒以下闪烁。时间耗尽结束本轮。
+            </p>
+          </div>
+          <div class="card">
+            <h3>🧪 化学品计数器</h3>
+            <p>
+              实时显示你已拾取 vs 配方所需的试剂数量。配方是目标——多余试剂浪费时间。
+            </p>
+          </div>
+          <div class="card">
+            <h3>💨 紫色烟雾</h3>
+            <p>
+              实验台操作错误会产生从烧杯升起的紫色/粉色烟雾。生命值扣减。
+            </p>
+          </div>
+          <div class="card">
+            <h3>✨ 闪光粒子</h3>
+            <p>
+              成功的化学操作释放出闪光、爱心和星星粒子，飘过屏幕。视觉提示告诉你操作正确！
+            </p>
+          </div>
+          <div class="card">
+            <h3>📳 伤害闪烁</h3>
+            <p>
+              任何对玩家的伤害触发全屏珊瑚色闪烁和屏幕震动——即时的"我做错了"反馈。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background: rgba(179, 136, 235, 0.06);">
+      <div class="container">
+        <div class="section-eyebrow">挑战预设</div>
+        <h2 class="section-title">难度如何编码</h2>
+        <p class="section-lead">
+          三个关卡不仅仅是换了皮肤。它们改变真实的系统变量，
+          让玩家体验不同的谜题，而不仅是不同的壁纸。
+        </p>
+        <div class="level-grid">
+          <div class="level-card">
+            <div class="level-num">第 01 关</div>
+            <div class="level-name">急救中和</div>
+            <div class="level-desc">
+              <strong>变化的变量：</strong>时间 60 秒、2 个精灵、2 种试剂、1 步工具。
+              玩家在无压力、节奏友好的情况下学习游戏循环。
+            </div>
+          </div>
+          <div class="level-card">
+            <div class="level-num">第 02 关</div>
+            <div class="level-name">废水处理</div>
+            <div class="level-desc">
+              <strong>变化的变量：</strong>时间 50 秒、3 个精灵、2 种试剂、
+              3 步工具（混合 → 过滤 → 加热）。增加了多步推理。
+            </div>
+          </div>
+          <div class="level-card">
+            <div class="level-num">第 03 关</div>
+            <div class="level-name">暗房银回收</div>
+            <div class="level-desc">
+              <strong>变化的变量：</strong>时间 60 秒、4 个快速精灵、3 种试剂、
+              4 步工具。只有仔细阅读房间的人才能逃脱。
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      IMA Summer Program · Group 1 · ELSA ZHANGYIQING · 2026
+    </footer>
+  </main>
+</body>
+</html>

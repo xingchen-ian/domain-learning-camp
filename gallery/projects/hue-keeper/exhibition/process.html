@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hue Keeper — Development Process</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">
+            <span class="logo-dot"></span>
+            Hue Keeper
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="domain.html">Domain Knowledge</a></li>
+            <li><a href="system.html">System Design</a></li>
+            <li><a href="process.html" class="active">Development Process</a></li>
+            <li><a href="game.html" class="nav-cta">Play Game</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <section class="section">
+            <h2 class="section-title">Development Process</h2>
+            <p class="section-subtitle">A chronological timeline of how Hue Keeper was built through human-AI collaboration.</p>
+
+            <div class="info-block">
+                <h2>Project Overview</h2>
+                <table class="data-table">
+                    <tbody>
+                        <tr><td><strong>Project Title</strong></td><td>Hue Keeper</td></tr>
+                        <tr><td><strong>Student / Team</strong></td><td>Amy Fang</td></tr>
+                        <tr><td><strong>Domain</strong></td><td>Basic Color Theory</td></tr>
+                        <tr><td><strong>AI Agent</strong></td><td>Deepseek (design brief) / WorkBuddy (implementation)</td></tr>
+                        <tr><td><strong>Core Learning Shift</strong></td><td>From simple color matching to judging, mixing, and matching under pressure</td></tr>
+                        <tr><td><strong>Dependency Track</strong></td><td>Track A — No build step (HTML, CSS, plain JavaScript, Canvas 2D)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-block">
+                <h2>Development Timeline</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 1 — Design Brief</div>
+                        <div class="timeline-title">Game design document created</div>
+                        <div class="timeline-desc">
+                            Amy Fang wrote the design brief covering domain knowledge (basic color theory), novice misconceptions, core learning loop, data model, rules, and challenge presets. The brief specified a cave-fresco setting with flower collection, fountain mixing, and monster combat using complementary colors.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 1 — Planning</div>
+                        <div class="timeline-title">Implementation plan established</div>
+                        <div class="timeline-desc">
+                            The AI Agent restated the core learning shift (matching &rarr; judging + mixing + matching), identified the main game variables (fresco fill levels, palette slots, monster states, flower charges), and confirmed Track A (no build step) as the dependency track. The file structure was planned: <code>exhibition/</code> for the static site, <code>source/</code> for editable source.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 1 — Scaffolding</div>
+                        <div class="timeline-title">Project website structure initialized</div>
+                        <div class="timeline-desc">
+                            Created the five-page website: Home (index.html), Domain Knowledge (domain.html), System Design (system.html), Development Process (process.html), and Play Game (game.html). A shared CSS stylesheet was written with a warm, cave-fresco-inspired aesthetic. Navigation links use relative paths for Gallery compatibility.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 2 — Core Game Loop</div>
+                        <div class="timeline-title">Canvas 2D game engine built</div>
+                        <div class="timeline-desc">
+                            Implemented the full game engine in <code>game.js</code> with the following systems: player movement (WASD/arrows), flower collection (walk-over collision), color mixing at the fountain (walk-over with 2 colors), fresco splattering (SPACE key with proximity check), fresco fading timer, monster spawning and AI (chase player), monster combat (complementary = defeated, same = stronger, other = unharmed), particle effects, floating text feedback, and Web Audio API sound effects.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 2 — Level Presets</div>
+                        <div class="timeline-title">Three challenge presets implemented</div>
+                        <div class="timeline-desc">
+                            <strong>Level 1 (Matching):</strong> Primary colors only, no fading, no monsters. <strong>Level 2 (Mixing):</strong> Fresco needs secondary colors, flowers only provide primaries, fading at 3%/sec after 8s delay. <strong>Level 3 (Conflict):</strong> Monsters spawn every 7 seconds, each with a color weakness to its complement, fading at 2%/sec. Each level changes variables and relationships, not just decoration.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 2 — Feedback Systems</div>
+                        <div class="timeline-title">Visual, audio, and state-based feedback wired up</div>
+                        <div class="timeline-desc">
+                            Fresco pieces glow white on correct color, flash red on wrong color. Monsters play a defeat animation (fade out) when killed, grow larger when strengthened, and show "No effect" text when unharmed. Particles spray on every splatter action. Sound effects use Web Audio API oscillators (no external files needed). Floating text provides immediate readable feedback for every action.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 3 — Testing &amp; Polish</div>
+                        <div class="timeline-title">Game tested and website finalized</div>
+                        <div class="timeline-desc">
+                            Verified the complete observe &rarr; judge &rarr; act &rarr; feedback &rarr; adjust loop works in all three levels. Checked that success (all fresco pieces filled) and failure (monster hit / fresco fade) conditions trigger correctly. Confirmed all internal links use relative paths. Verified the game runs without internet access and fits 1920&times;1080 exhibition display.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-date">Session 3 — Documentation</div>
+                        <div class="timeline-title">README, development log, and manifest created</div>
+                        <div class="timeline-desc">
+                            Wrote <code>README.md</code> with dependency track, controls, and build/exhibit instructions. Created <code>agent-development-log.md</code> with chronological interaction entries. Created <code>THIRD_PARTY.md</code> (no external dependencies for Track A). Verified all acceptance checklist items.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-block">
+                <h2>Key Design Decisions</h2>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>Track A (No Build Step)</h3>
+                        <p>Chose plain HTML/CSS/JavaScript with Canvas 2D over Three.js or Vite. The game is 2D and doesn't need 3D, and Track A means the exhibition folder runs on any static HTTP server with zero installation.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Web Audio API for Sound</h3>
+                        <p>Used browser-native oscillator-based sounds instead of audio files. This means zero external assets and the game works fully offline with no file dependencies.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Proximity-Based Splattering</h3>
+                        <p>SPACE key checks for monsters first (60px range), then fresco pieces (90px range). This means the player doesn't need a targeting system — just walk close and press SPACE.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Required-Color Hint Dots</h3>
+                        <p>Each unfilled fresco piece shows a small translucent dot of its required color. This helps new players learn what's needed without making it too easy — they still must figure out how to get that color (collect or mix).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-block">
+                <h2>AI Influence on Design Direction</h2>
+                <div class="card" style="border-left:4px solid var(--accent-sky);">
+                    <p>The AI Agent suggested several design directions that were incorporated:</p>
+                    <ul style="margin-top:8px;">
+                        <li><strong>Particle effects</strong> on splatter — the AI proposed adding visual particle bursts for satisfying feedback. Amy accepted this as it makes the game feel more responsive.</li>
+                        <li><strong>Flower recharge system</strong> — the AI suggested flowers deplete and recharge over time, preventing players from camping one flower. This adds the spatial efficiency challenge from the brief.</li>
+                        <li><strong>Monster "STRONGER" label</strong> — the AI proposed explicitly labeling when a monster gets stronger, so the player understands the consequence of using the same color. This directly addresses the novice misconception.</li>
+                        <li><strong>Sound differentiation</strong> — the AI suggested different sound tones for correct/wrong/defeat/stronger, so players can learn from audio even while looking elsewhere.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>Hue Keeper &mdash; Development Process &mdash; Amy Fang</p>
+    </footer>
+</body>
+</html>

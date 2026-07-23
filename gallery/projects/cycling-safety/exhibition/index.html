@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cycling Safety - A Bike Riding Game | Home</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="navbar">
+  <div class="logo"><span>Cycling Safety</span></div>
+  <nav>
+    <a href="index.html" class="active">Home</a>
+    <a href="index.html#domain">Domain</a>
+    <a href="index.html#system">System</a>
+    <a href="process.html">Process</a>
+    <a href="game.html">Play</a>
+  </nav>
+</div>
+
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Cycling Safety</h1>
+    <p>A bike riding game where rushing leads to crashes. Learn to control your speed, read the road, and steer around danger — just like in real cycling.</p>
+    <a href="game.html" class="play-btn">Play the Game</a>
+  </div>
+
+  <!-- Game Idea -->
+  <div class="card" id="idea">
+    <h2>Game Idea</h2>
+    <div class="grid-2">
+      <div>
+        <h3>Concept</h3>
+        <p>You are cycling on a trail toward a destination. The road changes terrain, curves, and throws obstacles in your path. Your job is to observe what's ahead, judge whether your speed is safe, and adjust before it's too late.</p>
+        <h3 style="margin-top:16px;">Player Goal</h3>
+        <p>Reach the finish line within the time limit — without crashing into obstacles, losing balance, or running out of time.</p>
+      </div>
+      <div>
+        <div class="info-block">
+          <strong>Core Learning Shift</strong>
+          At first, players think the main goal is to rush to the destination, but that will easily cause them to fall. When they become experts, they know how to avoid danger by controlling speed and direction.
+        </div>
+        <div class="info-block green">
+          <strong>Why This Domain?</strong>
+          "I often go cycling with my parents. I once tripped over a wooden stick on the ground, and I realized that awareness of your surroundings directly affects your speed and bike-handling skills." — Cici chen
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Domain Knowledge -->
+  <div class="card" id="domain">
+    <h2>Domain Knowledge: Cycling</h2>
+    <div class="grid-2">
+      <div class="info-block">
+        <strong>Real-World Experience</strong>
+        Cycling is not just about pedaling forward. A skilled rider constantly observes the road, adjusts speed before curves, avoids obstacles, and adapts to different surfaces (pavement, gravel, wet roads).
+      </div>
+      <div class="info-block gold">
+        <strong>Novice Misconception</strong>
+        Beginners think riding a bike is mostly about pedaling forward. They rush toward obstacles, forget to adjust direction, or fail to control speed.
+      </div>
+      <div class="info-block green">
+        <strong>Expert Judgment</strong>
+        Experts understand the relationship between obstacle, speed, direction, and route planning. They slow down before curves, lean into turns, and pick safe lines through obstacles.
+      </div>
+      <div class="info-block blue">
+        <strong>Why It Becomes Playable</strong>
+        The core challenge — matching speed to road conditions — maps directly to game mechanics. Speed, stability, terrain, and obstacles create a system where careful observation is rewarded and rushing is punished.
+      </div>
+    </div>
+  </div>
+
+  <!-- System Design -->
+  <div class="card" id="system">
+    <h2>System Design</h2>
+    <p>The game is built around three data categories, clearly separated in the code:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Data</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Environment Data</strong></td>
+          <td>Terrain type, curve shape, obstacles, slope</td>
+          <td>The road ahead — what the player observes and reacts to.</td>
+        </tr>
+        <tr>
+          <td><strong>Player-Controlled Data</strong></td>
+          <td>Speed (pedal/brake), direction (steer), lean angle</td>
+          <td>The actions the player takes in response to the environment.</td>
+        </tr>
+        <tr>
+          <td><strong>System-Calculated Results</strong></td>
+          <td>Stability, shake, skid marks, collisions, win/lose</td>
+          <td>Feedback the player reads to judge whether their actions were correct.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:24px;">Feedback Mappings</h3>
+    <div class="grid-2">
+      <div class="info-block">
+        <strong>Bike Shaking / Handlebar Vibration</strong>
+        Comes from taking a curve too fast or entering rough terrain. Appears as screen vibration and visual bike wobble. Immediate feedback.
+      </div>
+      <div class="info-block blue">
+        <strong>Loss of Traction / Skidding</strong>
+        Comes from tire-ground contact on slippery surfaces or hard braking. Appears as skid marks on the ground and a screeching sound. Discovered over time — not instant crash, but leads to loss of control.
+      </div>
+      <div class="info-block gold">
+        <strong>Speed Feedback</strong>
+        Shown through scroll speed, wind sound (volume rises with speed), and speed lines at high velocity.
+      </div>
+      <div class="info-block green">
+        <strong>Crash / "You Failed"</strong>
+        Hitting a rock or large obstacle causes an instant crash. Stability dropping to zero means the rider falls. Both show a clear failure screen with a tip.
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px;">Win / Lose Conditions</h3>
+    <div class="grid-2">
+      <div class="info-block green">
+        <strong>Win</strong>
+        Reach the destination without crashing, maintain balance (stability stays above 0), and arrive within the time limit.
+      </div>
+      <div class="info-block">
+        <strong>Game Over</strong>
+        Crash into an obstacle (rock = instant crash), lose balance and fall (stability reaches 0), run out of time, or drop below minimum speed for too long.
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px;">Challenge Presets (Levels)</h3>
+    <p>Each level changes system variables and relationships — not just visual decoration:</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Level</th>
+          <th>Terrain</th>
+          <th>Obstacles</th>
+          <th>Curves</th>
+          <th>Key Challenge</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1: Park Path</strong></td>
+          <td>Flat pavement</td>
+          <td>Few small sticks</td>
+          <td>Gentle, wide turns</td>
+          <td>Learn basic steering and obstacle avoidance</td>
+        </tr>
+        <tr>
+          <td><strong>2: Mixed Trail</strong></td>
+          <td>Pavement + gravel</td>
+          <td>Rocks, branches, sticks</td>
+          <td>Moderate turns</td>
+          <td>Gravel reduces grip — slow down on loose surface</td>
+        </tr>
+        <tr>
+          <td><strong>3: Hilly Gravel</strong></td>
+          <td>Hilly gravel + rough</td>
+          <td>Scattered rocks</td>
+          <td>Sharp turns</td>
+          <td>Control speed on descents; slopes affect momentum</td>
+        </tr>
+        <tr>
+          <td><strong>4: Mountain Pass</strong></td>
+          <td>Rough + slippery</td>
+          <td>Dense obstacles</td>
+          <td>Tight, continuous turns</td>
+          <td>Combine all skills; slippery surface causes skidding</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:24px;">Core Player Learning Loop</h3>
+    <div class="grid-3" style="text-align:center;">
+      <div class="info-block"><strong>1. Observe</strong><br>See the obstacle and curve shape ahead</div>
+      <div class="info-block blue"><strong>2. Judge</strong><br>Is my speed safe? Is my direction correct?</div>
+      <div class="info-block gold"><strong>3. Act</strong><br>Turn, accelerate, or brake</div>
+    </div>
+    <div class="grid-2" style="text-align:center; margin-top:12px;">
+      <div class="info-block green"><strong>4. Read Feedback</strong><br>Bike shakes? Slow down. Crashed? Change direction next time.</div>
+      <div class="info-block"><strong>5. Adjust</strong><br>Decrease speed on curves. Steer around obstacles. Adapt to terrain.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Cycling Safety | Student: Cici chen | AI Agent: WorkBuddy | Domain: cycling, riding a bike</p>
+    <p>Built with HTML, CSS, and Canvas 2D — no build step required.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

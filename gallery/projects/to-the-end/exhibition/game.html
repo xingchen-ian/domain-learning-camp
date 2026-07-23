@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To the End - Play</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="process.html" class="nav-link">Process</a>
+      <a href="game.html" class="nav-link active">Play</a>
+    </nav>
+  </header>
+
+  <main class="game-page">
+    <h1 class="page-title">To the End — Biking</h1>
+
+    <!-- Homepage: choose a game mode -->
+    <div id="homepage" class="homepage">
+      <div class="home-card">
+        <h2>Choose a Mode</h2>
+        <p class="home-sub">Ride to the finish without running out of stamina or exceeding a safe heart rate.</p>
+        <div class="home-buttons">
+          <button id="singleBtn" class="mode-btn">Singleplayer</button>
+          <button id="multiBtn" class="mode-btn">Multiplayer (2 Players)</button>
+        </div>
+        <p class="hint">Singleplayer is the solo race. Multiplayer pits two riders (sharing one keyboard) against each other.</p>
+      </div>
+    </div>
+
+    <div id="gameArea" class="hidden">
+      <div class="level-selector">
+        <span class="label">Select challenge:</span>
+        <button class="level-btn active" data-level="0">Level 1</button>
+        <button class="level-btn" data-level="1">Level 2</button>
+        <button class="level-btn" data-level="2">Level 3</button>
+        <button id="lockBtn" class="level-btn lock-btn" data-locked="false" title="Click to lock Levels 2 & 3 — finish the previous level to advance.">Lock Levels</button>
+        <button id="menuBtn" class="level-btn menu-btn">Menu</button>
+      </div>
+
+      <div id="topBar" class="top-bar"></div>
+
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas" width="1200" height="450"></canvas>
+        <div id="messageBox" class="message hidden"></div>
+      </div>
+
+      <section class="panel game-controls">
+        <div class="control-row buttons">
+          <button id="startBtn" class="primary-btn">Start</button>
+          <button id="restartBtn" class="secondary-btn">Restart</button>
+        </div>
+      </section>
+
+      <div class="control-panel">
+        <section class="panel player-input" id="p1panel">
+          <h2>Player 1 Controls</h2>
+
+          <div class="control-row">
+            <label for="pedalSlider">Pedaling Speed</label>
+            <input id="pedalSlider" type="range" min="0" max="120" value="60" />
+            <span id="pedalValue" class="value">60 RPM</span>
+          </div>
+
+          <div class="control-row">
+            <label for="powerSlider">Power Output</label>
+            <input id="powerSlider" type="range" min="0" max="100" value="50" />
+            <span id="powerValue" class="value">50%</span>
+          </div>
+
+          <div class="control-row">
+            <span class="label">Riding Position</span>
+            <button id="positionBtn" class="toggle-btn" data-value="normal">Normal</button>
+          </div>
+
+          <div class="control-row gear-row">
+            <span class="label">Gear</span>
+            <button id="gearDown" class="small-btn">-</button>
+            <span id="gearValue" class="value big">4</span>
+            <button id="gearUp" class="small-btn">+</button>
+          </div>
+
+          <h2 class="data-head">Player 1 Data</h2>
+          <div class="data-grid">
+            <div class="data-item">
+              <span class="data-label">Wind Resistance</span>
+              <span id="windValue" class="data-value">0 N</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Bike Speed</span>
+              <span id="speedValue" class="data-value">0.0 km/h</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Incline Grade</span>
+              <span id="inclineValue" class="data-value">0%</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Terrain</span>
+              <span id="terrainValue" class="data-value">Flat</span>
+            </div>
+            <div class="data-item stamina">
+              <span class="data-label">Stamina</span>
+              <div class="bar"><div id="staminaBar" class="bar-fill ok" style="width: 100%"></div></div>
+              <span id="staminaValue" class="data-value">100%</span>
+            </div>
+            <div class="data-item hr">
+              <span class="data-label">Heart Rate</span>
+              <div class="bar hr-bar">
+                <div id="hrBar" class="bar-fill ok" style="width: 7%"></div>
+                <div class="red-line" title="185 bpm danger line"></div>
+              </div>
+              <span id="hrValue" class="data-value">70 bpm</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Power Output</span>
+              <span id="powerOut" class="data-value">50%</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Distance</span>
+              <span id="distanceValue" class="data-value">500 m</span>
+            </div>
+          </div>
+
+          <p class="hint" id="p1hint">Keys: <kbd>W</kbd>/<kbd>S</kbd> pedal, <kbd>A</kbd>/<kbd>D</kbd> power, <kbd>P</kbd> position, <kbd>1</kbd>–<kbd>8</kbd> gears, <kbd>Space</kbd> jump.</p>
+        </section>
+
+        <section class="panel player-input hidden" id="p2panel">
+          <h2>Player 2 Controls</h2>
+
+          <div class="control-row">
+            <label for="pedalSlider2">Pedaling Speed</label>
+            <input id="pedalSlider2" type="range" min="0" max="120" value="60" />
+            <span id="pedalValue2" class="value">60 RPM</span>
+          </div>
+
+          <div class="control-row">
+            <label for="powerSlider2">Power Output</label>
+            <input id="powerSlider2" type="range" min="0" max="100" value="50" />
+            <span id="powerValue2" class="value">50%</span>
+          </div>
+
+          <div class="control-row">
+            <span class="label">Riding Position</span>
+            <button id="positionBtn2" class="toggle-btn" data-value="normal">Normal</button>
+          </div>
+
+          <div class="control-row gear-row">
+            <span class="label">Gear</span>
+            <button id="gearDown2" class="small-btn">-</button>
+            <span id="gearValue2" class="value big">4</span>
+            <button id="gearUp2" class="small-btn">+</button>
+          </div>
+
+          <h2 class="data-head">Player 2 Data</h2>
+          <div class="data-grid" style="margin-top:0.25rem">
+            <div class="data-item stamina">
+              <span class="data-label">Stamina</span>
+              <div class="bar"><div id="staminaBar2" class="bar-fill ok" style="width:100%"></div></div>
+              <span id="staminaValue2" class="data-value">100%</span>
+            </div>
+            <div class="data-item hr">
+              <span class="data-label">Heart Rate</span>
+              <div class="bar hr-bar"><div id="hrBar2" class="bar-fill ok" style="width:7%"></div><div class="red-line"></div></div>
+              <span id="hrValue2" class="data-value">70 bpm</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Bike Speed</span>
+              <span id="speedValue2" class="data-value">0.0 km/h</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Distance</span>
+              <span id="distanceValue2" class="data-value">0 / 0 m</span>
+            </div>
+          </div>
+
+          <p class="hint">Keys: <kbd>I</kbd>/<kbd>K</kbd> pedal, <kbd>J</kbd>/<kbd>L</kbd> power, <kbd>P</kbd> position, <kbd>-</kbd>/<kbd>=</kbd> gears, <kbd>O</kbd> jump.</p>
+        </section>
+
+        <section class="panel level-info">
+          <h2>Level Info</h2>
+          <div class="info-row">
+            <span class="info-label">Level</span>
+            <span id="levelTitle" class="info-value">Level 1</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Target</span>
+            <span id="levelTarget" class="info-value">Reach the finish line using the given stamina.</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Wind</span>
+            <span id="levelWind" class="info-value">None</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Road</span>
+            <span id="levelRoad" class="info-value">Smooth</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Distance</span>
+            <span id="levelDistance" class="info-value">500 m</span>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Hanson Liu — To the End</p>
+  </footer>
+
+  <script src="assets/game.js"></script>
+</body>
+</html>

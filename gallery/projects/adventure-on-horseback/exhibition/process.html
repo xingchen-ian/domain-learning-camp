@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Development - An Adventure on Horseback</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="page">
+    <div class="page-inner">
+      <header class="site-header">
+        <div class="site-title">An Adventure on Horseback</div>
+        <nav class="site-nav">
+          <a href="index.html">Home</a>
+          <a href="system.html">System Design</a>
+          <a href="process.html" class="active">Development</a>
+          <a href="game.html">Play</a>
+        </nav>
+      </header>
+
+      <h1>Development Process</h1>
+      <p class="lead">
+        A truthful timeline of how this project was built, including the
+        decisions, the dead ends, and the things that are still rough.
+      </p>
+
+      <h2>Timeline</h2>
+      <div class="timeline">
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 1 - Read the Brief</div>
+          <div class="timeline-title">Read the design brief and the system graph</div>
+          <div class="timeline-detail">
+            Read <em>An-adventure-on-horseback.md</em> in full. Identified the
+            three challenge presets (simple / complicated / roundabout),
+            the three win-lose conditions, and the horse emotion system.
+            Confirmed that the student has 4 years of real riding experience
+            and wants the game to feel like real riding, not a cartoon.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 2 - Choose a Stack</div>
+          <div class="timeline-title">Pick Track A: HTML + CSS + Canvas 2D + plain JS</div>
+          <div class="timeline-detail">
+            The brief asks for the lowest necessary dependency. Three.js
+            would have looked pretty but the iMac in the gallery does not
+            run a build pipeline, so a single static folder is the right
+            answer. Canvas 2D is enough to draw a 3/4-perspective scene
+            with a detailed horse.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 3 - First Game Loop</div>
+          <div class="timeline-title">Build the smallest complete loop: speed, line, take-off, jump</div>
+          <div class="timeline-detail">
+            Wrote <code>game.js</code> with a single state object
+            (<code>Game</code>) that holds environment data, player input
+            and calculated results as separate fields. The first playable
+            loop is: press W to accelerate, steer with A/D, press Space
+            near an obstacle to jump. If the take-off point is in the
+            window and the horse is willing, the bar stays up; otherwise
+            the bar falls and the mood drops.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 4 - Three Levels</div>
+          <div class="timeline-title">Add Level 2 (S-curve, 90s) and Level 3 (roundabout, 75s, spirited horse)</div>
+          <div class="timeline-detail">
+            Each level is a data object in the <code>LEVELS</code> array:
+            route polyline, obstacle list, time limit, horse config. The
+            render code does not know which level it is on; the data
+            drives the experience. This is the part the brief explicitly
+            asked for: "challenge presets should change system variables
+            or relationships, not only visual decoration."
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 5 - The Horse, Not a Cartoon</div>
+          <div class="timeline-title">Redraw the horse with realistic anatomy and a rider</div>
+          <div class="timeline-detail">
+            First pass was a simple ellipse horse with stick legs. It
+            looked like a children's game. Replaced with a layered body
+            (chest, barrel, hindquarters), proper leg joints, mane, tail
+            with strands that move with the wind, a saddle, a rider in
+            boots and a helmet. Added a sweat-droplet effect for tired
+            state and red-eye effect for angry state. Still 2D, but reads
+            as a real horse.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 6 - The Horse's Mood</div>
+          <div class="timeline-title">Wire the emotion system so the player can feel it</div>
+          <div class="timeline-detail">
+            Added a 0-100 emotion value with four bands: happy, calm,
+            tired, angry. The HUD shows the band name and a coloured bar.
+            The body of the horse shows sweat drops when tired and red
+            eyes when angry. When the emotion drops below 12, the horse
+            randomly refuses to move. Whip drops emotion, soothe raises
+            it. The student's core insight ("a horse is an organism with
+            its own feelings") is now a live system.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 7 - Website and Process</div>
+          <div class="timeline-title">Build the four required website pages</div>
+          <div class="timeline-detail">
+            <code>index.html</code> for Home, <code>system.html</code> for
+            the system graph and feedback table, <code>process.html</code>
+            for the timeline you are reading, and <code>game.html</code>
+            for the playable build. All navigation is relative so the
+            folder can be dropped into <code>gallery/projects/group-XX/</code>
+            without rewriting paths.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 8 - Things That Are Still Rough</div>
+          <div class="timeline-title">Honest list of unfinished work</div>
+          <div class="timeline-detail">
+            The 3/4 perspective uses a single vanishing point and a
+            flat road, not a true 3D engine. Trees in the distance are
+            procedurally generated ellipses. There is no real audio. The
+            third-person camera does not bank into turns as a movie camera
+            would. These are conscious choices: the brief says to keep
+            the first version small and prioritize the learning loop.
+          </div>
+        <div class="timeline-item">
+          <div class="timeline-stage">Stage 9 - Documentation and Audit</div>
+          <div class="timeline-title">Create README, development log, manifest, system graph, and final ZIP</div>
+          <div class="timeline-detail">
+            Added <code>README.md</code>, <code>agent-development-log.md</code>,
+            <code>submission-manifest.json</code>, <code>THIRD_PARTY.md</code>,
+            and <code>system-graph.png</code>. Verified every exhibition page
+            loads from a static HTTP server, uses relative paths, makes no
+            external requests, and fits 1920×1080. Packaged the project as
+            <code>2026-Camp-Group-XX-An-adventure-on-horseback.zip</code>.
+          </div>
+        </div>
+
+      </div>
+
+      <h2>Decisions Log</h2>
+      <div class="card">
+        <h3>Why Canvas 2D instead of Three.js?</h3>
+        <p>
+          The gallery iMac only opens <code>index.html</code> directly
+          through a static HTTP server. A Three.js project would force
+          the gallery to install Node and run a build. Canvas 2D
+          delivers the perspective look the student wanted without that
+          cost. If the student wants a real 3D version later, the data
+          model in <code>game.js</code> is already 3D-ready (world X, Z
+          and a <code>projectGround()</code> helper), so a Three.js port
+          is mostly a renderer swap.
+        </p>
+
+        <h3>Why three different horses, not one horse with different skins?</h3>
+        <p>
+          The brief says the three levels should change the
+          <em>relationship</em> between the player and the system, not
+          only the scenery. Whisper, Dapple and Storm each have a
+          different <code>angerRate</code> and <code>maxSpeed</code>:
+          Storm gets angry fast and goes fast, Whisper is forgiving and
+          slower. Playing well on Storm requires actually managing the
+          mood; playing well on Whisper does not. That difference is the
+          point.
+        </p>
+
+        <h3>Why a 3/4 behind view, not a side-scroller?</h3>
+        <p>
+          A side-scroller reads as a 2D platformer. The student said
+          "simulate a real-life horse riding" and the brief says the
+          graphics should not be cartoon. A 3/4 behind view is the
+          most common view in real horse-riding games and the most
+          natural way to read the road ahead.
+        </p>
+      </div>
+
+      <a class="cta" href="game.html">Play the Game</a>
+
+      <footer>
+        An Adventure on Horseback &middot; A learning game by Ziqi Xu
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

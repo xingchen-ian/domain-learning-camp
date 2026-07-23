@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Sea — A first-person diving learning game</title>
+    <link rel="stylesheet" href="./assets/style-ntZ2yPed.css">
+  </head>
+  <body class="page-home">
+    <!-- Deep-sea decoration: floating particles -->
+    <div class="page-particles">
+      <div class="page-particle" style="left:8%;bottom:10%;width:3px;height:3px;animation-duration:18s;animation-delay:0s"></div>
+      <div class="page-particle" style="left:22%;bottom:5%;width:2px;height:2px;animation-duration:22s;animation-delay:3s"></div>
+      <div class="page-particle" style="left:45%;bottom:15%;width:4px;height:4px;animation-duration:16s;animation-delay:1s;background:rgba(246,193,119,0.1)"></div>
+      <div class="page-particle" style="left:68%;bottom:8%;width:2px;height:2px;animation-duration:20s;animation-delay:5s"></div>
+      <div class="page-particle" style="left:85%;bottom:20%;width:3px;height:3px;animation-duration:24s;animation-delay:2s"></div>
+      <div class="page-particle" style="left:35%;bottom:3%;width:2px;height:2px;animation-duration:19s;animation-delay:7s"></div>
+      <div class="page-particle" style="left:55%;bottom:12%;width:3px;height:3px;animation-duration:17s;animation-delay:4s"></div>
+      <div class="page-particle" style="left:12%;bottom:25%;width:2px;height:2px;animation-duration:21s;animation-delay:6s;background:rgba(123,211,137,0.1)"></div>
+    </div>
+    <!-- God-ray light lines -->
+    <div class="god-rays">
+      <div class="god-ray" style="left:15%;animation-delay:0s"></div>
+      <div class="god-ray" style="left:35%;animation-delay:2s;opacity:0.5;width:3px"></div>
+      <div class="god-ray" style="left:58%;animation-delay:4s"></div>
+      <div class="god-ray" style="left:78%;animation-delay:1s;opacity:0.4;width:1.5px"></div>
+    </div>
+
+    <header class="site-header">
+      <h1>The Sea</h1>
+      <p class="tagline">A first-person diving game about reading water, planning routes, and surviving underwater.</p>
+      <nav class="site-nav">
+        <a class="nav-link is-active" href="./index.html">Home</a>
+        <a class="nav-link" href="./game.html">Play</a>
+        <a class="nav-link" href="./process.html">Development Process</a>
+      </nav>
+    </header>
+
+    <main class="page">
+      <section class="card">
+        <h2>Game Idea</h2>
+        <p><strong>Player goal:</strong> reach the target zone with HP &gt; 0, oxygen &gt; 0, and at least 3 species collected, all before the oxygen runs out.</p>
+        <p><strong>Core learning shift:</strong> beginners start by learning to control direction and depth. Through play, they learn to read water currents, avoid dangerous species, drop a surface signal so boats can see them, and pick the right depth to conserve oxygen.</p>
+        <p><strong>BCD inflation:</strong> a critical real-world diving skill. Press <kbd>I</kbd> at the surface to inflate your BCD (buoyancy compensator device) — this lets you stay on the surface and slowly regenerate oxygen. Without inflation, you automatically sink back down. <strong>Warning:</strong> inflating underwater causes fatal barotrauma (HP = 0). You must also deploy a surface signal (<kbd>O</kbd>) before inflating — if you stay on the surface with an inflated BCD but no signal, a boat will strike you after 2 seconds.</p>
+        <p><strong>Real experience source:</strong> the design is based on a real diving course in Cyprus — a moment of accidentally inhaling water while watching animals, then having to manage inflation, depth, and direction at the same time.</p>
+      </section>
+
+      <section class="card">
+        <h2>Domain Knowledge</h2>
+        <ul>
+          <li><strong>Real-world domain:</strong> open-water recreational diving in coastal and deep water.</li>
+          <li><strong>Novice misconception:</strong> beginners often touch or approach any creature they see and assume the current is irrelevant.</li>
+          <li><strong>Expert judgment:</strong> experienced divers read the current, plan a route that uses depth strategically, and keep one hand free to put a surface marker before surfacing.</li>
+          <li><strong>Why this knowledge is playable:</strong> the entire game is one decision under oxygen pressure — when to go up, when to go down, when to go around, and when to leave a signal.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>System Design</h2>
+        <p>The system graph (provided by the student) maps four things: Win/Game Over conditions, Player Input bindings, Game Environment data, and the three level presets plus the data that is exposed on the in-game HUD.</p>
+        <ul>
+          <li><strong>Environment data:</strong> water current direction (Vector3), depth (surface / middle / deep), obstacle (reef) positions (Vector3), sea-creature direction and position (Vector3), oxygen amount (int), player HP (int), target position (Vector3), water current position and direction (Vector3).</li>
+          <li><strong>Player-controlled data:</strong> turn, depth, forward/stop, put signal, catch (approach + W).</li>
+          <li><strong>Calculated results:</strong> HP delta, distance to target, oxygen delta, time-on-surface / time-in-deep.</li>
+          <li><strong>Feedback:</strong> weak current = slight view shake + bubble sound; strong current = heavy shake + bump + HP -50%; dangerous species = red edge + HP drain; surface with inflated BCD but no signal &gt; 2 s = boat collision; inflate underwater = instant death (barotrauma); deep &gt; 3 s = HP drain.</li>
+          <li><strong>Challenge presets:</strong> Level 1 (no current, safe species, no obstacles) → Level 2 (weak current, dangerous species, scattered reefs) → Level 3 (strong current, attackers, many obstacles, low temperature, low starting oxygen).</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Development Process</h2>
+        <p>See the <a href="./process.html">Development Process</a> page for the full chronological log of decisions, implementations, and reflections.</p>
+      </section>
+
+      <section class="card cta">
+        <h2>Play the Game</h2>
+        <p>Use W/S to move, A/D to turn, H/L to change depth, O to drop a surface signal, I to inflate BCD (at surface only!), R to restart the level.</p>
+        <a class="button" href="./game.html">Open the playable game</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>First Playable Web Game — The Sea — built with Three.js + Vite by Jason Hu with WorkBuddy.</p>
+    </footer>
+  </body>
+</html>

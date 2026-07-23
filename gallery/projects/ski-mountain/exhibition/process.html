@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ski Mountain — Development Process</title>
+  <link rel="stylesheet" crossorigin href="./assets/style-BdQ1EHz-.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <span class="nav-logo">Ski Mountain</span>
+    <a href="./index.html">Home</a>
+    <a href="./domain.html">Domain</a>
+    <a href="./system.html">System</a>
+    <a href="./process.html" class="active">Process</a>
+    <a href="./game.html">Play</a>
+  </nav>
+
+  <div class="page-content">
+    <h1 class="page-title">Development Process</h1>
+
+    <p>
+      This timeline is based on <code>agent-development-log.md</code> and records
+      the actual human-AI collaboration, including failures and unfinished work.
+    </p>
+
+    <div class="timeline">
+
+      <div class="timeline-entry">
+        <div class="time">Interaction 01 — Project Setup</div>
+        <div class="card">
+          <p><strong>Goal:</strong> Read the brief, set up project skeleton, decide view angle and scope.</p>
+          <p><strong>Student decision:</strong> 3D view (Three.js + Vite, Track C), include both jump and 5-second-stop features.</p>
+          <p><strong>What happened:</strong> Created project folders, copied brief and system graph, initialized dev log, installed Vite + Three.js.</p>
+          <p><strong>AI influence:</strong> AI suggested top-down 2D for faster delivery; student chose 3D for a more immersive experience. AI suggested skipping jump and 5-sec-stop for v1; student chose to include both.</p>
+        </div>
+      </div>
+
+      <div class="timeline-entry">
+        <div class="time">Interaction 02 — Core Game Implementation</div>
+        <div class="card">
+          <p><strong>Goal:</strong> Build the smallest complete game loop: 3D scene, skier, controls, physics, collision, 3 levels, HUD, win/lose.</p>
+          <p><strong>What happened:</strong> Implemented all game modules (constants, player, obstacles, HUD, main). Created 5 HTML website pages. Wrote shared CSS.</p>
+          <p><strong>Key decisions:</strong> Separate level select (not sequential escalation). Rocks can't be jumped over; trees can. S-turn drag formula: speed − carveDrag × |steerAngle|.</p>
+          <p><strong>Open question:</strong> Testing and build step pending. Network errors interrupted progress multiple times.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <h3>Reflection 01 — First Playable</h3>
+      <p><em>This reflection requires the student's answer. The AI must not fill it in.</em></p>
+      <p><strong>Required Student Reflection:</strong> Does the current game still help the player experience the intended domain-learning shift? What became stronger, weaker, or different? Which AI suggestion did you accept, reject, or change, and why?</p>
+    </div>
+
+  </div>
+</body>
+</html>

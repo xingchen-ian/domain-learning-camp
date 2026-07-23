@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process — A Skating Novice</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">A Skating Novice</a>
+      <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="game.html">Play Game</a></li>
+        <li><a href="process.html" class="active">Development</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="main">
+    <section class="hero" style="background:linear-gradient(135deg, #264653, #2a9d8f)">
+      <h1>Development Process</h1>
+      <p class="subtitle">How this project evolved — from design brief to playable game, through human-AI collaboration.</p>
+      <p class="meta">Tool: WorkBuddy | Timeline: July 2026</p>
+    </section>
+
+    <section class="section">
+      <h2>Development Timeline</h2>
+      <p>This timeline tracks every meaningful interaction during the development of <em>A Skating Novice</em>. It includes both raw interaction logs (what the AI did and the student responded to) and stage reflections (milestone checkpoints).</p>
+
+      <div class="timeline">
+        <!-- Phase 1: Project Setup -->
+        <div class="timeline-item">
+          <span class="time-label">Phase 1 — Project Setup</span>
+          <h4>Initialization &amp; Structure</h4>
+          <p>Created the project directory structure following the brief's specifications: <code>exhibition/</code> for the final static website, <code>source/</code> for development files. Initialized the agent development log, README, and all required documentation.</p>
+        </div>
+
+        <!-- Phase 2: Core Game Loop -->
+        <div class="timeline-item">
+          <span class="time-label">Phase 2 — Core Game Implementation</span>
+          <h4>First Playable Version</h4>
+          <p>Built the complete game loop using Canvas 2D (Track A — no build step). Implemented:</p>
+          <ul style="margin-top:8px">
+            <li>Top-down ice rink with procedurally-generated ice quality grid</li>
+            <li>Player with posture system: knee bend, steering, arm spread</li>
+            <li>Physics: speed and stability calculated from posture × ice quality</li>
+            <li>Obstacles: ice holes, cones, and wandering skaters</li>
+            <li>Audio feedback: blade friction sound via Web Audio API</li>
+            <li>Visual feedback: ice trail, balance/speed/knee meters</li>
+            <li>3 challenge presets with different ice quality, obstacle counts, and time limits</li>
+          </ul>
+        </div>
+
+        <!-- Phase 3: Project Website -->
+        <div class="timeline-item">
+          <span class="time-label">Phase 3 — Project Website</span>
+          <h4>Information Pages</h4>
+          <p>Built the project website with full navigation: Home (game idea, domain knowledge, system design), Play Game, and Development Process. All content derived from the design brief, system graph, and actual game implementation — no invented information.</p>
+        </div>
+
+        <!-- Phase 4: Testing & Refinement -->
+        <div class="timeline-item">
+          <span class="time-label">Phase 4 — Testing &amp; Refinement</span>
+          <h4>Playtesting &amp; Polish</h4>
+          <p>Tested the game on a local static HTTP server. Verified all navigation links, game mechanics (balance system, fall recovery, obstacle collision, audio feedback), level switching, victory/defeat conditions, and 1920×1080 display layout. Adjustments made based on test results.</p>
+        </div>
+
+        <!-- Phase 5: Packaging -->
+        <div class="timeline-item">
+          <span class="time-label">Phase 5 — Exhibition Packaging</span>
+          <h4>Submission Preparation</h4>
+          <p>Completed the submission audit: verified all relative paths, tested without internet access, confirmed static HTTP server compatibility, generated preview, and packaged the final ZIP archive.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Key Decisions</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>🎯 Track A — No Build Step</h4>
+          <p>Chose plain HTML/CSS/JS with Canvas 2D over Three.js. The top-down 2D perspective communicates posture and ice quality clearly without 3D complexity, and the exhibition build stays simple.</p>
+        </div>
+        <div class="info-card">
+          <h4>🔊 Procedural Audio</h4>
+          <p>Used Web Audio API to generate blade friction sounds procedurally instead of requiring audio files. This keeps the project self-contained and the sound responsive to game state.</p>
+        </div>
+        <div class="info-card">
+          <h4>📊 Data Model Separation</h4>
+          <p>Kept environment data, player-controlled data, and system-calculated results as clearly separated code sections — matching the brief's data model and making the system graph directly readable in code.</p>
+        </div>
+        <div class="info-card">
+          <h4>⛸ Posture-First Design</h4>
+          <p>Made knee bend the primary mechanic rather than speed/power-ups. Every system variable traces back to posture — directly teaching the core learning shift.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Known Issues &amp; Future Work</h2>
+      <ul>
+        <li>Ice quality generation uses simple random variation — could be improved with Perlin noise for more natural patches.</li>
+        <li>Wandering skater AI is basic — could be enhanced with more realistic rink behavior patterns.</li>
+        <li>No mobile touch controls — desktop browser only for the first version.</li>
+        <li>Audio may require user gesture to start (browser autoplay policy).</li>
+      </ul>
+    </section>
+
+    <section class="section" style="text-align:center">
+      <p>For a complete chronological log of every interaction, see the project's <code>agent-development-log.md</code> file.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Sihan Lyu / Group 4 — A Skating Novice — Built with WorkBuddy</p>
+  </footer>
+</body>
+</html>

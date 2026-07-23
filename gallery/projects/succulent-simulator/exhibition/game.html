@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多肉植物养护模拟器 — Succulent Care Simulator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#f5f0e8;--panel:#fffaf3;--green:#6b8e5a;--green-d:#4a6b3b;--brown:#8b6f47;
+--brown-d:#6b5435;--red:#d4675e;--blue:#5b8db8;--orange:#e8a857;--text:#3a3226;
+--text-l:#7a7165;--border:#ddd5c7;--shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+h1{font-size:1.6rem;margin:1.5rem 0 0.3rem;color:var(--green-d);text-align:center}
+.subtitle{color:var(--text-l);font-size:0.85rem;margin-bottom:1rem;text-align:center}
+
+/* Language Toggle */
+.lang-toggle{position:fixed;top:1rem;left:1rem;z-index:1500;display:flex;gap:0;background:var(--panel);border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+.lang-btn{background:var(--panel);border:none;padding:0.4rem 0.8rem;cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-l);transition:all 0.2s}
+.lang-btn.active{background:var(--green);color:#fff}
+
+/* Challenge Selection */
+.challenge-bar{display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap;justify-content:center}
+.challenge-btn{background:var(--panel);border:2px solid var(--border);border-radius:12px;padding:0.7rem 1.2rem;cursor:pointer;font-size:0.9rem;color:var(--text);transition:all 0.2s;box-shadow:var(--shadow);text-align:left;max-width:240px}
+.challenge-btn:hover{border-color:var(--green);transform:translateY(-2px)}
+.challenge-btn.active{border-color:var(--green-d);background:var(--green);color:#fff}
+.challenge-btn .ch-title{font-weight:700;font-size:0.95rem;margin-bottom:0.2rem}
+.challenge-btn .ch-desc{font-size:0.75rem;opacity:0.8}
+
+/* Main Game Area */
+.game-container{display:flex;gap:1rem;max-width:1100px;width:95%;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center}
+.canvas-wrapper{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);padding:0.8rem;position:relative}
+#gameCanvas{display:block;border-radius:12px;cursor:crosshair;background:linear-gradient(to bottom,#e8e4d9 0%,#d4cfc0 60%,#c4bda8 100%)}
+
+/* Status Panel */
+.status-panel{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);padding:1rem;width:280px}
+.status-panel h3{font-size:0.9rem;color:var(--green-d);margin-bottom:0.6rem;border-bottom:2px solid var(--border);padding-bottom:0.3rem}
+.stat-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;font-size:0.8rem}
+.stat-label{display:flex;align-items:center;gap:0.3rem;width:80px}
+.stat-bar-container{flex:1;height:12px;background:#e8e2d4;border-radius:6px;overflow:hidden;position:relative;margin:0 0.4rem}
+.stat-bar-fill{height:100%;border-radius:6px;transition:width 0.5s ease,background 0.3s}
+.stat-val{font-size:0.75rem;font-weight:700;width:45px;text-align:right}
+.stat-delta{font-size:0.7rem;width:35px;text-align:left}
+.stat-delta.pos{color:var(--blue)}.stat-delta.neg{color:var(--red)}.stat-delta.neu{color:var(--text-l)}
+
+/* Controls */
+.controls-panel{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);padding:1rem;width:280px;display:flex;flex-direction:column;gap:0.5rem}
+.controls-panel h3{font-size:0.9rem;color:var(--green-d);margin-bottom:0.4rem;border-bottom:2px solid var(--border);padding-bottom:0.3rem}
+.action-btn{background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:0.6rem 0.8rem;cursor:pointer;font-size:0.82rem;color:var(--text);transition:all 0.15s;display:flex;align-items:center;gap:0.5rem;text-align:left}
+.action-btn:hover{border-color:var(--green);background:#eef3e8}
+.action-btn:active{transform:scale(0.97)}
+.action-btn .btn-icon{font-size:1.2rem}
+.action-btn .btn-desc{font-size:0.68rem;color:var(--text-l);margin-top:0.1rem}
+
+/* Time Controls */
+.time-bar{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;padding-bottom:0.6rem;border-bottom:2px solid var(--border)}
+.day-display{font-size:0.85rem;font-weight:700;color:var(--green-d)}
+.play-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:0.4rem 0.8rem;cursor:pointer;font-size:0.8rem;font-weight:600;transition:background 0.2s}
+.play-btn:hover{background:var(--green-d)}
+.speed-btn{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.72rem;color:var(--text-l)}
+
+/* Toast System */
+.toast-container{position:fixed;top:1rem;right:1rem;z-index:1000;display:flex;flex-direction:column;gap:0.4rem;max-width:380px}
+.toast{background:var(--panel);border-left:4px solid var(--green);border-radius:8px;padding:0.6rem 0.9rem;box-shadow:0 4px 16px rgba(0,0,0,0.12);font-size:0.8rem;animation:slideIn 0.3s ease;transition:opacity 0.5s}
+.toast.warning{border-left-color:var(--orange)}
+.toast.danger{border-left-color:var(--red)}
+.toast.tip{border-left-color:var(--blue)}
+.toast.success{border-left-color:var(--green)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Tips Overlay */
+.tip-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center}
+.tip-modal{background:var(--panel);border-radius:16px;padding:2rem;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,0.3);text-align:center}
+.tip-modal h2{color:var(--green-d);font-size:1.3rem;margin-bottom:1rem}
+.tip-modal p{font-size:0.9rem;line-height:1.6;margin-bottom:0.8rem;color:var(--text)}
+.tip-modal .tip-emoji{font-size:2.5rem;margin-bottom:0.5rem}
+.tip-modal .tip-buttons{display:flex;gap:0.6rem;justify-content:center;margin-top:1.2rem}
+.tip-modal .tip-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:0.5rem 1.2rem;cursor:pointer;font-size:0.85rem;font-weight:600}
+.tip-modal .tip-btn.skip{background:var(--bg);color:var(--text-l);border:1px solid var(--border)}
+
+/* End Screen */
+.end-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:2000;display:flex;align-items:center;justify-content:center}
+.end-modal{background:var(--panel);border-radius:16px;padding:2.5rem;max-width:420px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.end-modal .end-emoji{font-size:3rem;margin-bottom:0.5rem}
+.end-modal h2{font-size:1.4rem;margin-bottom:0.8rem}
+.end-modal p{font-size:0.85rem;line-height:1.5;margin-bottom:1rem;color:var(--text-l)}
+.end-modal .end-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:0.6rem 1.5rem;cursor:pointer;font-size:0.9rem;font-weight:600}
+
+/* Challenge Info Display */
+.challenge-info{background:var(--panel);border-radius:12px;padding:0.5rem 1rem;font-size:0.78rem;color:var(--text-l);box-shadow:var(--shadow);margin-bottom:0.8rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:center}
+.challenge-info .ci-item{display:flex;align-items:center;gap:0.2rem}
+.challenge-info .ci-item b{color:var(--text)}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- Language Toggle -->
+<div class="lang-toggle">
+<button class="lang-btn active" id="langZh" onclick="switchLang('zh')">中文</button>
+<button class="lang-btn" id="langEn" onclick="switchLang('en')">EN</button>
+</div>
+
+<h1 id="gameTitle">🌵 多肉植物养护模拟器</h1>
+<p class="subtitle" id="gameSubtitle">学会读懂植物的信号，而不是盲目遵循浇水时间表</p>
+
+<!-- Challenge Selection -->
+<div class="challenge-bar" id="challengeBar">
+<button class="challenge-btn active" onclick="loadChallenge(0)">
+<div class="ch-title" data-i18n="ch1_title">🌱 挑战1：新手入门</div>
+<div class="ch-desc" data-i18n="ch1_desc">春天 · 标准土 · 中盆 · 土壤偏湿</div>
+</button>
+<button class="challenge-btn" onclick="loadChallenge(1)">
+<div class="ch-title" data-i18n="ch2_title">☀️ 挑战2：夏日危机</div>
+<div class="ch-desc" data-i18n="ch2_desc">夏天 · 颗粒土 · 小盆 · 强光高温</div>
+</button>
+<button class="challenge-btn" onclick="loadChallenge(2)">
+<div class="ch-title" data-i18n="ch3_title">🍂 挑战3：秋冬困境</div>
+<div class="ch-desc" data-i18n="ch3_desc">冬天 · 有机土 · 大盆 · 光照不足</div>
+</button>
+</div>
+
+<!-- Challenge Info -->
+<div class="challenge-info" id="challengeInfo">
+<span class="ci-item">🌸 <b data-i18n="label_season">季节:</b> <span id="ciSeason">春天</span></span>
+<span class="ci-item">🪴 <b data-i18n="label_soil">土壤:</b> <span id="ciSoil">标准土</span></span>
+<span class="ci-item">🏺 <b data-i18n="label_pot">盆大小:</b> <span id="ciPot">中盆</span></span>
+<span class="ci-item">📋 <b data-i18n="label_goal">目标:</b> <span id="ciGoal">维持健康15天</span></span>
+</div>
+
+<!-- Main Game Container -->
+<div class="game-container">
+<!-- Canvas -->
+<div class="canvas-wrapper">
+<canvas id="gameCanvas" width="520" height="520"></canvas>
+</div>
+
+<!-- Status Panel -->
+<div class="status-panel">
+<h3 id="statusTitle">📊 植物状态面板</h3>
+<div class="stat-row">
+<span class="stat-label" id="label_moisture">💧 土壤湿度</span>
+<div class="stat-bar-container"><div class="stat-bar-fill" id="bar-moisture" style="width:85%;background:var(--blue)"></div></div>
+<span class="stat-val" id="val-moisture">85%</span>
+<span class="stat-delta neu" id="delta-moisture">—</span>
+</div>
+<div class="stat-row">
+<span class="stat-label" id="label_hydration">🌿 叶片含水量</span>
+<div class="stat-bar-container"><div class="stat-bar-fill" id="bar-hydration" style="width:70%;background:#7ec4a8"></div></div>
+<span class="stat-val" id="val-hydration">70%</span>
+<span class="stat-delta neu" id="delta-hydration">—</span>
+</div>
+<div class="stat-row">
+<span class="stat-label" id="label_health">❤️ 健康度</span>
+<div class="stat-bar-container"><div class="stat-bar-fill" id="bar-health" style="width:60%;background:var(--green)"></div></div>
+<span class="stat-val" id="val-health">60%</span>
+<span class="stat-delta neu" id="delta-health">—</span>
+</div>
+<div class="stat-row">
+<span class="stat-label" id="label_roots">🌱 根系状态</span>
+<div class="stat-bar-container"><div class="stat-bar-fill" id="bar-roots" style="width:70%;background:var(--brown)"></div></div>
+<span class="stat-val" id="val-roots">70%</span>
+<span class="stat-delta neu" id="delta-roots">—</span>
+</div>
+<div class="stat-row">
+<span class="stat-label" id="label_light">☀️ 光照水平</span>
+<div class="stat-bar-container"><div class="stat-bar-fill" id="bar-light" style="width:40%;background:var(--orange)"></div></div>
+<span class="stat-val" id="val-light">40%</span>
+<span class="stat-delta neu" id="delta-light">—</span>
+</div>
+<div class="stat-row">
+<span class="stat-label" id="label_growth">📈 生长活跃度</span>
+<div class="stat-bar-container"><div class="stat-bar-fill" id="bar-growth" style="width:50%;background:#a8c4d4"></div></div>
+<span class="stat-val" id="val-growth">50%</span>
+<span class="stat-delta neu" id="delta-growth">—</span>
+</div>
+<div style="margin-top:0.6rem;padding-top:0.6rem;border-top:2px solid var(--border);font-size:0.75rem;color:var(--text-l)">
+<div><span id="label_thriving">💪 蓬勃天数:</span> <b id="thrivingDays">0</b> / 15</div>
+<div><span id="label_actions">📋 操作记录:</span> <b id="actionCount">0</b> <span id="label_times">次</span></div>
+</div>
+</div>
+
+<!-- Controls -->
+<div class="controls-panel">
+<div class="time-bar">
+<span class="day-display"><span id="label_day">📅 第</span> <span id="dayDisplay">0</span> <span id="label_dayUnit">天</span></span>
+<button class="play-btn" id="playBtn" onclick="togglePause()">▶ <span id="label_start">开始</span></button>
+<button class="speed-btn" id="speedBtn" onclick="toggleSpeed()">1x</button>
+</div>
+<h3 id="controlsTitle">🔧 养护操作</h3>
+<button class="action-btn" onclick="playerAction('water')">
+<span class="btn-icon">💧</span>
+<div><div id="btn_water">浇水</div><div class="btn-desc" id="btn_water_desc">增加土壤湿度和叶片含水量</div></div>
+</button>
+<button class="action-btn" onclick="playerAction('skip')">
+<span class="btn-icon">🚫</span>
+<div><div id="btn_skip">跳过浇水</div><div class="btn-desc" id="btn_skip_desc">让土壤自然干燥</div></div>
+</button>
+<button class="action-btn" onclick="playerAction('lightUp')">
+<span class="btn-icon">🔆</span>
+<div><div id="btn_lightUp">增加光照</div><div class="btn-desc" id="btn_lightUp_desc">移到更亮的位置</div></div>
+</button>
+<button class="action-btn" onclick="playerAction('lightDown')">
+<span class="btn-icon">🌙</span>
+<div><div id="btn_lightDown">减少光照</div><div class="btn-desc" id="btn_lightDown_desc">移到阴凉处</div></div>
+</button>
+<button class="action-btn" onclick="playerAction('checkRoots')">
+<span class="btn-icon">🔍</span>
+<div><div id="btn_checkRoots">检查根系</div><div class="btn-desc" id="btn_checkRoots_desc">查看根系健康状态</div></div>
+</button>
+<button class="action-btn" onclick="playerAction('removeDead')">
+<span class="btn-icon">✂️</span>
+<div><div id="btn_removeDead">清理枯叶</div><div class="btn-desc" id="btn_removeDead_desc">去除底部枯叶，提升健康</div></div>
+</button>
+<button class="action-btn" onclick="playerAction('repot')">
+<span class="btn-icon">🪴</span>
+<div><div id="btn_repot">换盆</div><div class="btn-desc" id="btn_repot_desc">恢复根系，改善排水</div></div>
+</button>
+</div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Tips Overlay -->
+<div class="tip-overlay hidden" id="tipOverlay">
+<div class="tip-modal" id="tipModal">
+<div class="tip-emoji" id="tipEmoji">🌱</div>
+<h2 id="tipTitle">欢迎！</h2>
+<div id="tipBody"></div>
+<div class="tip-buttons">
+<button class="tip-btn skip" onclick="skipTips()" id="tipSkipBtn">跳过所有提示</button>
+<button class="tip-btn" id="tipNextBtn" onclick="nextTip()">下一步</button>
+</div>
+</div>
+</div>
+
+<!-- End Screen -->
+<div class="end-screen hidden" id="endScreen">
+<div class="end-modal">
+<div class="end-emoji" id="endEmoji">🎉</div>
+<h2 id="endTitle">挑战成功！</h2>
+<p id="endMessage"></p>
+<button class="end-btn" onclick="resetGame()" id="endRestartBtn">再玩一次</button>
+</div>
+</div>
+
+<script>
+// ============================================================
+// SUCCULENT CARE SIMULATOR — Bilingual Edition (ZH/EN)
+// 6 hidden system states → 3 visible feedback signals
+// ============================================================
+
+// ============================================================
+// I18N — Translation Dictionary
+// ============================================================
+let currentLang = 'zh';
+
+const I18N = {
+zh: {
+gameTitle: "🌵 多肉植物养护模拟器",
+gameSubtitle: "学会读懂植物的信号，而不是盲目遵循浇水时间表",
+
+ch1_title: "🌱 挑战1：新手入门",
+ch1_desc: "春天 · 标准土 · 中盆 · 土壤偏湿",
+ch2_title: "☀️ 挑战2：夏日危机",
+ch2_desc: "夏天 · 颗粒土 · 小盆 · 强光高温",
+ch3_title: "🍂 挑战3：秋冬困境",
+ch3_desc: "冬天 · 有机土 · 大盆 · 光照不足",
+
+label_season: "季节:", label_soil: "土壤:", label_pot: "盆大小:", label_goal: "目标:",
+goal_text: "维持健康15天",
+
+statusTitle: "📊 植物状态面板",
+label_moisture: "💧 土壤湿度",
+label_hydration: "🌿 叶片含水量",
+label_health: "❤️ 健康度",
+label_roots: "🌱 根系状态",
+label_light: "☀️ 光照水平",
+label_growth: "📈 生长活跃度",
+label_thriving: "💪 蓬勃天数:",
+label_actions: "📋 操作记录:",
+label_times: "次",
+
+label_day: "📅 第",
+label_dayUnit: "天",
+label_start: "开始",
+label_pause: "暂停",
+controlsTitle: "🔧 养护操作",
+
+btn_water: "浇水", btn_water_desc: "增加土壤湿度和叶片含水量",
+btn_skip: "跳过浇水", btn_skip_desc: "让土壤自然干燥",
+btn_lightUp: "增加光照", btn_lightUp_desc: "移到更亮的位置",
+btn_lightDown: "减少光照", btn_lightDown_desc: "移到阴凉处",
+btn_checkRoots: "检查根系", btn_checkRoots_desc: "查看根系健康状态",
+btn_removeDead: "清理枯叶", btn_removeDead_desc: "去除底部枯叶，提升健康",
+btn_repot: "换盆", btn_repot_desc: "恢复根系，改善排水",
+
+tipSkipAll: "跳过所有提示",
+tipNext: "下一步",
+tipStart: "开始游戏",
+endRestart: "再玩一次",
+endSuccess: "挑战成功！",
+endFail: "挑战失败",
+
+// Seasons / Soil / Pot
+season_spring: "春天", season_summer: "夏天", season_autumn: "秋天", season_winter: "冬天",
+soil_standard: "标准土", soil_gritty: "颗粒土", soil_organic: "有机土",
+pot_small: "小盆", pot_medium: "中盆", pot_large: "大盆",
+
+// Canvas annotations
+ann_firm: "🍃 坚硬饱满", ann_firm_normal: "🍃 正常", ann_firm_wrinkle: "⚠️ 发皱——需水！",
+ann_color_healthy: "💚 健康色泽", ann_color_dull: "💛 色泽暗淡", ann_color_yellow: "🚨 发黄——腐烂！",
+ann_growth_growing: "🌱 生长中", ann_growth_dormant: "💤 休眠",
+light_tooDark: "太暗！", light_tooMuch: "太强！",
+
+// Soil moisture text on canvas
+soil_wet: "WET ⚠️", soil_moist: "MOIST", soil_dry: "DRY", soil_veryDry: "VERY DRY",
+
+// Hover tooltip
+hover_leaf_firm: "🍃 叶片:", hover_soil: "🪴 土壤:",
+firm_plump: "🍃 饱满", firm_normal: "🍃 正常", firm_slight: "⚠️ 微皱", firm_shriveled: "🚨 干瘪",
+firm_plump_desc: "叶片饱满，充满水分", firm_normal_desc: "叶片状态良好",
+firm_slight_desc: "叶片轻微发皱——需要水了", firm_shriveled_desc: "叶片严重干瘪——急需浇水！",
+color_healthy: "💚 健康", color_dull: "💛 偏黄", color_yellow: "🚨 发黄", color_brown: "🟤 不健康",
+color_healthy_desc: "颜色健康鲜亮", color_dull_desc: "颜色略显暗淡",
+color_yellow_desc: "叶片发黄——可能正在腐烂！", color_brown_desc: "颜色暗沉——健康状况差",
+growth_active: "🌱 生长中", growth_slow: "💤 缓慢", growth_dormant: "😴 休眠",
+growth_active_desc: "植物正在活跃生长", growth_slow_desc: "生长缓慢", growth_dormant_desc: "植物处于休眠状态",
+soil_wet_desc: "土壤很湿——浇水过多风险！", soil_moist_desc: "土壤湿润——适宜",
+soil_dry_desc: "土壤偏干", soil_veryDry_desc: "土壤非常干——可以浇水了",
+
+// Dead plant
+deadText: "植物已死亡",
+
+// Toasts — actions
+toast_water: "💧 浇水", toast_skip: "🚫 跳过浇水", toast_lightUp: "🔆 增加光照",
+toast_lightDown: "🌙 减少光照", toast_checkRoots: "🔍 根系检查",
+toast_removeDead: "✂️ 清理枯叶", toast_repot: "🪴 换盆",
+toast_soil: "土壤", toast_hydration: "含水量", toast_health: "健康度", toast_roots: "根系", toast_light: "光照",
+
+// Toasts — warnings
+warn_wetSoil: "⚠️ 土壤非常湿——浇水过多风险！考虑跳过浇水。",
+warn_lowHydration: "⚠️ 叶片含水量低——植物需要水了！",
+warn_lowLight: "⚠️ 光照不足——考虑增加光照！",
+
+// Toasts — tips
+tip_wetSoil: "💡 提示：土壤还很湿。跳过浇水让它干一干！",
+tip_wetSoilWarn: (m) => `⚠️ 土壤湿度已达${m}%——继续浇水会导致烂根！`,
+
+// Root status
+root_healthy: "健康", root_rot: "腐烂——需要换盆！", root_weak: "偏弱——注意控制浇水", root_strong: "健壮",
+
+// End game messages
+endThriving: "你的多肉茁壮成长了！你学会了读懂植物的信号。",
+endGeneric: "植物死亡了。",
+endOverwater: "浇水过多——叶片变透明腐烂，根系窒息。",
+endUnderwater: "严重缺水——叶片干瘪萎缩。",
+endLowLight: "光照严重不足——植物无法光合作用。",
+endRootRot: "根系腐烂——无法吸收水分养分。",
+endStats: (d, a) => ` 你坚持了 ${d} 天，执行了 ${a} 次操作。`,
+
+// Tips (Challenge 1 guided)
+tips: [
+{
+emoji: '🌱',
+title: '欢迎！教你如何读懂你的植物',
+body: `<p>多肉养护的核心是<b>观察植物的信号</b>，而不是遵循固定的时间表。</p>
+<p>植物有 <b>3个可见信号</b>：</p>
+<p>🍃 <b>叶片硬度</b> — 饱满=水分充足，发皱=需要水</p>
+<p>💚 <b>叶片颜色</b> — 绿色=健康，发黄=可能烂根</p>
+<p>🌱 <b>新生长</b> — 有新芽=生长活跃，无=休眠</p>
+<p>右侧状态面板显示6个隐藏数值，画布上有标注框。鼠标悬浮植物可查看详情。</p>`
+},
+{
+emoji: '💧',
+title: '先别浇水！',
+body: `<p>你的土壤湿度已经是 <b>85%</b> —— 非常湿！</p>
+<p>新手最常见的错误就是看到植物就浇水。多肉最怕<b>浇水过多</b>——会导致叶片变透明、腐烂、根系窒息。</p>
+<p>✅ <b>正确的第一步</b>：点击「🚫 跳过浇水」，让土壤自然干燥。</p>
+<p>等土壤降到 30%-50% 之间，再考虑浇水。</p>`
+},
+{
+emoji: '⏱️',
+title: '如何观察变化',
+body: `<p>游戏按「天」推进。点击 <b>▶ 开始</b> 按钮启动模拟。</p>
+<p>每个tick代表一天，植物状态会缓慢变化。你可以随时<b>暂停</b>来仔细观察。</p>
+<p>📊 每次操作后，状态面板会显示<b>变化量</b>（蓝色=增加，红色=减少）。</p>
+<p>🎯 目标：让植物健康度持续 ≥ 70%，坚持 <b>15天</b> 即可获胜！</p>`
+}
+]
+},
+
+en: {
+gameTitle: "🌵 Succulent Care Simulator",
+gameSubtitle: "Learn to read your plant's signals — not blindly follow a watering schedule",
+
+ch1_title: "🌱 Challenge 1: Beginner",
+ch1_desc: "Spring · Standard soil · Medium pot · Wet soil",
+ch2_title: "☀️ Challenge 2: Summer Crisis",
+ch2_desc: "Summer · Gritty soil · Small pot · Harsh sun",
+ch3_title: "🍂 Challenge 3: Winter Struggle",
+ch3_desc: "Winter · Organic soil · Large pot · Low light",
+
+label_season: "Season:", label_soil: "Soil:", label_pot: "Pot:", label_goal: "Goal:",
+goal_text: "Keep healthy for 15 days",
+
+statusTitle: "📊 Plant Status Panel",
+label_moisture: "💧 Soil Moisture",
+label_hydration: "🌿 Leaf Hydration",
+label_health: "❤️ Health",
+label_roots: "🌱 Root System",
+label_light: "☀️ Light Level",
+label_growth: "📈 Growth Activity",
+label_thriving: "💪 Thriving Days:",
+label_actions: "📋 Actions Taken:",
+label_times: "",
+
+label_day: "📅 Day",
+label_dayUnit: "",
+label_start: "Start",
+label_pause: "Pause",
+controlsTitle: "🔧 Care Actions",
+
+btn_water: "Water", btn_water_desc: "Increase soil moisture & leaf hydration",
+btn_skip: "Skip Watering", btn_skip_desc: "Let soil dry naturally",
+btn_lightUp: "More Light", btn_lightUp_desc: "Move to a brighter spot",
+btn_lightDown: "Less Light", btn_lightDown_desc: "Move to a shadier spot",
+btn_checkRoots: "Check Roots", btn_checkRoots_desc: "Inspect root health",
+btn_removeDead: "Remove Dead Leaves", btn_removeDead_desc: "Clean dead leaves, boost health",
+btn_repot: "Repot", btn_repot_desc: "Restore roots, improve drainage",
+
+tipSkipAll: "Skip All Tips",
+tipNext: "Next",
+tipStart: "Start Game",
+endRestart: "Play Again",
+endSuccess: "Challenge Complete!",
+endFail: "Challenge Failed",
+
+season_spring: "Spring", season_summer: "Summer", season_autumn: "Autumn", season_winter: "Winter",
+soil_standard: "Standard", soil_gritty: "Gritty", soil_organic: "Organic",
+pot_small: "Small", pot_medium: "Medium", pot_large: "Large",
+
+ann_firm: "🍃 Firm & Plump", ann_firm_normal: "🍃 Normal", ann_firm_wrinkle: "⚠️ Wrinkled — needs water!",
+ann_color_healthy: "💚 Healthy color", ann_color_dull: "💛 Dull color", ann_color_yellow: "🚨 Yellowing — rotting!",
+ann_growth_growing: "🌱 Growing", ann_growth_dormant: "💤 Dormant",
+light_tooDark: "TOO DARK!", light_tooMuch: "TOO MUCH!",
+
+soil_wet: "WET ⚠️", soil_moist: "MOIST", soil_dry: "DRY", soil_veryDry: "VERY DRY",
+
+hover_leaf_firm: "🍃 Leaf:", hover_soil: "🪴 Soil:",
+firm_plump: "🍃 Plump", firm_normal: "🍃 Normal", firm_slight: "⚠️ Slightly wrinkled", firm_shriveled: "🚨 Shriveled",
+firm_plump_desc: "Leaves are plump and full of water", firm_normal_desc: "Leaves are in good condition",
+firm_slight_desc: "Leaves slightly wrinkled — needs water", firm_shriveled_desc: "Leaves severely shriveled — water now!",
+color_healthy: "💚 Healthy", color_dull: "💛 Dull", color_yellow: "🚨 Yellowing", color_brown: "🟤 Unhealthy",
+color_healthy_desc: "Color is healthy and bright", color_dull_desc: "Color looks slightly dull",
+color_yellow_desc: "Leaves yellowing — may be rotting!", color_brown_desc: "Color is dark — poor health",
+growth_active: "🌱 Growing", growth_slow: "💤 Slow", growth_dormant: "😴 Dormant",
+growth_active_desc: "Plant is actively growing", growth_slow_desc: "Growth is slow", growth_dormant_desc: "Plant is dormant",
+soil_wet_desc: "Soil is very wet — overwatering risk!", soil_moist_desc: "Soil is moist — ideal",
+soil_dry_desc: "Soil is somewhat dry", soil_veryDry_desc: "Soil is very dry — ready to water",
+
+deadText: "Plant has died",
+
+toast_water: "💧 Water", toast_skip: "🚫 Skip Watering", toast_lightUp: "🔆 More Light",
+toast_lightDown: "🌙 Less Light", toast_checkRoots: "🔍 Root Check",
+toast_removeDead: "✂️ Remove Dead Leaves", toast_repot: "🪴 Repot",
+toast_soil: "Soil", toast_hydration: "Hydration", toast_health: "Health", toast_roots: "Roots", toast_light: "Light",
+
+warn_wetSoil: "⚠️ Soil is very wet — overwatering risk! Consider skipping water.",
+warn_lowHydration: "⚠️ Leaf hydration is low — your plant needs water!",
+warn_lowLight: "⚠️ Light is insufficient — consider increasing light!",
+
+tip_wetSoil: "💡 Tip: Soil is still wet. Skip watering and let it dry!",
+tip_wetSoilWarn: (m) => `⚠️ Soil moisture is at ${m}% — watering more will cause root rot!`,
+
+root_healthy: "Healthy", root_rot: "Rotting — needs repotting!", root_weak: "Weak — control watering", root_strong: "Strong",
+
+endThriving: "Your succulent is thriving! You've learned to read the plant's signals.",
+endGeneric: "The plant has died.",
+endOverwater: "Overwatered — leaves turned translucent and rotted, roots suffocated.",
+endUnderwater: "Severely dehydrated — leaves shriveled and dried up.",
+endLowLight: "Severely underlit — plant couldn't photosynthesize.",
+endRootRot: "Roots rotted — couldn't absorb water or nutrients.",
+endStats: (d, a) => ` You survived ${d} days with ${a} actions taken.`,
+
+tips: [
+{
+emoji: '🌱',
+title: 'Welcome! Learn to read your plant',
+body: `<p>The core of succulent care is <b>observing the plant's signals</b>, not following a fixed schedule.</p>
+<p>Your plant has <b>3 visible signals</b>:</p>
+<p>🍃 <b>Leaf firmness</b> — Plump = well hydrated, wrinkled = needs water</p>
+<p>💚 <b>Leaf color</b> — Green = healthy, yellow = possible rot</p>
+<p>🌱 <b>New growth</b> — New sprouts = actively growing, none = dormant</p>
+<p>The status panel on the right shows 6 hidden values. The canvas has annotation boxes. Hover over the plant for details.</p>`
+},
+{
+emoji: '💧',
+title: "Don't water yet!",
+body: `<p>Your soil moisture is already at <b>85%</b> — very wet!</p>
+<p>The most common beginner mistake is watering on sight. Succulents hate <b>overwatering</b> — it causes leaves to turn translucent, rot, and suffocate roots.</p>
+<p>✅ <b>Correct first step</b>: Click "🚫 Skip Watering" to let the soil dry naturally.</p>
+<p>Wait until soil drops to 30%-50% before considering watering.</p>`
+},
+{
+emoji: '⏱️',
+title: 'How to watch changes',
+body: `<p>The game advances by "days". Click <b>▶ Start</b> to begin the simulation.</p>
+<p>Each tick represents one day. Plant stats change gradually. You can <b>pause</b> anytime to observe carefully.</p>
+<p>📊 After each action, the status panel shows <b>change amounts</b> (blue = increase, red = decrease).</p>
+<p>🎯 Goal: Keep plant health ≥ 70% for <b>15 days</b> to win!</p>`
+}
+]
+}
+};
+
+function t(key) {
+const lang = I18N[currentLang];
+return lang[key] !== undefined ? lang[key] : key;
+}
+
+function switchLang(lang) {
+currentLang = lang;
+document.getElementById('langZh').classList.toggle('active', lang === 'zh');
+document.getElementById('langEn').classList.toggle('active', lang === 'en');
+document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+applyI18n();
+// Re-render canvas and refresh dynamic UI
+updateUI();
+render();
+// If tips overlay is open, refresh it
+if (!document.getElementById('tipOverlay').classList.contains('hidden')) {
+showTip();
+}
+// If end screen is open, it stays as-is (already set)
+}
+
+function applyI18n() {
+const L = I18N[currentLang];
+// Static elements with data-i18n
+document.querySelectorAll('[data-i18n]').forEach(el => {
+const key = el.getAttribute('data-i18n');
+if (L[key] !== undefined) el.textContent = L[key];
+});
+// Elements by ID
+const idMap = {
+gameTitle: 'gameTitle', gameSubtitle: 'gameSubtitle',
+statusTitle: 'statusTitle', controlsTitle: 'controlsTitle',
+label_moisture: 'label_moisture', label_hydration: 'label_hydration',
+label_health: 'label_health', label_roots: 'label_roots',
+label_light: 'label_light', label_growth: 'label_growth',
+label_thriving: 'label_thriving', label_actions: 'label_actions',
+label_times: 'label_times', label_day: 'label_day',
+label_dayUnit: 'label_dayUnit', label_start: 'label_start',
+btn_water: 'btn_water', btn_water_desc: 'btn_water_desc',
+btn_skip: 'btn_skip', btn_skip_desc: 'btn_skip_desc',
+btn_lightUp: 'btn_lightUp', btn_lightUp_desc: 'btn_lightUp_desc',
+btn_lightDown: 'btn_lightDown', btn_lightDown_desc: 'btn_lightDown_desc',
+btn_checkRoots: 'btn_checkRoots', btn_checkRoots_desc: 'btn_checkRoots_desc',
+btn_removeDead: 'btn_removeDead', btn_removeDead_desc: 'btn_removeDead_desc',
+btn_repot: 'btn_repot', btn_repot_desc: 'btn_repot_desc',
+tipSkipBtn: 'tipSkipBtn', endRestartBtn: 'endRestartBtn'
+};
+Object.entries(idMap).forEach(([key, id]) => {
+const el = document.getElementById(id);
+if (el && L[key] !== undefined) el.textContent = L[key];
+});
+
+// Update play button text
+document.getElementById('playBtn').innerHTML = paused ? '▶ ' + t('label_start') : '⏸ ' + t('label_pause');
+
+// Update challenge info labels
+document.getElementById('ciGoal').textContent = t('goal_text');
+
+// Update season/soil/pot display
+if (typeof plantState !== 'undefined' && plantState.season) {
+document.getElementById('ciSeason').textContent = t('season_' + plantState.season);
+document.getElementById('ciSoil').textContent = t('soil_' + plantState.soilType);
+document.getElementById('ciPot').textContent = t('pot_' + plantState.potSize);
+}
+}
+
+// ============================================================
+// Challenge Presets
+// ============================================================
+const CHALLENGES = [
+{
+name: "beginner",
+season: "spring", soilType: "standard", potSize: "medium",
+initial: { moisture: 0.85, hydration: 0.70, health: 0.60, roots: 0.70, light: 0.40, growthActivity: 0.50 }
+},
+{
+name: "summer",
+season: "summer", soilType: "gritty", potSize: "small",
+initial: { moisture: 0.30, hydration: 0.40, health: 0.55, roots: 0.60, light: 0.80, growthActivity: 0.30 }
+},
+{
+name: "winter",
+season: "winter", soilType: "organic", potSize: "large",
+initial: { moisture: 0.60, hydration: 0.55, health: 0.50, roots: 0.55, light: 0.20, growthActivity: 0.15 }
+}
+];
+
+// Tuned parameters from Interaction 02 & 04
+const EVAPORATION = { spring: 0.015, summer: 0.025, autumn: 0.01, winter: 0.005 };
+const DRAINAGE = { standard: 0.018, gritty: 0.03, organic: 0.008 };
+const POT_CAPACITY = { small: 0.4, medium: 0.6, large: 0.9 };
+const TICK_INTERVAL = 1500;
+
+const DMG = {
+overwater: 0.005, underwater: 0.008, underlight: 0.004,
+rootRot: 0.008, oversaturate: 0.006, rootDecay: 0.008
+};
+const REC = { base: 0.008, bonus: 0.005, removeDead: 0.05, repot: 0.15 };
+const EFF = { waterHydration: 0.2, lightStep: 0.2, waterMoisture: 0.15 };
+
+const THRIVING_THRESHOLD = 15;
+const THRIVING_HEALTH = 0.7;
+
+// ============================================================
+// Game State
+// ============================================================
+const plantState = {
+moisture: 0.85, hydration: 0.70, health: 0.60, roots: 0.70,
+light: 0.40, growthActivity: 0.50,
+season: "spring", soilType: "standard", potSize: "medium",
+alive: true, thriving: false
+};
+
+let gameDay = 0;
+let paused = true;
+let timeSpeed = 1;
+let thrivingDays = 0;
+let actionCount = 0;
+let currentChallenge = 0;
+let prevValues = {};
+let tickTimer = null;
+let tipStep = 0;
+let tipsShown = false;
+
+// ============================================================
+// Core Simulation Engine
+// ============================================================
+function loadChallenge(idx) {
+currentChallenge = idx;
+const ch = CHALLENGES[idx];
+Object.assign(plantState, ch.initial, {
+season: ch.season, soilType: ch.soilType, potSize: ch.potSize,
+alive: true, thriving: false
+});
+gameDay = 0;
+thrivingDays = 0;
+actionCount = 0;
+paused = true;
+prevValues = {};
+
+document.querySelectorAll('.challenge-btn').forEach((b, i) => {
+b.classList.toggle('active', i === idx);
+});
+
+document.getElementById('ciSeason').textContent = t('season_' + ch.season);
+document.getElementById('ciSoil').textContent = t('soil_' + ch.soilType);
+document.getElementById('ciPot').textContent = t('pot_' + ch.potSize);
+document.getElementById('ciGoal').textContent = t('goal_text');
+document.getElementById('playBtn').innerHTML = '▶ ' + t('label_start');
+document.getElementById('endScreen').classList.add('hidden');
+
+updateUI();
+render();
+
+if (idx === 0 && !tipsShown) {
+tipStep = 0;
+showTip();
+}
+}
+
+function tick() {
+if (paused || !plantState.alive) return;
+gameDay++;
+
+prevValues = {
+moisture: plantState.moisture, hydration: plantState.hydration,
+health: plantState.health, roots: plantState.roots,
+light: plantState.light, growthActivity: plantState.growthActivity
+};
+
+const s = plantState;
+const evap = EVAPORATION[s.season];
+const drain = DRAINAGE[s.soilType];
+const cap = POT_CAPACITY[s.potSize];
+
+s.moisture -= evap + drain * (s.moisture / cap);
+s.moisture = clamp(s.moisture, 0, 1);
+
+if (s.moisture > 0.25) {
+s.hydration += (s.moisture - s.hydration) * 0.03;
+} else {
+s.hydration -= 0.01;
+}
+s.hydration = clamp(s.hydration, 0, 1);
+
+const idealLight = 0.5;
+const lightFactor = 1 - Math.abs(s.light - idealLight) * 2;
+const seasonGrowth = { spring: 1.0, summer: 0.7, autumn: 0.5, winter: 0.2 }[s.season];
+const targetGrowth = Math.max(0, lightFactor * seasonGrowth * s.health);
+s.growthActivity += (targetGrowth - s.growthActivity) * 0.05;
+s.growthActivity = clamp(s.growthActivity, 0, 1);
+
+if (s.moisture > 0.8) s.roots -= 0.003;
+else if (s.moisture < 0.15) s.roots -= 0.001;
+else if (s.moisture > 0.3 && s.moisture < 0.6) s.roots += 0.002;
+s.roots = clamp(s.roots, 0, 1);
+
+let healthDelta = 0;
+let damaged = false;
+
+if (s.moisture > 0.8) { healthDelta -= DMG.overwater; damaged = true; }
+if (s.moisture > 0.9) { healthDelta -= DMG.oversaturate; damaged = true; }
+if (s.hydration < 0.2) { healthDelta -= DMG.underwater; damaged = true; }
+if (s.light < 0.15) { healthDelta -= DMG.underlight; damaged = true; }
+if (s.roots < 0.3) { healthDelta -= DMG.rootRot; damaged = true; }
+if (s.roots < 0.15) { healthDelta -= DMG.rootDecay; damaged = true; }
+
+if (!damaged) {
+healthDelta += REC.base;
+if (s.moisture > 0.3 && s.moisture < 0.6 && s.hydration > 0.4 &&
+s.light > 0.3 && s.light < 0.7 && s.roots > 0.5) {
+healthDelta += REC.bonus;
+}
+}
+
+s.health += healthDelta;
+s.health = clamp(s.health, 0, 1);
+
+if (s.health >= THRIVING_HEALTH) {
+thrivingDays++;
+if (thrivingDays >= THRIVING_THRESHOLD) {
+s.thriving = true;
+endGame(true, t('endThriving'));
+}
+} else {
+thrivingDays = Math.max(0, thrivingDays - 1);
+}
+
+if (s.health <= 0) {
+s.alive = false;
+let reason = t('endGeneric');
+if (s.moisture > 0.8) reason = t('endOverwater');
+else if (s.hydration < 0.15) reason = t('endUnderwater');
+else if (s.light < 0.1) reason = t('endLowLight');
+else if (s.roots < 0.1) reason = t('endRootRot');
+endGame(false, reason);
+}
+
+if (s.moisture > 0.8 && gameDay % 3 === 0) showToast("warning", t('warn_wetSoil'));
+if (s.hydration < 0.25 && gameDay % 3 === 0) showToast("warning", t('warn_lowHydration'));
+if (s.light < 0.15 && gameDay % 3 === 0) showToast("warning", t('warn_lowLight'));
+
+updateUI();
+render();
+}
+
+// ============================================================
+// Player Actions
+// ============================================================
+function playerAction(action) {
+if (!plantState.alive) return;
+actionCount++;
+
+const s = plantState;
+const before = { moisture: s.moisture, hydration: s.hydration, health: s.health, roots: s.roots, light: s.light };
+
+switch(action) {
+case 'water': {
+if (s.moisture > 0.7) {
+showToast("tip", t('tip_wetSoil'));
+if (currentChallenge === 0) {
+showToast("warning", t('tip_wetSoilWarn')(Math.round(s.moisture*100)));
+}
+}
+s.moisture = clamp(s.moisture + EFF.waterMoisture, 0, 1);
+s.hydration = clamp(s.hydration + EFF.waterHydration, 0, 1);
+showToast("success", `${t('toast_water')}: ${t('toast_soil')} ${pct(before.moisture)}→${pct(s.moisture)} (${signed(s.moisture-before.moisture)}), ${t('toast_hydration')} ${pct(before.hydration)}→${pct(s.hydration)} (${signed(s.hydration-before.hydration)})`);
+break;
+}
+case 'skip': {
+const dryAmount = EVAPORATION[s.season] + DRAINAGE[s.soilType];
+s.moisture = clamp(s.moisture - dryAmount * 3, 0, 1);
+showToast("tip", `${t('toast_skip')}: ${t('toast_soil')} ${pct(before.moisture)}→${pct(s.moisture)} (${signed(s.moisture-before.moisture)})`);
+break;
+}
+case 'lightUp': {
+s.light = clamp(s.light + EFF.lightStep, 0, 1);
+showToast("success", `${t('toast_lightUp')}: ${pct(before.light)}→${pct(s.light)} (${signed(s.light-before.light)})`);
+break;
+}
+case 'lightDown': {
+s.light = clamp(s.light - EFF.lightStep, 0, 1);
+showToast("tip", `${t('toast_lightDown')}: ${pct(before.light)}→${pct(s.light)} (${signed(s.light-before.light)})`);
+break;
+}
+case 'checkRoots': {
+let rootStatus = t('root_healthy');
+if (s.roots < 0.3) rootStatus = t('root_rot');
+else if (s.roots < 0.5) rootStatus = t('root_weak');
+else if (s.roots > 0.7) rootStatus = t('root_strong');
+showToast("tip", `${t('toast_checkRoots')}: ${pct(s.roots)} — ${rootStatus}`);
+break;
+}
+case 'removeDead': {
+s.health = clamp(s.health + REC.removeDead, 0, 1);
+showToast("success", `${t('toast_removeDead')}: ${t('toast_health')} ${pct(before.health)}→${pct(s.health)} (+${Math.round(REC.removeDead*100)}%)`);
+break;
+}
+case 'repot': {
+s.roots = clamp(s.roots + REC.repot, 0, 1);
+s.moisture = clamp(s.moisture * 0.5, 0, 1);
+showToast("success", `${t('toast_repot')}: ${t('toast_roots')} ${pct(before.roots)}→${pct(s.roots)} (+${Math.round(REC.repot*100)}%), ${t('toast_soil')} ${pct(before.moisture)}→${pct(s.moisture)}`);
+break;
+}
+}
+
+updateUI();
+render();
+}
+
+// ============================================================
+// UI Update
+// ============================================================
+function updateUI() {
+const s = plantState;
+const stats = [
+{ key: 'moisture', ideal: [0.3, 0.6], dangerHi: 0.8, dangerLo: 0.1 },
+{ key: 'hydration', ideal: [0.4, 0.8], dangerHi: 0.9, dangerLo: 0.2 },
+{ key: 'health', ideal: [0.6, 1.0], dangerHi: -1, dangerLo: 0.2 },
+{ key: 'roots', ideal: [0.5, 1.0], dangerHi: -1, dangerLo: 0.3 },
+{ key: 'light', ideal: [0.35, 0.65], dangerHi: 0.9, dangerLo: 0.15 },
+{ key: 'growthActivity', ideal: [0.3, 0.8], dangerHi: -1, dangerLo: 0 }
+];
+
+stats.forEach(stat => {
+const val = s[stat.key];
+const bar = document.getElementById('bar-' + stat.key);
+const valEl = document.getElementById('val-' + stat.key);
+const deltaEl = document.getElementById('delta-' + stat.key);
+
+if (bar) {
+bar.style.width = (val * 100) + '%';
+if (val > stat.dangerHi || val < stat.dangerLo) bar.style.background = 'var(--red)';
+else if (val >= stat.ideal[0] && val <= stat.ideal[1]) bar.style.background = 'var(--green)';
+else bar.style.background = 'var(--orange)';
+}
+if (valEl) valEl.textContent = Math.round(val * 100) + '%';
+
+if (deltaEl) {
+if (prevValues[stat.key] !== undefined) {
+const delta = val - prevValues[stat.key];
+if (Math.abs(delta) < 0.001) {
+deltaEl.textContent = '—';
+deltaEl.className = 'stat-delta neu';
+} else {
+deltaEl.textContent = signed(delta);
+deltaEl.className = 'stat-delta ' + (delta > 0 ? 'pos' : 'neg');
+}
+}
+}
+});
+
+document.getElementById('dayDisplay').textContent = gameDay;
+document.getElementById('thrivingDays').textContent = thrivingDays;
+document.getElementById('actionCount').textContent = actionCount;
+}
+
+// ============================================================
+// Canvas Renderer
+// ============================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let soilDots = [];
+let hoverInfo = null;
+
+function initSoilDots() {
+soilDots = [];
+let rng = 42;
+for (let i = 0; i < 80; i++) {
+rng = (rng * 9301 + 49297) % 233280;
+const r1 = rng / 233280;
+rng = (rng * 9301 + 49297) % 233280;
+const r2 = rng / 233280;
+soilDots.push({ x: 0.15 + r1 * 0.7, y: 0.15 + r2 * 0.7, size: 2 + r1 * 3 });
+}
+}
+initSoilDots();
+
+canvas.addEventListener('mousemove', (e) => {
+const rect = canvas.getBoundingClientRect();
+const x = (e.clientX - rect.left) / canvas.width;
+const y = (e.clientY - rect.top) / canvas.height;
+hoverInfo = y < 0.55 ? getHoverInfo(x, y) : getSoilInfo(x, y);
+render();
+});
+
+canvas.addEventListener('mouseleave', () => { hoverInfo = null; render(); });
+
+function getHoverInfo(x, y) {
+const s = plantState;
+let firmness, firmnessDesc;
+if (s.hydration > 0.6) { firmness = t('firm_plump'); firmnessDesc = t('firm_plump_desc'); }
+else if (s.hydration > 0.35) { firmness = t('firm_normal'); firmnessDesc = t('firm_normal_desc'); }
+else if (s.hydration > 0.2) { firmness = t('firm_slight'); firmnessDesc = t('firm_slight_desc'); }
+else { firmness = t('firm_shriveled'); firmnessDesc = t('firm_shriveled_desc'); }
+
+let color, colorDesc;
+if (s.moisture > 0.85 && s.health < 0.5) { color = t('color_yellow'); colorDesc = t('color_yellow_desc'); }
+else if (s.health > 0.6) { color = t('color_healthy'); colorDesc = t('color_healthy_desc'); }
+else if (s.health > 0.3) { color = t('color_dull'); colorDesc = t('color_dull_desc'); }
+else { color = t('color_brown'); colorDesc = t('color_brown_desc'); }
+
+let growth, growthDesc;
+if (s.growthActivity > 0.5) { growth = t('growth_active'); growthDesc = t('growth_active_desc'); }
+else if (s.growthActivity > 0.2) { growth = t('growth_slow'); growthDesc = t('growth_slow_desc'); }
+else { growth = t('growth_dormant'); growthDesc = t('growth_dormant_desc'); }
+
+return { type: 'leaf', firmness, firmnessDesc, color, colorDesc, growth, growthDesc };
+}
+
+function getSoilInfo(x, y) {
+const s = plantState;
+let moisture, moistureDesc;
+if (s.moisture > 0.8) { moisture = t('soil_wet'); moistureDesc = t('soil_wet_desc'); }
+else if (s.moisture > 0.5) { moisture = t('soil_moist'); moistureDesc = t('soil_moist_desc'); }
+else if (s.moisture > 0.2) { moisture = t('soil_dry'); moistureDesc = t('soil_dry_desc'); }
+else { moisture = t('soil_veryDry'); moistureDesc = t('soil_veryDry_desc'); }
+return { type: 'soil', moisture, moistureDesc, moistureValue: s.moisture };
+}
+
+function render() {
+const w = canvas.width, h = canvas.height;
+ctx.clearRect(0, 0, w, h);
+
+const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+bgGrad.addColorStop(0, '#e8e4d9');
+bgGrad.addColorStop(0.55, '#d4cfc0');
+bgGrad.addColorStop(0.55, '#c4bda8');
+bgGrad.addColorStop(1, '#b0a890');
+ctx.fillStyle = bgGrad;
+ctx.fillRect(0, 0, w, h);
+
+ctx.strokeStyle = '#a09880';
+ctx.lineWidth = 1;
+ctx.beginPath();
+ctx.moveTo(0, h * 0.55);
+ctx.lineTo(w, h * 0.55);
+ctx.stroke();
+
+// Season/soil/pot labels on table
+ctx.fillStyle = '#7a7165';
+ctx.font = '11px sans-serif';
+ctx.textAlign = 'left';
+const s = plantState;
+ctx.fillText(`🌸 ${t('season_' + s.season)}`, 10, h - 60);
+ctx.fillText(`🪴 ${t('soil_' + s.soilType)}`, 10, h - 42);
+ctx.fillText(`🏺 ${t('pot_' + s.potSize)}`, 10, h - 24);
+
+drawLightBar(w, h);
+drawPot(w, h);
+drawSoil(w, h);
+
+if (s.alive) drawSucculent(w, h);
+else drawDeadPlant(w, h);
+
+drawAnnotations(w, h);
+
+if (hoverInfo) drawHoverTooltip(hoverInfo, w, h);
+}
+
+function drawLightBar(w, h) {
+const barX = 15, barY = h * 0.15, barH = h * 0.3, barW = 16;
+
+ctx.fillStyle = 'rgba(0,0,0,0.1)';
+ctx.fillRect(barX, barY, barW, barH);
+
+const fillH = barH * plantState.light;
+let fillColor = '#e8a857';
+if (plantState.light < 0.15 || plantState.light > 0.85) fillColor = '#d4675e';
+ctx.fillStyle = fillColor;
+ctx.fillRect(barX, barY + barH - fillH, barW, fillH);
+
+ctx.strokeStyle = '#8b6f47';
+ctx.lineWidth = 1.5;
+ctx.strokeRect(barX, barY, barW, barH);
+
+ctx.fillStyle = '#3a3226';
+ctx.font = 'bold 10px sans-serif';
+ctx.textAlign = 'center';
+ctx.fillText('☀️', barX + barW/2, barY - 8);
+ctx.fillText(Math.round(plantState.light * 100) + '%', barX + barW/2, barY + barH + 15);
+
+ctx.font = 'bold 9px sans-serif';
+if (plantState.light < 0.15) {
+ctx.fillStyle = '#d4675e';
+ctx.fillText(t('light_tooDark'), barX + barW/2, barY + barH + 28);
+} else if (plantState.light > 0.85) {
+ctx.fillStyle = '#d4675e';
+ctx.fillText(t('light_tooMuch'), barX + barW/2, barY + barH + 28);
+}
+}
+
+function drawPot(w, h) {
+const potTopY = h * 0.62, potBotY = h * 0.88;
+const potTopW = w * 0.38, potBotW = w * 0.30;
+const cx = w / 2;
+
+const grad = ctx.createLinearGradient(cx - potTopW/2, potTopY, cx + potTopW/2, potBotY);
+grad.addColorStop(0, '#a67c52');
+grad.addColorStop(0.5, '#c49a6c');
+grad.addColorStop(1, '#8b6f47');
+ctx.fillStyle = grad;
+ctx.beginPath();
+ctx.moveTo(cx - potTopW/2, potTopY);
+ctx.lineTo(cx + potTopW/2, potTopY);
+ctx.lineTo(cx + potBotW/2, potBotY);
+ctx.lineTo(cx - potBotW/2, potBotY);
+ctx.closePath();
+ctx.fill();
+
+ctx.fillStyle = '#8b6f47';
+ctx.beginPath();
+ctx.ellipse(cx, potTopY, potTopW/2, 8, 0, 0, Math.PI * 2);
+ctx.fill();
+
+ctx.fillStyle = 'rgba(0,0,0,0.15)';
+ctx.beginPath();
+ctx.ellipse(cx, potTopY, potTopW/2 - 4, 5, 0, 0, Math.PI * 2);
+ctx.fill();
+}
+
+function drawSoil(w, h) {
+const cx = w / 2, soilY = h * 0.625, soilW = w * 0.36;
+
+let soilColor;
+const m = plantState.moisture;
+if (m > 0.8) soilColor = '#3d2817';
+else if (m > 0.5) soilColor = '#5c3d1e';
+else if (m > 0.2) soilColor = '#7a5530';
+else soilColor = '#9c7a4e';
+
+ctx.fillStyle = soilColor;
+ctx.beginPath();
+ctx.ellipse(cx, soilY, soilW/2, 7, 0, 0, Math.PI * 2);
+ctx.fill();
+
+soilDots.forEach(dot => {
+const dx = cx + (dot.x - 0.5) * soilW;
+const dy = soilY + (dot.y - 0.5) * 10;
+ctx.fillStyle = m > 0.5 ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.15)';
+ctx.beginPath();
+ctx.arc(dx, dy, dot.size * 0.4, 0, Math.PI * 2);
+ctx.fill();
+});
+
+ctx.fillStyle = 'rgba(255,255,255,0.85)';
+ctx.font = 'bold 9px sans-serif';
+ctx.textAlign = 'center';
+let moistureText;
+if (m > 0.8) moistureText = t('soil_wet');
+else if (m > 0.5) moistureText = t('soil_moist');
+else if (m > 0.2) moistureText = t('soil_dry');
+else moistureText = t('soil_veryDry');
+ctx.fillText(moistureText, cx, soilY + 3);
+}
+
+function drawSucculent(w, h) {
+const cx = w / 2, cy = h * 0.50;
+const s = plantState;
+
+const sizeMap = { small: 50, medium: 60, large: 70 };
+const baseLeafSize = sizeMap[s.potSize] || 60;
+const leafGap = 12;
+
+let leafBase, leafTip, leafEdge;
+if (s.moisture > 0.85 && s.health < 0.5) {
+leafBase = '#c4c456'; leafTip = '#a8a040'; leafEdge = '#8a8030';
+} else if (s.health > 0.6) {
+leafBase = '#7eb574'; leafTip = '#5a8e4e'; leafEdge = '#4a7a3e';
+} else if (s.health > 0.3) {
+leafBase = '#9ab06e'; leafTip = '#7a904e'; leafEdge = '#6a7a3e';
+} else {
+leafBase = '#a89858'; leafTip = '#88783e'; leafEdge = '#68582e';
+}
+
+const leafWrinkle = s.hydration < 0.3 ? 0.7 : (s.hydration < 0.5 ? 0.85 : 1.0);
+const rings = 5;
+const baseLeavesPerRing = [1, 5, 8, 10, 12];
+
+for (let ring = rings - 1; ring >= 0; ring--) {
+const numLeaves = baseLeavesPerRing[ring];
+const ringRadius = ring * (baseLeafSize * 0.28 + leafGap);
+const leafSize = baseLeafSize * (1 - ring * 0.12);
+
+for (let i = 0; i < numLeaves; i++) {
+const angle = (i / numLeaves) * Math.PI * 2 + (ring * 0.3);
+const lx = cx + Math.cos(angle) * ringRadius;
+const ly = cy + Math.sin(angle) * ringRadius * 0.7;
+drawLeaf(lx, ly, angle, leafSize, leafBase, leafTip, leafEdge, leafWrinkle, ring);
+}
+}
+
+ctx.fillStyle = leafTip;
+ctx.beginPath();
+ctx.arc(cx, cy, baseLeafSize * 0.12, 0, Math.PI * 2);
+ctx.fill();
+
+if (s.growthActivity > 0.5 && s.health > 0.5) {
+ctx.fillStyle = '#a8d88a';
+ctx.font = '14px sans-serif';
+ctx.textAlign = 'center';
+ctx.fillText('🌱', cx + baseLeafSize * 0.5, cy - baseLeafSize * 0.3);
+}
+}
+
+function drawLeaf(x, y, angle, size, baseColor, tipColor, edgeColor, wrinkle, ring) {
+ctx.save();
+ctx.translate(x, y);
+ctx.rotate(angle + Math.PI / 2);
+
+const w = size * 0.35 * wrinkle;
+const h = size * 0.7;
+
+ctx.beginPath();
+ctx.moveTo(0, -h * 0.5);
+ctx.quadraticCurveTo(w, -h * 0.2, w * 0.7, h * 0.3);
+ctx.quadraticCurveTo(0, h * 0.5, -w * 0.7, h * 0.3);
+ctx.quadraticCurveTo(-w, -h * 0.2, 0, -h * 0.5);
+ctx.closePath();
+
+const grad = ctx.createLinearGradient(0, -h * 0.5, 0, h * 0.5);
+grad.addColorStop(0, tipColor);
+grad.addColorStop(0.6, baseColor);
+grad.addColorStop(1, edgeColor);
+ctx.fillStyle = grad;
+ctx.fill();
+
+ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+ctx.lineWidth = 1;
+ctx.stroke();
+
+ctx.fillStyle = tipColor;
+ctx.beginPath();
+ctx.arc(0, -h * 0.45, size * 0.04, 0, Math.PI * 2);
+ctx.fill();
+
+ctx.restore();
+}
+
+function drawDeadPlant(w, h) {
+const cx = w / 2, cy = h * 0.50;
+ctx.fillStyle = '#6b5435';
+ctx.font = '40px sans-serif';
+ctx.textAlign = 'center';
+ctx.fillText('🥀', cx, cy + 15);
+ctx.fillStyle = '#d4675e';
+ctx.font = 'bold 14px sans-serif';
+ctx.fillText(t('deadText'), cx, cy - 40);
+}
+
+function drawAnnotations(w, h) {
+const s = plantState;
+if (!s.alive) return;
+
+const annotX = w - 120;
+let annotY = 20;
+
+ctx.font = '11px sans-serif';
+ctx.textAlign = 'left';
+
+let firmText, firmColor;
+if (s.hydration > 0.5) { firmText = t('ann_firm'); firmColor = '#4a6b3b'; }
+else if (s.hydration > 0.3) { firmText = t('ann_firm_normal'); firmColor = '#7a7165'; }
+else { firmText = t('ann_firm_wrinkle'); firmColor = '#d4675e'; }
+drawAnnotationBox(annotX, annotY, firmText, firmColor);
+annotY += 28;
+
+let colorText, colorColor;
+if (s.moisture > 0.85 && s.health < 0.5) { colorText = t('ann_color_yellow'); colorColor = '#d4675e'; }
+else if (s.health > 0.5) { colorText = t('ann_color_healthy'); colorColor = '#4a6b3b'; }
+else { colorText = t('ann_color_dull'); colorColor = '#e8a857'; }
+drawAnnotationBox(annotX, annotY, colorText, colorColor);
+annotY += 28;
+
+let growthText, growthColor;
+if (s.growthActivity > 0.4) { growthText = t('ann_growth_growing'); growthColor = '#4a6b3b'; }
+else { growthText = t('ann_growth_dormant'); growthColor = '#7a7165'; }
+drawAnnotationBox(annotX, annotY, growthText, growthColor);
+}
+
+function drawAnnotationBox(x, y, text, color) {
+ctx.fillStyle = 'rgba(255,250,243,0.85)';
+const metrics = ctx.measureText(text);
+const boxW = metrics.width + 16;
+ctx.fillRect(x, y, boxW, 22);
+ctx.strokeStyle = color;
+ctx.lineWidth = 1.5;
+ctx.strokeRect(x, y, boxW, 22);
+ctx.fillStyle = color;
+ctx.font = '11px sans-serif';
+ctx.textAlign = 'left';
+ctx.fillText(text, x + 8, y + 15);
+}
+
+function drawHoverTooltip(info, w, h) {
+const tx = w / 2, ty = 15;
+const boxW = 320;
+const boxH = info.type === 'leaf' ? 80 : 50;
+
+ctx.fillStyle = 'rgba(255,250,243,0.95)';
+ctx.strokeStyle = '#8b6f47';
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.roundRect(tx - boxW/2, ty, boxW, boxH, 8);
+ctx.fill();
+ctx.stroke();
+
+ctx.textAlign = 'center';
+ctx.font = 'bold 11px sans-serif';
+
+if (info.type === 'leaf') {
+ctx.fillStyle = '#3a3226';
+ctx.fillText(`${info.firmness} | ${info.color} | ${info.growth}`, tx, ty + 18);
+ctx.font = '10px sans-serif';
+ctx.fillStyle = '#7a7165';
+ctx.fillText(info.firmnessDesc, tx, ty + 35);
+ctx.fillText(info.colorDesc, tx, ty + 50);
+ctx.fillText(info.growthDesc, tx, ty + 65);
+} else {
+ctx.fillStyle = '#3a3226';
+ctx.fillText(`${t('hover_soil')} ${info.moisture} (${Math.round(info.moistureValue*100)}%)`, tx, ty + 20);
+ctx.font = '10px sans-serif';
+ctx.fillStyle = '#7a7165';
+ctx.fillText(info.moistureDesc, tx, ty + 38);
+}
+}
+
+// ============================================================
+// Toast System
+// ============================================================
+function showToast(type, message) {
+const container = document.getElementById('toastContainer');
+const toast = document.createElement('div');
+toast.className = 'toast ' + type;
+toast.textContent = message;
+container.appendChild(toast);
+while (container.children.length > 5) container.removeChild(container.firstChild);
+setTimeout(() => {
+toast.style.opacity = '0';
+setTimeout(() => toast.remove(), 500);
+}, 4000);
+}
+
+// ============================================================
+// Guided Tips (Challenge 1 only)
+// ============================================================
+function showTip() {
+const tips = t('tips');
+// t('tips') returns the array from current language
+const tipsArr = I18N[currentLang].tips;
+if (tipStep >= tipsArr.length) {
+document.getElementById('tipOverlay').classList.add('hidden');
+tipsShown = true;
+return;
+}
+const tip = tipsArr[tipStep];
+document.getElementById('tipEmoji').textContent = tip.emoji;
+document.getElementById('tipTitle').textContent = tip.title;
+document.getElementById('tipBody').innerHTML = tip.body;
+document.getElementById('tipNextBtn').textContent = tipStep === tipsArr.length - 1 ? t('tipStart') : t('tipNext');
+document.getElementById('tipSkipBtn').textContent = t('tipSkipAll');
+document.getElementById('tipOverlay').classList.remove('hidden');
+}
+
+function nextTip() { tipStep++; showTip(); }
+function skipTips() {
+document.getElementById('tipOverlay').classList.add('hidden');
+tipsShown = true;
+}
+
+// ============================================================
+// Time Controls
+// ============================================================
+function togglePause() {
+if (!plantState.alive) return;
+paused = !paused;
+document.getElementById('playBtn').innerHTML = paused ? '▶ ' + t('label_start') : '⏸ ' + t('label_pause');
+}
+
+function toggleSpeed() {
+timeSpeed = timeSpeed === 1 ? 2 : (timeSpeed === 2 ? 4 : 1);
+document.getElementById('speedBtn').textContent = timeSpeed + 'x';
+if (tickTimer) {
+clearInterval(tickTimer);
+tickTimer = setInterval(tick, TICK_INTERVAL / timeSpeed);
+}
+}
+
+// ============================================================
+// End Game
+// ============================================================
+function endGame(success, message) {
+paused = true;
+document.getElementById('playBtn').innerHTML = '▶ ' + t('label_start');
+document.getElementById('endEmoji').textContent = success ? '🎉' : '🥀';
+document.getElementById('endTitle').textContent = success ? t('endSuccess') : t('endFail');
+document.getElementById('endMessage').textContent = message + t('endStats')(gameDay, actionCount);
+document.getElementById('endRestartBtn').textContent = t('endRestart');
+document.getElementById('endScreen').classList.remove('hidden');
+}
+
+function resetGame() {
+document.getElementById('endScreen').classList.add('hidden');
+loadChallenge(currentChallenge);
+}
+
+// ============================================================
+// Utilities
+// ============================================================
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function pct(v) { return Math.round(v * 100) + '%'; }
+function signed(v) { return (v >= 0 ? '+' : '') + Math.round(v * 100) + '%'; }
+
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+this.beginPath();
+this.moveTo(x + r, y);
+this.lineTo(x + w - r, y);
+this.quadraticCurveTo(x + w, y, x + w, y + r);
+this.lineTo(x + w, y + h - r);
+this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+this.lineTo(x + r, y + h);
+this.quadraticCurveTo(x, y + h, x, y + h - r);
+this.lineTo(x, y + r);
+this.quadraticCurveTo(x, y, x + r, y);
+this.closePath();
+};
+}
+
+// ============================================================
+// Game Loop
+// ============================================================
+function startGameLoop() {
+if (tickTimer) clearInterval(tickTimer);
+tickTimer = setInterval(tick, TICK_INTERVAL / timeSpeed);
+}
+
+// ============================================================
+// Initialize
+// ============================================================
+applyI18n();
+loadChallenge(0);
+startGameLoop();
+</script>
+</body>
+</html>

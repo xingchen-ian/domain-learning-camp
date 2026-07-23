@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>折·Fold — 开发过程 | Process</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">折·Fold <small>精度折纸</small></div>
+  <div class="links">
+    <a href="index.html">首页</a>
+    <a href="index.html#domain">领域知识</a>
+    <a href="index.html#system">系统设计</a>
+    <a href="process.html" class="active">开发过程</a>
+    <a href="game.html">玩游戏</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Human–AI Development Timeline</div>
+    <h1>开发过程</h1>
+    <p class="sub">人机协作的按时间线记录，基于 agent-development-log.md</p>
+  </div>
+
+  <div class="card">
+    <h2>项目信息</h2>
+    <div class="grid-2">
+      <div>
+        <p><strong>领域：</strong>折纸 / Paper folding</p>
+        <p><strong>核心学习转变：</strong>从"折纸是一串步骤" → "对齐、方向与累积精度的系统"</p>
+      </div>
+      <div>
+        <p><strong>AI Agent：</strong>WorkBuddy</p>
+        <p><strong>技术路线：</strong>Track A · HTML/CSS/Canvas 2D · 无构建</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>时间线</h2>
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-time">2026-07-21 11:30 · 设计与领域建模</div>
+        <h4>把折纸领域转化成可玩的精度游戏</h4>
+        <p>读取领域学习工作簿，理解玩家循环与数据模型框架。确定折纸的新手误解与核心学习转变。与用户确认玩法（精度折纸 + 累积评分）与交付范围（完整项目网站）。选定 Canvas 2D + 纯 JS 的 Track A 路线，产出 development-brief.md。</p>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-time">2026-07-21 11:40 · 核心引擎</div>
+        <h4>实现折叠几何与交互</h4>
+        <p>实现几何核心：直线侧判定、点反射、多边形按直线裁剪（Sutherland-Hodgman）、多边形反射与插值。折叠 = 裁剪保留侧 + 镜像翻折侧生成新图层；动画用原始↔镜像线性插值。</p>
+        <p><strong>失败与修复：</strong>第一次 node 验证发现交点公式错误，裁剪出巨大畸形多边形、面积从 90000 爆炸到 540000。修正为标准 cross-product 公式后，三关面积恒为 90000。教训：几何函数必须有数值不变量测试。</p>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-time">2026-07-21 11:50 · 页面与项目网站</div>
+        <h4>构建可玩游戏页与项目网站</h4>
+        <p>game.html：canvas + HUD（关卡/折数/本折精度/累计精度/折数点/提示）+ 关卡选择 + 完成按钮。index.html：游戏创意、领域知识、系统设计（内嵌系统图 SVG）。process.html：本时间线。共享暖色纸质浅色主题，相对路径，无外部依赖。</p>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-time">2026-07-21 12:00 · 文档与提交</div>
+        <h4>补齐提交所需文档与图</h4>
+        <p>生成 system-graph.png 与 preview.png。写 README、THIRD_PARTY、submission-manifest。</p>
+        <p><strong>已知问题：</strong>折痕以无限直线虚线绘制（未精确裁到纸边）；关卡为固定预设序列；C 级反馈较弱。均属第一版范围之外的后续优化。</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <p>想看最终成果？</p>
+    <p style="margin-top:14px;"><a class="btn" href="game.html">▶ 玩游戏</a> &nbsp; <a class="btn ghost" href="index.html">回到首页</a></p>
+  </div>
+</div>
+<footer>折·Fold · 精度折纸 · Domain Learning Game Project</footer>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Climbing — Play</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">🧗 Rock Climbing</a>
+  <div class="navbar-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#domain">Domain</a>
+    <a href="index.html#system">System</a>
+    <a href="process.html">Process</a>
+    <a href="game.html" class="active">Play</a>
+  </div>
+</nav>
+
+<!-- Game Canvas -->
+<div class="game-page" style="margin-top:0;">
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Loading screen (4K textures) -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-card">
+      <div class="loading-icon">🧗</div>
+      <div class="loading-title">Loading 4K Textures</div>
+      <div class="loading-bar"><div class="loading-bar-fill" id="loadingBarFill"></div></div>
+      <div class="loading-text" id="loadingText">Preparing rock faces…</div>
+    </div>
+  </div>
+
+  <script>
+    // Dev mode: ?dev=1 auto-starts the first route (for testing/screenshot)
+    if (location.search.indexOf('dev=1') !== -1) {
+      // Hide loading and menu screens immediately so they don't block
+      // Wait for the game to be initialized and textures to load
+      var devStartGame = function () {
+        if (window._game && typeof window._game.startGame === 'function') {
+          window._game.selectedRoute = 0;
+          window._game.startGame();
+          var ls = document.getElementById('loadingScreen');
+          if (ls) ls.classList.add('hidden');
+          var mo = document.getElementById('menuOverlay');
+          if (mo) mo.classList.add('hidden');
+          console.log('Dev mode: game started, textures:', window._game.texturesLoaded);
+        } else {
+          setTimeout(devStartGame, 100);
+        }
+      };
+      // Start as soon as DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+          setTimeout(devStartGame, 50);
+        });
+      } else {
+        setTimeout(devStartGame, 50);
+      }
+    }
+  </script>
+
+  <!-- Game UI Overlay -->
+  <div class="game-ui">
+    <!-- Top bar -->
+    <div class="ui-top">
+      <div class="ui-panel">
+        <div class="ui-route-name" id="routeName">Route</div>
+        <div class="ui-height">
+          Height: <span class="val" id="heightVal">0.0m</span> |
+          Best: <span class="val" id="bestVal">0.0m</span>
+        </div>
+      </div>
+      <button class="action-btn" id="menuBtn">Menu</button>
+    </div>
+
+    <!-- Stamina & Stability bars -->
+    <div class="ui-bars">
+      <div class="bar-container">
+        <div class="bar-label">Stamina <span class="pct" id="staminaPct">100%</span></div>
+        <div class="bar-track">
+          <div class="bar-fill stamina" id="staminaBar" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="bar-container">
+        <div class="bar-label">Stability <span class="pct" id="stabilityPct">100%</span></div>
+        <div class="bar-track">
+          <div class="bar-fill stability" id="stabilityBar" style="width:100%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="ui-actions">
+      <button class="action-btn rest-btn" id="restBtn" disabled>Rest</button>
+      <button class="action-btn" id="adjustBtn">Adjust</button>
+    </div>
+
+    <!-- Grip meter -->
+    <div class="grip-meter-container" id="gripMeter" style="display:none;">
+      <div class="grip-meter-label">Click to set grip force</div>
+      <div style="position:relative;">
+        <div class="grip-meter-bar" id="gripBar"></div>
+        <div class="grip-marker" id="gripMarker"></div>
+      </div>
+    </div>
+
+    <!-- Message toast -->
+    <div class="game-message" id="gameMessage"></div>
+
+    <!-- Menu / overlay -->
+    <div class="menu-overlay" id="menuOverlay">
+      <!-- Content injected by game.js -->
+    </div>
+  </div>
+</div>
+
+<script src="assets/game.js"></script>
+</body>
+</html>

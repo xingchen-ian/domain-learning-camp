@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>First Diagnosis — A First Aid Web Game</title>
+  <link rel="stylesheet" href="assets/css/site.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <span class="logo">F</span>
+        <span>First Diagnosis</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="active">Home</a>
+        <a href="domain.html">Domain &amp; System</a>
+        <a href="process.html">Development</a>
+        <a href="game.html" class="cta">Play the Game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <span class="eyebrow">First Aid · First Playable</span>
+        <h1>Triage the disaster — then treat each patient.</h1>
+        <p class="lead">
+          A passenger jet has crashed in a forest clearing. There are
+          survivors everywhere, equipment scattered in and around the
+          wreckage, fire on three sides, and a clock on every patient. In
+          <strong>First Diagnosis</strong>, the difference between healing
+          and harm is whether you <em>find</em> the right patient, <em>find</em>
+          the right equipment, and apply it in the right order.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="game.html">Play the Game</a>
+          <a class="btn btn-ghost" href="domain.html">Read the design</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Game Idea</p>
+        <h2>What is First Diagnosis?</h2>
+        <p class="section-sub">
+          A small, browser-based first-aid simulator set in a single
+          disaster site. Every action has a visible consequence — and the
+          wrong order makes the injury worse.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <span class="badge">Player goal</span>
+            <h3>Stabilize every survivor before their clock runs out</h3>
+            <p>
+              Walk through a forest clearing with a crashed jet and active
+              fire. Find up to seven patients — some obvious, some hidden.
+              Find the equipment that matches each injury. Examine, judge,
+              act, read the body, adjust.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge warn">Core learning shift</span>
+            <h3>Find, then evaluate, then treat</h3>
+            <p>
+              Beginners assume all injuries are treated the same way. In
+              reality, the order matters: a dirty wound must be cleaned
+              before stitches, a deep cut needs more than a surface stitch,
+              and a broken bone won't be helped by medicine alone. The game
+              punishes the wrong sequence — visibly, immediately.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge ok">Why this domain</span>
+            <h3>Real first aid is rarely straightforward</h3>
+            <p>
+              Caregivers and doctors adapt on the fly, diagnose with
+              incomplete information, and live with the consequences of a
+              wrong call. That messiness — multiple patients, scattered
+              equipment, a ticking clock — is exactly what makes it
+              playable.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">How to play</p>
+        <h2>The five-step loop, scaled to a disaster</h2>
+        <p class="section-sub">
+          The first playable is a single mission: the jet crash. Every
+          patient follows the same loop. The whole mission follows a
+          larger loop around it.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <h3>1 · Move</h3>
+            <p>
+              Walk the clearing with <kbd>WASD</kbd> or the arrow keys.
+              Trees, the jet, and patches of fire block your path. The
+              world scrolls under your feet.
+            </p>
+          </div>
+          <div class="card">
+            <h3>2 · Find</h3>
+            <p>
+              Some patients are obvious. Others are hidden behind the jet,
+              under debris, or in clusters of trees. Walk close to reveal
+              them, then walk closer to start their 170-second clock.
+            </p>
+          </div>
+          <div class="card">
+            <h3>3 · Search</h3>
+            <p>
+              Saline, small bandages, sutures, and medicine are in the
+              sidebar — always available. Casts, big bandages, cleaning
+              cloths, and water are scattered around the site. You have
+              to pick them up before you can use them.
+            </p>
+          </div>
+          <div class="card">
+            <h3>4 · Treat</h3>
+            <p>
+              Press <kbd>E</kbd> (or click) on a found patient to enter
+              treatment mode. The world keeps running. Click the injury,
+              choose the right equipment, watch the action take time.
+            </p>
+          </div>
+          <div class="card">
+            <h3>5 · Adjust</h3>
+            <p>
+              If three patients are lost, the mission ends. Read the
+              body — bleeding, popping stitches, swelling — and try a
+              different plan. Over-treating is just as wrong as
+              under-treating.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Repetition = skill</h3>
+            <p>
+              By the third patient, you'll start predicting which tool
+              matches which injury before the body tells you. That's the
+              learning.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <p class="section-title">Try it</p>
+        <h2>One mission. Seven patients. One forest clearing.</h2>
+        <p class="section-sub">
+          The first playable ships with a single mission — the jet crash —
+          but inside that mission the system is fully expressed: multiple
+          patients, hidden survivors, scattered equipment, and a clock on
+          every patient.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <span class="badge">Forest clearing</span>
+            <h3>Jet Crash — Forest Clearing</h3>
+            <p>
+              Four visible patients, three hidden ones. A jet across the
+              middle of the map. Fire on three sides. Equipment inside the
+              fuselage, in the undergrowth, and around the wreckage.
+              170 seconds per patient. Stabilize them all.
+            </p>
+            <ul class="muted" style="margin-top: 10px; font-size: 14px;">
+              <li>Patients: 7 (4 visible, 3 hidden)</li>
+              <li>Time per patient: 170 s</li>
+              <li>Mission ends after 3 patient losses</li>
+            </ul>
+          </div>
+        </div>
+        <p style="margin-top: 24px;">
+          <a class="btn btn-primary" href="game.html">Open the playable game →</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>
+        <strong>First Diagnosis</strong> · A first playable web game
+        about first aid, built with HTML, CSS, and Canvas 2D.
+      </div>
+      <div>Domain Learning Camp · 2026</div>
+    </div>
+  </footer>
+</body>
+</html>

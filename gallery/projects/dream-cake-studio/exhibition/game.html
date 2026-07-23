@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dream Cake STUDIO — Play</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- Header -->
+<header class="game-header">
+  <h1>Dream Cake STUDIO</h1>
+  <div class="step-indicator" id="stepIndicator">Select Difficulty</div>
+</header>
+
+<!-- Main Game Area: canvas left, controls right -->
+<main class="game-main">
+
+  <!-- Canvas + Feedback (left column) -->
+  <div class="canvas-area">
+    <canvas id="gameCanvas" width="660" height="360"></canvas>
+    <div class="feedback-area" id="feedbackArea">
+      <div class="feedback-msg good" id="feedbackMsg">Welcome! Choose a difficulty to start baking.</div>
+    </div>
+  </div>
+
+  <!-- Controls Panel (right side, close to canvas) -->
+  <div class="controls-panel" id="controlsPanel">
+
+    <!-- START SCREEN controls -->
+    <div class="step-controls active" id="controlsStart">
+      <div class="control-group">
+        <h3>Difficulty</h3>
+        <div class="difficulty-select">
+          <button class="diff-btn selected" data-diff="0" onclick="selectDifficulty(0)">L1 Beginner</button>
+          <button class="diff-btn" data-diff="1" onclick="selectDifficulty(1)">L2 Intermediate</button>
+          <button class="diff-btn" data-diff="2" onclick="selectDifficulty(2)">L3 Advanced</button>
+        </div>
+        <p style="font-size:11px;color:#8b6914;margin-top:4px;" id="diffDescription">
+          Fixed temperature and standard ratio. Focus on learning the five basic baking steps.
+        </p>
+      </div>
+      <button class="btn btn-primary" onclick="stopPulse(this);startGame()">Start Baking!</button>
+    </div>
+
+    <!-- STEP 1: Mix & Proportion -->
+    <div class="step-controls" id="controlsMix">
+      <div class="control-group">
+        <h3>Batter Proportion</h3>
+        <div class="control-row">
+          <label>Flour</label>
+          <input type="range" min="0.5" max="3" step="0.1" value="2" id="sliderFlour" oninput="updateProportion()">
+          <span class="value" id="valFlour">2.0</span>
+        </div>
+        <div class="control-row">
+          <label>Sugar</label>
+          <input type="range" min="0.2" max="2" step="0.1" value="1" id="sliderSugar" oninput="updateProportion()">
+          <span class="value" id="valSugar">1.0</span>
+        </div>
+        <div class="control-row">
+          <label>Eggs</label>
+          <input type="range" min="0.2" max="2" step="0.1" value="1" id="sliderEggs" oninput="updateProportion()">
+          <span class="value" id="valEggs">1.0</span>
+        </div>
+        <div class="control-row">
+          <label>Milk</label>
+          <input type="range" min="0.1" max="1" step="0.05" value="0.5" id="sliderMilk" oninput="updateProportion()">
+          <span class="value" id="valMilk">0.5</span>
+        </div>
+        <div class="control-row" style="margin-top:2px;">
+          <label>Batter</label>
+          <span class="value" id="batterStatus" style="color:#4caf50;">Standard</span>
+        </div>
+        <div class="ingredient-hints" id="ingredientHints"></div>
+      </div>
+      <button class="btn btn-primary" onclick="stopPulse(this);confirmMix()">Mix Done — Next Step</button>
+    </div>
+
+    <!-- STEP 2: Pour & Mold -->
+    <div class="step-controls" id="controlsPour">
+      <div class="control-group">
+        <h3>Pour Batter</h3>
+        <div class="control-row">
+          <label>Pour Speed</label>
+          <input type="range" min="0.2" max="1" step="0.05" value="0.5" id="sliderPourSpeed" oninput="updatePourSpeed()">
+          <span class="value" id="valPourSpeed">0.5</span>
+        </div>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Distribution</label>
+          <div class="bar-track"><div class="bar-fill height-bar" id="pourBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="pourBtn" onclick="stopPulse(this);pourBatter()">Pour!</button>
+      <button class="btn btn-secondary" onclick="stopPulse(this);confirmPour()" id="confirmPourBtn" style="display:none;">Pour Done — Next Step</button>
+    </div>
+
+    <!-- STEP 3: Oven Baking (CORE) -->
+    <div class="step-controls" id="controlsBake">
+      <div class="control-group">
+        <h3>Oven Controls</h3>
+        <div class="control-row">
+          <label>Temperature</label>
+          <input type="range" min="100" max="250" step="1" value="180" id="sliderTemp" oninput="updateTemp()">
+          <span class="value" id="valTemp">180°C</span>
+        </div>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Temp</label>
+          <div class="bar-track"><div class="bar-fill temp-bar" id="tempBar" style="width:60%"></div></div>
+        </div>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Time</label>
+          <div class="bar-track"><div class="bar-fill time-bar" id="timeBar" style="width:100%"></div></div>
+          <span class="value" id="valTime" style="font-size:11px;">30s</span>
+        </div>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Height</label>
+          <div class="bar-track"><div class="bar-fill height-bar" id="heightBar" style="width:0%"></div></div>
+        </div>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Surface</label>
+          <span class="value" id="valSurface" style="font-size:11px;">Smooth</span>
+        </div>
+      </div>
+      <button class="btn btn-danger" id="btnTakeOut" onclick="stopPulse(this);takeOutCake()">Take Out Cake</button>
+      <button class="btn btn-secondary" id="btnOpenOven" onclick="openOvenDoor()">Open Oven Door</button>
+    </div>
+
+    <!-- STEP 4: Check Result -->
+    <div class="step-controls" id="controlsCheck">
+      <div class="control-group">
+        <h3>Cake Inspection</h3>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Height</label>
+          <div class="bar-track"><div class="bar-fill height-bar" id="checkHeightBar" style="width:0%"></div></div>
+        </div>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Rawness</label>
+          <div class="bar-track"><div class="bar-fill raw-bar" id="checkRawBar" style="width:0%"></div></div>
+        </div>
+        <div class="data-bar">
+          <label style="min-width:50px;font-size:12px;">Dryness</label>
+          <div class="bar-track"><div class="bar-fill dry-bar" id="checkDryBar" style="width:0%"></div></div>
+        </div>
+        <div class="control-row">
+          <label>Stability</label>
+          <span class="value" id="valStability">Stable</span>
+        </div>
+        <div class="control-row">
+          <label>Surface</label>
+          <span class="value" id="valCheckSurface">Smooth</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="stopPulse(this);confirmCheck()">Proceed to Decoration</button>
+    </div>
+
+    <!-- STEP 5: Decoration -->
+    <div class="step-controls" id="controlsDecorate">
+      <div class="control-group">
+        <h3>Choose Topping</h3>
+        <p style="font-size:11px;color:#8b6914;margin-bottom:4px;">Visual only — no effect on score.</p>
+        <div class="topping-options">
+          <button class="topping-btn" data-topping="0" onclick="selectTopping(0)">
+            <span class="topping-icon">&#127839;</span>
+            <span class="topping-name">Fruit</span>
+          </button>
+          <button class="topping-btn" data-topping="1" onclick="selectTopping(1)">
+            <span class="topping-icon">&#127851;</span>
+            <span class="topping-name">Chocolate</span>
+          </button>
+          <button class="topping-btn" data-topping="2" onclick="selectTopping(2)">
+            <span class="topping-icon">&#127800;</span>
+            <span class="topping-name">Cream</span>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="stopPulse(this);finishDecoration()">Finish Cake!</button>
+    </div>
+
+  </div>
+</main>
+
+<!-- Step Progress Bar -->
+<div class="step-progress" id="stepProgress">
+  <div class="step-dot" data-step="0">1</div>
+  <div class="step-dot" data-step="1">2</div>
+  <div class="step-dot" data-step="2">3</div>
+  <div class="step-dot" data-step="3">4</div>
+  <div class="step-dot" data-step="4">5</div>
+</div>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-card" id="resultCard">
+    <h2 id="resultTitle">Result</h2>
+    <p class="score" id="resultScore"></p>
+    <p class="reason" id="resultReason"></p>
+    <button class="btn btn-primary" onclick="restartGame()">Try Again</button>
+  </div>
+</div>
+
+<script src="assets/js/game.js"></script>
+</body>
+</html>

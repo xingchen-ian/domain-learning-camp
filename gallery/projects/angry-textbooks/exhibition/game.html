@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>愤怒的课本 - 校园保卫战</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #f0f4f8;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  h1 { color: #2c3e50; margin-bottom: 8px; font-size: 24px; }
+  #gameContainer {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  }
+  canvas {
+    display: block;
+    background: #87CEEB;
+    cursor: crosshair;
+  }
+  #uiOverlay {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .ui-box {
+    background: rgba(255,255,255,0.88);
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  #livesVal { color: #e74c3c; }
+  #scoreVal { color: #F39C12; font-weight: bold; }
+  #waveVal { color: #8e44ad; }
+  #levelVal { color: #c0392b; }
+  #startScreen, #gameOverScreen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(44, 62, 80, 0.93);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    color: white;
+    padding: 30px;
+  }
+  #startScreen h1 { font-size: 38px; margin-bottom: 16px; text-shadow: 2px 2px 8px rgba(0,0,0,0.5); }
+  #gameOverScreen h1 {
+    font-size: 38px;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+  }
+  #gameOverScreen h1.fail-title { color: #FFD700; }
+  #startScreen .intro {
+    font-size: 15px;
+    max-width: 700px;
+    text-align: center;
+    line-height: 1.8;
+    margin-bottom: 14px;
+    color: #ecf0f1;
+  }
+  .lvl-group { margin: 4px 0; }
+  .lvl-group b { color: #f1c40f; }
+  .btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 14px 44px;
+    font-size: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    pointer-events: auto;
+    margin-top: 10px;
+  }
+  .btn:hover { background: #c0392b; transform: scale(1.05); }
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 30px;
+    margin: 8px 0;
+    font-size: 12px;
+    max-width: 700px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ecf0f1;
+  }
+  .legend-color {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  #instructions {
+    margin-top: 12px;
+    color: #7f8c8d;
+    font-size: 13px;
+    text-align: center;
+  }
+  #uniResult {
+    font-size: 18px;
+    margin-top: 8px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<h1>📚 愤怒的课本 — 校园保卫战</h1>
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="1000" height="560"></canvas>
+  <div id="uiOverlay">
+    <div class="ui-box">🎓 <span id="levelVal">小学</span></div>
+    <div class="ui-box">❤️ 生命: <span id="livesVal">5</span></div>
+    <div class="ui-box">🎓 高考: <span id="scoreVal">0</span>/660</div>
+    <div class="ui-box">🌊 波次: <span id="waveVal">1</span>/8</div>
+  </div>
+  <div id="startScreen">
+    <h1>📚 愤怒的课本</h1>
+    <p class="intro">怪物闯入了校园！从小学一路打到高考，用各科课本保卫学校！<br>
+    <b>按数字键</b>选择课本，<b>拖拽弹弓</b>松开发射。用正确的课本攻击对应怪物才能触发特殊效果！</p>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#E74C3C"></div>[1] 语文书 → 「幸苦」(错别字！)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#F1C40F"></div>[2] 数学书 → 「Π」(全屏眩晕·10%)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#3498DB"></div>[3] 英语书 → 「fantasy」(fanta+sea清场·5%)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#9B59B6"></div>[4] 物理书 → 「幽灵」(引力坠落)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#27AE60"></div>[5] 化学书 → 「苯环」(断键范围爆炸)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#E91E63"></div>[6] 生物书 → 「高尔基体」(出芽囊泡飞射)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#34495E"></div>[7] 政治书 → 「逻辑循环」(打破死循环短路)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#E67E22"></div>[8] 历史书 → 「秦始皇」(推翻！)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#16A085"></div>[9] 地理书 → 「反气旋」(辐散范围伤害)</div>
+    </div>
+    <div class="intro" style="font-size:13px;margin-top:6px;">
+      <span class="lvl-group"><b>小学(1-2波)</b>：语 / 数 / 英</span> &nbsp;
+      <span class="lvl-group"><b>初中(3-5波)</b>：+ 物 / 化 / 政 / 史</span> &nbsp;
+      <span class="lvl-group"><b>全学科(6-8波)</b>：+ 生 / 地，第8波=高考Boss！</span>
+    </div>
+    <button class="btn" onclick="startGame()">开始游戏</button>
+  </div>
+  <div id="gameOverScreen" style="display:none;">
+    <h1 id="endTitle">游戏结束</h1>
+    <p id="endText" style="font-size:20px; margin-bottom:10px; color:#ecf0f1;"></p>
+    <div id="uniResult"></div>
+    <button class="btn" onclick="startGame()">再玩一次</button>
+  </div>
+</div>
+<p id="instructions">操作：按数字键选择课本 → 鼠标拖拽弹弓 → 松开发射 | 升学解锁新科目，第8波迎战高考Boss！</p>
+
+<script>
+// ==================== 游戏配置 ====================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+const GROUND_Y = 470;
+const SLING_X = 135;
+const SLING_Y = 375;
+const GRAVITY = 0.45;
+const MAX_PULL = 130;
+const POWER = 0.22;
+
+// 课本类型（按语数英物化生政史地顺序，1-9键对应）
+const TEXTBOOKS = {
+  chinese:   { name: '语文', label: '语', color: '#E74C3C', key: '1' },
+  math:      { name: '数学', label: '数', color: '#F1C40F', key: '2' },
+  english:   { name: '英语', label: 'En', color: '#3498DB', key: '3' },
+  physics:   { name: '物理', label: '物', color: '#9B59B6', key: '4' },
+  chemistry: { name: '化学', label: '化', color: '#27AE60', key: '5' },
+  biology:   { name: '生物', label: '生', color: '#E91E63', key: '6' },
+  politics:  { name: '政治', label: '政', color: '#34495E', key: '7' },
+  history:   { name: '历史', label: '史', color: '#E67E22', key: '8' },
+  geography: { name: '地理', label: '地', color: '#16A085', key: '9' }
+};
+const TB_KEYS = Object.keys(TEXTBOOKS);
+
+// 怪物配置（layer决定高度层：4=最上层, 3=高空, 2=中层, 1=低层/地面）
+const MONSTERS = {
+  xinku:       { name: '幸苦', weakTo: 'chinese',   speed: 0.55, size: 66, weight: 16, layer: 1 },
+  nightmare:   { name: 'fantasy', weakTo: 'english', speed: 0.45, size: 62, weight: 0, special: true, layer: 3 },
+  ghost:       { name: '幽灵', weakTo: 'physics',   speed: 0.70, size: 58, weight: 14, floating: true, layer: 3 },
+  qinshihuang: { name: '秦始皇', weakTo: 'history',  speed: 0.35, size: 72, weight: 13, layer: 1 },
+  benzene:     { name: '苯环', weakTo: 'chemistry', speed: 0.60, size: 62, weight: 14, layer: 2 },
+  anticlone:   { name: '反气旋', weakTo: 'geography', speed: 0.40, size: 68, weight: 13, floating: true, layer: 4 },
+  golgi:       { name: '高尔基体', weakTo: 'biology',  speed: 0.50, size: 64, weight: 14, floating: true, layer: 3 },
+  logic_loop:  { name: '逻辑循环', weakTo: 'politics', speed: 0.65, size: 60, weight: 14, layer: 1 },
+  pi:          { name: 'Π', weakTo: 'math', speed: 0.50, size: 72, weight: 0, special: true, layer: 2 }
+};
+
+// 各高度层的Y坐标基准
+const LAYER_Y = {
+  4: GROUND_Y - 195,   // 最上层：反气旋
+  3: GROUND_Y - 140,   // 中高层：幽灵、fantasy、高尔基体、Π
+  2: GROUND_Y - 95,    // 中层：苯环、Π
+  1: null              // 低层/地面：幸苦、秦始皇、逻辑循环（用地面Y）
+};
+
+// ==================== 关卡 / 波次配置 ====================
+const LEVEL_NAMES = ['小学', '初中', '全学科'];
+const LEVEL_SUBJECTS = [
+  ['chinese', 'math', 'english'],                                              // 小学：语数英
+  ['chinese', 'math', 'english', 'physics', 'chemistry', 'politics', 'history'], // 初中：+物化政史
+  TB_KEYS                                                                       // 全学科：全部9科
+];
+const WAVE_CONFIG = [
+  { count: 5,  interval: 260 },  // 1 小学
+  { count: 6,  interval: 210 },  // 2 小学
+  { count: 7,  interval: 180 },  // 3 初中（升学）
+  { count: 8,  interval: 160 },  // 4 初中
+  { count: 9,  interval: 150 },  // 5 初中
+  { count: 10, interval: 140 },  // 6 全学科（升学）
+  { count: 11, interval: 130 },  // 7 全学科
+  { count: 0,  interval: 0 }     // 8 高考Boss
+];
+function levelForWave(w) { return w <= 2 ? 1 : w <= 5 ? 2 : 3; }
+
+// 高考Boss的9个科目部位（3x3，按新顺序）
+const BOSS_PARTS = [
+  'chinese', 'math', 'english',
+  'physics', 'chemistry', 'biology',
+  'politics', 'history', 'geography'
+];
+
+// ==================== 大学录取结果表 ====================
+function getUniversityResult(score) {
+  if (score >= 620) return { name: '清华大学（做梦版）', color: '#823171', bg: 'rgba(130,49,113,0.25)' };
+  if (score >= 580) return { name: '北京大学（梦里啥都有）', color: '#823171', bg: 'rgba(130,49,113,0.25)' };
+  if (score >= 530) return { name: '复旦大学（卷王之王）', color: '#1a5276', bg: 'rgba(26,82,118,0.22)' };
+  if (score >= 480) return { name: '上海交通大学（内卷圣地）', color: '#1a5276', bg: 'rgba(26,82,118,0.22)' };
+  if (score >= 420) return { name: '浙江大学（竺可桢摇头）', color: '#1a7431', bg: 'rgba(26,116,49,0.2)' };
+  if (score >= 360) return { name: '南京大学（鼓楼吃鸭子去）', color: '#1a7431', bg: 'rgba(26,116,49,0.2)' };
+  if (score >= 300) return { name: '深圳大学（腾讯预备役）', color: '#c0392b', bg: 'rgba(192,57,43,0.18)' };
+  if (score >= 240) return { name: '电子科大（代码敲得好）', color: '#2980b9', bg: 'rgba(41,128,185,0.18)' };
+  if (score >= 160) return { name: '二本院校（有书读就行）', color: '#e67e22', bg: 'rgba(230,126,34,0.15)' };
+  if (score >= 80)  return { name: '大专（技术人才储备中）', color: '#e67e22', bg: 'rgba(230,126,34,0.12)' };
+  return { name: '蓝翔挖掘机专业（保送录取）', color: '#f39c12', bg: 'rgba(243,156,18,0.2)' };
+}
+
+// ==================== 游戏状态 ====================
+let game;
+
+function resetGame() {
+  const wc = WAVE_CONFIG[0];
+  game = {
+    state: 'menu', score: 0, lives: 5, wave: 1, level: 1,
+    unlocked: LEVEL_SUBJECTS[0],
+    monsters: [], projectiles: [], effects: [], particles: [],
+    selectedTextbook: 'chinese',
+    current: 'chinese',
+    spawnTimer: 60, spawnInterval: wc.interval,
+    perWave: wc.count, spawned: 0, frame: 0,
+    dragging: false, dragX: 0, dragY: 0,
+    seaActive: false, seaTimer: 0, shakeTimer: 0,
+    pendingSea: 0, stunTimer: 0,
+    boss: null, bossSpawned: false
+  };
+}
+resetGame();
+
+// ==================== 工具函数 ====================
+const rand = (a, b) => Math.random() * (b - a) + a;
+const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
+function roundRect(x, y, w, h, r, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+// ==================== 怪物生成 ====================
+function spawnMonster() {
+  let type;
+  const unlocked = game.unlocked;
+  const roll = Math.random();
+  if (unlocked.includes('english') && roll < 0.05) {
+    type = 'nightmare';
+  } else if (unlocked.includes('math') && roll < 0.15) {
+    type = 'pi';
+  } else {
+    const types = Object.keys(MONSTERS).filter(t => {
+      if (t === 'nightmare' || t === 'pi') return false;
+      return unlocked.includes(MONSTERS[t].weakTo);
+    });
+    const total = types.reduce((s, t) => s + MONSTERS[t].weight, 0);
+    let r = Math.random() * total;
+    for (const t of types) {
+      r -= MONSTERS[t].weight;
+      if (r <= 0) { type = t; break; }
+    }
+    type = type || 'xinku';
+  }
+
+  const cfg = MONSTERS[type];
+  // 根据layer决定基础Y坐标
+  let baseY;
+  if (cfg.layer === 1 || LAYER_Y[cfg.layer] === null) {
+    baseY = GROUND_Y - cfg.size;  // 地面层
+  } else {
+    baseY = LAYER_Y[cfg.layer];   // 空中各层
+  }
+  const waveMul = 1 + (game.wave - 1) * 0.06;
+  game.monsters.push({
+    type, cfg,
+    x: W + 50,
+    y: baseY,
+    baseY: baseY,
+    speed: cfg.speed * waveMul,
+    size: cfg.size,
+    walkPhase: Math.random() * 6.28,
+    floatPhase: Math.random() * 6.28,
+    alive: true, hit: false, hitTimer: 0,
+    dying: false, dyingTimer: 0, dyingType: null,
+    fallVy: 0, walkX: 0
+  });
+  game.spawned++;
+}
+
+// ==================== 高考Boss ====================
+function spawnBoss() {
+  const parts = BOSS_PARTS.map((subj, i) => {
+    const row = Math.floor(i / 3), col = i % 3;
+    return { subject: subj, ox: (col - 1) * 76, oy: (row - 1) * 74, broken: false };
+  });
+  game.boss = {
+    x: W + 140, y: 280, targetX: 740,
+    alive: true, dying: false, dyingTimer: 0, shake: 0,
+    parts, phase: 0
+  };
+  game.effects.push({
+    text: '最终Boss：高考！', sub: '用9科课本逐个击破每个科目！',
+    x: W / 2, y: H / 2, vy: 0, life: 150, maxLife: 150, color: '#e74c3c', size: 40
+  });
+}
+
+function updateBoss() {
+  const b = game.boss;
+  if (!b) return;
+  b.phase += 0.04;
+  if (b.shake > 0) b.shake--;
+  if (b.dying) {
+    b.dyingTimer++;
+    if (b.dyingTimer % 8 === 0) createParticles(b.x + rand(-90, 90), b.y + rand(-90, 90), '#FFD700', 8, 'dizzy');
+    if (b.dyingTimer > 80) { endGame(true); }
+    return;
+  }
+  if (game.stunTimer <= 0) {
+    if (b.x > b.targetX) b.x -= 1.3;
+    else b.x -= 0.14;
+  }
+  if (b.x < 190) endGame(false);
+}
+
+function handleBossHit(proj, part) {
+  const px = game.boss.x + part.ox, py = game.boss.y + part.oy;
+  if (proj.type === part.subject) {
+    part.broken = true;
+    const tb = TEXTBOOKS[part.subject];
+    game.effects.push({ text: '击破！', x: px, y: py, vy: -1.2, life: 55, maxLife: 55, color: tb.color, size: 22 });
+    createParticles(px, py, tb.color, 22);
+    game.score += 200;
+    game.boss.shake = 12;
+    if (game.boss.parts.every(pt => pt.broken)) {
+      game.boss.dying = true; game.boss.dyingTimer = 0;
+      game.shakeTimer = 30;
+      createParticles(game.boss.x, game.boss.y, '#FFD700', 60, 'dizzy');
+    }
+  } else {
+    game.effects.push({ text: '科目不对！', x: px, y: py, vy: -0.8, life: 40, maxLife: 40, color: '#95a5a6', size: 14 });
+    createParticles(px, py, '#bbb', 6);
+    game.score += 5;
+  }
+  proj.alive = false;
+}
+
+// ==================== 发射 ====================
+function launch(dx, dy) {
+  const pull = Math.min(dist(0, 0, dx, dy), MAX_PULL);
+  const angle = Math.atan2(dy, dx);
+  game.projectiles.push({
+    x: SLING_X, y: SLING_Y,
+    vx: -Math.cos(angle) * pull * POWER,
+    vy: -Math.sin(angle) * pull * POWER,
+    type: game.current, size: 28,
+    rotation: 0, rotSpeed: rand(-0.2, 0.2),
+    alive: true, trail: []
+  });
+  game.current = game.selectedTextbook;
+}
+
+// ==================== 碰撞处理 ====================
+function handleHit(proj, m) {
+  const weak = proj.type === m.cfg.weakTo;
+  if (weak) {
+    triggerEffect(m);
+    m.dying = true; m.dyingTimer = 0; m.dyingType = 'special';
+    game.score += 100;
+  } else {
+    m.x += 35;
+    m.hit = true; m.hitTimer = 15;
+    createParticles(m.x, m.y - m.size / 2, '#bbb', 8);
+    game.effects.push({
+      text: '效果不佳', x: m.x, y: m.y - m.size - 15,
+      vy: -0.8, life: 45, maxLife: 45, color: '#95a5a6', size: 16
+    });
+    game.score += 5;
+  }
+  proj.alive = false;
+}
+
+function triggerEffect(m) {
+  const cx = m.x, cy = m.y - m.size / 2;
+  switch (m.type) {
+    case 'xinku':
+      game.effects.push({ text: '错别字！！', sub: '（应为"辛苦"）', x: cx, y: cy - 15,
+        vy: -1.5, life: 90, maxLife: 90, color: '#E74C3C', size: 30 });
+      createParticles(cx, cy, '#E74C3C', 16);
+      break;
+
+    case 'nightmare':
+      game.effects.push({ text: 'fanta + sea', sub: '= fantasy → 芬达海！', x: cx, y: cy - 15,
+        vy: -1, life: 100, maxLife: 100, color: '#3498DB', size: 22 });
+      createParticles(cx, cy, '#FF6600', 22, 'fanta');
+      game.pendingSea = 36;
+      break;
+
+    case 'ghost':
+      game.effects.push({ text: '引力生效！', x: cx, y: cy - 15,
+        vy: -1, life: 60, maxLife: 60, color: '#9B59B6', size: 20 });
+      createParticles(cx, cy, '#ffffff', 12);
+      break;
+
+    case 'qinshihuang':
+      game.effects.push({ text: '推翻暴政！', x: cx, y: cy - 15,
+        vy: -1.5, life: 80, maxLife: 80, color: '#E67E22', size: 26 });
+      createParticles(cx, cy, '#E67E22', 18);
+      break;
+
+    case 'benzene':
+      game.effects.push({ text: '断键！', x: cx, y: cy - 15,
+        vy: -1.5, life: 70, maxLife: 70, color: '#27AE60', size: 24 });
+      createParticles(cx, cy, '#27AE60', 28, 'explosion');
+      for (const other of game.monsters) {
+        if (other !== m && other.alive && !other.dying) {
+          if (dist(cx, cy, other.x, other.y - other.size / 2) < 160) {
+            other.dying = true; other.dyingTimer = 0; other.dyingType = 'blast';
+            game.score += 30;
+            createParticles(other.x, other.y - other.size / 2, '#27AE60', 10);
+          }
+        }
+      }
+      game.shakeTimer = 15;
+      break;
+
+    case 'anticlone':
+      game.effects.push({ text: '辐散！', sub: '气流向外扩散', x: cx, y: cy - 15,
+        vy: -1.5, life: 70, maxLife: 70, color: '#16A085', size: 26 });
+      createParticles(cx, cy, '#16A085', 24, 'diverge');
+      for (const other of game.monsters) {
+        if (other !== m && other.alive && !other.dying) {
+          const d = dist(cx, cy, other.x, other.y - other.size / 2);
+          if (d < 180) {
+            const angle = Math.atan2((other.y - other.size / 2) - cy, other.x - cx);
+            other.x += Math.cos(angle) * 70;
+            other.y += Math.sin(angle) * 35;
+            other.dying = true; other.dyingTimer = 0; other.dyingType = 'diverge';
+            game.score += 25;
+            createParticles(other.x, other.y - other.size / 2, '#1ABC9C', 12);
+          }
+        }
+      }
+      game.shakeTimer = 12;
+      break;
+
+    case 'golgi':
+      game.effects.push({ text: '出芽分泌！', sub: '囊泡飞射', x: cx, y: cy - 15,
+        vy: -1.5, life: 70, maxLife: 70, color: '#E91E63', size: 24 });
+      createParticles(cx, cy, '#E91E63', 18, 'vesicle');
+      const gTargets = game.monsters.filter(o => o !== m && o.alive && !o.dying)
+        .filter(o => dist(cx, cy, o.x, o.y - o.size / 2) < 220)
+        .sort((a, b) => dist(cx, cy, a.x, a.y - a.size / 2) - dist(cx, cy, b.x, b.y - b.size / 2))
+        .slice(0, 4);
+      for (const t of gTargets) {
+        const tx = t.x, ty = t.y - t.size / 2;
+        const ang = Math.atan2(ty - cy, tx - cx);
+        for (let i = 0; i < 4; i++) {
+          game.particles.push({
+            x: cx, y: cy,
+            vx: Math.cos(ang) * 7 + rand(-0.8, 0.8),
+            vy: Math.sin(ang) * 7 + rand(-0.8, 0.8),
+            size: rand(5, 9), color: '#E91E63',
+            life: 22, maxLife: 22, kind: 'vesicle', gravity: 0
+          });
+        }
+        t.dying = true; t.dyingTimer = 0; t.dyingType = 'vesicle';
+        game.score += 30;
+      }
+      break;
+
+    case 'logic_loop':
+      game.effects.push({ text: '打破死循环！', sub: '短路连锁', x: cx, y: cy - 15,
+        vy: -1.5, life: 70, maxLife: 70, color: '#34495E', size: 24 });
+      createParticles(cx, cy, '#34495E', 18, 'spark');
+      for (const other of game.monsters) {
+        if (other !== m && other.alive && !other.dying) {
+          const ox = other.x, oy = other.y - other.size / 2;
+          if (dist(cx, cy, ox, oy) < 160) {
+            game.effects.push({ kind: 'lightning', x1: cx, y1: cy, x2: ox, y2: oy,
+              life: 22, maxLife: 22 });
+            other.dying = true; other.dyingTimer = 0; other.dyingType = 'spark';
+            game.score += 28;
+            createParticles(ox, oy, '#2C3E50', 10, 'spark');
+          }
+        }
+      }
+      game.shakeTimer = 14;
+      break;
+
+    case 'pi':
+      game.effects.push({ text: '数学太难了！', sub: '全屏眩晕 2 秒', x: W / 2, y: H / 2 - 30,
+        vy: 0, life: 120, maxLife: 120, color: '#FFD700', size: 48 });
+      createParticles(cx, cy, '#FFD700', 30, 'dizzy');
+      game.stunTimer = 120;
+      game.shakeTimer = 20;
+      break;
+  }
+}
+
+// ==================== 粒子 ====================
+function createParticles(x, y, color, n, kind) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.28;
+    const s = rand(2, 7);
+    game.particles.push({
+      x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 2,
+      size: rand(3, 8), color, life: rand(30, 60), maxLife: 60,
+      kind: kind || 'default', gravity: kind === 'rock' ? 0.3 : 0.15
+    });
+  }
+}
+
+// ==================== 关卡推进 ====================
+function advanceWave() {
+  game.wave++;
+  if (game.wave > 8) { endGame(true); return; }
+
+  const nl = levelForWave(game.wave);
+  if (nl > game.level) {
+    game.level = nl;
+    game.unlocked = LEVEL_SUBJECTS[nl - 1];
+    game.lives = Math.min(game.lives + 2, 9);
+    game.effects.push({
+      text: '升学！进入' + LEVEL_NAMES[nl - 1] + '！', sub: '解锁新科目 · 生命+2',
+      x: W / 2, y: H / 2, vy: 0, life: 140, maxLife: 140, color: '#f1c40f', size: 38
+    });
+  } else {
+    game.lives = Math.min(game.lives + 1, 9);
+    game.effects.push({
+      text: '第 ' + game.wave + ' 波！', sub: '生命+1',
+      x: W / 2, y: H / 2, vy: 0, life: 80, maxLife: 80, color: '#f1c40f', size: 36
+    });
+  }
+
+  const wc = WAVE_CONFIG[game.wave - 1];
+  game.perWave = wc.count;
+  game.spawnInterval = wc.interval;
+  game.spawned = 0;
+  game.spawnTimer = 0;
+  game.bossSpawned = false;
+}
+
+// ==================== 更新 ====================
+function update() {
+  game.frame++;
+  if (game.state !== 'playing') return;
+
+  // 延迟海浪——清除场上所有怪物并给连带分
+  if (game.pendingSea > 0) {
+    game.pendingSea--;
+    if (game.pendingSea === 0) {
+      game.seaActive = true; game.seaTimer = 120;
+      let seaCount = 0;
+      for (const m of game.monsters) {
+        if (m.alive && !m.dying) {
+          m.dying = true; m.dyingTimer = 0; m.dyingType = 'sea';
+          seaCount++;
+        }
+      }
+      // fanta+sea清场的连带伤害加分
+      if (seaCount > 0) {
+        game.score += seaCount * 25;
+        game.effects.push({
+          text: '海浪吞噬了 ' + seaCount + ' 只怪物！', sub: '+' + (seaCount * 25) + '分',
+          x: W / 2, y: H / 2 - 60, vy: -0.5, life: 80, maxLife: 80, color: '#3498DB', size: 22
+        });
+      }
+      createParticles(W / 2, GROUND_Y, '#3498DB', 60, 'wave');
+    }
+  }
+
+  // Boss波：生成Boss
+  if (game.wave === 8 && !game.bossSpawned) {
+    spawnBoss();
+    game.bossSpawned = true;
+  }
+  if (game.boss) updateBoss();
+
+  // 普通怪物生成（非Boss波）
+  if (game.wave < 8) {
+    game.spawnTimer++;
+    if (game.spawnTimer >= game.spawnInterval && game.spawned < game.perWave) {
+      spawnMonster();
+      game.spawnTimer = 0;
+    }
+    if (game.spawned >= game.perWave &&
+        game.monsters.filter(m => m.alive && !m.dying).length === 0) {
+      advanceWave();
+    }
+  }
+
+  // 更新怪物
+  for (const m of game.monsters) {
+    if (m.dying) { m.dyingTimer++; updateDying(m); continue; }
+    if (!m.alive) continue;
+
+    m.walkPhase += 0.15;
+    m.floatPhase += 0.08;
+    if (game.stunTimer <= 0) m.x -= m.speed;
+    m.y = m.baseY + (m.cfg.floating ? Math.sin(m.floatPhase) * 15 : Math.sin(m.walkPhase) * 4);
+
+    if (m.x < 75) {
+      game.lives--;
+      m.alive = false;
+      game.shakeTimer = 20;
+      createParticles(100, GROUND_Y, '#e74c3c', 18);
+      if (game.lives <= 0) endGame(false);
+    }
+    if (m.hit) { m.hitTimer--; if (m.hitTimer <= 0) m.hit = false; }
+  }
+
+  // 更新抛射物
+  for (const p of game.projectiles) {
+    if (!p.alive) continue;
+    p.trail.push({ x: p.x, y: p.y });
+    if (p.trail.length > 10) p.trail.shift();
+    p.x += p.vx; p.y += p.vy; p.vy += GRAVITY; p.rotation += p.rotSpeed;
+
+    let hitMonster = false;
+    for (const m of game.monsters) {
+      if (!m.alive || m.dying) continue;
+      if (dist(p.x, p.y, m.x, m.y - m.size / 2) < m.size / 2 + p.size / 2) {
+        handleHit(p, m);
+        hitMonster = true;
+        break;
+      }
+    }
+    if (!hitMonster && game.boss && game.boss.alive && !game.boss.dying) {
+      const b = game.boss;
+      const bob = Math.sin(game.frame * 0.04) * 6;
+      for (const part of b.parts) {
+        if (part.broken) continue;
+        const px = b.x + part.ox, py = b.y + bob + part.oy;
+        if (dist(p.x, p.y, px, py) < 34 + p.size / 2) {
+          handleBossHit(p, part);
+          break;
+        }
+      }
+    }
+    if (p.x < -50 || p.x > W + 50 || p.y > H + 50) p.alive = false;
+    if (p.y > GROUND_Y - p.size / 2 && p.alive) {
+      p.alive = false;
+      createParticles(p.x, GROUND_Y, '#aaa', 6);
+    }
+  }
+
+  // 更新特效
+  for (const e of game.effects) {
+    e.life--;
+    if (e.vy !== undefined) { e.y += e.vy; e.vy *= 0.97; }
+  }
+  game.effects = game.effects.filter(e => e.life > 0);
+
+  // 更新粒子
+  for (const p of game.particles) {
+    p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.life--;
+  }
+  game.particles = game.particles.filter(p => p.life > 0);
+
+  if (game.seaActive) { game.seaTimer--; if (game.seaTimer <= 0) game.seaActive = false; }
+  if (game.shakeTimer > 0) game.shakeTimer--;
+  if (game.stunTimer > 0) game.stunTimer--;
+
+  game.monsters = game.monsters.filter(m => m.alive || m.dying);
+
+  // UI
+  document.getElementById('livesVal').textContent = game.lives;
+  document.getElementById('scoreVal').textContent = Math.min(660, Math.round(game.score / 12));
+  document.getElementById('waveVal').textContent = game.wave;
+  document.getElementById('levelVal').textContent = LEVEL_NAMES[game.level - 1];
+}
+
+function updateDying(m) {
+  switch (m.dyingType) {
+    case 'ghost-fall':
+      if (m.dyingTimer < 30) { m.y += 3; }
+      else { m.x += 4; m.y = GROUND_Y - m.size; }
+      if (m.dyingTimer > 90) { m.alive = false; m.dying = false; }
+      break;
+    case 'sea':
+      m.y += 2; m.x -= 1;
+      if (m.dyingTimer > 55) { m.alive = false; m.dying = false; }
+      break;
+    case 'blast':
+    case 'rock':
+    case 'diverge':
+    case 'vesicle':
+    case 'spark':
+      if (m.dyingTimer > 30) { m.alive = false; m.dying = false; }
+      break;
+    default:
+      if (m.dyingTimer > 35) { m.alive = false; m.dying = false; }
+      break;
+  }
+}
+
+// ==================== 渲染 ====================
+function render() {
+  ctx.save();
+  if (game.shakeTimer > 0) ctx.translate(rand(-4, 4), rand(-4, 4));
+
+  drawBackground();
+  drawGround();
+  if (game.seaActive) drawSea();
+  drawSlingshot();
+
+  for (const m of game.monsters) if (m.alive || m.dying) drawMonster(m);
+  if (game.boss) drawBoss();
+  for (const p of game.projectiles) if (p.alive) drawProjectile(p);
+
+  drawCurrentTextbook();
+  drawTextbookSelector();
+
+  for (const p of game.particles) drawParticle(p);
+  for (const e of game.effects) drawEffect(e);
+
+  drawStunOverlay();
+
+  ctx.restore();
+}
+
+function drawBackground() {
+  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  grad.addColorStop(0, '#87CEEB');
+  grad.addColorStop(1, '#B0E0E6');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, GROUND_Y);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  drawCloud(200, 75, 38);
+  drawCloud(520, 50, 33);
+  drawCloud(820, 85, 42);
+
+  ctx.fillStyle = 'rgba(100,130,150,0.35)';
+  ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(150, 340); ctx.lineTo(300, GROUND_Y); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(500, GROUND_Y); ctx.lineTo(650, 320); ctx.lineTo(800, GROUND_Y); ctx.fill();
+
+  // 学校
+  ctx.fillStyle = '#D4A574'; ctx.fillRect(320, 375, 130, 95);
+  ctx.fillStyle = '#8B6F47'; ctx.fillRect(360, 405, 20, 25); ctx.fillRect(400, 405, 20, 25);
+  ctx.fillStyle = '#C0392B';
+  ctx.beginPath(); ctx.moveTo(310, 375); ctx.lineTo(385, 335); ctx.lineTo(460, 375); ctx.fill();
+  ctx.fillStyle = '#666'; ctx.fillRect(383, 295, 4, 40);
+  ctx.fillStyle = '#E74C3C'; ctx.fillRect(387, 295, 16, 11);
+  ctx.fillStyle = '#5D4037'; ctx.font = 'bold 14px Microsoft YaHei';
+  ctx.textAlign = 'center'; ctx.fillText('学校', 385, 430);
+}
+
+function drawCloud(x, y, r) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 6.28);
+  ctx.arc(x + r * 0.8, y + 5, r * 0.7, 0, 6.28);
+  ctx.arc(x - r * 0.8, y + 5, r * 0.6, 0, 6.28);
+  ctx.fill();
+}
+
+function drawGround() {
+  ctx.fillStyle = '#8BC34A';
+  ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+  ctx.fillStyle = '#689F38';
+  ctx.fillRect(0, GROUND_Y, W, 5);
+}
+
+function drawSea() {
+  const a = Math.min(1, game.seaTimer / 30);
+  ctx.fillStyle = `rgba(52,152,219,${0.55 * a})`;
+  ctx.fillRect(0, GROUND_Y - 40, W, H - GROUND_Y + 40);
+  ctx.strokeStyle = `rgba(255,255,255,${0.6 * a})`;
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    const wy = GROUND_Y - 30 + i * 15;
+    for (let x = 0; x <= W; x += 20) {
+      const y = wy + Math.sin((x + game.frame * 3) * 0.03) * 5;
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawSlingshot() {
+  const x = SLING_X, y = SLING_Y;
+  ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 10; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, GROUND_Y); ctx.lineTo(x, y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 22, y - 35); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 22, y - 35); ctx.stroke();
+
+  if (game.dragging && game.current) {
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x - 22, y - 35);
+    ctx.lineTo(game.dragX, game.dragY);
+    ctx.lineTo(x + 22, y - 35);
+    ctx.stroke();
+  }
+}
+
+function drawCurrentTextbook() {
+  if (!game.current) return;
+  const x = game.dragging ? game.dragX : SLING_X;
+  const y = game.dragging ? game.dragY : SLING_Y - 25;
+  drawTextbook(x, y, game.current, 0);
+
+  if (game.dragging) {
+    const dx = game.dragX - SLING_X;
+    const dy = game.dragY - SLING_Y;
+    const pull = Math.min(dist(0, 0, dx, dy), MAX_PULL);
+    const angle = Math.atan2(dy, dx);
+    const vx = -Math.cos(angle) * pull * POWER;
+    const vy = -Math.sin(angle) * pull * POWER;
+
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    let px = SLING_X, py = SLING_Y, pvx = vx, pvy = vy;
+    for (let i = 0; i < 50; i++) {
+      px += pvx; py += pvy; pvy += GRAVITY;
+      if (i % 3 === 0) { ctx.beginPath(); ctx.arc(px, py, 2.5, 0, 6.28); ctx.fill(); }
+      if (py > GROUND_Y) break;
+    }
+  }
+}
+
+function drawTextbook(x, y, type, rot) {
+  const tb = TEXTBOOKS[type];
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.fillStyle = tb.color;
+  ctx.fillRect(-16, -12, 32, 24);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(-16, -12, 4, 24);
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.fillRect(-9, -7, 18, 14);
+  ctx.fillStyle = tb.color;
+  ctx.font = 'bold 11px Microsoft YaHei';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(tb.label, 0, 0);
+  ctx.restore();
+}
+
+function drawTextbookSelector() {
+  const baseY = GROUND_Y + 38;
+  const startX = (W - (TB_KEYS.length - 1) * 55) / 2;
+  for (let i = 0; i < TB_KEYS.length; i++) {
+    const key = TB_KEYS[i];
+    const x = startX + i * 55;
+    const tb = TEXTBOOKS[key];
+    const selected = game.selectedTextbook === key;
+    const locked = !game.unlocked.includes(key);
+
+    if (selected) {
+      ctx.fillStyle = 'rgba(241, 196, 15, 0.25)';
+      ctx.fillRect(x - 24, baseY - 20, 48, 44);
+      ctx.strokeStyle = '#f1c40f';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(x - 24, baseY - 20, 48, 44);
+    }
+
+    ctx.save();
+    if (locked) ctx.globalAlpha = 0.3;
+    drawTextbook(x, baseY, key, 0);
+    ctx.restore();
+
+    ctx.fillStyle = locked ? '#aaa' : (selected ? '#e74c3c' : '#666');
+    ctx.font = 'bold 12px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('[' + tb.key + ']', x, baseY - 24);
+    ctx.fillStyle = locked ? '#bbb' : '#555';
+    ctx.font = '9px Microsoft YaHei';
+    ctx.fillText(tb.name, x, baseY + 22);
+    if (locked) {
+      ctx.fillStyle = '#999';
+      ctx.font = '8px Microsoft YaHei';
+      ctx.fillText('🔒', x, baseY + 33);
+    }
+  }
+}
+
+function drawProjectile(p) {
+  for (let i = 0; i < p.trail.length; i++) {
+    const t = p.trail[i];
+    ctx.fillStyle = `rgba(255,255,255,${(i / p.trail.length) * 0.4})`;
+    ctx.beginPath(); ctx.arc(t.x, t.y, 3, 0, 6.28); ctx.fill();
+  }
+  drawTextbook(p.x, p.y, p.type, p.rotation);
+}
+
+// ==================== 怪物绘制 ====================
+function drawMonster(m) {
+  ctx.save();
+  if (m.hit && m.hitTimer % 6 < 3) ctx.globalAlpha = 0.5;
+  if (m.dying && ['special', 'blast', 'rock', 'diverge', 'vesicle', 'spark'].includes(m.dyingType)
+      && m.type !== 'anticlone') {
+    ctx.globalAlpha = Math.max(0, 1 - m.dyingTimer / 30);
+  }
+
+  switch (m.type) {
+    case 'xinku': drawXinku(m); break;
+    case 'nightmare': drawNightmare(m); break;
+    case 'ghost': drawGhost(m); break;
+    case 'qinshihuang': drawQinshihuang(m); break;
+    case 'benzene': drawBenzene(m); break;
+    case 'anticlone': drawAnticlone(m); break;
+    case 'golgi': drawGolgi(m); break;
+    case 'logic_loop': drawLogicLoop(m); break;
+    case 'pi': drawPi(m); break;
+  }
+  ctx.restore();
+
+  // 弱点提示
+  if (!m.dying) {
+    const tb = TEXTBOOKS[m.cfg.weakTo];
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.font = 'bold 14px Microsoft YaHei';
+    ctx.textAlign = 'center';
+    ctx.fillText('弱点:' + tb.name + '[' + tb.key + ']', m.x, m.y - m.size - 12);
+    ctx.fillStyle = tb.color;
+    ctx.fillText('弱点:' + tb.name + '[' + tb.key + ']', m.x + 1, m.y - m.size - 13);
+  }
+}
+
+function drawXinku(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const bob = m.dying ? 0 : Math.sin(m.walkPhase) * 2;
+  ctx.fillStyle = '#2c3e50';
+  ctx.font = `bold ${m.size}px Microsoft YaHei`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('幸苦', x, y + bob);
+  if (!m.dying) {
+    ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 4;
+    const lo = Math.sin(m.walkPhase) * 6;
+    ctx.beginPath();
+    ctx.moveTo(x - 16, y + m.size / 2); ctx.lineTo(x - 16, y + m.size / 2 + 16 + lo);
+    ctx.moveTo(x + 16, y + m.size / 2); ctx.lineTo(x + 16, y + m.size / 2 + 16 - lo);
+    ctx.stroke();
+  }
+}
+
+function drawNightmare(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  ctx.fillStyle = '#4A0E6B';
+  ctx.beginPath(); ctx.arc(x, y, m.size / 2, 0, 6.28); ctx.fill();
+  ctx.fillStyle = 'rgba(138,43,226,0.45)';
+  for (let i = 0; i < 5; i++) {
+    const a = m.floatPhase + i * 1.2;
+    ctx.beginPath(); ctx.arc(x + Math.cos(a) * 28, y + Math.sin(a) * 20, 14, 0, 6.28); ctx.fill();
+  }
+  ctx.fillStyle = '#FF0000';
+  ctx.beginPath(); ctx.arc(x - 10, y - 5, 5, 0, 6.28); ctx.arc(x + 10, y - 5, 5, 0, 6.28); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(x - 10, y - 5, 2, 0, 6.28); ctx.arc(x + 10, y - 5, 2, 0, 6.28); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Microsoft YaHei'; ctx.textAlign = 'center';
+  ctx.fillText('fantasy', x, y + m.size / 2 + 16);
+  ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 10px Microsoft YaHei';
+  ctx.fillText('★稀有★', x, y - m.size / 2 - 8);
+}
+
+function drawGhost(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const fl = m.dying ? 0 : Math.sin(m.floatPhase) * 5;
+  const prevA = ctx.globalAlpha;
+  ctx.globalAlpha = prevA * 0.75;
+  ctx.fillStyle = '#ECF0F1';
+  ctx.beginPath();
+  ctx.arc(x, y + fl, m.size / 2, Math.PI, 0);
+  ctx.lineTo(x + m.size / 2, y + fl + m.size / 2);
+  for (let i = 0; i < 3; i++) {
+    const wx = x + m.size / 2 - (i + 1) * m.size / 3;
+    ctx.quadraticCurveTo(wx + m.size / 6, y + fl + m.size / 2 - 8, wx, y + fl + m.size / 2);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.globalAlpha = prevA;
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(x - 10, y + fl - 3, 5, 0, 6.28); ctx.arc(x + 10, y + fl - 3, 5, 0, 6.28); ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y + fl + 10, 6, 0, Math.PI); ctx.fill();
+}
+
+function drawQinshihuang(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const bob = m.dying ? 0 : Math.sin(m.walkPhase) * 2;
+  ctx.save();
+  if (m.dying && m.dyingType === 'special') {
+    ctx.translate(x, y + 28); ctx.rotate(m.dyingTimer * 0.06); ctx.translate(-x, -(y + 28));
+  }
+  ctx.fillStyle = '#D4AC0D'; ctx.fillRect(x - 22, y - 5 + bob, 44, 38);
+  ctx.strokeStyle = '#B7950B'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x - 12, y + bob); ctx.lineTo(x + 12, y + bob); ctx.stroke();
+  ctx.fillStyle = '#F5CBA7';
+  ctx.beginPath(); ctx.arc(x, y - 18 + bob, 16, 0, 6.28); ctx.fill();
+  ctx.fillStyle = '#1A1A1A'; ctx.fillRect(x - 19, y - 35 + bob, 38, 7);
+  ctx.fillStyle = '#fff';
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath(); ctx.arc(x - 14 + i * 7, y - 28 + bob, 2.5, 0, 6.28); ctx.fill();
+  }
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(x - 6, y - 18 + bob, 2.5, 0, 6.28); ctx.arc(x + 6, y - 18 + bob, 2.5, 0, 6.28); ctx.fill();
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(x, y - 12 + bob); ctx.lineTo(x, y - 4 + bob); ctx.stroke();
+  ctx.fillStyle = '#8B6F47'; ctx.font = 'bold 12px Microsoft YaHei'; ctx.textAlign = 'center';
+  ctx.fillText('秦始皇', x, y + 44);
+  if (!m.dying) {
+    ctx.strokeStyle = '#8B6F47'; ctx.lineWidth = 5;
+    const lo = Math.sin(m.walkPhase) * 5;
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y + 33 + bob); ctx.lineTo(x - 10, y + 45 + bob + lo);
+    ctx.moveTo(x + 10, y + 33 + bob); ctx.lineTo(x + 10, y + 45 + bob - lo);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBenzene(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const bob = m.dying ? 0 : Math.sin(m.walkPhase) * 2;
+  const rot = m.dying && m.dyingType === 'special' ? m.dyingTimer * 0.12 : m.floatPhase * 0.3;
+  const broken = m.dying && m.dyingType === 'special';
+
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.rotate(rot);
+  const r = m.size / 2;
+  ctx.strokeStyle = broken ? '#e74c3c' : '#2980B9';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 3) * i - Math.PI / 6;
+    const px = Math.cos(a) * r, py = Math.sin(a) * r;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.closePath(); ctx.stroke();
+
+  if (!broken) {
+    ctx.lineWidth = 2.5;
+    for (let i = 0; i < 3; i++) {
+      const a = (Math.PI / 3) * (i * 2) - Math.PI / 6;
+      const a2 = a + Math.PI / 3;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7);
+      ctx.lineTo(Math.cos(a2) * r * 0.7, Math.sin(a2) * r * 0.7);
+      ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, 6.28); ctx.stroke();
+  } else {
+    ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i - Math.PI / 6;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * r * 0.4, Math.sin(a) * r * 0.4);
+      ctx.lineTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  if (!m.dying) {
+    ctx.strokeStyle = '#2980B9'; ctx.lineWidth = 4;
+    const lo = Math.sin(m.walkPhase) * 5;
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y + r + bob); ctx.lineTo(x - 10, y + r + 12 + bob + lo);
+    ctx.moveTo(x + 10, y + r + bob); ctx.lineTo(x + 10, y + r + 12 + bob - lo);
+    ctx.stroke();
+  }
+}
+
+function drawAnticlone(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const bob = m.dying ? 0 : Math.sin(m.floatPhase) * 4;
+  const r = m.size / 2;
+
+  if (m.dying && m.dyingType === 'special') {
+    const expandR = m.dyingTimer * 7;
+    const alpha = Math.max(0, 1 - m.dyingTimer / 30);
+    ctx.strokeStyle = `rgba(22, 160, 133, ${alpha})`;
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(x, y + bob, expandR, 0, 6.28); ctx.stroke();
+    ctx.strokeStyle = `rgba(26, 188, 156, ${alpha * 0.7})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(x, y + bob, expandR * 0.6, 0, 6.28); ctx.stroke();
+    ctx.strokeStyle = `rgba(22, 160, 133, ${alpha})`;
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI / 4) * i + m.dyingTimer * 0.1;
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(a) * expandR * 0.5, y + bob + Math.sin(a) * expandR * 0.5);
+      ctx.lineTo(x + Math.cos(a) * expandR, y + bob + Math.sin(a) * expandR);
+      ctx.stroke();
+    }
+    return;
+  }
+
+  const rot = m.floatPhase * 0.4;
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.rotate(rot);
+
+  ctx.strokeStyle = '#16A085';
+  ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.28); ctx.stroke();
+  ctx.strokeStyle = 'rgba(22, 160, 133, 0.5)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, 6.28); ctx.stroke();
+
+  ctx.strokeStyle = '#1ABC9C';
+  ctx.lineWidth = 3.5;
+  for (let i = 0; i < 8; i++) {
+    const a = (Math.PI / 4) * i;
+    const x1 = Math.cos(a) * r * 0.25;
+    const y1 = Math.sin(a) * r * 0.25;
+    const x2 = Math.cos(a + 0.4) * r * 0.9;
+    const y2 = Math.sin(a + 0.4) * r * 0.9;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.fillStyle = '#0E6655';
+  ctx.font = `bold ${m.size * 0.3}px Microsoft YaHei`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('反气旋', x, y + bob);
+}
+
+function drawGolgi(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const bob = m.dying ? 0 : Math.sin(m.floatPhase) * 4;
+
+  ctx.save();
+  ctx.translate(x, y + bob);
+
+  const r = m.size * 0.42;
+  const golgiColors = ['#E91E63', '#D81B60', '#C2185B', '#AD1457'];
+  for (let i = 0; i < 4; i++) {
+    const yo = (i - 1.5) * 8;
+    ctx.strokeStyle = golgiColors[i];
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(0, yo, r, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = '#F06292';
+  for (let i = 0; i < 5; i++) {
+    const a = m.floatPhase * 0.5 + i * (Math.PI * 2 / 5);
+    const bx = Math.cos(a) * (r + 10);
+    const by = Math.sin(a) * (r * 0.45) + 5;
+    ctx.beginPath(); ctx.arc(bx, by, 4, 0, 6.28); ctx.fill();
+  }
+
+  ctx.restore();
+
+  ctx.fillStyle = '#8B0040';
+  ctx.font = `bold ${m.size * 0.2}px Microsoft YaHei`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('高尔基体', x, y + bob + m.size * 0.32);
+}
+
+function drawLogicLoop(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const bob = m.dying ? 0 : Math.sin(m.walkPhase) * 2;
+  const r = m.size / 2;
+
+  if (m.dying && m.dyingType === 'special') {
+    const alpha = Math.max(0, 1 - m.dyingTimer / 30);
+    for (let i = 0; i < 4; i++) {
+      const a = i * Math.PI / 2 + m.dyingTimer * 0.05;
+      const d = m.dyingTimer * 2.5;
+      const sx = x + Math.cos(a) * d;
+      const sy = y + bob + Math.sin(a) * d;
+      ctx.strokeStyle = `rgba(52, 73, 94, ${alpha})`;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 14, a, a + Math.PI * 1.2);
+      ctx.stroke();
+    }
+    return;
+  }
+
+  const rot = m.walkPhase * 0.3;
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.rotate(rot);
+
+  ctx.strokeStyle = '#34495E';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0.3, Math.PI * 1.9);
+  ctx.stroke();
+
+  const aa = 0.3;
+  const ax = Math.cos(aa) * r;
+  const ay = Math.sin(aa) * r;
+  ctx.fillStyle = '#34495E';
+  ctx.beginPath();
+  ctx.moveTo(ax + 2, ay - 2);
+  ctx.lineTo(ax + 15, ay - 11);
+  ctx.lineTo(ax + 11, ay + 7);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(52, 73, 94, 0.45)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.55, 0, 6.28);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.restore();
+
+  ctx.fillStyle = '#2C3E50';
+  ctx.font = `bold ${m.size * 0.22}px Microsoft YaHei`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('循环', x, y + bob);
+
+  if (!m.dying) {
+    ctx.strokeStyle = '#34495E'; ctx.lineWidth = 4;
+    const lo = Math.sin(m.walkPhase) * 5;
+    ctx.beginPath();
+    ctx.moveTo(x - 12, y + r + bob); ctx.lineTo(x - 12, y + r + 12 + bob + lo);
+    ctx.moveTo(x + 12, y + r + bob); ctx.lineTo(x + 12, y + r + 12 + bob - lo);
+    ctx.stroke();
+  }
+}
+
+function drawPi(m) {
+  const x = m.x, y = m.y - m.size / 2;
+  const r = m.size / 2;
+  const rot = m.dying ? m.dyingTimer * 0.25 : m.walkPhase * 0.45;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+
+  const grad = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.2, 0, 0, r);
+  grad.addColorStop(0, '#FFF8DC');
+  grad.addColorStop(0.55, '#FFD700');
+  grad.addColorStop(1, '#B8860B');
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.28); ctx.fill();
+
+  ctx.strokeStyle = '#8B6914'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.28); ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(139, 105, 20, 0.5)'; ctx.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+    const a = (Math.PI / 2) * i;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(a) * r * 0.85, Math.sin(a) * r * 0.85);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = '#3E2723';
+  ctx.font = `bold ${m.size * 0.75}px serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('Π', 0, 2);
+
+  ctx.restore();
+
+  if (!m.dying) {
+    ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 11px Microsoft YaHei'; ctx.textAlign = 'center';
+    ctx.fillText('★稀有★', x, y - r - 10);
+  }
+}
+
+function drawStunOverlay() {
+  if (game.stunTimer <= 0) return;
+  const a = Math.min(1, game.stunTimer / 30) * 0.35;
+  ctx.fillStyle = `rgba(255, 215, 0, ${a})`;
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(game.frame * 0.12);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.font = 'bold 26px serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let i = 0; i < 8; i++) {
+    const ang = (Math.PI / 4) * i;
+    ctx.fillText('✦', Math.cos(ang) * 230, Math.sin(ang) * 150);
+  }
+  ctx.restore();
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-game.frame * 0.18);
+  ctx.fillStyle = 'rgba(255, 248, 220, 0.7)';
+  ctx.font = 'bold 18px serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let i = 0; i < 6; i++) {
+    const ang = (Math.PI / 3) * i;
+    ctx.fillText('✦', Math.cos(ang) * 130, Math.sin(ang) * 80);
+  }
+  ctx.restore();
+}
+
+function drawParticle(p) {
+  const a = p.life / p.maxLife;
+  ctx.globalAlpha = a;
+  if (p.kind === 'fanta') ctx.fillStyle = '#FF6600';
+  else if (p.kind === 'wave') ctx.fillStyle = '#3498DB';
+  else if (p.kind === 'explosion') ctx.fillStyle = p.life > 30 ? '#27AE60' : '#fff';
+  else if (p.kind === 'rock') ctx.fillStyle = '#8B7355';
+  else if (p.kind === 'diverge') ctx.fillStyle = '#1ABC9C';
+  else if (p.kind === 'vesicle') ctx.fillStyle = '#E91E63';
+  else if (p.kind === 'spark') ctx.fillStyle = p.life > 35 ? '#34495E' : '#5DADE2';
+  else if (p.kind === 'dizzy') ctx.fillStyle = p.life > 30 ? '#FFD700' : '#FFF8DC';
+  else ctx.fillStyle = p.color;
+  ctx.beginPath(); ctx.arc(p.x, p.y, p.size * a, 0, 6.28); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawEffect(e) {
+  if (e.kind === 'lightning') {
+    const a = e.life / e.maxLife;
+    ctx.globalAlpha = a;
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(e.x1, e.y1);
+    const steps = 8;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      if (i === steps) {
+        ctx.lineTo(e.x2, e.y2);
+      } else {
+        const lx = e.x1 + (e.x2 - e.x1) * t + rand(-12, 12);
+        const ly = e.y1 + (e.y2 - e.y1) * t + rand(-12, 12);
+        ctx.lineTo(lx, ly);
+      }
+    }
+    ctx.stroke();
+    ctx.strokeStyle = '#5DADE2';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    return;
+  }
+
+  const a = e.life / e.maxLife;
+  ctx.globalAlpha = a;
+  ctx.font = `bold ${e.size}px Microsoft YaHei`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+  ctx.strokeText(e.text, e.x, e.y);
+  ctx.fillStyle = e.color;
+  ctx.fillText(e.text, e.x, e.y);
+  if (e.sub) {
+    ctx.font = '14px Microsoft YaHei';
+    ctx.strokeText(e.sub, e.x, e.y + 26);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(e.sub, e.x, e.y + 26);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ==================== 高考Boss绘制 ====================
+function drawBoss() {
+  const b = game.boss;
+  const bob = Math.sin(b.phase) * 6;
+  const cx = b.x, cy = b.y + bob;
+
+  ctx.save();
+  if (b.shake > 0) ctx.translate(rand(-3, 3), rand(-3, 3));
+
+  if (b.dying) {
+    const t = b.dyingTimer / 80;
+    ctx.globalAlpha = Math.max(0, 1 - t);
+    for (let i = 0; i < 3; i++) {
+      const rr = b.dyingTimer * (5 + i * 3);
+      ctx.strokeStyle = `rgba(255, 215, 0, ${Math.max(0, 0.7 - t - i * 0.15)})`;
+      ctx.lineWidth = 7;
+      ctx.beginPath(); ctx.arc(cx, cy, rr, 0, 6.28); ctx.stroke();
+    }
+  }
+
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#c0392b';
+  ctx.lineWidth = 5;
+  roundRect(cx - 120, cy - 135, 240, 270, 12, true, true);
+
+  ctx.fillStyle = '#c0392b';
+  roundRect(cx - 120, cy - 135, 240, 40, 12, true, false);
+  ctx.fillRect(cx - 120, cy - 110, 240, 15);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 22px Microsoft YaHei';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('高 考', cx, cy - 115);
+
+  for (const part of b.parts) {
+    drawBossPart(part, cx + part.ox, cy + part.oy);
+  }
+
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawBossPart(part, px, py) {
+  const tb = TEXTBOOKS[part.subject];
+  ctx.save();
+  if (part.broken) ctx.globalAlpha = 0.35;
+
+  ctx.fillStyle = '#fafafa';
+  ctx.strokeStyle = tb.color;
+  ctx.lineWidth = 3;
+  roundRect(px - 32, py - 30, 64, 60, 8, true, true);
+
+  drawBossPartIcon(part.subject, px, py - 6);
+
+  ctx.globalAlpha = part.broken ? 0.4 : 1;
+  ctx.fillStyle = tb.color;
+  ctx.font = 'bold 12px Microsoft YaHei';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(tb.name, px, py + 16);
+  ctx.fillStyle = '#888';
+  ctx.font = 'bold 10px Microsoft YaHei';
+  ctx.fillText('[' + tb.key + ']', px, py + 28);
+
+  ctx.restore();
+
+  if (part.broken) {
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(px - 24, py - 24); ctx.lineTo(px + 24, py + 24);
+    ctx.moveTo(px + 24, py - 24); ctx.lineTo(px - 24, py + 24);
+    ctx.stroke();
+  }
+}
+
+function drawBossPartIcon(type, x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  switch (type) {
+    case 'chinese':
+      ctx.fillStyle = '#2c3e50'; ctx.font = 'bold 16px Microsoft YaHei';
+      ctx.fillText('幸', 0, 0); break;
+    case 'math':
+      ctx.fillStyle = '#B8860B'; ctx.font = 'bold 18px serif';
+      ctx.fillText('Π', 0, 0); break;
+    case 'english':
+      ctx.fillStyle = '#4A0E6B'; ctx.font = 'bold 10px Microsoft YaHei';
+      ctx.fillText('fan', 0, 0); break;
+    case 'physics':
+      ctx.fillStyle = '#ECF0F1';
+      ctx.beginPath(); ctx.arc(0, 0, 9, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.fillRect(-5, -2, 2, 2); ctx.fillRect(3, -2, 2, 2); break;
+    case 'chemistry':
+      ctx.strokeStyle = '#2980B9'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = Math.PI / 3 * i - Math.PI / 6;
+        const pxx = Math.cos(a) * 9, pyy = Math.sin(a) * 9;
+        if (i === 0) ctx.moveTo(pxx, pyy); else ctx.lineTo(pxx, pyy);
+      }
+      ctx.closePath(); ctx.stroke(); break;
+    case 'biology':
+      ctx.strokeStyle = '#E91E63'; ctx.lineWidth = 2.5;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.arc(0, (i - 1) * 4, 8, Math.PI * 0.2, Math.PI * 0.8);
+        ctx.stroke();
+      }
+      break;
+    case 'politics':
+      ctx.strokeStyle = '#34495E'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(0, 0, 9, 0.3, Math.PI * 1.9); ctx.stroke(); break;
+    case 'history':
+      ctx.fillStyle = '#D4AC0D';
+      ctx.beginPath();
+      ctx.moveTo(-9, 4); ctx.lineTo(-9, -4); ctx.lineTo(-4, 0);
+      ctx.lineTo(0, -6); ctx.lineTo(4, 0); ctx.lineTo(9, -4); ctx.lineTo(9, 4);
+      ctx.closePath(); ctx.fill(); break;
+    case 'geography':
+      ctx.strokeStyle = '#16A085'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 1.5); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 1.5); ctx.stroke(); break;
+  }
+  ctx.restore();
+}
+
+// ==================== 输入 ====================
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width / rect.width;
+  const sy = canvas.height / rect.height;
+  const cx = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+  const cy = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+  return { x: (cx - rect.left) * sx, y: (cy - rect.top) * sy };
+}
+
+canvas.addEventListener('mousedown', startDrag);
+canvas.addEventListener('mousemove', moveDrag);
+canvas.addEventListener('mouseup', endDrag);
+canvas.addEventListener('touchstart', startDrag, { passive: false });
+canvas.addEventListener('touchmove', moveDrag, { passive: false });
+canvas.addEventListener('touchend', endDrag);
+
+window.addEventListener('keydown', (e) => {
+  if (game.state !== 'playing') return;
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 9) {
+    const tbKey = TB_KEYS[num - 1];
+    if (!game.unlocked.includes(tbKey)) return;
+    game.selectedTextbook = tbKey;
+    if (!game.dragging) {
+      game.current = tbKey;
+    }
+  }
+});
+
+function startDrag(e) {
+  e.preventDefault();
+  if (game.state !== 'playing' || !game.current) return;
+  const p = getPos(e);
+  if (dist(p.x, p.y, SLING_X, SLING_Y - 25) < 60) {
+    game.dragging = true;
+    game.dragX = p.x; game.dragY = p.y;
+  }
+}
+
+function moveDrag(e) {
+  e.preventDefault();
+  if (!game.dragging) return;
+  const p = getPos(e);
+  const dx = p.x - SLING_X, dy = p.y - SLING_Y;
+  const d = dist(0, 0, dx, dy);
+  if (d > MAX_PULL) {
+    game.dragX = SLING_X + dx / d * MAX_PULL;
+    game.dragY = SLING_Y + dy / d * MAX_PULL;
+  } else {
+    game.dragX = p.x; game.dragY = p.y;
+  }
+}
+
+function endDrag(e) {
+  e.preventDefault();
+  if (!game.dragging) return;
+  game.dragging = false;
+  const dx = game.dragX - SLING_X, dy = game.dragY - SLING_Y;
+  if (dist(0, 0, dx, dy) > 15) launch(dx, dy);
+}
+
+// ==================== 游戏控制 ====================
+function startGame() {
+  resetGame();
+  game.state = 'playing';
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('gameOverScreen').style.display = 'none';
+}
+
+function endGame(win) {
+  game.state = 'gameover';
+  const gk = Math.min(660, Math.round(game.score / 12));
+  const titleEl = document.getElementById('endTitle');
+  titleEl.textContent = win ? '🎓 高考通关！' : '你不适合学习！';
+  titleEl.className = win ? '' : 'fail-title';
+
+  const uni = getUniversityResult(gk);
+  document.getElementById('endText').innerHTML = win
+    ? `恭喜！你战胜了高考！<br>高考分数: <b>${gk}/660</b> 满分！`
+    : `高考分数: <b>${gk}/660</b>  |  到达波次: ${game.wave}`;
+
+  const uniEl = document.getElementById('uniResult');
+  uniEl.textContent = '📋 录取结果：' + uni.name;
+  uniEl.style.color = uni.color;
+  uniEl.style.background = uni.bg;
+
+  document.getElementById('gameOverScreen').style.display = 'flex';
+}
+
+// ==================== 主循环 ====================
+function loop() {
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

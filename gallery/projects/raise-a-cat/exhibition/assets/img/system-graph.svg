@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" style="background: #fff9f0;">
+  <!-- Background -->
+  <rect width="900" height="600" fill="#fff9f0"/>
+
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="bold" fill="#a85818">System Graph: Raise a Cat Successfully</text>
+  <text x="450" y="55" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#7a6651">Core Loop: Observe → Judge → Act → Read Feedback → Adjust</text>
+
+  <!-- ===== Player Actions Box (Left) ===== -->
+  <rect x="20" y="80" width="180" height="300" rx="12" fill="#fff5e6" stroke="#d4762a" stroke-width="2"/>
+  <text x="110" y="105" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#a85818">Player Actions</text>
+
+  <text x="30" y="130" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Add / Reduce Food</text>
+  <text x="30" y="148" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Choose Food Type</text>
+  <text x="30" y="166" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Add Water</text>
+  <text x="30" y="184" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Pet / Play / Hug</text>
+  <text x="30" y="202" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Wash / Clean Ears</text>
+  <text x="30" y="220" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Vet Visit</text>
+  <text x="30" y="238" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Vaccinate</text>
+  <text x="30" y="256" font-family="sans-serif" font-size="11" fill="#3d2b1f">• Take Out / Stay Home</text>
+
+  <!-- Personality Modifier Box -->
+  <rect x="30" y="280" width="160" height="85" rx="8" fill="#fde8d0" stroke="#e8a23a" stroke-width="1"/>
+  <text x="110" y="300" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#a85818">Cat Personality Modifiers</text>
+  <text x="40" y="318" font-family="sans-serif" font-size="10" fill="#5a4a3a">Mimi: 1.0× all (balanced)</text>
+  <text x="40" y="334" font-family="sans-serif" font-size="10" fill="#5a4a3a">Shadow: 0.5× affection,</text>
+  <text x="50" y="348" font-family="sans-serif" font-size="10" fill="#5a4a3a">sensitive stomach, scared</text>
+  <text x="40" y="360" font-family="sans-serif" font-size="10" fill="#5a4a3a">Bounce: 1.6× hunger, needs play</text>
+
+  <!-- ===== Cat Stats Box (Center) ===== -->
+  <rect x="280" y="80" width="340" height="300" rx="12" fill="#f0f8ff" stroke="#3a9ee8" stroke-width="2"/>
+  <text x="450" y="105" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#1a6ab8">Cat State (Environment Data)</text>
+
+  <!-- Stat boxes -->
+  <rect x="295" y="120" width="95" height="45" rx="6" fill="#ffe0e0" stroke="#e85d3a" stroke-width="1"/>
+  <text x="342" y="140" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#cc3333">Health</text>
+  <text x="342" y="155" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#7a6651">0–100</text>
+
+  <rect x="400" y="120" width="95" height="45" rx="6" fill="#ffe0f0" stroke="#e8447a" stroke-width="1"/>
+  <text x="447" y="140" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#cc3370">Affection</text>
+  <text x="447" y="155" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#7a6651">0–100</text>
+
+  <rect x="505" y="120" width="95" height="45" rx="6" fill="#fff3d0" stroke="#e8a23a" stroke-width="1"/>
+  <text x="552" y="140" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#b87820">Fullness</text>
+  <text x="552" y="155" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#7a6651">0–100</text>
+
+  <rect x="295" y="180" width="95" height="45" rx="6" fill="#d0f5ee" stroke="#4ab8a8" stroke-width="1"/>
+  <text x="342" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#2a8070">Energy</text>
+  <text x="342" y="215" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#7a6651">0–100</text>
+
+  <rect x="400" y="180" width="95" height="45" rx="6" fill="#d0e8ff" stroke="#3a9ee8" stroke-width="1"/>
+  <text x="447" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#1a6ab8">Water</text>
+  <text x="447" y="215" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#7a6651">0–100</text>
+
+  <rect x="505" y="180" width="95" height="45" rx="6" fill="#e0f5d0" stroke="#8ac24a" stroke-width="1"/>
+  <text x="552" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#4a7c1a">Cleanliness</text>
+  <text x="552" y="215" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#7a6651">0–100</text>
+
+  <!-- Calculated Results -->
+  <rect x="310" y="245" width="280" height="55" rx="8" fill="#f5e6d3" stroke="#a85818" stroke-width="1"/>
+  <text x="450" y="265" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#a85818">System-Calculated Results</text>
+  <text x="320" y="283" font-family="sans-serif" font-size="10" fill="#5a4a3a">Health = f(fullness, water, cleanliness, sickness)</text>
+  <text x="320" y="295" font-family="sans-serif" font-size="10" fill="#5a4a3a">Stat decay over time × personality modifiers</text>
+
+  <!-- Win/Lose -->
+  <rect x="310" y="310" width="125" height="55" rx="8" fill="#e0f5e0" stroke="#4a9c3a" stroke-width="1"/>
+  <text x="372" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#2a7c1a">Success</text>
+  <text x="372" y="348" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5a4a3a">Age ≥ 15 years</text>
+  <text x="372" y="360" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5a4a3a">Health &amp; Affection &gt; 0</text>
+
+  <rect x="465" y="310" width="125" height="55" rx="8" fill="#ffe0e0" stroke="#cc3333" stroke-width="1"/>
+  <text x="527" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#cc3333">Failure</text>
+  <text x="527" y="348" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5a4a3a">Health = 0 (death)</text>
+  <text x="527" y="360" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5a4a3a">Affection = 0 (abandoned)</text>
+
+  <!-- ===== Feedback Box (Right) ===== -->
+  <rect x="700" y="80" width="180" height="300" rx="12" fill="#fff0f5" stroke="#e8447a" stroke-width="2"/>
+  <text x="790" y="105" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#cc3370">Feedback Signals</text>
+
+  <rect x="710" y="120" width="160" height="70" rx="8" fill="#fff5e6" stroke="#e8a23a" stroke-width="1"/>
+  <text x="790" y="138" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#b87820">Hunger Signal</text>
+  <text x="715" y="155" font-family="sans-serif" font-size="9" fill="#5a4a3a">Source: Fullness &lt; 30</text>
+  <text x="715" y="168" font-family="sans-serif" font-size="9" fill="#5a4a3a">Output: Meow (audio)</text>
+  <text x="715" y="181" font-family="sans-serif" font-size="9" fill="#5a4a3a">+ sniffing animation</text>
+
+  <rect x="710" y="200" width="160" height="70" rx="8" fill="#f0f0f0" stroke="#888888" stroke-width="1"/>
+  <text x="790" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#555555">Sickness Signal</text>
+  <text x="715" y="235" font-family="sans-serif" font-size="9" fill="#5a4a3a">Source: Health &lt; 30</text>
+  <text x="715" y="248" font-family="sans-serif" font-size="9" fill="#5a4a3a">Output: Dim lighting</text>
+  <text x="715" y="261" font-family="sans-serif" font-size="9" fill="#5a4a3a">+ cat stops moving</text>
+
+  <rect x="710" y="280" width="160" height="70" rx="8" fill="#fffde0" stroke="#e8c83a" stroke-width="1"/>
+  <text x="790" y="298" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#b89020">Playfulness Signal</text>
+  <text x="715" y="315" font-family="sans-serif" font-size="9" fill="#5a4a3a">Source: No interaction 8s+</text>
+  <text x="715" y="328" font-family="sans-serif" font-size="9" fill="#5a4a3a">Output: Soft glow</text>
+  <text x="715" y="341" font-family="sans-serif" font-size="9" fill="#5a4a3a">+ cat highlights</text>
+
+  <!-- ===== Arrows ===== -->
+  <!-- Player Actions → Cat Stats -->
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#7a6651"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#cc3333"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#4a9c3a"/>
+    </marker>
+  </defs>
+
+  <line x1="200" y1="200" x2="275" y2="200" stroke="#7a6651" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="225" y="195" font-family="sans-serif" font-size="9" fill="#7a6651">modify</text>
+
+  <!-- Cat Stats → Feedback -->
+  <line x1="620" y1="155" x2="695" y2="155" stroke="#7a6651" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="640" y="150" font-family="sans-serif" font-size="9" fill="#7a6651">trigger</text>
+  <line x1="620" y1="235" x2="695" y2="235" stroke="#7a6651" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="620" y1="315" x2="695" y2="315" stroke="#7a6651" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Feedback → Player (loop back) -->
+  <path d="M 790 380 Q 790 500, 450 500 Q 110 500, 110 385" fill="none" stroke="#e8447a" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+  <text x="450" y="515" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#cc3370">Adjust: Player reads feedback and changes strategy</text>
+
+  <!-- Loop label at bottom -->
+  <text x="450" y="540" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7a6651">← The core learning loop repeats: Observe → Judge → Act → Read Feedback → Adjust →</text>
+
+  <!-- Just-Right Range note -->
+  <rect x="200" y="555" width="500" height="30" rx="8" fill="#fff5e6" stroke="#e8a23a" stroke-width="1"/>
+  <text x="450" y="575" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#5a4a3a">⚠ Just-Right Range: Too little food → hungry/ill. Too much food → uncomfortable/sick. Each cat has different thresholds.</text>
+</svg>

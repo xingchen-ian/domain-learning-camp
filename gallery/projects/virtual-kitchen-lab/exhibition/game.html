@@ -1,0 +1,2537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Kitchen Lab - Cooking Game</title>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+<style>
+  :root {
+    --bg: #FFF8F0;
+    --panel-bg: #FFFFFF;
+    --border: #E8D5C4;
+    --text: #4A3728;
+    --text-light: #8B7355;
+    --accent: #E8734A;
+    --accent-light: #FF9F43;
+    --success: #50C878;
+    --danger: #E85D75;
+    --flame-orange: #FF6B35;
+    --flame-yellow: #FFD700;
+    --stove: #4A4A4A;
+    --pot: #708090;
+    --salty: #4A90D9;
+    --sweet: #E85D75;
+    --sour: #F5A623;
+    --bitter: #7B68EE;
+    --umami: #50C878;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  #app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 100vh;
+  }
+
+  /* ========== HEADER ========== */
+  #header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--panel-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  #header .title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  #header .level-badge {
+    background: var(--accent-light);
+    color: white;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  #header .stats {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+  }
+
+  #header .stats span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #header .stats .value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #header .stats .label {
+    color: var(--text-light);
+    font-size: 12px;
+  }
+
+  .timer-warn { color: var(--danger) !important; animation: pulse 1s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ========== MAIN AREA ========== */
+  #main {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 12px;
+    flex: 1;
+    min-height: 400px;
+  }
+
+  /* ========== KITCHEN CANVAS ========== */
+  #kitchen-wrap {
+    background: var(--panel-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+    position: relative;
+    min-height: 400px;
+  }
+
+  #kitchen-canvas {
+    position: absolute;
+    inset: 0;
+  }
+  #kitchen-canvas canvas { display: block; }
+
+  /* ========== SIDEBAR ========== */
+  #sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel {
+    background: var(--panel-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .panel h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Flavor bars */
+  .flavor-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .flavor-bar-row .flavor-name {
+    width: 36px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+
+  .flavor-bar-row .flavor-track {
+    flex: 1;
+    height: 14px;
+    background: #F0F0F0;
+    border-radius: 7px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flavor-bar-row .flavor-fill {
+    height: 100%;
+    border-radius: 7px;
+    transition: width 0.4s ease;
+    position: relative;
+  }
+
+  .flavor-bar-row .flavor-target {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 3px;
+    background: var(--text);
+    border-radius: 2px;
+    opacity: 0.6;
+    transition: left 0.3s ease;
+  }
+
+  .flavor-bar-row .flavor-val {
+    width: 28px;
+    font-size: 11px;
+    text-align: left;
+    color: var(--text-light);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Temperature gauge */
+  .gauge-wrap {
+    text-align: center;
+  }
+
+  .gauge-label {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+
+  .gauge-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gauge-value span { font-size: 14px; }
+
+  .doneness-bar {
+    height: 8px;
+    background: #F0F0F0;
+    border-radius: 4px;
+    margin-top: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .doneness-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+
+  .doneness-zone {
+    position: absolute;
+    top: 0; bottom: 0;
+    background: rgba(80,200,120,0.3);
+    border-radius: 4px;
+  }
+
+  /* ========== CARD AREA (pinned at top, compact) ========== */
+  #card-area {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0;
+  }
+
+  .card-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .card-section h3 {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  .card-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .card {
+    background: var(--panel-bg);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 600;
+    position: relative;
+    white-space: nowrap;
+  }
+
+  .card:hover {
+    border-color: var(--accent-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(232,115,74,0.2);
+  }
+
+  .card:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  .card.used {
+    opacity: 0.4;
+    pointer-events: none;
+    border-style: dashed;
+  }
+
+  .card.cooldown {
+    opacity: 0.5;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 5px, rgba(0,0,0,0.02) 5px, rgba(0,0,0,0.02) 10px
+    );
+  }
+
+  .card .emoji { margin-right: 4px; }
+
+  .card .cooldown-timer {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--danger);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  /* ========== CONTROLS ========== */
+  #controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--panel-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    flex-wrap: wrap;
+  }
+
+  #controls label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #heat-slider {
+    -webkit-appearance: none;
+    width: 160px;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #FFD700, #FF8C00, #FF4500);
+    outline: none;
+    cursor: pointer;
+  }
+
+  #heat-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    background: white;
+    border: 3px solid var(--accent);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .heat-display {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--flame-orange);
+    min-width: 30px;
+  }
+
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-game { padding: 8px 16px; font-size: 30px; line-height: 1; }
+
+  /* ========== OVERLAYS ========== */
+  #overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .overlay-card {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .overlay-card h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .overlay-card .score-num {
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .overlay-card .stars {
+    font-size: 36px;
+    margin: 8px 0;
+  }
+
+  .overlay-card .detail {
+    color: var(--text-light);
+    font-size: 14px;
+    margin: 12px 0;
+    line-height: 1.6;
+  }
+
+  .overlay-card .hint {
+    background: #FFF3E0;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #E65100;
+  }
+
+  .overlay-card .btn {
+    margin-top: 16px;
+  }
+
+  /* ========== ACTION FEEDBACK TOAST ========== */
+  #taste-feedback {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translate(-50%, -20px);
+    background: rgba(255,255,255,0.95);
+    padding: 8px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    white-space: nowrap;
+  }
+
+  #taste-feedback.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 900px) {
+    #main { grid-template-columns: 1fr; }
+    #sidebar { flex-direction: row; flex-wrap: wrap; }
+    #sidebar .panel { flex: 1; min-width: 140px; }
+    #card-area { flex-direction: column; }
+    #controls { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<script>
+// Error display — catches JS errors so they're visible instead of white screen
+window.addEventListener('error', function(e) {
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;padding:12px;font:14px monospace;white-space:pre-wrap;';
+  d.textContent = 'ERROR: ' + (e.message || 'Unknown') + (e.filename ? '\n  at ' + e.filename + ':' + e.lineno : '');
+  document.body.appendChild(d);
+});
+window.addEventListener('unhandledrejection', function(e) {
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;padding:12px;font:14px monospace;white-space:pre-wrap;';
+  d.textContent = 'PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
+  document.body.appendChild(d);
+});
+</script>
+<div id="app"></div>
+<div id="overlay" style="display:none"></div>
+
+<script type="module">
+// ===================== THREE.JS IMPORTS =====================
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ===================== AUDIO SYSTEM (Web Audio API) =====================
+
+const Audio = {
+  _ctx: null, _masterGain: null, _noiseBuffer: null,
+  _sizzleGain: null, _sizzleSource: null, _sizzleFilter: null,
+
+  _ensureCtx() {
+    if (!this._ctx) {
+      this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this._masterGain = this._ctx.createGain();
+      this._masterGain.gain.value = 0.35;
+      this._masterGain.connect(this._ctx.destination);
+      const len = 44100 * 2;
+      const buf = this._ctx.createBuffer(1, len, 44100);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      this._noiseBuffer = buf;
+    }
+    if (this._ctx.state === 'suspended') this._ctx.resume();
+    return this._ctx;
+  },
+
+  _noiseNode(dur, vol) {
+    const ctx = this._ensureCtx();
+    const src = ctx.createBufferSource();
+    src.buffer = this._noiseBuffer; src.loop = true;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    src.connect(g);
+    return { src, gain: g, ctx };
+  },
+
+  _tone(freq, dur, type, vol, ramp) {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    o.connect(g); g.connect(this._masterGain);
+    o.start(now); o.stop(now + dur);
+  },
+
+  startSizzle() {
+    this.stopSizzle();
+    const ctx = this._ensureCtx();
+    const { src, gain } = this._noiseNode(999, 0);
+    this._sizzleSource = src; this._sizzleGain = gain;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2500; bp.Q.value = 1.2;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 800;
+    src.connect(hp); hp.connect(bp); bp.connect(gain); gain.connect(this._masterGain);
+    this._sizzleFilter = bp;
+    src.start();
+  },
+
+  _updateSizzle(heat) {
+    if (!this._sizzleGain || !this._sizzleFilter) { this.startSizzle(); return; }
+    const now = this._ctx.currentTime;
+    const i = Math.max(0, heat / 10);
+    this._sizzleGain.gain.setTargetAtTime(i * 0.22, now, 0.08);
+    this._sizzleFilter.frequency.setTargetAtTime(1000 + i * 3500, now, 0.08);
+    this._sizzleFilter.Q.setTargetAtTime(0.6 + i * 1.6, now, 0.08);
+  },
+
+  updateSizzleFromState() {
+    if (typeof state !== 'undefined' && state.heatLevel !== undefined) this._updateSizzle(state.heatLevel);
+  },
+
+  stopSizzle() { try { this._sizzleSource?.stop(); } catch(e) {} this._sizzleSource = null; this._sizzleGain = null; this._sizzleFilter = null; },
+
+  playDrop() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    // Thud
+    const o = ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(200, now); o.frequency.exponentialRampToValueAtTime(55, now + 0.28);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.45, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+    o.connect(g); g.connect(this._masterGain); o.start(now); o.stop(now + 0.32);
+    // Splash
+    const { src, gain: ng } = this._noiseNode(0.16, 0.12);
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1500;
+    src.connect(hp); hp.connect(ng); ng.connect(this._masterGain);
+    ng.gain.setValueAtTime(0.12, now + 0.04); ng.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    src.start(now + 0.04); src.stop(now + 0.2);
+  },
+
+  playFlip() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    const { src, gain } = this._noiseNode(0.38, 0.16);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(350, now);
+    bp.frequency.exponentialRampToValueAtTime(6000, now + 0.14);
+    bp.frequency.exponentialRampToValueAtTime(180, now + 0.38);
+    src.connect(bp); bp.connect(gain); gain.connect(this._masterGain);
+    gain.gain.setValueAtTime(0.16, now); gain.gain.setValueAtTime(0.22, now + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    src.start(now); src.stop(now + 0.38);
+  },
+
+  playStir() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    const { src, gain } = this._noiseNode(0.85, 0.10);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 2;
+    bp.frequency.setValueAtTime(600, now);
+    // LFO modulates filter for swishing texture
+    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 5.5;
+    const lfoG = ctx.createGain(); lfoG.gain.value = 350;
+    lfo.connect(lfoG); lfoG.connect(bp.frequency);
+    src.connect(bp); bp.connect(gain); gain.connect(this._masterGain);
+    gain.gain.setValueAtTime(0.10, now); gain.gain.setValueAtTime(0.16, now + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+    lfo.start(now); lfo.stop(now + 0.85);
+    src.start(now); src.stop(now + 0.85);
+  },
+
+  playSimmer() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    for (let i = 0; i < 5; i++) {
+      const t = now + i * (0.22 + Math.random() * 0.15);
+      const o = ctx.createOscillator(); o.type = 'sine';
+      o.frequency.value = 280 + Math.random() * 250;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.07 + Math.random() * 0.04, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      o.connect(g); g.connect(this._masterGain);
+      o.start(t); o.stop(t + 0.12);
+    }
+  },
+
+  playAdjust() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    const o = ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(880, now); o.frequency.setValueAtTime(1100, now + 0.02);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    o.connect(g); g.connect(this._masterGain); o.start(now); o.stop(now + 0.08);
+  },
+
+  playTaste() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    [523, 659, 784].forEach((f, i) => {
+      const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
+      const g = ctx.createGain(); const t = now + i * 0.1;
+      g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+      o.connect(g); g.connect(this._masterGain); o.start(t); o.stop(t + 0.28);
+    });
+  },
+
+  playWin() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    [523, 659, 784, 1047, 1319].forEach((f, i) => {
+      const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
+      const g = ctx.createGain(); const t = now + i * 0.12;
+      g.gain.setValueAtTime(i === 4 ? 0.32 : 0.20, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      o.connect(g); g.connect(this._masterGain); o.start(t); o.stop(t + 0.45);
+    });
+  },
+
+  playLose() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    [440, 370, 311].forEach((f, i) => {
+      const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f;
+      const g = ctx.createGain(); const t = now + i * 0.2;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500;
+      g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      o.connect(lp); lp.connect(g); g.connect(this._masterGain); o.start(t); o.stop(t + 0.35);
+    });
+  },
+
+  playTick() {
+    const ctx = this._ensureCtx(), now = ctx.currentTime;
+    const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = 800;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    o.connect(g); g.connect(this._masterGain); o.start(now); o.stop(now + 0.04);
+  },
+
+  playClick() {
+    this._tone(600, 0.05, 'sine', 0.07, 0.01);
+  },
+
+  destroy() {
+    this.stopSizzle();
+    if (this._ctx) { this._ctx.close(); this._ctx = null; this._masterGain = null; }
+  }
+};
+
+// ===================== GAME DATA =====================
+
+const INGREDIENTS = {
+  oil:    { id:'oil',    name:'Cooking Oil', emoji:'🫒', flavor:{salty:0, sweet:0, sour:0, bitter:0, umami:5},  desc:'Heating medium, adds base flavor' },
+  egg:    { id:'egg',    name:'Egg',         emoji:'🥚', flavor:{salty:5, sweet:0, sour:0, bitter:0, umami:15}, desc:'Basic protein ingredient' },
+  salt:   { id:'salt',   name:'Salt',        emoji:'🧂', flavor:{salty:30, sweet:0, sour:0, bitter:0, umami:0}, desc:'Primary source of saltiness' },
+  pepper: { id:'pepper', name:'Black Pepper',emoji:'🌶️', flavor:{salty:0, sweet:0, sour:0, bitter:8, umami:3}, desc:'Adds spice and depth' },
+  soy:    { id:'soy',    name:'Soy Sauce',   emoji:'🫘', flavor:{salty:15, sweet:3, sour:0, bitter:0, umami:12}, desc:'Salty & savory with dark color' },
+  sugar:  { id:'sugar',  name:'Sugar',       emoji:'🍬', flavor:{salty:0, sweet:35, sour:0, bitter:0, umami:0}, desc:'Pure sweetness, balances salty & sour' },
+  vinegar:{ id:'vinegar',name:'Vinegar',     emoji:'🍶', flavor:{salty:0, sweet:0, sour:30, bitter:0, umami:0}, desc:'Main sour source, brightens flavor' },
+  garlic: { id:'garlic', name:'Garlic',      emoji:'🧄', flavor:{salty:0, sweet:0, sour:0, bitter:5, umami:10}, desc:'Adds aroma, removes gaminess' },
+  chili:  { id:'chili',  name:'Chili Oil',   emoji:'🫙', flavor:{salty:0, sweet:0, sour:0, bitter:12, umami:3}, desc:'Adds heat, slight bitterness' },
+  water:  { id:'water',  name:'Water',       emoji:'💧', flavor:{salty:0, sweet:0, sour:0, bitter:0, umami:0}, desc:'Dilutes overpowering flavors' },
+  butter: { id:'butter', name:'Butter',      emoji:'🧈', flavor:{salty:3, sweet:0, sour:0, bitter:0, umami:8}, desc:'Adds richness and gloss' },
+  tomato: { id:'tomato', name:'Tomato',      emoji:'🍅', flavor:{salty:0, sweet:8, sour:12, bitter:0, umami:5}, desc:'Sweet & sour base' },
+  cream:  { id:'cream',  name:'Cream',       emoji:'🥛', flavor:{salty:0, sweet:10, sour:0, bitter:0, umami:5}, desc:'Softens texture, adds sweetness' },
+  cheese: { id:'cheese', name:'Cheese',      emoji:'🧀', flavor:{salty:8, sweet:0, sour:0, bitter:0, umami:15}, desc:'Rich salty & umami' },
+  herb:   { id:'herb',   name:'Herb',        emoji:'🌿', flavor:{salty:0, sweet:0, sour:0, bitter:3, umami:3}, desc:'Fresh aromatic garnish' },
+};
+
+const ACTIONS = {
+  flip:      { id:'flip',      name:'Flip',      emoji:'🔁', effect:{}, special:'flip',      cooldown:2, desc:'Flip the egg for even cooking on both sides' },
+  stir:      { id:'stir',      name:'Stir',      emoji:'🥄', effect:{}, special:'stir',      cooldown:2, desc:'Evenly mix flavors, reduces bitterness by 2' },
+  simmer:    { id:'simmer',    name:'Simmer',    emoji:'🔥', effect:{}, special:'simmer',    cooldown:5, desc:'Increase doneness by 15, concentrates flavors' },
+  taste_test:{ id:'taste_test',name:'Taste',     emoji:'👅', effect:{}, special:'taste',     cooldown:3, desc:'Sample current flavor for scoring hints' },
+  adjust:    { id:'adjust',    name:'Fine-Tune', emoji:'⚖️', effect:{}, special:'adjust',    cooldown:4, desc:'Nudge toward target flavor by 10% (Free mode only)' },
+};
+
+// ===================== LEVEL DEFINITIONS =====================
+
+const LEVELS = [
+  {
+    id: 1,
+    name: 'Fried Egg Challenge',
+    subtitle: 'Observe + Act Phase',
+    desc: 'Cook the perfect fried egg! Watch the heat, time it right, season with just the right amount of salt and pepper.',
+    timeLimit: 180,
+    targetFlavor:  { salty:25, sweet:0,  sour:0,  bitter:5,  umami:25 },
+    targetFlavorMax:{ salty:45, sweet:10, sour:10, bitter:15, umami:45 },
+    targetDoneness: { min:70, max:90 },
+    availableIngredients: ['oil','egg','salt','pepper'],
+    availableActions: ['flip'],
+    scorePass: 60,
+    hint: 'Add oil first, then crack the egg. One pinch of salt and pepper each. Watch the color — serve when golden!',
+  },
+  {
+    id: 2,
+    name: 'Sauce Balance',
+    subtitle: 'Judge + Adjust Phase',
+    desc: 'Create a perfectly balanced stir-fry sauce! Soy for saltiness, sugar for sweetness, vinegar for sour — five tastes in harmony.',
+    timeLimit: 240,
+    targetFlavor:  { salty:35, sweet:25, sour:15, bitter:10, umami:35 },
+    targetFlavorMax:{ salty:55, sweet:45, sour:35, bitter:25, umami:55 },
+    targetDoneness: { min:60, max:85 },
+    availableIngredients: ['soy','sugar','vinegar','garlic','chili','water'],
+    availableActions: ['stir','simmer'],
+    scorePass: 65,
+    hint: 'Start with soy sauce, balance with sugar and vinegar. Taste before deciding what is missing. Stir to reduce bitterness.',
+  },
+  {
+    id: 3,
+    name: 'Free Creation',
+    subtitle: 'Full Cycle Phase',
+    desc: 'All ingredients at your disposal! Create your signature dish — aim for balance and personality.',
+    timeLimit: 360,
+    targetFlavor:  { salty:30, sweet:30, sour:20, bitter:15, umami:30 },
+    targetFlavorMax:{ salty:60, sweet:60, sour:45, bitter:35, umami:60 },
+    targetDoneness: { min:50, max:95 },
+    availableIngredients: ['oil','egg','salt','pepper','soy','sugar','vinegar','garlic','chili','water','butter','tomato','cream','cheese','herb'],
+    availableActions: ['flip','stir','simmer','adjust'],
+    scorePass: 70,
+    hint: 'Get creative! But be careful — exceeding any flavor cap will hurt your score. Balance is everything.',
+  },
+];
+
+// ===================== GAME STATE =====================
+
+const state = {
+  currentLevel: 0,
+  phase: 'menu', // menu | playing | win | gameover
+  dish: {
+    currentFlavor: { salty:0, sweet:0, sour:0, bitter:0, umami:0 },
+    doneness: 0,
+    temperature: 100,
+    timeElapsed: 0,
+  },
+  heatLevel: 5,
+  timer: null,
+  timeLeft: 0,
+  score: 0,
+  flavorScore: 0,
+  donenessScore: 0,
+  lastTasteText: '',
+  tasteFeedbackTimer: null,
+  cardCooldowns: {},
+  usedCards: {},
+  actionCount: 0,
+  flipped: false,
+};
+
+// ===================== HTML RENDER =====================
+
+const app = document.getElementById('app');
+
+function renderMenu() {
+  app.innerHTML = `
+    <div style="text-align:center;padding:60px 20px">
+      <div style="font-size:64px;margin-bottom:16px">🍳</div>
+      <h1 style="font-size:28px;color:var(--accent);margin-bottom:8px">Virtual Kitchen Lab</h1>
+      <p style="color:var(--text-light);font-size:15px;margin-bottom:40px">
+        Learn the Observe → Judge → Act → Adjust cycle, and become a kitchen scientist
+      </p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+        ${LEVELS.map((lv, i) => `
+          <button class="btn btn-primary" style="width:280px;text-align:left" onclick="startLevel(${i})">
+            <div style="font-size:18px">Level ${i+1}: ${lv.name}</div>
+            <div style="font-size:12px;opacity:0.8">${lv.subtitle}</div>
+          </button>
+        `).join('')}
+      </div>
+      <div class="hint" style="max-width:360px;margin:24px auto">
+        <strong>💡 How to Play:</strong><br>
+        Pick ingredient/action cards → Adjust heat → Click "Taste" for score → Hit the target to pass!
+      </div>
+    </div>
+  `;
+}
+
+function renderGameUI() {
+  const lv = LEVELS[state.currentLevel];
+  const d = state.dish;
+
+  app.innerHTML = `
+    <!-- HEADER -->
+    <div id="header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="title">🍳 Virtual Kitchen</span>
+        <span class="level-badge">Level ${lv.id}: ${lv.name}</span>
+      </div>
+      <div class="stats">
+        <span><span class="label">⏱ Time</span><span class="value" id="timer-disp">${fmtTime(state.timeLeft)}</span></span>
+        <span><span class="label">⭐ Score</span><span class="value">${state.score}</span></span>
+        <span><span class="label">🎬 Actions</span><span class="value">${state.actionCount}</span></span>
+      </div>
+    </div>
+
+    <!-- CARD AREA — pinned to top -->
+    <div id="card-area">
+      <div class="card-section">
+        <h3>🧂 Ingredients</h3>
+        <div class="card-row" id="ingredient-cards">
+          ${lv.availableIngredients.map(id => renderCard(INGREDIENTS[id])).join('')}
+        </div>
+      </div>
+      <div class="card-section">
+        <h3>🔧 Actions</h3>
+        <div class="card-row" id="action-cards">
+          ${lv.availableActions.map(id => renderCard(ACTIONS[id])).join('')}
+          <div id="taste-card" class="card" style="cursor:pointer;background:var(--accent);color:white;border-color:var(--accent)" title="Sample the dish and get a score estimate" onclick="tasteTest()">👅 Taste & Score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main">
+      <div id="kitchen-wrap">
+        <div id="kitchen-canvas"></div>
+        <div id="taste-feedback">${state.lastTasteText}</div>
+      </div>
+
+      <div id="sidebar">
+        <!-- Flavor Panel -->
+        <div class="panel" id="flavor-panel">
+          <h3>🧪 Flavor Analyzer</h3>
+          ${renderFlavorBars(lv)}
+        </div>
+
+        <!-- Status Panel -->
+        <div class="panel">
+          <h3>🌡️ Cooking Status</h3>
+          <div class="gauge-wrap">
+            <div class="gauge-label">Pan Temp</div>
+            <div class="gauge-value" id="temp-val">${d.temperature}<span>°C</span></div>
+          </div>
+          <div class="gauge-label">Doneness</div>
+          <div class="doneness-bar">
+            <div class="doneness-fill" id="doneness-fill" style="width:${d.doneness}%;background:${donenessColor(d.doneness)}"></div>
+            <div class="doneness-zone" style="left:${lv.targetDoneness.min}%;width:${lv.targetDoneness.max-lv.targetDoneness.min}%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);margin-top:2px">
+            <span>Raw</span><span>Target</span><span>Burnt</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div id="controls">
+      <label>
+        🔥 Heat
+        <input type="range" id="heat-slider" min="1" max="10" value="${state.heatLevel}" oninput="setHeat(this.value)">
+        <span class="heat-display" id="heat-label">${heatLabel(state.heatLevel)}</span>
+      </label>
+      <span style="font-size:12px;color:var(--text-light)">${lv.desc}</span>
+      <div style="flex:1"></div>
+      <button class="btn" style="background:#F0F0F0;color:var(--text)" onclick="restartLevel()">🔄 Reset</button>
+      <button class="btn btn-primary" onclick="submitDish()">🍽️ Submit Dish</button>
+    </div>
+  `;
+
+  // Attach card events
+  document.querySelectorAll('.card[data-id]').forEach(card => {
+    card.addEventListener('click', () => useCard(card.dataset.type, card.dataset.id));
+  });
+  document.getElementById('taste-card').addEventListener('click', () => tasteTest());
+
+  // Update card states
+  updateCardStates();
+}
+
+function renderFlavorBars(lv) {
+  const flavors = ['salty','sweet','sour','bitter','umami'];
+  const names = { salty:'Salty', sweet:'Sweet', sour:'Sour', bitter:'Bitter', umami:'Umami' };
+  const colors = { salty:'var(--salty)', sweet:'var(--sweet)', sour:'var(--sour)', bitter:'var(--bitter)', umami:'var(--umami)' };
+  const d = state.dish;
+
+  return flavors.map(f => {
+    const val = Math.min(d.currentFlavor[f], 100);
+    const tgt = lv.targetFlavor[f];
+    const tgtPct = (tgt / 100) * 100;
+    return `
+      <div class="flavor-bar-row">
+        <span class="flavor-name">${names[f]}</span>
+        <div class="flavor-track">
+          <div class="flavor-fill" style="width:${val}%;background:${colors[f]}"></div>
+          <div class="flavor-target" style="left:${tgtPct}%"></div>
+        </div>
+        <span class="flavor-val">${Math.round(val)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderCard(item) {
+  const id = item.id;
+  const onCooldown = state.cardCooldowns[id] && state.cardCooldowns[id] > 0;
+  const isUsed = state.usedCards[id];
+  let cls = 'card';
+  if (isUsed) cls += ' used';
+  if (onCooldown && !isUsed) cls += ' cooldown';
+  return `
+    <div class="${cls}" data-type="${item.special ? 'action' : 'ingredient'}" data-id="${id}" title="${item.desc || ''}">
+      <span class="emoji">${item.emoji}</span>${item.name}
+      ${onCooldown && !isUsed ? `<span class="cooldown-timer">${state.cardCooldowns[id]}</span>` : ''}
+    </div>
+  `;
+}
+
+function updateCardStates() {
+  document.querySelectorAll('.card[data-id]').forEach(el => {
+    const id = el.dataset.id;
+    const onCooldown = state.cardCooldowns[id] && state.cardCooldowns[id] > 0;
+    const isUsed = state.usedCards[id];
+    el.className = 'card';
+    if (isUsed) el.classList.add('used');
+    if (onCooldown && !isUsed) el.classList.add('cooldown');
+    // Update cooldown timer
+    const existing = el.querySelector('.cooldown-timer');
+    if (onCooldown && !isUsed) {
+      if (existing) existing.textContent = state.cardCooldowns[id];
+      else {
+        const t = document.createElement('span');
+        t.className = 'cooldown-timer';
+        t.textContent = state.cardCooldowns[id];
+        el.appendChild(t);
+      }
+    } else if (existing) {
+      existing.remove();
+    }
+  });
+}
+
+// ===================== HELPERS =====================
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function heatLabel(h) {
+  if (h <= 2) return 'Low';
+  if (h <= 4) return 'Med-Low';
+  if (h <= 6) return 'Medium';
+  if (h <= 8) return 'Med-High';
+  return 'High';
+}
+
+function donenessColor(d) {
+  if (d < 30) return '#FFE4C4';
+  if (d < 50) return '#FFDAB9';
+  if (d < 70) return '#F0C040';
+  if (d < 85) return '#D2A04A';
+  if (d < 95) return '#8B6914';
+  return '#3E2723';
+}
+
+function dishColorText(d) {
+  if (d < 30) return 'Raw';
+  if (d < 50) return 'Rare';
+  if (d < 70) return 'Medium';
+  if (d < 85) return 'Golden ✨';
+  if (d < 95) return 'Overdone';
+  return 'Burnt 🔥';
+}
+
+// ===================== GAME LOGIC =====================
+
+function resetState(levelIdx) {
+  state.currentLevel = levelIdx;
+  state.phase = 'playing';
+  state.dish = {
+    currentFlavor: { salty:0, sweet:0, sour:0, bitter:0, umami:0 },
+    doneness: 0,
+    temperature: 100,
+    timeElapsed: 0,
+  };
+  state.heatLevel = 5;
+  state.timeLeft = LEVELS[levelIdx].timeLimit;
+  state.score = 0;
+  state.flavorScore = 0;
+  state.donenessScore = 0;
+  state.lastTasteText = '';
+  state.cardCooldowns = {};
+  state.usedCards = {};
+  state.actionCount = 0;
+  state.flipped = false;
+}
+
+function startLevel(idx) {
+  resetState(idx);
+  renderGameUI();
+  startTimer();
+  initThreeJS();
+  Audio.startSizzle();
+}
+
+function startTimer() {
+  if (state.timer) clearInterval(state.timer);
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    state.dish.timeElapsed++;
+    updateTimerDisplay();
+    processCooking();
+    updateUI();
+    reduceCooldowns();
+
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timer);
+      state.phase = 'gameover';
+      showResult(false);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-disp');
+  if (el) {
+    el.textContent = fmtTime(state.timeLeft);
+    if (state.timeLeft <= 30) {
+      el.classList.add('timer-warn');
+      Audio.playTick();
+    } else {
+      el.classList.remove('timer-warn');
+    }
+  }
+}
+
+function processCooking() {
+  const d = state.dish;
+  // Temperature based on heat level
+  d.temperature = 80 + state.heatLevel * 17;
+
+  // Update sizzle sound
+  Audio.updateSizzleFromState();
+
+  // Doneness increases based on heat
+  const donenessRate = state.heatLevel * 1.2;
+  if (d.doneness < 100) {
+    d.doneness = Math.min(100, d.doneness + donenessRate / 3);
+  }
+
+  // If flipped for egg, doneness evens out faster
+  if (state.flipped && state.currentLevel === 0) {
+    d.doneness = Math.min(100, d.doneness + 0.5);
+  }
+
+  // High heat adds bitterness over time (Maillard/burning)
+  if (state.heatLevel >= 8) {
+    d.currentFlavor.bitter = Math.min(100, d.currentFlavor.bitter + 0.3);
+  }
+
+  // Very low heat reduces efficiency
+  if (state.heatLevel <= 2 && d.doneness < 90) {
+    // slow cooking is fine, just slower
+  }
+}
+
+function reduceCooldowns() {
+  for (const key in state.cardCooldowns) {
+    if (state.cardCooldowns[key] > 0) {
+      state.cardCooldowns[key]--;
+    }
+  }
+  updateCardStates();
+}
+
+function setHeat(val) {
+  state.heatLevel = parseInt(val);
+  const label = document.getElementById('heat-label');
+  if (label) label.textContent = heatLabel(state.heatLevel);
+}
+
+function useCard(type, id) {
+  if (state.phase !== 'playing') return;
+  if (state.cardCooldowns[id] && state.cardCooldowns[id] > 0) return;
+  if (state.usedCards[id]) return;
+
+  state.actionCount++;
+
+  if (type === 'ingredient') {
+    const ing = INGREDIENTS[id];
+    if (!ing) return;
+    for (const f in ing.flavor) {
+      state.dish.currentFlavor[f] = Math.min(100, state.dish.currentFlavor[f] + ing.flavor[f]);
+    }
+    state.usedCards[id] = true;
+    showActionFeedback(`Added ${ing.emoji} ${ing.name}`);
+    Audio.playDrop();
+    // Spawn 3D ingredient model into the pot
+    spawnIngredient(id);
+  } else if (type === 'action') {
+    const act = ACTIONS[id];
+    if (!act) return;
+    handleAction(act);
+    state.cardCooldowns[id] = act.cooldown;
+  }
+
+  updateUI();
+}
+
+function handleAction(act) {
+  const d = state.dish;
+  switch (act.special) {
+    case 'flip':
+      state.flipped = true;
+      d.doneness = Math.min(100, d.doneness + 5);
+      showActionFeedback(`${act.emoji} Flipped! Even heat on both sides`);
+      Audio.playFlip();
+      triggerFlipAnimation();
+      break;
+    case 'stir':
+      d.currentFlavor.bitter = Math.max(0, d.currentFlavor.bitter - 2);
+      // Even out flavors slightly
+      const flavors = ['salty','sweet','sour','bitter','umami'];
+      const avg = flavors.reduce((s,f) => s + d.currentFlavor[f], 0) / 5;
+      flavors.forEach(f => {
+        d.currentFlavor[f] = d.currentFlavor[f] * 0.9 + avg * 0.1;
+      });
+      showActionFeedback(`${act.emoji} Stirred well, bitterness reduced`);
+      Audio.playStir();
+      triggerStirAnimation();
+      break;
+    case 'simmer':
+      d.doneness = Math.min(100, d.doneness + 15);
+      // Concentrate flavors slightly
+      for (const f in d.currentFlavor) {
+        d.currentFlavor[f] = Math.min(100, d.currentFlavor[f] * 1.05);
+      }
+      showActionFeedback(`${act.emoji} Simmering... flavors concentrating`);
+      Audio.playSimmer();
+      break;
+    case 'adjust':
+      const lv = LEVELS[state.currentLevel];
+      for (const f in d.currentFlavor) {
+        const diff = lv.targetFlavor[f] - d.currentFlavor[f];
+        d.currentFlavor[f] = Math.max(0, Math.min(100, d.currentFlavor[f] + diff * 0.1));
+      }
+      showActionFeedback(`${act.emoji} Fine-tuned flavor toward target`);
+      Audio.playAdjust();
+      break;
+  }
+}
+
+function tasteTest() {
+  if (state.phase !== 'playing') return;
+  state.actionCount++;
+  Audio.playTaste();
+
+  const lv = LEVELS[state.currentLevel];
+  const d = state.dish;
+  const flavors = ['salty','sweet','sour','bitter','umami'];
+  const names = { salty:'Salty', sweet:'Sweet', sour:'Sour', bitter:'Bitter', umami:'Umami' };
+
+  // Calculate flavor score
+  let totalDiff = 0;
+  let maxDiff = 0;
+  let maxDiffFlavor = '';
+  let minDiff = Infinity;
+  let minDiffFlavor = '';
+
+  flavors.forEach(f => {
+    const diff = Math.abs(d.currentFlavor[f] - lv.targetFlavor[f]);
+    totalDiff += diff;
+    if (diff > maxDiff) { maxDiff = diff; maxDiffFlavor = f; }
+    if (diff < minDiff) { minDiff = diff; minDiffFlavor = f; }
+  });
+
+  state.flavorScore = Math.max(0, 100 - (totalDiff / flavors.length) * 2);
+  state.donenessScore = 100 - Math.abs(d.doneness - (lv.targetDoneness.min + lv.targetDoneness.max) / 2) * 2;
+  state.donenessScore = Math.max(0, Math.min(100, state.donenessScore));
+  state.score = Math.round(state.flavorScore * 0.7 + state.donenessScore * 0.3);
+
+  // Generate feedback
+  let feedback = '';
+  if (maxDiff > 20) {
+    feedback = `${names[maxDiffFlavor]} is off`;
+    if (d.currentFlavor[maxDiffFlavor] > lv.targetFlavor[maxDiffFlavor]) {
+      feedback += ' (too strong) — try adding water to dilute?';
+    } else {
+      feedback += ' (too weak) — add more of the matching ingredient';
+    }
+  } else if (maxDiff <= 10) {
+    feedback = 'Almost perfect! Very close to target 🔥';
+  } else {
+    feedback = 'Decent taste, keep tweaking';
+  }
+
+  // Check doneness
+  if (d.doneness < lv.targetDoneness.min) {
+    feedback += ' | Underdone — cook a bit longer';
+  } else if (d.doneness > lv.targetDoneness.max) {
+    feedback += ' | A bit overdone — turn down the heat!';
+  } else {
+    feedback += ' | Doneness is spot on 👍';
+  }
+
+  state.lastTasteText = `👅 Taste Feedback\n${feedback}\nCurrent Score: ${state.score} pts`;
+  showTasteFeedback(state.lastTasteText);
+}
+
+function submitDish() {
+  tasteTest();
+  if (state.score >= LEVELS[state.currentLevel].scorePass) {
+    state.phase = 'win';
+    clearInterval(state.timer);
+    showResult(true);
+  } else {
+    state.lastTasteText = `❌ Score ${state.score}/${LEVELS[state.currentLevel].scorePass} — not enough\nKeep adjusting, you can do it!`;
+    showTasteFeedback(state.lastTasteText);
+  }
+}
+
+function showActionFeedback(text) {
+  state.lastTasteText = text;
+  showTasteFeedback(text);
+}
+
+function showTasteFeedback(text) {
+  const el = document.getElementById('taste-feedback');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.add('show');
+  if (state.tasteFeedbackTimer) clearTimeout(state.tasteFeedbackTimer);
+  state.tasteFeedbackTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 2200);
+}
+
+function updateUI() {
+  const d = state.dish;
+  const lv = LEVELS[state.currentLevel];
+
+  // Update flavor bars
+  const panel = document.getElementById('flavor-panel');
+  if (panel) panel.innerHTML = `<h3>🧪 Flavor Analyzer</h3>${renderFlavorBars(lv)}`;
+
+  // Update temperature
+  const tempVal = document.getElementById('temp-val');
+  if (tempVal) tempVal.innerHTML = `${d.temperature}<span>°C</span>`;
+
+  // Update doneness
+  const donenessFill = document.getElementById('doneness-fill');
+  if (donenessFill) {
+    donenessFill.style.width = d.doneness + '%';
+    donenessFill.style.background = donenessColor(d.doneness);
+  }
+
+  updateCardStates();
+}
+
+// ===================== RESULT OVERLAY =====================
+
+function showResult(won) {
+  Audio.stopSizzle();
+  if (won) Audio.playWin(); else Audio.playLose();
+  const stars = state.score >= 90 ? '⭐⭐⭐' : state.score >= 75 ? '⭐⭐' : state.score >= 60 ? '⭐' : '';
+
+  const overlay = document.getElementById('overlay');
+  overlay.style.display = 'flex';
+  overlay.innerHTML = `
+    <div class="overlay-card">
+      <div style="font-size:48px;margin-bottom:8px">${won ? '🎉' : '⏰'}</div>
+      <h2>${won ? 'Level Complete!' : 'Time\'s Up!'}</h2>
+      <div class="stars">${stars}</div>
+      <div class="score-num">${state.score}</div>
+      <div style="font-size:14px;color:var(--text-light)">pts</div>
+      <div class="detail">
+        Flavor Match: ${Math.round(state.flavorScore)} pts &nbsp;|&nbsp; Doneness: ${Math.round(state.donenessScore)} pts<br>
+        Doneness: ${Math.round(state.dish.doneness)}% (${dishColorText(state.dish.doneness)})<br>
+        Actions Used: ${state.actionCount}
+      </div>
+      ${won && state.currentLevel < 2 ? `<button class="btn btn-primary" onclick="startLevel(${state.currentLevel+1})">▶️ Next Level</button>` : ''}
+      <button class="btn btn-primary" style="margin-left:8px;${won && state.currentLevel < 2 ? 'background:#8B7355' : ''}" onclick="restartLevel()">🔄 ${won ? 'Replay' : 'Try Again'}</button>
+      <button class="btn" style="background:#F0F0F0;color:var(--text);margin-left:8px" onclick="goToMenu()">🏠 Menu</button>
+    </div>
+  `;
+}
+
+function restartLevel() {
+  document.getElementById('overlay').style.display = 'none';
+  startLevel(state.currentLevel);
+}
+
+function goToMenu() {
+  document.getElementById('overlay').style.display = 'none';
+  if (state.timer) clearInterval(state.timer);
+  state.phase = 'menu';
+  Audio.stopSizzle();
+  destroyThreeJS();
+  renderMenu();
+}
+
+// ===================== THREE.JS 3D KITCHEN SCENE =====================
+
+let threeData = null; // { renderer, scene, camera, controls, pot, food, eggYolk, flames, steamPoints, animationId }
+
+function initThreeJS() {
+  destroyThreeJS();
+  const wrap = document.getElementById('kitchen-wrap');
+  const canvasEl = document.getElementById('kitchen-canvas');
+  if (!wrap || !canvasEl) return;
+
+  const w = wrap.clientWidth;
+  const h = Math.max(400, wrap.clientHeight);
+
+  // ---- Renderer ----
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  canvasEl.appendChild(renderer.domElement);
+
+  // ---- Scene ----
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#FFF8F0');
+  scene.fog = new THREE.Fog('#FFF8F0', 8, 25);
+
+  // ---- Camera ----
+  const camera = new THREE.PerspectiveCamera(45, w / h, 0.5, 30);
+  camera.position.set(3.5, 3.2, 4.5);
+  camera.lookAt(0, 0.8, 0);
+
+  // ---- Orbit Controls ----
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 0.8, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.1;
+  controls.minDistance = 2.8;
+  controls.maxDistance = 7;
+  controls.maxPolarAngle = Math.PI * 0.55; // don't go below counter
+  controls.minPolarAngle = 0.3;
+  controls.update();
+
+  // ---- Lighting ----
+  // Ambient
+  scene.add(new THREE.AmbientLight('#fff5eb', 1.8));
+  // Key light (warm, from above-right)
+  const keyLight = new THREE.DirectionalLight('#ffffff', 2.5);
+  keyLight.position.set(5, 8, 3);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(1024, 1024);
+  keyLight.shadow.camera.near = 0.5;
+  keyLight.shadow.camera.far = 20;
+  keyLight.shadow.camera.left = -5;
+  keyLight.shadow.camera.right = 5;
+  keyLight.shadow.camera.top = 5;
+  keyLight.shadow.camera.bottom = -5;
+  keyLight.shadow.bias = -0.0001;
+  scene.add(keyLight);
+  // Fill light (cool, from left)
+  const fillLight = new THREE.DirectionalLight('#c8d8ff', 1.0);
+  fillLight.position.set(-3, 2, 1);
+  scene.add(fillLight);
+
+  // ---- GROUND / COUNTER ----
+  const counterGeo = new THREE.BoxGeometry(4.5, 0.25, 3);
+  const counterMat = new THREE.MeshStandardMaterial({ color: '#C4946C', roughness: 0.6 });
+  const counter = new THREE.Mesh(counterGeo, counterMat);
+  counter.position.y = -0.125;
+  counter.receiveShadow = true;
+  counter.castShadow = true;
+  scene.add(counter);
+
+  // Backsplash wall
+  const wallGeo = new THREE.BoxGeometry(4.5, 2.5, 0.15);
+  const wallMat = new THREE.MeshStandardMaterial({ color: '#f5f0eb', roughness: 0.9 });
+  const wall = new THREE.Mesh(wallGeo, wallMat);
+  wall.position.set(0, 1.25, -1.6);
+  wall.receiveShadow = true;
+  scene.add(wall);
+
+  // Tile grid on backsplash (decorative)
+  const tileGroup = new THREE.Group();
+  for (let tx = -2; tx <= 2; tx += 0.45) {
+    for (let ty = 0; ty <= 2.2; ty += 0.45) {
+      const tileGeo = new THREE.BoxGeometry(0.4, 0.4, 0.02);
+      const tileMat = new THREE.MeshStandardMaterial({ color: '#faf6f0', roughness: 0.7, metalness: 0.05 });
+      const tile = new THREE.Mesh(tileGeo, tileMat);
+      tile.position.set(tx, ty, -1.51);
+      tile.receiveShadow = true;
+      tileGroup.add(tile);
+    }
+  }
+  scene.add(tileGroup);
+
+  // ---- STOVE ----
+  const stoveGeo = new THREE.BoxGeometry(2.2, 0.12, 1.5);
+  const stoveMat = new THREE.MeshStandardMaterial({ color: '#3d3d3d', roughness: 0.3, metalness: 0.85 });
+  const stove = new THREE.Mesh(stoveGeo, stoveMat);
+  stove.position.y = 0.06;
+  stove.receiveShadow = true;
+  stove.castShadow = true;
+  scene.add(stove);
+
+  // Burner ring
+  const burnerRingGeo = new THREE.TorusGeometry(0.5, 0.06, 16, 32);
+  const burnerRingMat = new THREE.MeshStandardMaterial({ color: '#2a2a2a', roughness: 0.2, metalness: 0.9 });
+  const burnerRing = new THREE.Mesh(burnerRingGeo, burnerRingMat);
+  burnerRing.rotation.x = -Math.PI / 2;
+  burnerRing.position.y = 0.07;
+  burnerRing.receiveShadow = true;
+  scene.add(burnerRing);
+
+  // Inner burner grate (cross pattern)
+  for (let i = 0; i < 4; i++) {
+    const grateGeo = new THREE.BoxGeometry(0.9, 0.03, 0.05);
+    const grate = new THREE.Mesh(grateGeo, burnerRingMat);
+    grate.position.y = 0.10;
+    grate.rotation.y = (i * Math.PI) / 4;
+    scene.add(grate);
+  }
+
+  // ---- PAN / POT (level-dependent) ----
+  const isFryingPan = state.currentLevel === 0;
+  const potGroup = new THREE.Group();
+
+  const rimMat = new THREE.MeshStandardMaterial({ color: '#99aabb', roughness: 0.12, metalness: 0.95 });
+  const detail = 32;
+
+  let panH, panBotR, panTopR, wallThickness, bottomThickness;
+  let panOuterMat;
+  let foodMesh, foodTop, yolkMesh, ingredientsGroup, eggWhite;
+  let foodSurfaceY;
+
+  if (isFryingPan) {
+    // ===================== FRYING PAN (Level 1) - SOLID =====================
+    panTopR = 0.82;
+    panBotR = 0.62;
+    panH = 0.28;
+    wallThickness = 0.06;
+    bottomThickness = 0.06;
+
+    // Dark non-stick coating material
+    panOuterMat = new THREE.MeshStandardMaterial({
+      color: '#3a3f47', roughness: 0.5, metalness: 0.7
+    });
+
+    // --- Solid body: single LatheGeometry profile ---
+    // Profile traces from center → outer edge → up wall → rim → inner wall → back to center
+    const rInner = panBotR - wallThickness;
+    const rOuter = panBotR;
+    const rTopInner = panTopR - wallThickness;
+    const rTopOuter = panTopR;
+    const solidCornerR = 0.06;
+
+    const bodyPoints = [];
+    // bottom center → bottom edge
+    bodyPoints.push(new THREE.Vector2(0, 0));
+    bodyPoints.push(new THREE.Vector2(rOuter - solidCornerR, 0));
+    // rounded bottom corner
+    for (let a = 0; a <= Math.PI / 2; a += Math.PI / 12) {
+      bodyPoints.push(new THREE.Vector2(
+        rOuter - solidCornerR + Math.sin(a) * solidCornerR,
+        (1 - Math.cos(a)) * solidCornerR
+      ));
+    }
+    // side wall going up (slightly tapered outward)
+    const wallSegs = 10;
+    for (let i = 1; i <= wallSegs; i++) {
+      const t = i / wallSegs;
+      const r = rOuter + (rTopOuter - rOuter) * t;
+      const y = solidCornerR + (panH - solidCornerR) * t;
+      bodyPoints.push(new THREE.Vector2(r, y));
+    }
+    // top rim: outer → inner
+    bodyPoints.push(new THREE.Vector2(rTopOuter, panH));
+    bodyPoints.push(new THREE.Vector2(rTopInner, panH));
+    // inner wall down
+    for (let i = wallSegs - 1; i >= 1; i--) {
+      const t = i / wallSegs;
+      const r = rInner + (rTopInner - rInner) * t;
+      const y = bottomThickness + (panH - bottomThickness) * t;
+      bodyPoints.push(new THREE.Vector2(r, y));
+    }
+    // inner bottom → center
+    bodyPoints.push(new THREE.Vector2(rInner, bottomThickness));
+    bodyPoints.push(new THREE.Vector2(0, bottomThickness));
+
+    const bodyGeo = new THREE.LatheGeometry(bodyPoints, 64);
+    const bodyMesh = new THREE.Mesh(bodyGeo, panOuterMat);
+    bodyMesh.castShadow = true;
+    bodyMesh.receiveShadow = true;
+    potGroup.add(bodyMesh);
+
+    // Cooking surface disc (inner bottom, darker non-stick)
+    const cookGeo = new THREE.CylinderGeometry(rInner * 0.95, rInner * 0.95, 0.015, 48);
+    const cookMat = new THREE.MeshStandardMaterial({ color: '#2c3038', roughness: 0.3, metalness: 0.35 });
+    const cookSurface = new THREE.Mesh(cookGeo, cookMat);
+    cookSurface.position.y = bottomThickness;
+    cookSurface.receiveShadow = true;
+    potGroup.add(cookSurface);
+
+    // --- Long handle (single side, extends outward) ---
+    const handleGroup = new THREE.Group();
+    const hGripMat = new THREE.MeshStandardMaterial({ color: '#2a2a2a', roughness: 0.5, metalness: 0.15 });
+
+    // Main arm
+    const armGeo = new THREE.CylinderGeometry(0.035, 0.04, 0.9, 8);
+    const arm = new THREE.Mesh(armGeo, panOuterMat);
+    arm.rotation.z = Math.PI / 2;
+    arm.position.set(0.5, 0, 0);
+    handleGroup.add(arm);
+
+    // Grip section
+    const gripGeo = new THREE.CylinderGeometry(0.042, 0.05, 0.32, 8);
+    const grip = new THREE.Mesh(gripGeo, hGripMat);
+    grip.rotation.z = Math.PI / 2;
+    grip.position.set(1.05, 0.01, 0);
+    handleGroup.add(grip);
+
+    // Rivet at connection
+    const rivetGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.06, 8);
+    const rivet = new THREE.Mesh(rivetGeo, new THREE.MeshStandardMaterial({ color: '#8899aa', roughness: 0.1, metalness: 0.95 }));
+    rivet.rotation.z = Math.PI / 2;
+    rivet.position.set(0.85, 0, 0);
+    handleGroup.add(rivet);
+
+    // Connector block
+    const connGeo = new THREE.BoxGeometry(0.15, 0.07, 0.08);
+    const conn = new THREE.Mesh(connGeo, panOuterMat);
+    conn.position.set(0.08, 0, 0);
+    handleGroup.add(conn);
+
+    handleGroup.position.y = panH * 0.55;
+    handleGroup.castShadow = true;
+    potGroup.add(handleGroup);
+
+    // ---- FOOD (flat layer inside pan) ----
+    const foodBottomY = 0.14 + bottomThickness + 0.02;
+    const foodGeo = new THREE.CylinderGeometry(panTopR - wallThickness - 0.05, panBotR - wallThickness - 0.04, 0.12, 32);
+    foodMesh = new THREE.Mesh(foodGeo, new THREE.MeshStandardMaterial({ color: '#ffe8cc', roughness: 0.5, metalness: 0.0 }));
+    foodMesh.position.y = foodBottomY + 0.06;
+    foodMesh.receiveShadow = true;
+    scene.add(foodMesh);
+
+    const foodTopGeo = new THREE.CircleGeometry(panTopR - wallThickness - 0.06, 32);
+    foodTop = new THREE.Mesh(foodTopGeo, new THREE.MeshStandardMaterial({ color: '#ffe8cc', roughness: 0.5, metalness: 0.0, side: THREE.DoubleSide }));
+    foodTop.rotation.x = -Math.PI / 2;
+    foodTop.position.y = foodMesh.position.y + 0.06;
+    foodTop.receiveShadow = true;
+    scene.add(foodTop);
+    foodSurfaceY = foodTop.position.y;
+
+    // ---- EGG YOLK (centered, larger, for fried egg) ----
+    const yolkGeo = new THREE.SphereGeometry(0.2, 32, 16);
+    yolkGeo.scale(1, 0.45, 1);
+    yolkMesh = new THREE.Mesh(yolkGeo, new THREE.MeshStandardMaterial({ color: '#ffcc33', roughness: 0.3, metalness: 0.05 }));
+    yolkMesh.position.y = foodSurfaceY + 0.02;
+    yolkMesh.visible = false;
+    yolkMesh.receiveShadow = true;
+    scene.add(yolkMesh);
+
+    // ---- INGREDIENTS CONTAINER ----
+    ingredientsGroup = new THREE.Group();
+    ingredientsGroup.position.set(0, foodSurfaceY + 0.01, 0);
+    scene.add(ingredientsGroup);
+
+    // ---- EGG WHITE RING (decorative, semi-transparent around yolk) ----
+    const whiteGeo = new THREE.TorusGeometry(0.2, 0.08, 8, 32);
+    const whiteMat = new THREE.MeshStandardMaterial({ color: '#fefefe', roughness: 0.5, metalness: 0, transparent: true, opacity: 0.85 });
+    eggWhite = new THREE.Mesh(whiteGeo, whiteMat);
+    eggWhite.rotation.x = -Math.PI / 2;
+    eggWhite.position.y = foodSurfaceY + 0.015;
+    eggWhite.visible = false;
+    eggWhite.receiveShadow = true;
+    scene.add(eggWhite);
+
+  } else {
+    // ===================== DEEP POT (Levels 2-3) =====================
+    panTopR = 0.62;
+    panBotR = 0.40;
+    panH = 0.68;
+    wallThickness = 0.06;
+    bottomThickness = 0.05;
+
+    panOuterMat = new THREE.MeshStandardMaterial({
+      color: '#8899aa', roughness: 0.18, metalness: 0.92
+    });
+
+    // --- Solid body: single LatheGeometry profile ---
+    const rOuterB = panBotR;
+    const rInnerB = panBotR - wallThickness;
+    const rOuterT = panTopR;
+    const rInnerT = panTopR - wallThickness;
+    const solidCornerR = 0.06;
+
+    const bodyPoints = [];
+    // bottom center → bottom edge
+    bodyPoints.push(new THREE.Vector2(0, 0));
+    bodyPoints.push(new THREE.Vector2(rOuterB - solidCornerR, 0));
+    // rounded bottom corner
+    for (let a = 0; a <= Math.PI / 2; a += Math.PI / 12) {
+      bodyPoints.push(new THREE.Vector2(
+        rOuterB - solidCornerR + Math.sin(a) * solidCornerR,
+        (1 - Math.cos(a)) * solidCornerR
+      ));
+    }
+    // side wall going up
+    const wallSegs = 12;
+    for (let i = 1; i <= wallSegs; i++) {
+      const t = i / wallSegs;
+      const r = rOuterB + (rOuterT - rOuterB) * t;
+      const y = solidCornerR + (panH - solidCornerR) * t;
+      bodyPoints.push(new THREE.Vector2(r, y));
+    }
+    // top rim: outer → inner
+    bodyPoints.push(new THREE.Vector2(rOuterT, panH));
+    bodyPoints.push(new THREE.Vector2(rInnerT, panH));
+    // inner wall down
+    for (let i = wallSegs - 1; i >= 1; i--) {
+      const t = i / wallSegs;
+      const r = rInnerB + (rInnerT - rInnerB) * t;
+      const y = bottomThickness + (panH - bottomThickness) * t;
+      bodyPoints.push(new THREE.Vector2(r, y));
+    }
+    // inner bottom → center
+    bodyPoints.push(new THREE.Vector2(rInnerB, bottomThickness));
+    bodyPoints.push(new THREE.Vector2(0, bottomThickness));
+
+    const bodyGeo = new THREE.LatheGeometry(bodyPoints, 64);
+    const bodyMesh = new THREE.Mesh(bodyGeo, panOuterMat);
+    bodyMesh.castShadow = true;
+    bodyMesh.receiveShadow = true;
+    potGroup.add(bodyMesh);
+
+    // Inner bottom disc (darker cooking surface)
+    const cookGeo = new THREE.CylinderGeometry(rInnerB * 0.92, rInnerB * 0.92, 0.015, 48);
+    const cookMat = new THREE.MeshStandardMaterial({ color: '#555f68', roughness: 0.45, metalness: 0.5 });
+    const cookSurface = new THREE.Mesh(cookGeo, cookMat);
+    cookSurface.position.y = bottomThickness;
+    cookSurface.receiveShadow = true;
+    potGroup.add(cookSurface);
+
+    // Handles (both sides)
+    for (let side = -1; side <= 1; side += 2) {
+      const handleGroup = new THREE.Group();
+      const handleBarGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.35, 8);
+      const handleBar = new THREE.Mesh(handleBarGeo, rimMat);
+      handleBar.rotation.z = Math.PI / 2;
+      handleBar.position.set(side * 0.18, 0, 0);
+      handleGroup.add(handleBar);
+
+      const gripGeo = new THREE.CylinderGeometry(0.045, 0.05, 0.22, 8);
+      const gripMesh = new THREE.Mesh(gripGeo, new THREE.MeshStandardMaterial({ color: '#2a2a2a', roughness: 0.6, metalness: 0.1 }));
+      gripMesh.rotation.z = Math.PI / 2;
+      gripMesh.position.set(side * 0.40, 0, 0);
+      handleGroup.add(gripMesh);
+
+      const bracketGeo = new THREE.CylinderGeometry(0.03, 0.04, 0.08, 8);
+      const bracket = new THREE.Mesh(bracketGeo, rimMat);
+      bracket.rotation.z = Math.PI / 2;
+      bracket.position.set(side * 0.28, 0.05, 0);
+      handleGroup.add(bracket);
+
+      const bracket2Geo = new THREE.CylinderGeometry(0.04, 0.03, 0.08, 8);
+      const bracket2 = new THREE.Mesh(bracket2Geo, rimMat);
+      bracket2.rotation.z = Math.PI / 2;
+      bracket2.position.set(side * 0.10, 0.05, 0);
+      handleGroup.add(bracket2);
+
+      handleGroup.position.y = panH * 0.58;
+      handleGroup.castShadow = true;
+      potGroup.add(handleGroup);
+    }
+
+    // Lid
+    const lidGroup = new THREE.Group();
+    const lidTopGeo = new THREE.CylinderGeometry(panTopR + 0.06, panTopR + 0.06, 0.04, 48);
+    lidGroup.add(new THREE.Mesh(lidTopGeo, rimMat));
+    const lidKnobGeo = new THREE.SphereGeometry(0.06, 16, 8);
+    const lidKnob = new THREE.Mesh(lidKnobGeo, rimMat);
+    lidKnob.position.y = 0.05;
+    lidGroup.add(lidKnob);
+    const lidKnobStemGeo = new THREE.CylinderGeometry(0.025, 0.03, 0.06, 8);
+    const lidKnobStem = new THREE.Mesh(lidKnobStemGeo, rimMat);
+    lidKnobStem.position.y = 0.02;
+    lidGroup.add(lidKnobStem);
+    lidGroup.position.set(0.75, panH + 0.2, -0.35);
+    lidGroup.rotation.z = -0.35;
+    lidGroup.rotation.x = -0.4;
+    lidGroup.castShadow = true;
+    potGroup.add(lidGroup);
+
+    // ---- FOOD (inside deep pot) ----
+    const foodBottomY = 0.14 + bottomThickness;
+    const foodGeo = new THREE.CylinderGeometry(panTopR - wallThickness - 0.02, (panBotR - wallThickness) - 0.02, 0.3, 32);
+    foodMesh = new THREE.Mesh(foodGeo, new THREE.MeshStandardMaterial({ color: '#ffe8cc', roughness: 0.5, metalness: 0.0 }));
+    foodMesh.position.y = foodBottomY + 0.15;
+    foodMesh.receiveShadow = true;
+    scene.add(foodMesh);
+
+    const foodTopGeo = new THREE.CircleGeometry(panTopR - wallThickness - 0.04, 32);
+    foodTop = new THREE.Mesh(foodTopGeo, new THREE.MeshStandardMaterial({ color: '#ffe8cc', roughness: 0.5, metalness: 0.0, side: THREE.DoubleSide }));
+    foodTop.rotation.x = -Math.PI / 2;
+    foodTop.position.y = foodMesh.position.y + 0.15;
+    foodTop.receiveShadow = true;
+    scene.add(foodTop);
+    foodSurfaceY = foodTop.position.y;
+
+    // ---- EGG YOLK dummy (not used for levels 2-3) ----
+    const yolkGeo = new THREE.SphereGeometry(0.15, 32, 16);
+    yolkGeo.scale(1, 0.55, 1);
+    yolkMesh = new THREE.Mesh(yolkGeo, new THREE.MeshStandardMaterial({ color: '#ffcc33', roughness: 0.3, metalness: 0.05 }));
+    yolkMesh.position.y = foodSurfaceY + 0.02;
+    yolkMesh.visible = false;
+    yolkMesh.receiveShadow = true;
+    scene.add(yolkMesh);
+
+    // ---- INGREDIENTS CONTAINER ----
+    ingredientsGroup = new THREE.Group();
+    ingredientsGroup.position.set(0, foodSurfaceY + 0.01, 0);
+    scene.add(ingredientsGroup);
+  }
+
+  potGroup.position.set(0, 0.14, 0);
+  scene.add(potGroup);
+
+  // ---- INGREDIENT DROP ANIMATIONS ----
+  const ingredientAnimations = []; // { mesh, startY, targetY, speed, elapsed }
+
+  // ---- FLAME SYSTEM ----
+  const flameGroup = new THREE.Group();
+  const flameMeshes = [];
+  const flameCount = 16;
+  for (let i = 0; i < flameCount; i++) {
+    const angle = (i / flameCount) * Math.PI * 2;
+    const radius = 0.25 + Math.random() * 0.2;
+
+    // Flame body
+    const flameH = 0.15 + Math.random() * 0.25;
+    const flameGeo = new THREE.ConeGeometry(0.04, flameH, 8, 4);
+    const flameMat = new THREE.MeshBasicMaterial({ color: '#ff6b20', transparent: true, opacity: 0.9 });
+    const flame = new THREE.Mesh(flameGeo, flameMat);
+    flame.position.set(Math.cos(angle) * radius, flameH / 2, Math.sin(angle) * radius);
+    flame.userData = { baseY: flameH / 2, baseH: flameH, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 1.5, radius, angle };
+    flameGroup.add(flame);
+    flameMeshes.push(flame);
+
+    // Inner flame (brighter)
+    const innerGeo = new THREE.ConeGeometry(0.022, flameH * 0.6, 8, 4);
+    const innerMat = new THREE.MeshBasicMaterial({ color: '#ffdd44', transparent: true, opacity: 0.95 });
+    const innerFlame = new THREE.Mesh(innerGeo, innerMat);
+    innerFlame.position.copy(flame.position);
+    innerFlame.position.y *= 0.5;
+    innerFlame.userData = { ...flame.userData, inner: true };
+    flameGroup.add(innerFlame);
+    flameMeshes.push(innerFlame);
+  }
+
+  // Point light from flames
+  const flameLight = new THREE.PointLight('#ff8844', 3, 3);
+  flameLight.position.y = 0.08;
+  flameGroup.add(flameLight);
+
+  flameGroup.position.y = 0.06;
+  scene.add(flameGroup);
+
+  // ---- STEAM PARTICLE SYSTEM ----
+  const steamCount = 80;
+  const steamGeo = new THREE.BufferGeometry();
+  const steamPositions = new Float32Array(steamCount * 3);
+  const steamSizes = new Float32Array(steamCount);
+  const steamLifetimes = new Float32Array(steamCount);
+
+  for (let i = 0; i < steamCount; i++) {
+    resetSteamParticle(i, steamPositions, steamSizes, steamLifetimes);
+  }
+
+  steamGeo.setAttribute('position', new THREE.BufferAttribute(steamPositions, 3));
+  steamGeo.setAttribute('size', new THREE.BufferAttribute(steamSizes, 1));
+
+  // Create a circular steam sprite texture
+  const steamCanvas = document.createElement('canvas');
+  steamCanvas.width = 32;
+  steamCanvas.height = 32;
+  const ctx = steamCanvas.getContext('2d');
+  const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gradient.addColorStop(0, 'rgba(255,255,255,0.6)');
+  gradient.addColorStop(0.4, 'rgba(255,255,255,0.25)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 32, 32);
+  const steamTexture = new THREE.CanvasTexture(steamCanvas);
+
+  const steamMat = new THREE.PointsMaterial({
+    map: steamTexture,
+    blending: THREE.NormalBlending,
+    depthWrite: false,
+    transparent: true,
+    opacity: 0.5,
+    color: '#ffffff',
+  });
+
+  const steamPoints = new THREE.Points(steamGeo, steamMat);
+  steamPoints.position.y = panH + 0.14;
+  scene.add(steamPoints);
+
+  // ---- STORE REFERENCES ----
+  threeData = {
+    renderer, scene, camera, controls,
+    pot: potGroup,
+    food: foodMesh,
+    foodTop,
+    eggYolk: yolkMesh,
+    eggWhite: isFryingPan ? eggWhite : null,
+    ingredients: ingredientsGroup,
+    ingredientAnims: ingredientAnimations,
+    foodSurfaceY,
+    panH,
+    isFryingPan,
+    flames: { group: flameGroup, meshes: flameMeshes, light: flameLight },
+    steam: { points: steamPoints, positions: steamPositions, sizes: steamSizes, lifetimes: steamLifetimes },
+    animationId: null,
+    animations: [],
+  };
+
+  // ---- ANIMATION LOOP ----
+  function animate() {
+    threeData.animationId = requestAnimationFrame(animate);
+    controls.update();
+    update3DScene();
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // ---- RESIZE HANDLER ----
+  const resizeHandler = () => {
+    if (!threeData) return;
+    const w2 = wrap.clientWidth;
+    const h2 = Math.max(400, wrap.clientHeight);
+    renderer.setSize(w2, h2);
+    camera.aspect = w2 / h2;
+    camera.updateProjectionMatrix();
+  };
+  window.addEventListener('resize', resizeHandler);
+  threeData._resizeHandler = resizeHandler;
+}
+
+function resetSteamParticle(i, positions, sizes, lifetimes) {
+  const angle = Math.random() * Math.PI * 2;
+  const r = Math.random() * 0.4;
+  positions[i * 3] = Math.cos(angle) * r;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 1.5; // spread vertically
+  positions[i * 3 + 2] = Math.sin(angle) * r;
+  sizes[i] = 0.05 + Math.random() * 0.2;
+  lifetimes[i] = 1.5 + Math.random() * 2.5;
+}
+
+// ===================== INGREDIENT 3D MODELS =====================
+
+function createIngredientModel(id) {
+  const build = (matOpts, geoFn) => {
+    const m = new THREE.MeshStandardMaterial(matOpts);
+    const g = geoFn();
+    const mesh = new THREE.Mesh(g, m);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    return mesh;
+  };
+
+  const group = new THREE.Group();
+  group.userData.type = id;
+
+  // Pool of shared materials to reduce memory
+  const matCache = {};
+  const getMat = (color, opts = {}) => {
+    const key = color + JSON.stringify(opts);
+    if (!matCache[key]) {
+      matCache[key] = new THREE.MeshStandardMaterial({
+        color, roughness: opts.roughness ?? 0.4, metalness: opts.metalness ?? 0.05,
+        transparent: opts.transparent ?? false, opacity: opts.opacity ?? 1,
+      });
+    }
+    return matCache[key];
+  };
+
+  switch (id) {
+    // ---- LIQUIDS: flat discs with slight thickness ----
+    case 'oil':
+    case 'soy':
+    case 'vinegar':
+    case 'water':
+    case 'chili':
+    case 'cream': {
+      const liquidColors = {
+        oil: '#f0c040', soy: '#3a1a08', vinegar: '#d4c090',
+        water: '#88bbee', chili: '#cc2200', cream: '#faf8f4',
+      };
+      const isTransparent = (id === 'water');
+      const mat = getMat(liquidColors[id], {
+        roughness: 0.25, transparent: isTransparent, opacity: isTransparent ? 0.65 : 1,
+      });
+      // Splash puddle
+      const discGeo = new THREE.CylinderGeometry(0.07, 0.11, 0.03, 16);
+      const disc = new THREE.Mesh(discGeo, mat);
+      disc.position.y = 0.015;
+      group.add(disc);
+
+      // Subtle edge highlight ring
+      const ringGeo = new THREE.TorusGeometry(0.09, 0.012, 8, 16);
+      ringGeo.rotateX(Math.PI / 2);
+      const ring = new THREE.Mesh(ringGeo, getMat(liquidColors[id], { roughness: 0.15 }));
+      ring.position.y = 0.02;
+      group.add(ring);
+      break;
+    }
+
+    // ---- EGG: white + yolk ----
+    case 'egg': {
+      const whiteGeo = new THREE.SphereGeometry(0.09, 24, 12);
+      whiteGeo.scale(1, 0.5, 1);
+      const white = new THREE.Mesh(whiteGeo, getMat('#faf8f2', { roughness: 0.2 }));
+      white.position.y = 0.02;
+      group.add(white);
+
+      const miniYolkGeo = new THREE.SphereGeometry(0.04, 16, 8);
+      miniYolkGeo.scale(1, 0.45, 1);
+      const miniYolk = new THREE.Mesh(miniYolkGeo, getMat('#ffaa22', { roughness: 0.15 }));
+      miniYolk.position.y = 0.035;
+      group.add(miniYolk);
+      break;
+    }
+
+    // ---- SALT / SUGAR: tiny white crystals ----
+    case 'salt':
+    case 'sugar': {
+      const color = id === 'salt' ? '#f8f8ff' : '#fffef5';
+      const count = id === 'salt' ? 10 : 8;
+      for (let i = 0; i < count; i++) {
+        const size = 0.015 + Math.random() * 0.02;
+        const geo = new THREE.BoxGeometry(size, size * (0.6 + Math.random() * 0.8), size);
+        const grain = new THREE.Mesh(geo, getMat(color, { roughness: 0.5 }));
+        // Random position in a small cluster
+        grain.position.set(
+          (Math.random() - 0.5) * 0.15,
+          0.01 + Math.random() * 0.02,
+          (Math.random() - 0.5) * 0.15,
+        );
+        grain.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+        group.add(grain);
+      }
+      break;
+    }
+
+    // ---- PEPPER: dark brown specks ----
+    case 'pepper': {
+      for (let i = 0; i < 14; i++) {
+        const size = 0.01 + Math.random() * 0.018;
+        const geo = new THREE.SphereGeometry(size, 6, 4);
+        const grain = new THREE.Mesh(geo, getMat('#3a2010', { roughness: 0.6 }));
+        grain.position.set(
+          (Math.random() - 0.5) * 0.15,
+          0.005 + Math.random() * 0.015,
+          (Math.random() - 0.5) * 0.15,
+        );
+        group.add(grain);
+      }
+      break;
+    }
+
+    // ---- GARLIC: cloves ----
+    case 'garlic': {
+      for (let i = 0; i < 5; i++) {
+        const geo = new THREE.SphereGeometry(0.03, 12, 8);
+        geo.scale(0.7, 1.2, 0.7);
+        const clove = new THREE.Mesh(geo, getMat('#f5f0e8', { roughness: 0.45 }));
+        clove.position.set(
+          (Math.random() - 0.5) * 0.12,
+          0.02 + Math.random() * 0.03,
+          (Math.random() - 0.5) * 0.12,
+        );
+        clove.rotation.set(Math.random() * 0.8, Math.random() * Math.PI, Math.random() * 0.8);
+        group.add(clove);
+      }
+      break;
+    }
+
+    // ---- BUTTER: yellow block ----
+    case 'butter': {
+      const geo = new THREE.BoxGeometry(0.09, 0.04, 0.07);
+      const block = new THREE.Mesh(geo, getMat('#ffe866', { roughness: 0.3 }));
+      block.position.y = 0.02;
+      block.rotation.z = 0.05;
+      group.add(block);
+
+      // Small melting edge
+      const meltGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.015, 8);
+      const melt = new THREE.Mesh(meltGeo, getMat('#ffe866', { roughness: 0.25 }));
+      melt.position.y = 0.005;
+      melt.position.x = 0.03;
+      group.add(melt);
+      break;
+    }
+
+    // ---- TOMATO: red round fruit ----
+    case 'tomato': {
+      const geo = new THREE.SphereGeometry(0.07, 20, 14);
+      const body = new THREE.Mesh(geo, getMat('#ee3333', { roughness: 0.15 }));
+      body.position.y = 0.035;
+      group.add(body);
+
+      // Green stem
+      const stemGeo = new THREE.CylinderGeometry(0.015, 0.02, 0.03, 8);
+      const stem = new THREE.Mesh(stemGeo, getMat('#4a8c3f', { roughness: 0.5 }));
+      stem.position.y = 0.075;
+      group.add(stem);
+
+      // Stem leaves
+      for (let i = 0; i < 3; i++) {
+        const leafGeo = new THREE.ConeGeometry(0.02, 0.025, 4);
+        const leaf = new THREE.Mesh(leafGeo, getMat('#4a8c3f', { roughness: 0.5 }));
+        const a = (i / 3) * Math.PI * 2;
+        leaf.position.set(Math.cos(a) * 0.03, 0.07, Math.sin(a) * 0.03);
+        leaf.rotation.z = 0.8;
+        leaf.rotation.y = a;
+        group.add(leaf);
+      }
+      break;
+    }
+
+    // ---- CHEESE: pale yellow block ----
+    case 'cheese': {
+      const geo = new THREE.BoxGeometry(0.08, 0.05, 0.06);
+      const block = new THREE.Mesh(geo, getMat('#ffcc00', { roughness: 0.3 }));
+      block.position.y = 0.025;
+      group.add(block);
+
+      // Perforation holes
+      for (let i = 0; i < 5; i++) {
+        const holeGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.001, 8);
+        const hole = new THREE.Mesh(holeGeo, getMat('#e6b800', { roughness: 0.4 }));
+        hole.position.set(
+          (Math.random() - 0.5) * 0.06,
+          0.04,
+          (Math.random() - 0.5) * 0.04,
+        );
+        hole.rotation.x = Math.random() * 0.3;
+        group.add(hole);
+      }
+      break;
+    }
+
+    // ---- HERB: green leaf fragments ----
+    case 'herb': {
+      for (let i = 0; i < 7; i++) {
+        const leafGeo = new THREE.PlaneGeometry(0.03, 0.05);
+        const leaf = new THREE.Mesh(leafGeo, getMat('#44aa33', { roughness: 0.5 }));
+        leaf.position.set(
+          (Math.random() - 0.5) * 0.14,
+          0.01 + Math.random() * 0.02,
+          (Math.random() - 0.5) * 0.14,
+        );
+        leaf.rotation.set(
+          -Math.PI / 2 + Math.random() * 0.6,
+          Math.random() * Math.PI,
+          Math.random() * 0.5,
+        );
+        group.add(leaf);
+      }
+      break;
+    }
+
+    default:
+      // fallback: simple colored sphere
+      const fbGeo = new THREE.SphereGeometry(0.06, 12, 8);
+      group.add(new THREE.Mesh(fbGeo, getMat('#aaccee')));
+      break;
+  }
+
+  return group;
+}
+
+function spawnIngredient(id) {
+  if (!threeData) return;
+
+  const dropHeight = 2.2; // spawn above the pot
+  const targetY = 0; // relative to ingredientsGroup
+  const model = createIngredientModel(id);
+
+  // Random XZ offset within pot
+  const radius = THREE.MathUtils.randFloat(0, 0.35);
+  const angle = Math.random() * Math.PI * 2;
+  model.position.set(Math.cos(angle) * radius, dropHeight, Math.sin(angle) * radius);
+
+  threeData.ingredients.add(model);
+  threeData.ingredientAnims.push({
+    mesh: model,
+    startY: dropHeight,
+    targetY,
+    speed: 0,
+    elapsed: 0,
+    duration: 0.5 + Math.random() * 0.3,
+  });
+}
+
+// ===================== 3D ACTION ANIMATIONS =====================
+
+function triggerFlipAnimation() {
+  if (!threeData) return;
+  // Don't stack multiple flips
+  if (threeData.animations.some(a => a.type === 'flip')) return;
+
+  threeData.animations.push({
+    type: 'flip',
+    elapsed: 0,
+    duration: 0.9,
+    yolkBaseY: threeData.eggYolk.position.y,
+    yolkBaseVisible: threeData.eggYolk.visible,
+    whiteBaseY: threeData.eggWhite ? threeData.eggWhite.position.y : 0,
+    panBaseRotZ: threeData.pot.rotation.z,
+  });
+}
+
+function triggerStirAnimation() {
+  if (!threeData) return;
+  // Don't stack multiple stirs
+  if (threeData.animations.some(a => a.type === 'stir')) return;
+
+  // Create spoon on first stir
+  if (!threeData.stirSpoon) {
+    const spoonGroup = new THREE.Group();
+
+    // Handle — wooden cylinder
+    const handleGeo = new THREE.CylinderGeometry(0.018, 0.022, 0.85, 8);
+    const handleMat = new THREE.MeshStandardMaterial({ color: '#C4956A', roughness: 0.55, metalness: 0.05 });
+    const handle = new THREE.Mesh(handleGeo, handleMat);
+    handle.position.y = 0.42;
+    spoonGroup.add(handle);
+
+    // Neck — thin metal connector
+    const neckGeo = new THREE.CylinderGeometry(0.015, 0.018, 0.08, 8);
+    const neckMat = new THREE.MeshStandardMaterial({ color: '#B0B8C0', roughness: 0.2, metalness: 0.9 });
+    const neck = new THREE.Mesh(neckGeo, neckMat);
+    neck.position.y = 0.06;
+    spoonGroup.add(neck);
+
+    // Bowl — flattened sphere
+    const bowlGeo = new THREE.SphereGeometry(0.065, 16, 10);
+    bowlGeo.scale(1, 0.3, 0.75);
+    const bowlMat = new THREE.MeshStandardMaterial({ color: '#C8D0D8', roughness: 0.18, metalness: 0.92 });
+    const bowl = new THREE.Mesh(bowlGeo, bowlMat);
+    bowl.position.y = 0.03;
+    spoonGroup.add(bowl);
+
+    spoonGroup.castShadow = true;
+    spoonGroup.visible = false;
+    threeData.scene.add(spoonGroup);
+    threeData.stirSpoon = spoonGroup;
+  }
+
+  threeData.stirSpoon.visible = true;
+  const potTopY = 0.14 + threeData.panH;
+
+  // Position spoon tilted above the pot
+  threeData.stirSpoon.position.set(0.1, potTopY + 0.55, -0.25);
+  threeData.stirSpoon.rotation.set(0.15, 0, 0);
+
+  threeData.animations.push({
+    type: 'stir',
+    elapsed: 0,
+    duration: 1.35,
+    spoonTopY: potTopY + 0.55,
+    spoonInY: 0.14 + (threeData.isFryingPan ? 0.06 : threeData.panH * 0.28),
+  });
+}
+
+function update3DScene() {
+  if (!threeData || state.phase !== 'playing') return;
+
+  const d = state.dish;
+  const lv = LEVELS[state.currentLevel];
+  const time = performance.now() * 0.001;
+  const dt = 0.016;
+
+  // ---- PROCESS 3D ACTION ANIMATIONS (FLIP / STIR) ----
+  if (threeData.animations.length > 0) {
+    for (let i = threeData.animations.length - 1; i >= 0; i--) {
+      const anim = threeData.animations[i];
+      anim.elapsed += dt;
+      const t = Math.min(1, anim.elapsed / anim.duration);
+
+      if (anim.type === 'flip') {
+        // --- Pan tilt (rock forward to toss, return to level) ---
+        let panRotZ;
+        if (t < 0.10) {
+          // Wind-up: slight backward tilt
+          panRotZ = -(t / 0.10) * 0.22;
+        } else if (t < 0.28) {
+          // Launch: snap forward
+          const lt = (t - 0.10) / 0.18;
+          panRotZ = -0.22 + lt * 0.52;
+        } else if (t < 0.60) {
+          // Return to level
+          const rt = (t - 0.28) / 0.32;
+          panRotZ = 0.30 * (1 - rt * rt);
+        } else {
+          panRotZ = 0;
+        }
+        threeData.pot.rotation.z = anim.panBaseRotZ + panRotZ;
+
+        // --- Egg flight: rise → 180° flip in air → land ---
+        let eggY, eggRotX;
+        if (t < 0.16) {
+          // Rising with pan toss
+          const rt = t / 0.16;
+          eggY = anim.yolkBaseY + rt * 1.3;
+          eggRotX = 0;
+        } else if (t < 0.58) {
+          // Mid-air: hover + full 180° rotation
+          const at = (t - 0.16) / 0.42;
+          eggY = anim.yolkBaseY + 1.3 + Math.sin(at * Math.PI) * 0.25;
+          eggRotX = at * Math.PI;
+        } else if (t < 0.80) {
+          // Falling back down
+          const ft = (t - 0.58) / 0.22;
+          const ease = ft * ft;
+          eggY = anim.yolkBaseY + 1.3 - ease * 1.3;
+          eggRotX = Math.PI;
+        } else {
+          // Settle in pan
+          eggY = anim.yolkBaseY;
+          eggRotX = Math.PI;
+        }
+
+        threeData.eggYolk.position.y = eggY;
+        threeData.eggYolk.rotation.x = eggRotX;
+        if (threeData.eggWhite) {
+          threeData.eggWhite.position.y = eggY - 0.01;
+          threeData.eggWhite.rotation.x = eggRotX;
+        }
+
+        // Cleanup
+        if (t >= 1) {
+          threeData.pot.rotation.z = anim.panBaseRotZ;
+          threeData.eggYolk.position.y = anim.yolkBaseY;
+          threeData.eggYolk.rotation.x = 0;
+          if (threeData.eggWhite) {
+            threeData.eggWhite.position.y = anim.whiteBaseY;
+            threeData.eggWhite.rotation.x = 0;
+          }
+          threeData.animations.splice(i, 1);
+        }
+      } else if (anim.type === 'stir') {
+        const spoon = threeData.stirSpoon;
+        if (!spoon) { threeData.animations.splice(i, 1); continue; }
+
+        if (t < 0.14) {
+          // Descend into pot
+          const dt2 = t / 0.14;
+          const ease = dt2 * dt2 * (3 - 2 * dt2); // smoothstep
+          spoon.position.y = anim.spoonTopY + (anim.spoonInY - anim.spoonTopY) * ease;
+          spoon.position.x = 0.1 * (1 - dt2);
+          spoon.position.z = -0.25 * (1 - dt2);
+          spoon.rotation.set(0.15 * (1 - dt2), 0, 0);
+        } else if (t < 0.78) {
+          // Stirring: circular figure-8 pattern
+          const st = (t - 0.14) / 0.64;
+          const cycles = 3.5;
+          const angle = st * Math.PI * 2 * cycles;
+          const radius = threeData.isFryingPan ? 0.22 : 0.18;
+          spoon.position.y = anim.spoonInY + Math.sin(st * Math.PI * 8) * 0.015;
+          spoon.position.x = Math.cos(angle) * radius;
+          spoon.position.z = Math.sin(angle) * radius * 0.65;
+          spoon.rotation.y = angle + Math.PI / 2;
+          spoon.rotation.z = 0.2;
+          spoon.rotation.x = 0.05;
+
+          // Swirl the ingredients
+          if (threeData.ingredients) {
+            threeData.ingredients.rotation.y += dt * 4.5;
+          }
+        } else if (t < 0.92) {
+          // Lift out
+          const lt = (t - 0.78) / 0.14;
+          const ease = lt * lt * (3 - 2 * lt);
+          spoon.position.y = anim.spoonInY + (anim.spoonTopY - anim.spoonInY) * ease;
+          spoon.position.x *= (1 - ease);
+          spoon.position.z *= (1 - ease);
+          spoon.rotation.set(0.15 * ease, 0, 0);
+        }
+
+        // Cleanup
+        if (t >= 1) {
+          spoon.visible = false;
+          threeData.animations.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  // ---- UPDATE FLAMES ----
+  const heatNorm = state.heatLevel / 10;
+  const { meshes, light } = threeData.flames;
+
+  meshes.forEach((m) => {
+    const ud = m.userData;
+    const wobble = Math.sin(time * ud.speed * 3 + ud.phase) * 0.4;
+    const scaleY = (0.4 + heatNorm * 1.6) * (0.7 + wobble * 0.3);
+    m.scale.y = Math.max(0.05, scaleY);
+    m.scale.x = 0.5 + heatNorm * 1 + wobble * 0.3;
+    m.scale.z = 0.5 + heatNorm * 1 + wobble * 0.3;
+    // Adjust position to keep base at burner level
+    const h = ud.baseH * scaleY;
+    if (ud.inner) {
+      m.position.y = h * 0.25;
+    } else {
+      m.position.y = h * 0.4;
+    }
+    // Bob slightly
+    m.position.x = Math.cos(ud.angle) * (ud.radius + wobble * 0.08);
+    m.position.z = Math.sin(ud.angle) * (ud.radius + wobble * 0.08);
+
+    // Color shift based on heat
+    if (heatNorm > 0.7) {
+      m.material.color.setHex(ud.inner ? 0xffcc00 : 0xff4400);
+    } else if (heatNorm > 0.3) {
+      m.material.color.setHex(ud.inner ? 0xffdd44 : 0xff6b20);
+    } else {
+      m.material.color.setHex(ud.inner ? 0xffee88 : 0xff8844);
+    }
+    m.material.opacity = 0.4 + heatNorm * 0.55;
+  });
+
+  light.intensity = 1 + heatNorm * 5;
+  light.color.setHex(heatNorm > 0.7 ? 0xff6622 : 0xff9944);
+
+  // ---- UPDATE FOOD COLOR ----
+  const doneness = d.doneness;
+  let foodColor;
+  if (doneness < 30) foodColor = new THREE.Color('#ffe8cc');
+  else if (doneness < 50) foodColor = new THREE.Color('#f5d090');
+  else if (doneness < 70) foodColor = new THREE.Color('#e0b850');
+  else if (doneness < 85) foodColor = new THREE.Color('#c49030');
+  else if (doneness < 95) foodColor = new THREE.Color('#8b5e20');
+  else foodColor = new THREE.Color('#3e2010');
+
+  threeData.food.material.color.copy(foodColor);
+  threeData.foodTop.material.color.copy(foodColor);
+
+  // ---- UPDATE EGG YOLK & WHITE ----
+  if (state.currentLevel === 0 && doneness > 10) {
+    threeData.eggYolk.visible = true;
+    if (threeData.eggWhite) threeData.eggWhite.visible = true;
+    // Yolk darkens as it cooks
+    const yolkT = Math.min(1, (doneness - 10) / 75);
+    const yr = 1 - yolkT * 0.35;
+    const yg = 0.8 - yolkT * 0.5;
+    const yb = 0.2 - yolkT * 0.15;
+    threeData.eggYolk.material.color.setRGB(yr, yg, yb);
+    // Flatten more as it cooks
+    threeData.eggYolk.scale.y = 0.45 - yolkT * 0.25;
+    // White also darkens slightly
+    if (threeData.eggWhite) {
+      threeData.eggWhite.material.color.setRGB(1 - yolkT * 0.2, 1 - yolkT * 0.25, 1 - yolkT * 0.4);
+    }
+  } else {
+    threeData.eggYolk.visible = false;
+    if (threeData.eggWhite) threeData.eggWhite.visible = false;
+  }
+
+  // ---- UPDATE STEAM ----
+  const temp = d.temperature;
+  const { points, positions, sizes, lifetimes } = threeData.steam;
+  const steamIntensity = Math.max(0, (temp - 110) / 140);
+
+  for (let i = 0; i < positions.length / 3; i++) {
+    lifetimes[i] -= 0.016;
+    if (lifetimes[i] <= 0 || temp < 115) {
+      if (temp >= 115 && Math.random() < steamIntensity * 0.3) {
+        resetSteamParticle(i, positions, sizes, lifetimes);
+        positions[i * 3 + 1] = -0.3; // start at pot surface
+      } else {
+        // Hide below
+        positions[i * 3 + 1] = -10;
+        sizes[i] = 0;
+      }
+    } else {
+      // Rise and drift
+      positions[i * 3 + 1] += 0.008 + steamIntensity * 0.025;
+      positions[i * 3] += (Math.sin(time * 2 + i) * 0.003);
+      positions[i * 3 + 2] += (Math.cos(time * 2.5 + i) * 0.003);
+      sizes[i] *= 1.003; // expand slightly
+    }
+  }
+
+  points.geometry.attributes.position.needsUpdate = true;
+  points.geometry.attributes.size.needsUpdate = true;
+  points.material.opacity = 0.25 + steamIntensity * 0.4;
+
+  // ---- POT BOBBING (subtle, when cooking) ----
+  if (heatNorm > 0.2) {
+    threeData.pot.position.y = 0.14 + Math.sin(time * 4) * heatNorm * 0.015;
+  }
+
+  // ---- INGREDIENT DROP ANIMATIONS ----
+  const anims = threeData.ingredientAnims;
+  for (let i = anims.length - 1; i >= 0; i--) {
+    const a = anims[i];
+    a.elapsed += dt;
+    const t = Math.min(1, a.elapsed / a.duration);
+    // Ease in cubic
+    const eased = t * t * t;
+    a.mesh.position.y = a.startY + (a.targetY - a.startY) * eased;
+    if (t >= 1) {
+      a.mesh.position.y = a.targetY;
+      // Landing bounce
+      a.mesh.scale.set(1.15, 0.85, 1.15);
+      anims.splice(i, 1);
+      // Scale bounce-back
+      setTimeout(() => {
+        if (a.mesh) {
+          a.mesh.scale.set(1, 1, 1);
+        }
+      }, 120);
+    }
+  }
+}
+
+function destroyThreeJS() {
+  if (threeData) {
+    cancelAnimationFrame(threeData.animationId);
+    if (threeData._resizeHandler) {
+      window.removeEventListener('resize', threeData._resizeHandler);
+    }
+    // Dispose geometries and materials
+    threeData.scene.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach(m => m.dispose());
+        } else {
+          obj.material.dispose();
+        }
+      }
+    });
+    threeData.renderer.dispose();
+    threeData.renderer.domElement.remove();
+    threeData = null;
+  }
+}
+
+// ===================== INIT =====================
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderMenu();
+});
+
+// Expose functions to global scope (required for inline onclick with type="module")
+window.startLevel = startLevel;
+window.restartLevel = restartLevel;
+window.goToMenu = goToMenu;
+window.tasteTest = tasteTest;
+window.submitDish = submitDish;
+window.setHeat = setHeat;
+window.useCard = useCard;
+</script>
+</body>
+</html>
