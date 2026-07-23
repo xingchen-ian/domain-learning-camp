@@ -4,6 +4,8 @@ gamedesignfinal-thu/
 
 # ChatCut working files / proxies (site uses summary/media/showreel.mp4)
 chatcut-showreel/
+# Keep gameplay clip builders tracked if needed later — ignore local venv
+chatcut-showreel/.venv/
 
 # OS / editor
 .DS_Store

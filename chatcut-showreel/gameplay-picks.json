@@ -1,0 +1,551 @@
+[
+  {
+    "stem": "02-A-Skating-Novice--Sihan-Lyu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/A Skating Novice_by Sihan Lyu/screen recording.mp4",
+    "duration": 136.65,
+    "proxy_start": 90.6,
+    "clip_start": 98.6,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "03-Hue-Keeper--Amy-Fang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Amy Fang-Hue Keeper/Hue Keeper Level1-3.mp4",
+    "duration": 228.8,
+    "proxy_start": 46.18,
+    "clip_start": 43.18,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "04-Keep-Going--Amy-Xiao",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Amy Xiao/WorkBuddy 2026-07-22 13-41-12.mp4",
+    "duration": 241.39,
+    "proxy_start": 114.45,
+    "clip_start": 120.45,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "05-Dream-Cake-STUDIO--Annie-Yang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Annie Yang-Dream Cake Studio/Dream Cake STUDIO — L1.mp4",
+    "duration": 68.0,
+    "proxy_start": 17.24,
+    "clip_start": 23.24,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "06-Knead-for-Speed--Camellia-Cai",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Camellia Cai - Knead for Speed/Screen Recording 2026-07-22 at 09.56.56.mov",
+    "duration": 60.88,
+    "proxy_start": 18.96,
+    "clip_start": 18.96,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "07-Art-Class--Charlene",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Charlene Art Class Game/Charlene Art class Video.mov",
+    "duration": 30.5,
+    "proxy_start": 9.0,
+    "clip_start": 16.0,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "08-Animal-Dash--Chengxuan-Zhang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Chengxuan zhang-Animal Dash/AnimalDash.mp4",
+    "duration": 127.59,
+    "proxy_start": 51.97,
+    "clip_start": 53.97,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "09-Spectrum-Path--Chloe",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Chloe-Light/录屏2026-07-22 10.05.48.mov",
+    "duration": 88.19,
+    "proxy_start": 69.87,
+    "clip_start": 77.87,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "10-Cycling-Safety--Cicichen",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Cicichen Cycling game/WorkBuddy 2026-07-22 13-46-29.mp4",
+    "duration": 104.73,
+    "proxy_start": 40.85,
+    "clip_start": 46.85,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "11-Forest-Drone-Navigator--Eason-He",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/EasonHe -- 3D Drone Flight with hy3/Game 3D with hy3.mov",
+    "duration": 112.5,
+    "proxy_start": 48.25,
+    "clip_start": 73.25,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "12-Dream--Echo-Wu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/GameDesign_EchoWu/GameScreenShot_EchoWu.mp4",
+    "duration": 95.96,
+    "proxy_start": 20.27,
+    "clip_start": 42.27,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "13-Cake--Huang-Yan-Yue",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/HUANG YAN YUE/7月22日.mov",
+    "duration": 68.43,
+    "proxy_start": 36.32,
+    "clip_start": 43.32,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "14-Ski-Mountain--Henry-Zhang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Henry Zhang - skiing game (game design)/Henry zhang- ski .mov",
+    "duration": 281.22,
+    "proxy_start": 104.62,
+    "clip_start": 52.62,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "15-Hidden-Tides",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Hidden-Tides-Caribbean-Edition/录屏2026-07-22 14.03.24.mov",
+    "duration": 143.57,
+    "proxy_start": 26.84,
+    "clip_start": 26.84,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "16-The-Sea--Jason-Hu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Jason Hu-The Sea/Play — The Sea - 个人 - Microsoft​ Edge 2026-07-22 10-05-53.mp4",
+    "duration": 84.67,
+    "proxy_start": 52.24,
+    "clip_start": 52.24,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "17-Rubiks-Cube--Kimi-Xu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Kimi Xu Game Design/3x3 Rubik's Cube — IMA Summer Program - Google Chrome 2026-07-22 13-59-32.mp4",
+    "duration": 77.32,
+    "proxy_start": 61.92,
+    "clip_start": 61.92,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "18-Bullseye-Archery--Mulan",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Mulan/Screen Recording 2026-07-22 at 9.41.34 AM.mov",
+    "duration": 69.21,
+    "proxy_start": 38.46,
+    "clip_start": 61.46,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "19-Shark-Bite--Natalia-Ma",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Natalia Ma shark-bite/Screen Recording 2026-07-22 at 9.57.48 AM.mov",
+    "duration": 111.22,
+    "proxy_start": 96.02,
+    "clip_start": 99.02,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "20-Succulent-Simulator--Rachel-Li",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Rachel Li. succulent-simulator-bilingual /录屏2026-07-22 12.07.20.mov",
+    "duration": 118.62,
+    "proxy_start": 57.35,
+    "clip_start": 58.35,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "21-Squint--Charlie",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/SQUINT - charlie/Squint — Play the Game - Opera 2026-07-22 13-58-58.mp4",
+    "duration": 157.68,
+    "proxy_start": 29.38,
+    "clip_start": 29.38,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "22-Racing--Sungmo",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Sungmo-Racing game/Screen Recording 2026-07-22 at 09.41.58.mov",
+    "duration": 215.02,
+    "proxy_start": 121.7,
+    "clip_start": 126.7,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "23-Beast-RUSH--Tiffany-Chen",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/TiffanyChen-BestRUSH/BeastRUSH_演示视频.mp4",
+    "duration": 140.33,
+    "proxy_start": 55.26,
+    "clip_start": 57.26,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "24-How-to-Skateboarding--Wang-Yiran",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Wang Yiran- How to skateboarding/Wang Yiran  game design.mp4",
+    "duration": 63.29,
+    "proxy_start": 18.39,
+    "clip_start": 27.39,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "25-Virtual-Kitchen-Lab--Yijin-Wang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Yijin Wang - Virtual kitchen lab/Virtual Kitchen Lab - Yijin Wang.mov",
+    "duration": 108.32,
+    "proxy_start": 20.5,
+    "clip_start": 60.5,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "26-Golf--Zoe-Li",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/Zoe Li - Golf/Screen Recording 2026-07-22 at 13.43.37.mov",
+    "duration": 46.55,
+    "proxy_start": 16.38,
+    "clip_start": 20.38,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "27-PASSWORD--Elsa-Zhang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/game design group1 Elsa zhangyiqing/录屏2026-07-22 下午2.05.16.mov",
+    "duration": 209.87,
+    "proxy_start": 118.78,
+    "clip_start": 118.78,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "28-Rock-Climbing--Tsung-Ju-Liu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/rock climbing game Tsung Ju, Liu/录屏2026-07-22 10.28.36.mov",
+    "duration": 76.4,
+    "proxy_start": 31.75,
+    "clip_start": 38.75,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "29-In-the-Opera-House--Stella-Ji",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/stella yuyue ji - in the opera house/Screenrecord.mov",
+    "duration": 98.82,
+    "proxy_start": 55.79,
+    "clip_start": 61.79,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "30-Curling-Master--Ashley-Chen",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/GameDesignFinal_Day1/陈思含Ashley-curling/录屏2026-07-22 13.45.25.mov",
+    "duration": 115.0,
+    "proxy_start": 58.7,
+    "clip_start": 23.7,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "31-Rotate-Run--Coral",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/coral rotate/录屏2026-07-23 13.47.14.mov",
+    "duration": 55.03,
+    "proxy_start": 33.91,
+    "clip_start": 10.91,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "32-Cued-Speech--Hanson-Zheng",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/CuedSpeechFinal-Hanson Zheng 郑湙泓/CuedSpeechFinalVideo.mp4",
+    "duration": 35.01,
+    "proxy_start": 22.51,
+    "clip_start": 28.0,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "33-Dyno-Master--Nathan-Fang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Dyno Master- Nathan Fang 方之了/录屏2026-07-23 10.05.32.mov",
+    "duration": 101.22,
+    "proxy_start": 42.22,
+    "clip_start": 43.22,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "34-Echo-Pathfinder--Yixuan-Lyu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/echo-pathfindfer-group2-YixuanLyu/Screen Recording 2026-07-23 at 11.03.46 copy.mov",
+    "duration": 131.75,
+    "proxy_start": 52.72,
+    "clip_start": 63.72,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "35-Escape-the-Cellar--Doris",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Escape the Cellar - Doris/6e2119a7c2f64ca3236c016546cc291c_raw.mp4",
+    "duration": 108.48,
+    "proxy_start": 38.53,
+    "clip_start": 20.53,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "36-First-Diagnosis--Pim",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/First Aid - Pim/Screen Recording 2569-07-23 at 13.47.20.mov",
+    "duration": 33.6,
+    "proxy_start": 15.0,
+    "clip_start": 15.0,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "37-Ruff-Routine--Aurora",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Fluffy Paws- Aurora/Video .mov",
+    "duration": 364.45,
+    "proxy_start": 68.6,
+    "clip_start": 77.6,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "38-Dream-Village--Cindy-W",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Game design- Cindy w （group3） /录屏2026-07-23 14.04.38.mov",
+    "duration": 140.01,
+    "proxy_start": 41.2,
+    "clip_start": 48.2,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "39-Angry-Textbooks--Thomas-Li",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Game design- Thomas Li/李其乐+义务教育.mp4",
+    "duration": 125.77,
+    "proxy_start": 92.64,
+    "clip_start": 93.64,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "40-General-Replay--Rex-Xinyi",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/general(with ai) - group2 - rex xinyi li/GAME REPLAY.mp4",
+    "duration": 38.92,
+    "proxy_start": 26.42,
+    "clip_start": 33.42,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "41-Nature-Balance--Harry-Tang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Harry Tang - Ecosystem/Screen Recording 2026-07-23 at 1.43.38 PM.mov",
+    "duration": 34.62,
+    "proxy_start": 22.12,
+    "clip_start": 29.0,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "42-Into-the-Unknown--Hawinate",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Hawinate,Into the unknown/Screen Recording 2026-07-23 at 16.55.42.mov",
+    "duration": 139.28,
+    "proxy_start": 73.07,
+    "clip_start": 94.07,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "43-Time-Garden--Huang-Aili",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/huang-aili-time-garden/Screen Recording 2026-07-23 at 12.31.27 PM.mov",
+    "duration": 29.02,
+    "proxy_start": 16.52,
+    "clip_start": 17.0,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "44-INTERSTELLAR--Yvette-Wang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/INTERSTELLAR-Yvette Wang 王怡辰/screen record.mp4",
+    "duration": 174.12,
+    "proxy_start": 43.34,
+    "clip_start": 47.34,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "45-Neon-Strike--Joe-Wu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/neon strike  Joe Wu/WorkBuddy 2026-07-23 09-40-26.mp4",
+    "duration": 402.22,
+    "proxy_start": 104.4,
+    "clip_start": 111.4,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "46-Peppa-Running--Zhenxi-Yi",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Peppa running- Group2-Zhenxi Yi/录屏2026-07-23 09.44.08.mov",
+    "duration": 67.15,
+    "proxy_start": 54.65,
+    "clip_start": 58.09,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "47-Cello-Resonance--Peter",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Peter Cello game/屏幕录制 2026-07-23 144359.mp4",
+    "duration": 50.82,
+    "proxy_start": 21.15,
+    "clip_start": 28.15,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "48-Sky-Storm--Harry",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/project skystorm-Harry/Desktop 2026.07.23 - 11.10.57.03.mp4",
+    "duration": 94.87,
+    "proxy_start": 27.08,
+    "clip_start": 27.08,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "49-Granny-Square--Qingrong-Jiang",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Qingrong Jiang/录屏2026-07-23 09.40.23.mov",
+    "duration": 67.34,
+    "proxy_start": 19.12,
+    "clip_start": 19.12,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "50-Raise-a-Cat--Maureen-Mo",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Raise a cat---Maureen.Mo/Video.mp4",
+    "duration": 390.02,
+    "proxy_start": 117.2,
+    "clip_start": 125.2,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "51-Survival--Sawyer",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Sawyer_Johanneman_Game_Design Final 2/Survival Recording.mov",
+    "duration": 28.54,
+    "proxy_start": 11.0,
+    "clip_start": 14.0,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "52-Speed-Car--JinXuan-Sarah",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/speed-car-tournament-JinXuan Ma: Sarah.Ma/Screen Recording 2026-07-23 at 1.59.58 PM.mov",
+    "duration": 148.36,
+    "proxy_start": 110.7,
+    "clip_start": 114.7,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "53-The-Escape--Ada",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/The escape-Ada vd/Screen Recording 2026-07-23 at 09.54.58/Screen Recording 2026-07-23 at 09.54.58.mov",
+    "duration": 34.03,
+    "proxy_start": 13.0,
+    "clip_start": 13.0,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "54-To-the-End--Hanson-Liu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/To the end- Group2 Hanson Liu/Screen Recording 2026-07-23 at 09.41.37.mov",
+    "duration": 74.5,
+    "proxy_start": 41.41,
+    "clip_start": 41.41,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "55-To-Leave--Tianle",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/to-leave-tianle/录屏2026-07-23 14.05.05.mov",
+    "duration": 311.7,
+    "proxy_start": 78.11,
+    "clip_start": 84.11,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "56-Villainous-House--Wang-Yizhen",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Wang Yizhen 凶宅/Recording.mov",
+    "duration": 134.07,
+    "proxy_start": 28.13,
+    "clip_start": 28.13,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "57-Lab-Escape--Weiru-Xu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/WeiruXu_LabEscape/Aufzeichnung 2026-07-23 140537.mp4",
+    "duration": 145.15,
+    "proxy_start": 32.13,
+    "clip_start": 42.13,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "58-Wing-Flight--Suria-Sun",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/WING-FLIGHT group2 Suria SUN/Play — Wing Flight 和另外 1 个页面 - 用户配置 1 - Microsoft​ Edge 2026-07-23 09-39-13.mp4",
+    "duration": 147.6,
+    "proxy_start": 109.57,
+    "clip_start": 107.57,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "59-Paper-Folding--Yilia-JinXuan",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Yilia Hu JinXuan-paper folding/玩法教程.mov",
+    "duration": 66.06,
+    "proxy_start": 13.89,
+    "clip_start": 20.89,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "60-Dodge-Dish--Yuhan-Ma",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/Yuhan Ma_dodge&dish/demo.mov",
+    "duration": 231.47,
+    "proxy_start": 75.66,
+    "clip_start": 73.66,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "61-Bake-Carefully--YuYu",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/YuYu - Bakery/Screen Recording 2026-07-23 at 2.53.29 PM.mov",
+    "duration": 63.52,
+    "proxy_start": 29.43,
+    "clip_start": 29.43,
+    "proxy_ok": true,
+    "clip_ok": true
+  },
+  {
+    "stem": "62-Basketball--Huang-Xinxian",
+    "source": "/Users/xz33/WorkBuddy/来自生活的游戏设计/distribution/domain-learning-camp/gamedesignfinal-thu/黄馨娴。win a basketball game/录屏2026-07-23 13.55.19.mov",
+    "duration": 66.37,
+    "proxy_start": 12.95,
+    "clip_start": 45.95,
+    "proxy_ok": true,
+    "clip_ok": true
+  }
+]

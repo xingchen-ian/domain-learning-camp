@@ -1,0 +1,19 @@
+请用「游玩高光」重剪夏令营 Game Designs Showreel（含 Day1 + Thursday 两组）。
+
+【硬性原则】
+- 只用真正在玩游戏的画面：角色移动、操作反馈、关卡推进、系统在运作
+- 严禁：点菜单、滚项目网站、浏览器标签/地址栏、文件管理器、长时间停顿、加载页、鼠标乱晃 UI
+- 每款游戏只留约 4–5 秒硬切高光
+- 若素材前半段是在点展览页，请往后切到进游戏之后
+
+【结构】
+1. 开场 7 秒：Game Designs / NYU Shanghai · IMA Summer Camp / From real life to playable worlds
+2. 游戏蒙太奇：按序号轮播（Day1 02–30，Thursday 31–62），每条叠加游戏名 + 作者小字
+3. 收尾 8 秒：You create. AI assists. / NYU Shanghai · Interactive Media Arts · Game Designs
+
+【技术】
+- 16:9 · 1080p · 硬切
+- 游戏原声音量压低或静音；BGM 轻快现代贯穿
+- 成片约 4–5 分钟（约 60 款 × 4–5 秒 + 开场收尾）
+
+请先替换现有时间线上偏 UI 的片段，再追加 Thursday 新游戏，最后导出。
