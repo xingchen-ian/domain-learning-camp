@@ -898,8 +898,8 @@
     <div class="brand">
       <p class="brand-title">Domain Learning Workbook</p>
       <p class="brand-subtitle">
-        <span class="zh">Step 1-6 · 每页一个问题 · 自动保存 · 生成 AI Agent 开发文档</span>
-        <span class="en">Step 1-6 · One question per page · Auto-save · AI Agent brief</span>
+        <span class="zh">Session 2 Simple · 19 题 · 自动保存 · 生成 AI Agent 开发文档</span>
+        <span class="en">Session 2 Simple · 19 questions · Auto-save · AI Agent brief</span>
       </p>
     </div>
     <nav class="mode-tabs" aria-label="Workshop steps">
@@ -911,11 +911,11 @@
         <span class="zh">Session 1 · INSIDE 分析</span>
         <span class="en">Session 1 · INSIDE Analysis</span>
       </a>
-      <a class="mode-tab active" href="domain-learning-workbook.html#slide-1">
+      <a class="mode-tab" href="domain-learning-workbook.html#slide-1">
         <span class="zh">Session 2 · 完整版</span>
         <span class="en">Session 2 · Full</span>
       </a>
-      <a class="mode-tab" href="domain-learning-workbook-simple.html#slide-1">
+      <a class="mode-tab active" href="domain-learning-workbook-simple.html#slide-1">
         <span class="zh">Session 2 Simple</span>
         <span class="en">Session 2 Simple</span>
       </a>
@@ -935,10 +935,10 @@
 
   <main class="deck" id="deck">
     <section class="slide active" data-slide-type="intro">
-      <p class="eyebrow">Session 2 · Your Project Design</p>
+      <p class="eyebrow">Session 2 Simple · Condensed</p>
       <h1>
-        <span class="zh">设计你自己的游戏系统</span>
-        <span class="en">Design Your Own Game System</span>
+        <span class="zh">用更少的问题，设计你的游戏系统</span>
+        <span class="en">Design Your Game System with Fewer Questions</span>
       </h1>
       <p class="lead zh">选择一个你接触过或想学习的真实领域，把“新手如何逐渐看懂它”转化成玩家可以观察、判断、行动和调整的游戏系统。</p>
       <p class="lead en">Choose a real domain you have experienced or want to learn. Turn the way a beginner gradually understands it into a game system where players observe, judge, act, and adjust.</p>
@@ -946,8 +946,8 @@
         <div class="method-step">
           <strong class="zh">1. 回答设计问题</strong>
           <strong class="en">1. Answer Design Questions</strong>
-          <p class="zh">通过 Step 1–5 找到新手误解、领域判断、玩家循环、反馈和核心数据。</p>
-          <p class="en">Use Steps 1–5 to identify novice misconceptions, domain judgment, the player loop, feedback, and core data.</p>
+          <p class="zh">精简版：保留最关键的问题，约 20 分钟完成 Step 1–5 的最小可行设计。</p>
+          <p class="en">Condensed version: keep the most essential questions. Finish a minimum viable design for Steps 1–5 in about 20 minutes.</p>
         </div>
         <div class="method-step">
           <strong class="zh">2. 生成开发摘要</strong>
@@ -1247,15 +1247,6 @@
             }
           },
           {
-            id: "s1q2",
-            zh: "你为什么了解或想了解这个领域？你接触它的真实场景是什么？",
-            en: "Why do you know about this domain, or why do you want to learn it? What real situation connects you to it?",
-            reason: {
-              zh: "设计应来自真实连接、观察或学习需要，而不只是一个听起来有趣的题材。",
-              en: "The design should come from a real connection, observation, or learning need, not only from a theme that sounds interesting."
-            }
-          },
-          {
             id: "s1q3",
             zh: "新手刚进入这个领域时，通常会以为什么最重要？",
             en: "When beginners first enter this domain, what do they usually think is most important?",
@@ -1300,13 +1291,7 @@
           zh: "游戏应该教会玩家一种领域中的看法。这个步骤找出新手思维和高手判断之间的差距。",
           en: "The game should teach a domain way of seeing. This step identifies the gap between beginner thinking and expert judgment."
         },
-        questions: [
-          {
-            id: "s2q1",
-            zh: "新手最常见的误解是什么？",
-            en: "What is the most common misunderstanding beginners have?",
-            reason: { zh: "这个误解会成为玩家学习旅程的起点。", en: "The misunderstanding becomes the starting point of the player learning journey." }
-          },
+        questions: [,
           {
             id: "s2q2",
             zh: "高手和新手看到同一个情境时，判断有什么不同？",
@@ -1320,22 +1305,10 @@
             reason: { zh: "最重要的挑战会决定游戏应该训练、施压或考验什么。", en: "The most important challenge helps decide what the game should test, pressure, or train." }
           },
           {
-            id: "s2q4",
-            zh: "新手最容易做错的动作或决策是什么？",
-            en: "What action or decision do beginners most often get wrong?",
-            reason: { zh: "常见错误可以变成有意义的失败条件和可学习反馈。", en: "Common wrong actions can become meaningful failure conditions and teachable feedback." }
-          },
-          {
             id: "s2q5",
             zh: "高手会根据哪些信号判断自己做得对不对？",
             en: "What signals do experts use to judge whether they are doing well?",
             reason: { zh: "高手使用的信号可以转化为游戏反馈，而不只是分数或文字说明。", en: "Expert signals can become in-game feedback instead of scores or explanations." }
-          },
-          {
-            id: "s2q6",
-            zh: "你能否用一句话概括这个领域的核心学习转变？",
-            en: "Can you summarize the core learning shift in this domain in one sentence?",
-            reason: { zh: "一句话的转变会成为整个项目的设计主张。", en: "A one-sentence shift gives the project a clear design thesis." }
           }
         ]
       },
@@ -1354,12 +1327,6 @@
             reason: { zh: "观察决定了游戏必须让哪些信息可见、可听或可推断。", en: "Observation defines what information the game must make visible, audible, or inferable." }
           },
           {
-            id: "s3q2",
-            zh: "玩家需要判断什么？",
-            en: "What does the player need to judge?",
-            reason: { zh: "判断是玩家进入领域思维的主要证据。", en: "Judgment is the main evidence that the player is entering the domain way of thinking." }
-          },
-          {
             id: "s3q3",
             zh: "玩家可以做哪些行动？",
             en: "What actions can the player take?",
@@ -1370,18 +1337,6 @@
             zh: "系统如何反馈玩家做得好不好？",
             en: "How does the system give feedback on whether the player is doing well?",
             reason: { zh: "反馈让玩家可以在游戏中学习，而不是一直依赖老师解释。", en: "Feedback lets the player learn without needing constant explanation from the teacher." }
-          },
-          {
-            id: "s3q5",
-            zh: "玩家如何根据反馈调整下一次行动？",
-            en: "How can the player adjust their next action based on feedback?",
-            reason: { zh: "调整完成学习循环，也区分了学习型游戏和一次性任务。", en: "Adjustment completes the learning loop and separates learning games from one-time tasks." }
-          },
-          {
-            id: "s3q6",
-            zh: "重复几次后，玩家会变得更会什么？",
-            en: "After repeating the loop several times, what does the player become better at?",
-            reason: { zh: "这会明确玩家应该通过游玩提升的技能或判断。", en: "This clarifies the skill or judgment that should improve through play." }
           }
         ]
       },
@@ -1400,28 +1355,10 @@
             reason: { zh: "第一个反馈信号应该代表领域中最清楚的行动-结果关系。", en: "The first feedback signal should represent the clearest action-result relationship in the domain." }
           },
           {
-            id: "s4q2",
-            zh: "反馈信号 2：它是什么、来自哪里、告诉玩家什么、在游戏中如何表现？",
-            en: "Feedback signal 2: What is the signal, where does it come from, what does it tell the player, and how does it appear in the game?",
-            reason: { zh: "多个反馈信号可以避免游戏变成单一分数系统。", en: "Multiple feedback signals prevent the game from becoming a single-score system." }
-          },
-          {
-            id: "s4q3",
-            zh: "反馈信号 3：它是什么、来自哪里、告诉玩家什么、在游戏中如何表现？",
-            en: "Feedback signal 3: What is the signal, where does it come from, what does it tell the player, and how does it appear in the game?",
-            reason: { zh: "第三个信号能帮助判断这个领域是否足够支撑递进挑战。", en: "A third signal helps reveal whether the domain has enough richness for progressive challenges." }
-          },
-          {
             id: "s4q4",
             zh: "哪些反馈应该立刻出现？",
             en: "Which feedback should appear immediately?",
             reason: { zh: "即时反馈教会玩家直接的因果关系。", en: "Immediate feedback teaches direct cause and effect." }
-          },
-          {
-            id: "s4q5",
-            zh: "哪些反馈应该延迟出现，让玩家自己发现？",
-            en: "Which feedback should appear later, so the player has to discover it?",
-            reason: { zh: "延迟反馈会让玩家通过一段时间的模式观察形成更深的学习。", en: "Delayed feedback creates deeper learning because players must notice patterns over time." }
           },
           {
             id: "s4q6",
@@ -1446,12 +1383,6 @@
             reason: { zh: "数字让强度、阈值和进度可以被实现。", en: "Numbers make intensity, thresholds, and progress implementable." }
           },
           {
-            id: "s5q2",
-            zh: "有哪些东西可以变成状态？例如稳定/不稳定、看见/没看见、疲劳/清醒、安全/危险。",
-            en: "What parts can become states? Examples: stable/unstable, visible/invisible, tired/alert, safe/dangerous.",
-            reason: { zh: "状态可以表现不是单纯大小变化的质变。", en: "States help represent qualitative changes that are not only bigger or smaller numbers." }
-          },
-          {
             id: "s5q3",
             zh: "玩家做什么动作会改变这些数字或状态？",
             en: "What player actions change these numbers or states?",
@@ -1470,12 +1401,6 @@
             reason: { zh: "失败条件显示误解或错误判断是什么样子。", en: "Failure conditions show what misunderstanding or poor judgment looks like." }
           },
           {
-            id: "s5q6",
-            zh: "有没有“刚刚好”的范围？例如帆角太大或太小都不好，攀岩用力过多或过少都不稳。",
-            en: "Is there a just-right range? For example, a sail angle can be too large or too small; in climbing, using too much or too little force can both be unstable.",
-            reason: { zh: "很多领域技能不是把一个数值拉满，而是校准到合适范围。", en: "Many domain skills are about calibration, not simply maximizing one number." }
-          },
-          {
             id: "s5q7",
             zh: "列出 3-5 个核心变量，格式：变量名 / 类型 / 如何变化 / 对体验的作用。",
             en: "List your 3-5 core variables using this format: Variable Name / Type / How It Changes / Role in the Experience.",
@@ -1489,10 +1414,6 @@
       s1q1: {
         zh: "驾驶一艘小型帆船。",
         en: "Sailing a small sailboat."
-      },
-      s1q2: {
-        zh: "我曾参加过一次帆船入门课，发现船并不会简单地朝我指向的方向前进；它取决于风向、帆角、船身角度和速度。",
-        en: "I once joined a beginner sailing lesson and realized that the boat does not simply go wherever I point it. It depends on wind direction, sail angle, boat angle, and speed."
       },
       s1q3: {
         zh: "初学者通常认为最重要的是把船直接朝目的地开过去。",
@@ -1510,10 +1431,6 @@
         zh: "判断与环境。帆船有趣之处在于：玩家必须通过船、帆和水面的可见反馈，去读懂一股看不见的力——风。",
         en: "Judgment and environment. Sailing is interesting because the player must read an invisible force, the wind, through visible feedback from boat, sail, and water."
       },
-      s2q1: {
-        zh: "初学者认为：只要舵打得对，船就应该笔直朝目标前进。",
-        en: "Beginners think the boat should move directly toward the target if they steer correctly."
-      },
       s2q2: {
         zh: "初学者看到目标就想直线驶过去；专家会先看风向，再判断能否直达，还是需要抢风折航（zigzag）。",
         en: "A beginner sees the target and tries to steer straight toward it. An expert first checks wind direction, then decides whether the target can be reached directly or whether tacking is needed."
@@ -1522,25 +1439,13 @@
         zh: "风向、船头方向、帆角与路线规划之间的关系。",
         en: "The relationship between wind direction, boat direction, sail angle, and route planning."
       },
-      s2q4: {
-        zh: "初学者常把船头顶得太迎风、忘记调整帆角，或在需要折航时仍试图直线航行。",
-        en: "Beginners point the boat too close to the wind, forget to adjust sail angle, or try to sail straight when a zigzag route is needed."
-      },
       s2q5: {
         zh: "船速、帆形、帆是否抖动、船身倾斜、风向标方向，以及船是否偏离计划航线。",
         en: "Boat speed, sail shape, sail flapping, boat tilt, wind indicator direction, and whether the boat drifts away from the planned route."
       },
-      s2q6: {
-        zh: "初学者以为帆船就是朝目标打舵；专家知道帆船是读风，并据此调整船头、帆角与航线。",
-        en: "Beginners think sailing means steering toward the target; experts know sailing means reading the wind and adjusting the boat, sail, and route in relation to it."
-      },
       s3q1: {
         zh: "风向、目标方向、帆形、船速、船身角度、洋流、障碍物，以及与目标的距离。",
         en: "Wind direction, target direction, sail shape, boat speed, boat angle, water current, obstacles, and distance to the goal."
-      },
-      s3q2: {
-        zh: "船能否直达目标、帆角是否高效、船是否太迎风，以及是否需要改变航线。",
-        en: "Whether the boat can reach the target directly, whether sail angle is efficient, whether the boat is too close to wind, and whether the route needs to change."
       },
       s3q3: {
         zh: "左右转向、调整帆角、选择航线、抢风折航、减速，或避开障碍。",
@@ -1550,33 +1455,13 @@
         zh: "船速上升或下降、帆变顺或抖动、船身倾斜、航线偏离目标，以及风向标显示风向。",
         en: "The boat speeds up or slows down, sail becomes smooth or flaps, boat tilts, route line drifts away from the goal, and a wind indicator shows wind direction."
       },
-      s3q5: {
-        zh: "若帆抖动，就调帆角；若船在迎风附近掉速，就转向离开迎风；若目标在上风，就规划折航路线。",
-        en: "If sail flaps, adjust sail angle. If boat slows down near wind, turn away from wind. If the target is upwind, plan a zigzag route."
-      },
-      s3q6: {
-        zh: "读风、选择可用角度、调整船帆，以及规划航线，而不是直接朝目标打舵。",
-        en: "Reading wind, choosing a workable angle, adjusting sail, and planning a route instead of steering directly toward the goal."
-      },
       s4q1: {
         zh: "帆抖动：来自帆与风；告诉玩家帆角或船角不合适；表现为帆的抖动动画与拍打声。",
         en: "Sail flaps: from sail and wind; tells player sail angle or boat angle is inefficient; appears as shaking sail animation and flapping sound."
       },
-      s4q2: {
-        zh: "船速下降：来自船的运动；告诉玩家太迎风或帆调得不好；速度条下降，尾迹变短。",
-        en: "Boat speed drops: from boat movement; tells player boat is too close to wind or sail is poorly adjusted; speed bar drops and wake becomes smaller."
-      },
-      s4q3: {
-        zh: "船身大幅倾斜 / 航线侧漂 / 目标始终到不了：这些信号分别提示不稳定、洋流补偿问题，或目标在上风。",
-        en: "Boat tilts strongly / route drifts sideways / target remains unreachable; these signals show instability, current compensation problems, or upwind target issues."
-      },
       s4q4: {
         zh: "帆抖动、船速和船身倾斜应立刻出现，因为它们帮助玩家理解“动作—反馈”关系。",
         en: "Sail flapping, boat speed, and boat tilt should appear immediately because they teach action-feedback relationships."
-      },
-      s4q5: {
-        zh: "航线漂移应在数秒后逐渐显现，让玩家学会：一个小小的角度错误，会随时间放大成很大的路线偏差。",
-        en: "Route drift should appear over several seconds so players learn that a small wrong angle can create a large route error over time."
       },
       s4q6: {
         zh: "帆抖动应用视觉与声音表现；船速应通过运动、尾迹和声音呈现；航线漂移应空间化显示，而不是只给分数。",
@@ -1585,10 +1470,6 @@
       s5q1: {
         zh: "风向角、风力、船头方向角、帆角、船速、与目标距离、航线漂移、剩余时间，以及船体稳定性。",
         en: "Wind direction angle, wind strength, boat direction angle, sail angle, boat speed, distance to target, route drift, time remaining, and hull stability."
-      },
-      s5q2: {
-        zh: "高效/低效帆角，稳定/不稳定船体，可直达/不可直达，安全区/危险区，开阔水域/障碍区。",
-        en: "Efficient / inefficient sail angle, stable / unstable boat, direct route possible / impossible, safe / danger zone, clear water / obstacle zone."
       },
       s5q3: {
         zh: "转向改变船头方向；调帆改变帆角与速度；折航改变航线方向；驶入强风区会改变稳定性与速度。",
@@ -1601,10 +1482,6 @@
       s5q5: {
         zh: "超时、卡在过于迎风的角度、撞上礁石、速度掉得太低，或漂出安全区。",
         en: "Run out of time, get stuck pointing too close to wind, hit rocks, lose too much speed, or drift outside the safe area."
-      },
-      s5q6: {
-        zh: "有。帆角必须匹配风向与船头方向；太紧或太松都会掉速，船头方向也存在可用范围。",
-        en: "Yes. Sail angle must match wind and boat direction. Too tight or too loose loses speed; boat direction also has a workable range."
       },
       s5q7: {
         zh: "windDirection、windStrength、boatDirection、sailAngle、boatSpeed、routeDrift、stability、timeRemaining，并写明类型、变化规则与作用。",
@@ -1625,10 +1502,10 @@
         feedback: "Sail flaps → sail angle is inefficient\nWake becomes shorter → speed is dropping\nBoat drifts from target → wind or current is pushing the route\nBoat tilts strongly → stability is decreasing\nWind indicator changes → the target may not be directly reachable"
       }
     };
-    const storageKey = "domain-learning-workbook-v1";
-    const referenceKey = "domain-learning-workbook-reference-v1";
+    const storageKey = "domain-learning-workbook-simple-v1";
+    const referenceKey = "domain-learning-workbook-simple-reference-v1";
     const languageKey = "domain-learning-camp-language";
-    const slideKey = "domain-learning-workbook-slide-v2";
+    const slideKey = "domain-learning-workbook-simple-slide-v1";
     const storage = (() => {
       try {
         localStorage.setItem("__dl_test__", "1");
@@ -1778,7 +1655,7 @@
         environment: answers.s3q1 || "",
         player: answers.s3q3 || "",
         results: answers.s3q4 || "",
-        feedback: [answers.s4q1, answers.s4q2, answers.s4q3].filter(Boolean).join("\n")
+        feedback: [answers.s4q1, answers.s4q4, answers.s4q6].filter(Boolean).join("\n")
       };
     }
 
@@ -1809,39 +1686,39 @@
       const items = [
         {
           className: "learning-shift",
-          zh: "核心学习转变",
-          en: "Core Learning Shift",
-          value: joinAnswers("s2q6")
+          zh: "高手 vs 新手判断",
+          en: "Expert vs Beginner Judgment",
+          value: joinAnswers("s2q2")
         },
         {
           zh: "项目与真实经验",
           en: "Project and Real Experience",
-          value: [meta.projectTitle || meta.domain, joinAnswers("s1q1", "s1q2")].filter(Boolean).join(" · ")
+          value: [meta.projectTitle || meta.domain, joinAnswers("s1q1", "s1q3")].filter(Boolean).join(" · ")
         },
         {
           zh: "新手误解与关键挑战",
           en: "Novice Misconception and Core Challenge",
-          value: joinAnswers("s2q1", "s2q3", "s2q4")
+          value: joinAnswers("s2q3", "s2q5")
         },
         {
           zh: "玩家学习循环",
           en: "Player Learning Loop",
-          value: joinAnswers("s3q1", "s3q2", "s3q3", "s3q4", "s3q5")
+          value: joinAnswers("s3q1", "s3q3", "s3q4")
         },
         {
           zh: "玩家能够读到的反馈",
           en: "Feedback the Player Can Read",
-          value: joinAnswers("s4q1", "s4q2", "s4q3", "s4q4", "s4q5", "s4q6")
+          value: joinAnswers("s4q1", "s4q4", "s4q6")
         },
         {
           zh: "系统中的数据、状态与操作",
           en: "System Data, States, and Actions",
-          value: joinAnswers("s5q1", "s5q2", "s5q3", "s5q7")
+          value: joinAnswers("s5q1", "s5q3", "s5q7")
         },
         {
           zh: "目标、失败与刚刚好的范围",
           en: "Goal, Failure, and Just-Right Range",
-          value: joinAnswers("s5q4", "s5q5", "s5q6")
+          value: joinAnswers("s5q4", "s5q5")
         }
       ];
 
@@ -1938,26 +1815,25 @@
       lines.push(`- Tool / AI Agent: ${meta.agentTool || ""}`);
       lines.push("");
       lines.push("## 2. Design Summary");
-      addAnswer("Domain and real experience", "s1q1", "s1q2");
+      addAnswer("Domain", "s1q1");
+      addAnswer("What beginners think is important", "s1q3");
+      addAnswer("First stuck or failure", "s1q4");
+      addAnswer("What learners begin to notice", "s1q5");
+      addAnswer("What attracts you", "s1q6");
       lines.push("");
-      addAnswer("Novice misconception", "s2q1");
+      addAnswer("Expert vs beginner judgment", "s2q2");
       lines.push("");
-      addAnswer("Most important domain challenge", "s2q3", "s2q4");
+      addAnswer("Most important domain challenge", "s2q3");
+      addAnswer("Signals experts use", "s2q5");
       lines.push("");
-      addAnswer("Core learning shift", "s2q6");
+      // Core learning shift question omitted in Simple version
       lines.push("");
       lines.push("## 3. Core Player Learning Loop");
       addAnswer("Observe", "s3q1");
       lines.push("");
-      addAnswer("Judge", "s3q2");
-      lines.push("");
       addAnswer("Act", "s3q3");
       lines.push("");
       addAnswer("Read feedback", "s3q4");
-      lines.push("");
-      addAnswer("Adjust", "s3q5");
-      lines.push("");
-      addAnswer("Ability improved through repetition", "s3q6");
       lines.push("");
       lines.push("## 4. Data Model for the System Graph");
       lines.push("");
@@ -1974,20 +1850,16 @@
       addBullets(graphData.feedback);
       lines.push("");
       lines.push("## 5. Rules, Boundaries, and Outcomes");
-      addAnswer("Important states", "s5q2");
-      lines.push("");
       addAnswer("How player actions change the system", "s5q3");
       lines.push("");
       addAnswer("Success condition", "s5q4");
       lines.push("");
       addAnswer("Failure conditions", "s5q5");
       lines.push("");
-      addAnswer("Just-right ranges and thresholds", "s5q6");
-      lines.push("");
       lines.push("## 6. Feedback Priorities");
-      addAnswer("Immediate feedback", "s4q4");
+      addAnswer("Key feedback signal", "s4q1");
       lines.push("");
-      addAnswer("Feedback discovered over time", "s4q5");
+      addAnswer("Immediate feedback", "s4q4");
       lines.push("");
       addAnswer("Feedback that must be visual, spatial, audible, or state-based", "s4q6");
       lines.push("");
@@ -2074,8 +1946,7 @@
       lines.push(`- Project Title: ${meta.projectTitle || "Not specified yet."}`);
       lines.push(`- Student / Team: ${meta.studentTeam || "Not specified yet."}`);
       lines.push(`- Domain: ${meta.domain || answers.s1q1 || "Not specified yet."}`);
-      lines.push(`- Core Learning Shift: ${answers.s2q6 || "Not specified yet."}`);
-      lines.push(`- Current Game Idea: ${answers.s1q2 || "Not specified yet."}`);
+      lines.push(`- Expert vs Beginner Judgment: ${answers.s2q2 || "Not specified yet."}`);
       lines.push(`- AI Agent Used: ${meta.agentTool || "Not specified yet."}`);
       lines.push("- System Graph: add the image file or Canva link when available");
       lines.push("- Development Period: add start and end dates");
